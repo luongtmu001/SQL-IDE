@@ -29,8 +29,9 @@ import java.util.function.Supplier;
  */
 public final class MockMetadataProvider {
 
+    /** Phase 8 (Gate D 2026-11-05): real metadata by default; see {@link app.framework.backend.BackendFlags}. */
     private static volatile boolean enabled =
-            !"false".equalsIgnoreCase(System.getProperty("sqlide.mockMetadata", "true"));
+            app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.METADATA);
 
     private static final long DELAY_MS = 280;
 

@@ -79,6 +79,16 @@ public class DesktopQueryExecutionService {
      * Executes the given SQL query asynchronously using a Java 21 Virtual Thread.
      */
     public synchronized void execute(String sql, String connectionName, String databaseName, String schemaName, QueryCallback callback) {
+        execute(null, sql, connectionName, databaseName, schemaName, false, callback);
+    }
+
+    /**
+     * Phase 8 / D1: runs {@code sql} on the tab's own session ({@link app.framework.session.TabSessionManager}).
+     * The statement is checked by {@link SqlStatementClassifier} first: blocked on read-only sessions,
+     * and on PRODUCTION unless {@code prodConfirmed} (the caller showed DLG-007b).
+     */
+    public synchronized void execute(String tabId, String sql, String connectionName, String databaseName, String schemaName,
+                                     boolean prodConfirmed, QueryCallback callback) {
         if (sql == null || sql.trim().isEmpty()) {
             if (callback != null) {
                 callback.onError("No SQL statement provided to execute.", null);
@@ -104,22 +114,29 @@ public class DesktopQueryExecutionService {
             Statement stmt = null;
 
             try {
-                Connection rawConn = resolveJdbcConnection(connectionName, databaseName);
-
-                if (rawConn == null) {
-                    throw new SQLException("Could not establish a valid connection for: " + (connectionName != null ? connectionName : "default"));
-                }
-
-                // Apply target catalog / schema if applicable
-                if (databaseName != null && !databaseName.isBlank()) {
-                    try {
-                        rawConn.setCatalog(databaseName);
-                    } catch (Exception ignored) {}
-                }
-                if (schemaName != null && !schemaName.isBlank()) {
-                    try {
-                        rawConn.setSchema(schemaName);
-                    } catch (Exception ignored) {}
+                Connection rawConn;
+                if (app.framework.backend.BackendFlags.real(app.framework.backend.BackendFlags.Area.QUERY)) {
+                    var profile = app.framework.session.TabSessionManager.profileByName(connectionName);
+                    String sessionKey = tabId != null ? tabId : "default";
+                    var opened = app.framework.session.TabSessionManager.getInstance().ensureConnected(sessionKey, profile, databaseName);
+                    if (opened.isFailure()) {
+                        throw new SQLException(opened.getError().map(er -> er.message()).orElse("Không kết nối được."));
+                    }
+                    var session = app.framework.session.TabSessionManager.getInstance().get(sessionKey);
+                    var decision = SqlStatementClassifier.check(sql, session.readOnly(), session.environment(), prodConfirmed);
+                    if (!decision.allowed()) {
+                        throw new SQLException(decision.message(), decision.errorCode());
+                    }
+                    rawConn = opened.getDataOrThrow().getRawJdbcConnection();
+                    if (schemaName != null && !schemaName.isBlank() && profile.databaseType() != null
+                            && profile.databaseType().toUpperCase().contains("POSTGRE")) {
+                        try {
+                            rawConn.setSchema(schemaName);
+                        } catch (Exception ignored) {}
+                    }
+                } else {
+                    // UI prototype: local in-memory SQLite sandbox only
+                    rawConn = getOrCreateInMemorySqlite();
                 }
 
                 stmt = rawConn.createStatement();
@@ -221,7 +238,11 @@ public class DesktopQueryExecutionService {
             } finally {
                 currentStatement.set(null);
                 currentWorkerThread.set(null);
-                executing.set(false);
+                if (stmt != null) {
+                    try {
+                        stmt.close();   // Phase 8: statements were never closed
+                    } catch (Exception ignored) {}
+                }
             }
         });
 
@@ -250,41 +271,6 @@ public class DesktopQueryExecutionService {
         }
 
         return false;
-    }
-
-    private Connection resolveJdbcConnection(String connectionName, String targetDatabase) throws SQLException {
-        ConnectionSessionManager sessionMgr = ConnectionSessionManager.getInstance();
-
-        // Phase 7 safety: while the UI prototype runs on mock metadata, statements only ever run
-        // in the local in-memory SQLite sandbox, never on a saved (possibly production) profile.
-        // Real execution is part of Gate D.
-        if (app.framework.metadata.MockMetadataProvider.isEnabled()) {
-            return getOrCreateInMemorySqlite();
-        }
-
-        // 1. Check active session
-        DatabaseConnection activeConn = sessionMgr.getActiveConnection();
-        if (activeConn != null && activeConn.isValid(2)) {
-            return activeConn.getRawJdbcConnection();
-        }
-
-        // 2. Look up profile by connectionName
-        if (connectionName != null && !connectionName.isBlank()) {
-            var allProfilesRes = DesktopBootstrap.getInstance().getConnectionApi().getConnections();
-            if (allProfilesRes.isSuccess()) {
-                for (ConnectionProfileDto profile : allProfilesRes.getDataOrThrow()) {
-                    if (profile.name().equalsIgnoreCase(connectionName) || profile.id().equalsIgnoreCase(connectionName)) {
-                        var connectRes = sessionMgr.connect(profile, null);
-                        if (connectRes.isSuccess()) {
-                            return connectRes.getDataOrThrow().getRawJdbcConnection();
-                        }
-                    }
-                }
-            }
-        }
-
-        // 3. Sandbox fallback: In-memory SQLite connection
-        return getOrCreateInMemorySqlite();
     }
 
     private synchronized Connection getOrCreateInMemorySqlite() throws SQLException {

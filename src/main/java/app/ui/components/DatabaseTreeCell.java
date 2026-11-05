@@ -877,7 +877,7 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
         MainController mc = AppContext.getInstance().getMainController();
         if (mc == null) return;
         String conn = item.getConnectionProfile() != null ? item.getConnectionProfile().name() : null;
-        if (MockMetadataProvider.isEnabled()) {
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.QUERY)) {
             mc.openQueryConsole(title, sql, conn, item.getCatalog(), item.getSchema());
             NotificationService.getInstance().showInfo("Prototype",
                     "Đã mở câu lệnh trong tab mới. Chạy truy vấn thật sẽ bật khi tích hợp backend (Gate D).");

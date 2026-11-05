@@ -314,16 +314,50 @@ public class EditorController implements Initializable {
                 tab.updateConnectionBanner(null, null, null);
                 continue;
             }
-            var status = app.services.ExplorerConnectionState.getInstance().get(profile.id());
-            boolean connected = status == app.services.ExplorerConnectionState.Status.CONNECTED;
+            boolean connected;
+            String dot;
+            if (app.framework.backend.BackendFlags.real(app.framework.backend.BackendFlags.Area.CONNECTIONS)) {
+                // Phase 8 / D1: every tab shows ITS OWN session (user decision 2026-11-05)
+                var session = app.framework.session.TabSessionManager.getInstance().get(tab.getDocumentId());
+                var st = session != null && session.profile() != null && profile.id().equals(session.profile().id())
+                        ? session.state() : app.framework.session.TabSession.State.NONE;
+                connected = st == app.framework.session.TabSession.State.CONNECTED;
+                dot = switch (st) {
+                    case CONNECTED -> app.services.ConnectionColorService.getInstance().colorFor(profile.id()).hex();
+                    case CONNECTING -> "#d29922";
+                    case ERROR -> "#f85149";
+                    default -> "#8b8b8b";
+                };
+                tab.setSessionTooltip(sessionTooltip(profile, session, st));
+            } else {
+                var status = app.services.ExplorerConnectionState.getInstance().get(profile.id());
+                connected = status == app.services.ExplorerConnectionState.Status.CONNECTED;
+                dot = connected ? app.services.ConnectionColorService.getInstance().colorFor(profile.id()).hex() : "#8b8b8b";
+            }
             tab.setConnectionIcon(dbLogo(profile.databaseType()));
             // status dot: connection colour when connected, grey otherwise
-            tab.setConnectionColor(connected
-                    ? app.services.ConnectionColorService.getInstance().colorFor(profile.id()).hex() : "#8b8b8b");
+            tab.setConnectionColor(dot);
             if (connected) tab.resetBannerDismissed();
             String db = tab.getDatabaseName() != null ? tab.getDatabaseName() : profile.databaseName();
             tab.updateConnectionBanner(profile.name(), db, connected);
         }
+    }
+
+    private static String sessionTooltip(com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+                                         app.framework.session.TabSession session,
+                                         app.framework.session.TabSession.State st) {
+        StringBuilder sb = new StringBuilder(profile.name());
+        switch (st) {
+            case CONNECTED -> {
+                sb.append("\nĐã kết nối").append(session.database() != null ? " · " + session.database() : "");
+                if (session.serverPid() != null) sb.append(" · PID ").append(session.serverPid());
+                if (session.readOnly()) sb.append("\nChỉ đọc");
+            }
+            case CONNECTING -> sb.append("\nĐang kết nối…");
+            case ERROR -> sb.append("\nLỗi: ").append(session.error());
+            default -> sb.append("\nChưa kết nối (phiên riêng của tab)");
+        }
+        return sb.toString();
     }
 
     /** Jumps to a 1-based line of the active tab (Actions Guard double-click). */
@@ -443,6 +477,8 @@ public class EditorController implements Initializable {
         if (monacoHost != null) {
             monacoHost.disposeModel(tab.getDocumentId());
         }
+        // Phase 8 / D1: the tab's own database session closes with the tab
+        app.framework.session.TabSessionManager.getInstance().release(tab.getDocumentId());
         if (primaryTabPane.getTabs().contains(tab)) {
             primaryTabPane.getTabs().remove(tab);
             updateEmptyState();

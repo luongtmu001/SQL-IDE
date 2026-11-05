@@ -208,6 +208,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <!-- Phase 8: unit tests never touch real servers (in-memory SQLite sandbox / mock metadata) -->
+                    <systemPropertyVariables>
+                        <sqlide.backend>mock</sqlide.backend>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>

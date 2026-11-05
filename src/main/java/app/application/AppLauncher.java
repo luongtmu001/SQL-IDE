@@ -61,6 +61,8 @@ public class AppLauncher extends Application {
             app.framework.lifecycle.DesktopLifecycleManager.getInstance().initiateShutdown();
             try {
                 app.framework.connection.ConnectionSessionManager.getInstance().disconnect();
+                app.framework.session.TabSessionManager.getInstance().closeAll();
+                app.framework.metadata.DesktopMetadataService.getInstance().closeAllConnections();
             } catch (Throwable ignored) {
                 // Best effort: never block shutdown on connection cleanup.
             }

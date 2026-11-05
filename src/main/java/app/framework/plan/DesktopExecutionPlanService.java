@@ -55,6 +55,19 @@ public class DesktopExecutionPlanService {
             String planType, // "estimated" or "actual"
             PlanCallback callback
     ) {
+        getExecutionPlanAsync(null, connectionName, database, schema, sql, planType, callback);
+    }
+
+    /** Phase 8: plan on the tab's own session; an actual plan runs the statement, so read-only rules apply. */
+    public void getExecutionPlanAsync(
+            String tabId,
+            String connectionName,
+            String database,
+            String schema,
+            String sql,
+            String planType,
+            PlanCallback callback
+    ) {
         String cleanSql = (sql != null ? sql.trim() : "");
         if (cleanSql.isEmpty()) {
             if (callback != null) {
@@ -69,11 +82,25 @@ public class DesktopExecutionPlanService {
             try {
                 // Determine connection & dialect
                 app.framework.connection.ConnectionSessionManager sessionMgr = app.framework.connection.ConnectionSessionManager.getInstance();
-                // Phase 7 safety: in the mock prototype never send a plan request (actual plans execute
-                // the statement) to a real server; the mock plan below is used instead (Gate D).
-                com.lltool.infrastructure.database.api.DatabaseConnection activeConn =
-                        app.framework.metadata.MockMetadataProvider.isEnabled() ? null : sessionMgr.getActiveConnection();
-                var profile = sessionMgr.getActiveProfile();
+                com.lltool.infrastructure.database.api.DatabaseConnection activeConn = null;
+                com.lltool.core.application.connection.dto.ConnectionProfileDto profile = null;
+                if (app.framework.backend.BackendFlags.real(app.framework.backend.BackendFlags.Area.PLAN)) {
+                    profile = app.framework.session.TabSessionManager.profileByName(connectionName);
+                    String key = tabId != null ? tabId : "default";
+                    var tabs = app.framework.session.TabSessionManager.getInstance();
+                    var opened = tabs.ensureConnected(key, profile, database);
+                    if (opened.isFailure()) {
+                        throw new IllegalStateException(opened.getError().map(er -> er.message()).orElse("Không kết nối được."));
+                    }
+                    var session = tabs.get(key);
+                    if ("actual".equals(type)) {
+                        var decision = app.framework.query.SqlStatementClassifier.check(sql, session.readOnly(), session.environment(), false);
+                        if (!decision.allowed()) {
+                            throw new IllegalStateException("Actual plan chạy câu lệnh thật. " + decision.message());
+                        }
+                    }
+                    activeConn = opened.getDataOrThrow();
+                }
                 String dialect = "sqlserver";
 
                 if (profile != null && profile.databaseType() != null) {

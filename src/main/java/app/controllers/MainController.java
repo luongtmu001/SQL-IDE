@@ -222,11 +222,28 @@ public class MainController implements Initializable {
 
     // ------------------------------------------------------------------ status bar (SCR-MAIN-005)
 
+    /** Status bar + tab headers follow the active tab's session (Phase 8 / D1). */
+    private void refreshActiveTabSession() {
+        if (statusBarController == null) return;
+        var tab = editorController != null ? editorController.getCurrentEditorTab() : null;
+        var session = tab != null ? app.framework.session.TabSessionManager.getInstance().get(tab.getDocumentId()) : null;
+        boolean connected = session != null && session.state() == app.framework.session.TabSession.State.CONNECTED;
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.CONNECTIONS)) {
+            String name = statusBarController.getConnectionName();
+            String id = name != null ? connectionIds.get(name) : null;
+            connected = id != null && app.services.ExplorerConnectionState.getInstance().get(id)
+                    == app.services.ExplorerConnectionState.Status.CONNECTED;
+        }
+        statusBarController.setConnected(connected);
+        statusBarController.setPid(connected && session.serverPid() != null ? String.valueOf(session.serverPid()) : null);
+        if (editorController != null) editorController.refreshTabDecorations();
+    }
+
     private void setupStatusBar() {
         if (statusBarController == null) return;
         statusBarController.setConnectionMetaResolver(name -> new StatusBarController.ConnectionMeta(
                 connectionIds.getOrDefault(name, name),
-                Boolean.TRUE.equals(connectionReadOnly.get(name)),
+                app.framework.backend.BackendFlags.readOnlyAll() || Boolean.TRUE.equals(connectionReadOnly.get(name)),
                 connectionEnvironments.get(name)));
         statusBarController.setOnManageConnections(this::handleManageConnections);
         statusBarController.setOnShowProblems(() -> {
@@ -244,16 +261,14 @@ public class MainController implements Initializable {
         statusBarController.setOnOpenSettings(this::handleOpenSettings);
         statusBarController.setOnZoomChanged(pct -> applyEditorZoom());
 
-        // Connection state: a tab counts as connected when the live session is its connection.
-        var sessions = app.framework.connection.ConnectionSessionManager.getInstance();
-        Runnable refreshConnected = () -> {
-            String current = statusBarController.getConnectionName();
-            var active = sessions.getActiveProfile();
-            statusBarController.setConnected(current != null && active != null
-                    && current.equals(active.name()) && sessions.isConnected());
-        };
-        sessions.activeProfileProperty().addListener((o, a, b) -> Platform.runLater(refreshConnected));
-        sessions.activeConnectionProperty().addListener((o, a, b) -> Platform.runLater(refreshConnected));
+        // Phase 8 / D1: the status bar shows the ACTIVE TAB's own session (state, server PID).
+        Runnable refreshConnected = this::refreshActiveTabSession;
+        app.framework.session.TabSessionManager.getInstance().revisionProperty()
+                .addListener((o, a, b) -> refreshConnected.run());
+        if (editorController != null) {
+            editorController.getPrimaryTabPane().getSelectionModel().selectedItemProperty()
+                    .addListener((o, a, b) -> refreshConnected.run());
+        }
         GlobalDesktopState.getInstance().activeConnectionProperty()
                 .addListener((o, a, b) -> Platform.runLater(refreshConnected));
 
@@ -329,10 +344,7 @@ public class MainController implements Initializable {
             app.ui.editor.SqlEditorTab.setBannerActions(new app.ui.editor.SqlEditorTab.BannerActions() {
                 @Override
                 public void connect(app.ui.editor.SqlEditorTab tab) {
-                    String name = tab.getConnectionName() != null ? tab.getConnectionName()
-                            : (connectionComboBox != null ? connectionComboBox.getValue() : null);
-                    String id = name != null ? connectionIds.get(name) : null;
-                    if (id != null && sidebarController != null) sidebarController.openConnectionById(id);
+                    connectTab(tab);
                 }
 
                 @Override
@@ -384,6 +396,62 @@ public class MainController implements Initializable {
         }
     }
 
+    /**
+     * Phase 8 / D1: opens the tab's own session (banner "Kết nối"). Asks for the password first when
+     * the profile needs it (DLG-002), then connects in the background; errors go to a toast.
+     */
+    public void connectTab(app.ui.editor.SqlEditorTab tab) {
+        if (tab == null) return;
+        String name = tab.getConnectionName() != null ? tab.getConnectionName()
+                : (connectionComboBox != null ? connectionComboBox.getValue() : null);
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.CONNECTIONS)) {
+            String id = name != null ? connectionIds.get(name) : null;
+            if (id != null && sidebarController != null) sidebarController.openConnectionById(id);
+            return;
+        }
+        var profile = app.framework.session.TabSessionManager.profileByName(name);
+        if (profile == null) {
+            app.services.NotificationService.getInstance().showWarning("Kết nối", "Tab chưa chọn kết nối.");
+            return;
+        }
+        if (tab.getConnectionName() == null) tab.setConnectionName(profile.name());
+        var policy = app.services.PasswordPolicyService.getInstance();
+        if (policy.needsPrompt(profile)) {
+            String target = (profile.username() != null ? profile.username() + " @ " : "")
+                    + (profile.host() != null ? profile.host() : "") + (profile.port() > 0 ? ":" + profile.port() : "");
+            var answer = app.ui.dialogs.PasswordPromptDialog.show(ownerWindow(), profile.name(), target, policy.isExpired(profile.id()));
+            if (answer.isEmpty()) return;
+            String err = policy.applyPrompt(profile, answer.get().password(), answer.get().save());
+            if (err != null) app.services.NotificationService.getInstance().showWarning("Mật khẩu", err);
+        }
+        String db = tab.getDatabaseName() != null ? tab.getDatabaseName() : profile.databaseName();
+        app.framework.session.TabSessionManager.getInstance().connectAsync(tab.getDocumentId(), profile, db, res -> {
+            if (res.isFailure()) {
+                app.services.NotificationService.getInstance().showError("Không kết nối được " + profile.name(),
+                        res.getError().map(e -> e.message()).orElse("Lỗi không xác định"));
+            } else if (statusBarController != null) {
+                statusBarController.setStatus("Tab đã kết nối " + profile.name() + (db != null ? " · " + db : ""), "online");
+            }
+        });
+    }
+
+    /** DLG-002 before a run opens the tab's session; false = the user cancelled. */
+    private boolean ensurePasswordForRun(String tabId, String connectionName) {
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.QUERY)) return true;
+        var session = app.framework.session.TabSessionManager.getInstance().get(tabId);
+        if (session != null && session.state() == app.framework.session.TabSession.State.CONNECTED) return true;
+        var profile = app.framework.session.TabSessionManager.profileByName(connectionName);
+        var policy = app.services.PasswordPolicyService.getInstance();
+        if (profile == null || !policy.needsPrompt(profile)) return true;
+        String target = (profile.username() != null ? profile.username() + " @ " : "")
+                + (profile.host() != null ? profile.host() : "") + (profile.port() > 0 ? ":" + profile.port() : "");
+        var answer = app.ui.dialogs.PasswordPromptDialog.show(ownerWindow(), profile.name(), target, policy.isExpired(profile.id()));
+        if (answer.isEmpty()) return false;
+        String err = policy.applyPrompt(profile, answer.get().password(), answer.get().save());
+        if (err != null) app.services.NotificationService.getInstance().showWarning("Mật khẩu", err);
+        return true;
+    }
+
     public void syncConnectionToToolbar(String connectionName) {
         if (connectionComboBox == null || connectionName == null || connectionName.isBlank()) return;
         if (!connectionComboBox.getItems().contains(connectionName)) {
@@ -413,7 +481,12 @@ public class MainController implements Initializable {
                     GlobalDesktopState.getInstance().setActiveConnection(selected);
                     if (editorController != null) {
                         var tab = editorController.getCurrentEditorTab();
-                        if (tab != null) tab.setConnectionName(selected);
+                        if (tab != null && !selected.equals(tab.getConnectionName())) {
+                            tab.setConnectionName(selected);
+                            // Phase 8 / D1: the tab switched server: its old session is closed,
+                            // the new one opens on "Kết nối" or on the next run
+                            app.framework.session.TabSessionManager.getInstance().disconnect(tab.getDocumentId());
+                        }
                         editorController.refreshTabDecorations();
                     }
                     if (statusBarController != null) {
@@ -1169,24 +1242,38 @@ public class MainController implements Initializable {
             app.services.LayoutService.getInstance().setResultsVisible(true);
         }
 
-        String activeConn = connectionComboBox != null && connectionComboBox.getValue() != null ?
-            connectionComboBox.getValue() : "PostgreSQL - dev-local";
-        String activeSchema = schemaComboBox != null && schemaComboBox.getValue() != null ?
-            schemaComboBox.getValue() : "public";
+        // Phase 8: no hard-coded fallback connection / schema; a tab without connection gets a clear error
+        String activeConn = connectionComboBox != null ? connectionComboBox.getValue() : null;
+        String activeSchema = schemaComboBox != null ? schemaComboBox.getValue() : null;
 
         app.ui.editor.SqlEditorTab activeTab = editorController != null ? editorController.getCurrentEditorTab() : null;
         String tabConn = activeTab != null && activeTab.getConnectionName() != null ? activeTab.getConnectionName() : activeConn;
         String tabDb = activeTab != null && activeTab.getDatabaseName() != null ? activeTab.getDatabaseName() : null;
         String tabSchema = activeTab != null && activeTab.getSchemaName() != null ? activeTab.getSchemaName() : activeSchema;
 
-        // SCR-DLG-007b: DML / DDL on a PROD connection
+        // Phase 8: read-only first (no point confirming PROD for a statement that is blocked anyway),
+        // then SCR-DLG-007b for writes on PRODUCTION. The execution service checks again.
         String env = connectionEnvironments.get(tabConn);
-        String changeType = changeStatementType(sql);
-        if (env != null && env.trim().equalsIgnoreCase("PROD") && changeType != null) {
+        boolean readOnly = app.framework.backend.BackendFlags.readOnlyAll() || Boolean.TRUE.equals(connectionReadOnly.get(tabConn));
+        var decision = app.framework.query.SqlStatementClassifier.check(sql, readOnly, env, false);
+        boolean prodConfirmed = false;
+        if (!decision.allowed() && "ERR_READ_ONLY".equals(decision.errorCode())) {
+            app.services.NotificationService.getInstance().showWarning("Chỉ đọc", decision.message());
+            if (resultsController != null) {
+                resultsController.addMessage(app.models.ConsoleMessage.Level.WARNING, decision.message(), "-");
+                resultsController.selectMessagesTab();
+            }
+            if (statusBarController != null) statusBarController.setStatus("Đã chặn: kết nối chỉ đọc", "warning");
+            return;
+        }
+        if (decision.needsConfirmation()) {
+            String changeType = changeStatementType(sql);
+            if (changeType == null) changeType = String.join(", ", decision.classification().actions());
             if (!app.ui.dialogs.ProductionSafetyDialog.show(ownerWindow(), changeType, tabConn, tabDb)) {
                 if (statusBarController != null) statusBarController.setStatus("Đã hủy chạy trên PRODUCTION", "warning");
                 return;
             }
+            prodConfirmed = true;
         }
 
         if (resultsController != null) resultsController.setExecutionContext(tabConn, tabDb, tabSchema);
@@ -1194,7 +1281,12 @@ public class MainController implements Initializable {
         // UI state -> running
         setExecutionRunningState(true);
 
-        app.framework.query.DesktopQueryExecutionService.getInstance().execute(sql, tabConn, tabDb, tabSchema, new app.framework.query.DesktopQueryExecutionService.QueryCallback() {
+        String tabId = activeTab != null ? activeTab.getDocumentId() : null;
+        if (!ensurePasswordForRun(tabId, tabConn)) {
+            setExecutionRunningState(false);
+            return;
+        }
+        app.framework.query.DesktopQueryExecutionService.getInstance().execute(tabId, sql, tabConn, tabDb, tabSchema, prodConfirmed, new app.framework.query.DesktopQueryExecutionService.QueryCallback() {
             @Override
             public void onStart(String querySql, String connName) {
                 if (statusBarController != null) {
@@ -1321,7 +1413,7 @@ public class MainController implements Initializable {
         }
 
         app.framework.plan.DesktopExecutionPlanService.getInstance().getExecutionPlanAsync(
-                tabConn, tabDb, tabSchema, sql, planType, new app.framework.plan.DesktopExecutionPlanService.PlanCallback() {
+                activeTab != null ? activeTab.getDocumentId() : null, tabConn, tabDb, tabSchema, sql, planType, new app.framework.plan.DesktopExecutionPlanService.PlanCallback() {
                     @Override
                     public void onStart(String type, String dialect) {
                         if (resultsController != null) {

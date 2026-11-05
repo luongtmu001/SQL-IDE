@@ -614,7 +614,7 @@ public class ConnectionManagerController implements Initializable {
         show(testProgressIndicator, true);
         setStatus("Đang kiểm tra kết nối…", null);
 
-        if (MockMetadataProvider.isEnabled()) {
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.CONNECTIONS)) {
             long start = System.currentTimeMillis();
             MockMetadataProvider.deliver(() -> List.of(Boolean.TRUE), r -> {
                 testButton.setDisable(false);
@@ -665,7 +665,7 @@ public class ConnectionManagerController implements Initializable {
         ConnectionProfileDto draft = buildDraftProfile();
         fetchDbsButton.setDisable(true);
         setStatus("Đang tải danh sách database…", null);
-        if (MockMetadataProvider.isEnabled()) {
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.CONNECTIONS)) {
             MockMetadataProvider.deliver(() -> MockMetadataProvider.catalogs(draft), dbs -> {
                 fetchDbsButton.setDisable(false);
                 fillCombo(databaseComboBox, dbs);
@@ -697,12 +697,32 @@ public class ConnectionManagerController implements Initializable {
         ConnectionProfileDto draft = buildDraftProfile();
         fetchSchemasButton.setDisable(true);
         setStatus("Đang tải danh sách schema…", null);
-        // No backend API for schemas of an unsaved draft yet: mock data in the prototype (Gate D).
-        MockMetadataProvider.deliver(() -> MockMetadataProvider.schemas(draft, databaseComboBox.getValue()), schemas -> {
-            fetchSchemasButton.setDisable(false);
-            fillCombo(schemaComboBox, schemas);
-            setStatus("✓ " + schemas.size() + " schema (dữ liệu mẫu)", "success");
-        });
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.CONNECTIONS)) {
+            MockMetadataProvider.deliver(() -> MockMetadataProvider.schemas(draft, databaseComboBox.getValue()), schemas -> {
+                fetchSchemasButton.setDisable(false);
+                fillCombo(schemaComboBox, schemas);
+                setStatus("✓ " + schemas.size() + " schema (dữ liệu mẫu)", "success");
+            });
+            return;
+        }
+        String pass = passwordField.getText();
+        String db = databaseComboBox.getValue();
+        AsyncTaskManager.getInstance().executeAsync(
+                () -> ConnectionSessionManager.getInstance().fetchSchemas(draft, db, pass),
+                result -> {
+                    fetchSchemasButton.setDisable(false);
+                    if (result.isSuccess()) {
+                        List<String> schemas = result.getDataOrThrow();
+                        fillCombo(schemaComboBox, schemas);
+                        setStatus("✓ " + schemas.size() + " schema", "success");
+                    } else {
+                        setStatus("✕ " + result.getError().map(e -> e.message()).orElse("Không lấy được danh sách schema"), "error");
+                    }
+                },
+                error -> {
+                    fetchSchemasButton.setDisable(false);
+                    setStatus("✕ " + error.getMessage(), "error");
+                });
     }
 
     private static void fillCombo(ComboBox<String> combo, List<String> values) {

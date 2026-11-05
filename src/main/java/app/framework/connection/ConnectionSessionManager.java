@@ -87,6 +87,10 @@ public class ConnectionSessionManager {
         disconnect();
 
         DatabaseType type = mapDatabaseType(profile.databaseType());
+        if (type == null) {
+            return Result.failure(AppError.validation(AppError.VALIDATION_FAILED,
+                    "Loại cơ sở dữ liệu \"" + profile.databaseType() + "\" chưa được hỗ trợ."));
+        }
         DatabaseProviderRegistry registry = DesktopBootstrap.getInstance().getProviderRegistry();
         Optional<DatabaseProvider> optProvider = registry.getProvider(type);
         if (optProvider.isEmpty()) {
@@ -132,6 +136,10 @@ public class ConnectionSessionManager {
     public Result<List<String>> fetchDatabases(ConnectionProfileDto profile, String explicitPassword) {
         Objects.requireNonNull(profile, "profile cannot be null");
         DatabaseType type = mapDatabaseType(profile.databaseType());
+        if (type == null) {
+            return Result.failure(AppError.validation(AppError.VALIDATION_FAILED,
+                    "Loại cơ sở dữ liệu \"" + profile.databaseType() + "\" chưa được hỗ trợ."));
+        }
 
         if (type == DatabaseType.SQLITE) {
             String db = profile.sqliteFilePath() != null && !profile.sqliteFilePath().isBlank()
@@ -195,14 +203,70 @@ public class ConnectionSessionManager {
         }
     }
 
+    /** Schemas of {@code database} for a (possibly unsaved) profile — Connection Manager "↻ schema". */
+    public Result<List<String>> fetchSchemas(ConnectionProfileDto profile, String database, String explicitPassword) {
+        DatabaseType type = mapDatabaseType(profile.databaseType());
+        if (type == DatabaseType.SQLITE) return Result.success(List.of("main"));
+        Result<DatabaseConnection> res = openSession(profile, database, resolvePassword(profile, explicitPassword));
+        if (res.isFailure()) return Result.failure(res.getError().get());
+        try (DatabaseConnection conn = res.getDataOrThrow()) {
+            var provider = DesktopBootstrap.getInstance().getProviderRegistry().getProvider(type);
+            if (provider.isEmpty()) return Result.success(List.of());
+            String catalog = database != null && !database.isBlank() ? database : profile.databaseName();
+            return provider.get().getSchemas(conn, catalog);
+        } catch (Exception e) {
+            return Result.failure(AppError.system("Failed to fetch schemas: " + e.getMessage(), e));
+        }
+    }
+
     private String resolvePassword(ConnectionProfileDto profile, String explicitPassword) {
-        if (explicitPassword != null && !explicitPassword.isBlank()) {
-            return explicitPassword;
+        // Phase 8: also uses the in-memory DLG-002 password (was ignored before)
+        return app.framework.session.CredentialResolver.resolve(profile, explicitPassword);
+    }
+
+    /**
+     * Opens a new connection for {@code profile} on {@code database} (Phase 8). Read-only is applied
+     * when the profile is read-only or every connection is (BackendFlags.readOnlyAll()).
+     */
+    public Result<DatabaseConnection> openSession(ConnectionProfileDto profile, String database, String password) {
+        Objects.requireNonNull(profile, "profile cannot be null");
+        DatabaseType type = mapDatabaseType(profile.databaseType());
+        if (type == null) {
+            return Result.failure(AppError.validation(AppError.VALIDATION_FAILED,
+                    "Loại cơ sở dữ liệu \"" + profile.databaseType() + "\" chưa được hỗ trợ (SQL Server, PostgreSQL, SQLite)."));
         }
-        if (profile.credentialRef() != null && !profile.credentialRef().isBlank()) {
-            return DesktopBootstrap.getInstance().getCredentialVault().resolveSecret(profile.credentialRef());
+        Optional<DatabaseProvider> optProvider = DesktopBootstrap.getInstance().getProviderRegistry().getProvider(type);
+        if (optProvider.isEmpty()) {
+            return Result.failure(AppError.validation(AppError.VALIDATION_FAILED, "No database provider found for " + type));
         }
-        return "";
+        String db = database != null && !database.isBlank() ? database : profile.databaseName();
+        Result<DatabaseConnection> res = optProvider.get().connect(toConfig(profile, type, db), password);
+        if (res.isSuccess()) {
+            boolean readOnly = app.framework.backend.BackendFlags.readOnlyAll() || profile.readOnly();
+            if (readOnly) applyReadOnly(res.getDataOrThrow(), type);
+        }
+        return res;
+    }
+
+    /** JDBC read-only hint + PostgreSQL READ ONLY session (the server then refuses any write). */
+    public static void applyReadOnly(DatabaseConnection conn, DatabaseType type) {
+        try {
+            Connection raw = conn.getRawJdbcConnection();
+            if (type != DatabaseType.SQLITE) {
+                try {
+                    raw.setReadOnly(true);
+                } catch (Exception e) {
+                    log.debug("setReadOnly not supported: {}", e.getMessage());
+                }
+            }
+            if (type == DatabaseType.POSTGRESQL) {
+                try (Statement st = raw.createStatement()) {
+                    st.execute("SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY");
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not make the session read-only: {}", e.getMessage());
+        }
     }
 
     private DatabaseConnectionConfig toConfig(ConnectionProfileDto profile, DatabaseType type, String databaseTarget) {
@@ -240,6 +304,8 @@ public class ConnectionSessionManager {
         String s = raw.trim().toUpperCase().replace(" ", "").replace("-", "").replace("_", "");
         if (s.contains("SQLITE")) return DatabaseType.SQLITE;
         if (s.contains("SQLSERVER") || s.contains("MSSQL")) return DatabaseType.SQLSERVER;
-        return DatabaseType.POSTGRESQL;
+        if (s.contains("POSTGRE") || s.equals("PG")) return DatabaseType.POSTGRESQL;
+        // Phase 8: other engines (MySQL, Oracle…) have no provider; they used to fall through to PostgreSQL
+        return null;
     }
 }

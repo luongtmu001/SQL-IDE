@@ -193,6 +193,8 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
     }
 
     private void ensureDefaultConnections() {
+        // sample profiles are prototype data only (Phase 8: never create profiles for real servers)
+        if (app.framework.backend.BackendFlags.real(app.framework.backend.BackendFlags.Area.CONNECTIONS)) return;
         try {
             var api = DesktopBootstrap.getInstance().getConnectionApi();
             var res = api.getConnections();
@@ -559,7 +561,7 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
                         : new TableMetadata(node.getName(), node.getSchema(), node.getCatalog(), "TABLE", 0L, null);
                 String sql = SqlScriptGenerator.generateSelect(dialect, tblMeta, null);
                 String conn = node.getConnectionProfile() != null ? node.getConnectionProfile().name() : null;
-                if (MockMetadataProvider.isEnabled()) {
+                if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.QUERY)) {
                     mc.openQueryConsole(node.getName() + ".sql", sql, conn, node.getCatalog(), node.getSchema());
                 } else {
                     mc.executeQueryDirectly(node.getName() + ".sql", sql, conn, node.getCatalog(), node.getSchema());

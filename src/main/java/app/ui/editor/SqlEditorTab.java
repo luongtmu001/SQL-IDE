@@ -287,6 +287,21 @@ public class SqlEditorTab extends Tab {
         return new FontIcon("fth-file-text");
     }
 
+    private javafx.scene.control.Tooltip sessionTip;
+
+    /** Phase 8 / D1: tooltip of the status dot with this tab's own session (state, database, PID). */
+    public void setSessionTooltip(String text) {
+        if (text == null) {
+            if (sessionTip != null) javafx.scene.control.Tooltip.uninstall(connectionDot, sessionTip);
+            return;
+        }
+        if (sessionTip == null) {
+            sessionTip = new javafx.scene.control.Tooltip();
+            javafx.scene.control.Tooltip.install(connectionDot, sessionTip);
+        }
+        sessionTip.setText(text);
+    }
+
     /** Status dot after the title: connection colour when connected, grey when not; null hides it. */
     public void setConnectionColor(String hex) {
         if (hex == null) {
