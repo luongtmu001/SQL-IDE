@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-001",
+  "layout_type": "desktop",
+  "regions": [
+    {
+      "id": "REG-MAIN-001",
+      "name": "Workspace",
+      "parent_id": "SCR-SHELL-001",
+      "layout_role": "content",
+      "sizing": {
+        "width": "fill",
+        "height": "fill"
+      },
+      "children": [
+        "REG-MAIN-002",
+        "REG-MAIN-003",
+        "REG-MAIN-004"
+      ]
+    },
+    {
+      "id": "REG-MAIN-002",
+      "name": "Object Explorer",
+      "position": "left",
+      "sizing": {
+        "width": "260px default",
+        "min_width": "180px",
+        "max_width": "50%",
+        "collapsed_width": "46px",
+        "resizable": true,
+        "resizable_with_parent": false
+      },
+      "evidence": [
+        "EVD-M1-002"
+      ]
+    },
+    {
+      "id": "REG-MAIN-003",
+      "name": "Editor",
+      "position": "right-top",
+      "sizing": {
+        "height": "65%",
+        "min_height": "120px"
+      }
+    },
+    {
+      "id": "REG-MAIN-004",
+      "name": "Results",
+      "position": "right-bottom",
+      "sizing": {
+        "height": "35%",
+        "min_height": "120px"
+      },
+      "visibility_rules": [
+        "Ctrl+R toggle",
+        "Ctrl+Alt+R maximize",
+        "hidden when tab disconnected (SCR-MAIN-003)"
+      ]
+    },
+    {
+      "id": "REG-MAIN-005",
+      "name": "Sashes",
+      "sizing": {
+        "hit_area": "4px",
+        "visible": "1px border-subtle",
+        "hover": "2px accent"
+      },
+      "evidence": [
+        "EVD-M1-004"
+      ]
+    }
+  ]
+}

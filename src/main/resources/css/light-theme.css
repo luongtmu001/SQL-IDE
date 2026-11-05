@@ -1,0 +1,79 @@
+/* Light Theme specific overrides and enhancements */
+
+/* .main-window background: layout.css (gap colour between cards) */
+
+/* .sidebar-panel / .mini-sidebar-strip: styled in layout.css (cards, SCR-MAIN-001) */
+
+.editor-content-placeholder, .results-content-placeholder, .messages-placeholder {
+    -fx-background-color: #ffffff;
+}
+
+/* Light Theme Icon Refinements */
+.icon-connection {
+    -fx-icon-color: #26a269;
+}
+
+.icon-database {
+    -fx-icon-color: #1a5fb4;
+}
+
+.icon-schema {
+    -fx-icon-color: #3584e4;
+}
+
+.icon-cat-tables {
+    -fx-icon-color: #1a5fb4;
+}
+
+.icon-table {
+    -fx-icon-color: #1c71d8;
+}
+
+.icon-cat-views {
+    -fx-icon-color: #613583;
+}
+
+.icon-view {
+    -fx-icon-color: #813d9c;
+}
+
+.icon-cat-funcs {
+    -fx-icon-color: #26a269;
+}
+
+.icon-func {
+    -fx-icon-color: #2ec27e;
+}
+
+.icon-cat-procs {
+    -fx-icon-color: #c64600;
+}
+
+.icon-proc {
+    -fx-icon-color: #e66100;
+}
+
+.icon-pk {
+    -fx-icon-color: #c67800;
+}
+
+.icon-fk {
+    -fx-icon-color: #1a5fb4;
+}
+
+.icon-col-text {
+    -fx-icon-color: #1c71d8;
+}
+
+.icon-col-num {
+    -fx-icon-color: #26a269;
+}
+
+.icon-col-date {
+    -fx-icon-color: #813d9c;
+}
+
+/* Results Loading Overlay in Light Mode */
+.results-loading-overlay {
+    -fx-background-color: rgba(255, 255, 255, 0.75);
+}

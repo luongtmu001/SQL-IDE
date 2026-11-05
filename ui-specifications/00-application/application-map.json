@@ -1,0 +1,723 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "java-desktop-ui-designer / workflow 01",
+  "generatedAt": "2026-11-04",
+  "application": {
+    "name": "luoBTool IDE",
+    "releaseName": "LLTool IDE",
+    "version": "1.3.1",
+    "sourceRoot": "D:\\Luong\\NB_Personal\\Python\\IDE-SQL-Lite_New_Pyweb_Claude",
+    "entryPoint": "run.py -> main.main()",
+    "runtime": {
+      "python": "3.14",
+      "gui": "pywebview edgechromium (WebView2)",
+      "platform": "Windows 10/11"
+    },
+    "evidenceBasis": "code_verified only; application not run"
+  },
+  "windows": [
+    {
+      "id": "WIN-SPLASH",
+      "title": "luoBTool IDE",
+      "template": "templates/splash.html",
+      "bridge": null,
+      "instancing": "single",
+      "size": {
+        "width": 800,
+        "height": 500,
+        "minWidth": 500,
+        "minHeight": 350
+      },
+      "frameless": true,
+      "resizable": false,
+      "onTop": true,
+      "createdIn": "main.py:207",
+      "openedBy": [
+        {
+          "trigger": "application startup",
+          "evidence": "code_verified"
+        }
+      ],
+      "closedBy": "main window shown (min 2.0s + notify_app_ready, fallback 10s)"
+    },
+    {
+      "id": "WIN-MAIN",
+      "title": "luoBTool IDE",
+      "template": "templates/index.html",
+      "bridge": "MainApi",
+      "instancing": "single",
+      "size": {
+        "width": 1400,
+        "height": 900,
+        "minWidth": 900,
+        "minHeight": 600
+      },
+      "frameless": false,
+      "resizable": true,
+      "createdIn": "main.py:222",
+      "openedBy": [
+        {
+          "trigger": "application startup (hidden until ready)",
+          "evidence": "code_verified"
+        }
+      ],
+      "onClose": "connection_manager.close_all_sessions()"
+    },
+    {
+      "id": "WIN-SETTINGS",
+      "title": "Cài đặt (Settings) — luoBTool IDE",
+      "template": "templates/settings_window.html",
+      "bridge": "SettingsSubwindowApi",
+      "instancing": "singleton",
+      "size": {
+        "width": 1050,
+        "height": 720,
+        "minWidth": 800,
+        "minHeight": 520
+      },
+      "createdIn": "app/desktop/windows.py:1178 open_settings_window",
+      "bridgeEntry": "SettingsApiMixin.open_settings_window",
+      "openedBy": [
+        {
+          "trigger": "#menu-settings",
+          "handler": "static/js/settings.js openSettings()",
+          "evidence": "code_verified"
+        },
+        {
+          "trigger": "#ide-settings-btn",
+          "handler": "static/js/settings.js",
+          "evidence": "code_verified"
+        }
+      ],
+      "fallback": "#settingsModal (in-page modal) when IPC unavailable"
+    },
+    {
+      "id": "WIN-ABOUT",
+      "title": "Thông tin phần mềm — luoBTool IDE",
+      "template": "templates/about_window.html",
+      "bridge": "AboutSubwindowApi",
+      "instancing": "singleton",
+      "size": {
+        "width": 580,
+        "height": 460,
+        "minWidth": 480,
+        "minHeight": 380
+      },
+      "createdIn": "app/desktop/windows.py:1247 open_about_window",
+      "bridgeEntry": "SettingsApiMixin.open_about_window",
+      "openedBy": [
+        {
+          "trigger": "#ide-menu-about",
+          "handler": "templates/index.html window.openAboutWindow",
+          "evidence": "code_verified"
+        }
+      ],
+      "fallback": "#ide-about-modal"
+    },
+    {
+      "id": "WIN-UPDATE",
+      "title": "Kiểm tra Cập nhật — luoBTool IDE",
+      "template": "templates/update_window.html",
+      "bridge": "UpdateSubwindowApi",
+      "instancing": "singleton",
+      "size": {
+        "width": 620,
+        "height": 500,
+        "minWidth": 500,
+        "minHeight": 420
+      },
+      "createdIn": "app/desktop/windows.py:1331 open_update_window",
+      "bridgeEntry": "SettingsApiMixin.open_update_window",
+      "openedBy": [
+        {
+          "trigger": "#ide-menu-check-updates",
+          "handler": "templates/index.html window.openUpdateWindow",
+          "evidence": "code_verified"
+        },
+        {
+          "trigger": "#ide-update-btn (visible after background check finds update)",
+          "evidence": "code_verified"
+        }
+      ],
+      "fallback": "#ide-update-modal"
+    },
+    {
+      "id": "WIN-PROFILER",
+      "title": "SQL Trace Profiler — luoBTool IDE",
+      "template": "templates/profiler_window.html",
+      "bridge": "ProfilerSubwindowApi",
+      "instancing": "multiple",
+      "size": {
+        "width": 1320,
+        "height": 840,
+        "minWidth": 920,
+        "minHeight": 560
+      },
+      "createdIn": "app/desktop/windows.py:1415 open_profiler_window",
+      "bridgeEntry": "SettingsApiMixin.open_profiler_window(conn_id, db_type)",
+      "openedBy": [
+        {
+          "trigger": "Explorer context menu action 'open-profiler' (connection node)",
+          "handler": "static/js/context-menu.js:911",
+          "evidence": "code_verified"
+        },
+        {
+          "trigger": "#menu-tools-profiler / #ide-profiler-btn",
+          "handler": "templates/index.html initToolMenuListeners",
+          "evidence": "code_verified",
+          "note": "element IDs not present in index.html → listener never binds"
+        }
+      ]
+    },
+    {
+      "id": "WIN-EVENT-LISTENER",
+      "title": "PostgreSQL Event Listener — luoBTool IDE",
+      "template": "templates/event_listener_window.html",
+      "bridge": "EventListenerSubwindowApi",
+      "instancing": "multiple",
+      "size": {
+        "width": 1340,
+        "height": 860,
+        "minWidth": 920,
+        "minHeight": 580
+      },
+      "createdIn": "app/desktop/windows.py:1483 open_event_listener_window",
+      "bridgeEntry": "SettingsApiMixin.open_event_listener_window(conn_id, db_type)",
+      "openedBy": [],
+      "status_note": "No caller found in static/ or templates/ → unreachable from UI (unknown whether intentionally hidden)"
+    },
+    {
+      "id": "WIN-QUERY-HISTORY",
+      "title": "Query History — luoBTool IDE",
+      "template": "templates/query_history_window.html",
+      "bridge": "QueryHistorySubwindowApi",
+      "instancing": "singleton",
+      "size": {
+        "width": 1280,
+        "height": 820,
+        "minWidth": 900,
+        "minHeight": 560
+      },
+      "createdIn": "app/desktop/windows.py:1548 open_query_history_window",
+      "bridgeEntry": "HistoryApiMixin.open_query_history_window",
+      "openedBy": [
+        {
+          "trigger": "#ide-menu-query-history",
+          "handler": "static/js/app.js:81",
+          "evidence": "code_verified"
+        },
+        {
+          "trigger": "#ide-btn-history (action bar)",
+          "handler": "window.openQueryHistoryWindow (editor.js / app.js)",
+          "evidence": "inferred"
+        },
+        {
+          "trigger": "file-history sidebar",
+          "handler": "static/js/file-history-sidebar.js",
+          "evidence": "inferred"
+        }
+      ]
+    },
+    {
+      "id": "WIN-BRAVO",
+      "title": "{conn} - {db} - BRAVO Tool | BRAVO Tool — Layout XML Editor",
+      "template": "templates/bravo_form.html",
+      "bridge": "BravoApi (new instance, own session)",
+      "instancing": "multiple",
+      "size": {
+        "width": 1340,
+        "height": 860,
+        "minWidth": 960,
+        "minHeight": 600
+      },
+      "createdIn": "app/desktop/windows.py:1627 open_bravo_window",
+      "bridgeEntry": "MainApi.open_bravo_window",
+      "openedBy": [
+        {
+          "trigger": "#ide-bravo-launcher (navbar, shown when settings.addons.bravo_tool.enabled)",
+          "handler": "static/js/bravo/bravo-manager.js:88",
+          "evidence": "code_verified"
+        }
+      ]
+    },
+    {
+      "id": "WIN-ACTIVITY-MONITOR",
+      "title": "Giám sát phiên & Khóa chặn (Activity Monitor) — luoBTool IDE",
+      "template": "templates/activity_monitor_window.html",
+      "bridge": "ActivityMonitorSubwindowApi",
+      "instancing": "multiple",
+      "size": {
+        "width": 1320,
+        "height": 840,
+        "minWidth": 920,
+        "minHeight": 560
+      },
+      "createdIn": "app/desktop/windows.py:1753",
+      "bridgeEntry": "ActivityApiMixin.open_activity_monitor_window",
+      "openedBy": [
+        {
+          "trigger": "popOut() inside Activity Monitor tab",
+          "handler": "static/js/activity-monitor.js:803",
+          "evidence": "code_verified"
+        }
+      ],
+      "relatedSurface": "TAB-ACTIVITY-MONITOR"
+    },
+    {
+      "id": "WIN-SCHEMA-COMPARE",
+      "title": "So sánh Schema giữa 2 Database (Schema Compare) — luoBTool IDE",
+      "template": "templates/schema_compare_window.html",
+      "bridge": "SchemaCompareSubwindowApi",
+      "instancing": "multiple",
+      "size": {
+        "width": 1340,
+        "height": 860,
+        "minWidth": 960,
+        "minHeight": 600
+      },
+      "createdIn": "app/desktop/windows.py:1814",
+      "bridgeEntry": "SchemaCompareApiMixin.open_schema_compare_window",
+      "openedBy": [
+        {
+          "trigger": "#ide-menu-schema-compare",
+          "handler": "templates/index.html triggerSchemaCompare",
+          "evidence": "code_verified"
+        },
+        {
+          "trigger": "context menu 'open-schema-compare' only if tab opener missing",
+          "handler": "static/js/context-menu.js:931",
+          "evidence": "code_verified"
+        }
+      ],
+      "relatedSurface": "TAB-SCHEMA-COMPARE"
+    },
+    {
+      "id": "WIN-RESULT-COMPARATOR",
+      "title": "So sánh kết quả truy vấn (Result Comparator) — luoBTool IDE",
+      "template": "templates/result_comparator_window.html",
+      "bridge": "ResultComparatorSubwindowApi",
+      "instancing": "multiple",
+      "size": {
+        "width": 1380,
+        "height": 880,
+        "minWidth": 960,
+        "minHeight": 600
+      },
+      "createdIn": "app/desktop/windows.py:1936",
+      "bridgeEntry": "QueryApiMixin.open_result_comparator_window(payload)",
+      "openedBy": [
+        {
+          "trigger": "#ide-btn-compare-results / #ide-menu-compare-results → comparator modal → open window",
+          "handler": "static/js/result-comparator.js:1434,1512",
+          "evidence": "code_verified"
+        }
+      ]
+    },
+    {
+      "id": "WIN-GSHEETS-MANAGER",
+      "title": "Google Sheets Workspace — luoBTool IDE",
+      "template": "templates/google_sheets_window.html",
+      "bridge": "GoogleSheetsSubwindowApi",
+      "instancing": "singleton",
+      "size": {
+        "width": 1320,
+        "height": 840,
+        "minWidth": 960,
+        "minHeight": 600
+      },
+      "createdIn": "app/desktop/windows.py:2018",
+      "bridgeEntry": "GoogleSheetsApiMixin.gs_open_manager_window",
+      "openedBy": [
+        {
+          "trigger": "#ide-google-sheets-btn",
+          "handler": "templates/index.html:2723",
+          "evidence": "code_verified"
+        },
+        {
+          "trigger": "#ide-menu-google-sheets",
+          "handler": "templates/index.html:2733",
+          "evidence": "code_verified"
+        }
+      ]
+    },
+    {
+      "id": "WIN-GSHEET-COMPANION",
+      "title": "📊 {sheet title} — Google Sheets",
+      "template": "external URL (docs.google.com)",
+      "bridge": null,
+      "instancing": "one per sheet (focus if open)",
+      "size": "unknown",
+      "createdIn": "app/services/google_sheets/webview_host.py:107 open_sheet_window",
+      "bridgeEntry": "GoogleSheetsApiMixin.gs_open_sheet_window",
+      "openedBy": [
+        {
+          "trigger": "sheet open action in Google Sheets manager",
+          "handler": "static/js/google-sheets/tabs.js:50",
+          "evidence": "code_verified"
+        }
+      ],
+      "alternative": "gs_open_in_browser (system browser)"
+    },
+    {
+      "id": "WIN-SYNTAX-REFERENCE",
+      "title": "Tra cứu & Đối chiếu cú pháp (PostgreSQL & SQL Server) — luoBTool IDE",
+      "template": "templates/syntax_reference_window.html",
+      "bridge": "SyntaxReferenceSubwindowApi",
+      "instancing": "singleton",
+      "size": {
+        "width": 1260,
+        "height": 800,
+        "minWidth": 920,
+        "minHeight": 560
+      },
+      "createdIn": "app/desktop/windows.py:2186",
+      "bridgeEntry": "SyntaxCatalogApiMixin.open_syntax_reference_window",
+      "openedBy": [
+        {
+          "trigger": "#ide-btn-tab-syntax-reference",
+          "handler": "static/js/syntax-catalog.js:195",
+          "evidence": "code_verified"
+        },
+        {
+          "trigger": "#ide-btn-syntax-reference",
+          "handler": "static/js/syntax-catalog.js:205",
+          "evidence": "code_verified"
+        },
+        {
+          "trigger": "#ide-overflow-btn-syntax-reference",
+          "evidence": "code_verified"
+        },
+        {
+          "trigger": "editor (window.openSyntaxReferenceFromEditor)",
+          "evidence": "inferred"
+        }
+      ]
+    },
+    {
+      "id": "WIN-REPORT-GEN",
+      "title": "Sinh Layout Báo cáo Bravo từ Excel — luoBTool IDE",
+      "template": "templates/report_gen_window.html",
+      "bridge": "ReportGenSubwindowApi",
+      "instancing": "singleton",
+      "size": {
+        "width": 1280,
+        "height": 800,
+        "minWidth": 960,
+        "minHeight": 600
+      },
+      "createdIn": "app/desktop/windows.py:2434",
+      "bridgeEntry": "ReportGenApiMixin.open_report_gen_window",
+      "openedBy": [
+        {
+          "trigger": "#ide-menu-report-gen",
+          "handler": "templates/index.html:2811",
+          "evidence": "code_verified"
+        }
+      ]
+    }
+  ],
+  "mainWindowSurfaces": {
+    "regions": [
+      "navbar",
+      "explorer-sidebar",
+      "editor-pane/action-bar",
+      "editor-pane/tab-strip",
+      "editor-pane/editor-area",
+      "editor-pane/tab-views",
+      "editor-status-bar",
+      "result-panel",
+      "result-footer"
+    ],
+    "tabTypes": [
+      {
+        "id": "TAB-QUERY",
+        "tabType": "query",
+        "purpose": "SQL query editor (Monaco) + result panel",
+        "source": "static/js/tabs.js",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "TAB-DIFF",
+        "tabType": "diff",
+        "purpose": "Text/SQL diff (Monaco diff editor)",
+        "source": "static/js/tabs.js",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "TAB-TABLE-DESIGNER",
+        "tabType": "designer",
+        "purpose": "Table designer",
+        "source": "static/js/table-designer.js",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "TAB-DATA-EDITOR",
+        "tabType": "data-editor",
+        "purpose": "Table data editor",
+        "source": "static/js/table-data-editor.js",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "TAB-DEPENDENCY-GRAPH",
+        "tabType": "dependency-graph",
+        "purpose": "PostgreSQL dependency graph (D3)",
+        "source": "static/js/postgresql/dependency/dependency-controller.js",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "TAB-OBJECT-SEARCH",
+        "tabType": "object-search",
+        "purpose": "Object content search",
+        "source": "static/js/object-search/object-search-controller.js",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "TAB-SQL-VISUALIZER",
+        "tabType": "query-designer",
+        "purpose": "SQL query-flow visualiser / designer (D3)",
+        "source": "static/js/visualization/sql-visualizer.js",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "TAB-STRUCTURED-DATA",
+        "tabType": "structured-data",
+        "purpose": "JSON/XML structured data viewer in Monaco",
+        "source": "static/js/structured-data-viewer.js",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "TAB-ACTIVITY-MONITOR",
+        "tabType": "activity-monitor",
+        "purpose": "Sessions & blocking monitor",
+        "source": "static/js/activity-monitor.js",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "TAB-SCHEMA-COMPARE",
+        "tabType": "schema-compare",
+        "purpose": "Schema compare (in-tab)",
+        "source": "static/js/schema-compare.js",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "TAB-USER-PERMISSIONS",
+        "tabType": "user-permissions",
+        "purpose": "Database users / roles permissions",
+        "source": "static/js/user-permissions.js",
+        "evidence": "code_verified"
+      }
+    ],
+    "modals": [
+      {
+        "id": "MDL-CONNECTION",
+        "domId": "connectionModal",
+        "purpose": "Connection create/edit",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-RECONNECT-PASSWORD",
+        "domId": "reconnectPasswordModal",
+        "purpose": "Reconnect password prompt",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-GROUP-INPUT",
+        "domId": "groupInputModal",
+        "purpose": "New/rename connection group",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-GROUP-CONFIRM",
+        "domId": "groupConfirmModal",
+        "purpose": "Delete group confirmation",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-SETTINGS-FALLBACK",
+        "domId": "settingsModal",
+        "purpose": "Settings (fallback when IPC unavailable)",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-TABLE-DESIGN-CONFIRM",
+        "domId": "table-design-confirm-modal",
+        "purpose": "Table design apply preview/audit",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "OVL-SETTINGS-POPUP",
+        "domId": "settingsPopupBackdrop",
+        "purpose": "Generic message popup",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "OVL-FATAL-GUARD",
+        "domId": "fatalActionsGuardBackdrop",
+        "purpose": "Dangerous SQL confirmation guard",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-DEBUG-EXT-WARNING",
+        "domId": "ide-modal-debug-extension-warning",
+        "purpose": "Debug extension warning",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-FORMAT-CONFIRM",
+        "domId": "ide-modal-format-confirm",
+        "purpose": "Format code confirmation",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-CODE-STYLE",
+        "domId": "ide-modal-code-style",
+        "purpose": "SQL code style manager",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-ABOUT-FALLBACK",
+        "domId": "ide-about-modal",
+        "purpose": "About (fallback)",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-UPDATE-FALLBACK",
+        "domId": "ide-update-modal",
+        "purpose": "Update (fallback)",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      },
+      {
+        "id": "MDL-APP-LOADING",
+        "domId": "appLoadingModal",
+        "purpose": "Loading overlay",
+        "source": "templates/index.html",
+        "evidence": "code_verified"
+      }
+    ],
+    "contextMenus": [
+      {
+        "owner": "explorer tree (per node type)",
+        "source": "static/js/context-menu.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "result grid",
+        "source": "static/js/grid-result.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "editor",
+        "source": "static/js/editor.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "tab strip",
+        "source": "static/js/tabs.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "table designer",
+        "source": "static/js/table-designer.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "table data editor",
+        "source": "static/js/table-data-editor.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "query (results/messages)",
+        "source": "static/js/query.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "schema compare",
+        "source": "static/js/schema-compare.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "query history window",
+        "source": "static/js/query-history.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "syntax reference window",
+        "source": "static/js/syntax-reference-window.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "report-gen sheet grid",
+        "source": "static/js/report-gen/sheet-grid.js",
+        "evidence": "code_verified"
+      },
+      {
+        "owner": "BRAVO program list",
+        "source": "static/js/bravo/features/program-list.js",
+        "evidence": "code_verified"
+      }
+    ]
+  },
+  "bridge": {
+    "mechanism": "window.pywebview.api.<method>() Promise; Python->JS via window.evaluate_js",
+    "mainApiMixins": [
+      "QueryApiMixin",
+      "HistoryApiMixin",
+      "SessionApiMixin",
+      "MainMetadataApiMixin",
+      "ActivityApiMixin",
+      "SchemaCompareApiMixin",
+      "GoogleSheetsApiMixin",
+      "DatabaseUsersApiMixin",
+      "SyntaxCatalogApiMixin",
+      "ReportGenApiMixin",
+      "BravoApi(SettingsApiMixin,TableEditorApiMixin,DesignerApiMixin,MetadataApiMixin,ConnectionsApiMixin,ProfilerApiMixin,BravoApiMixin)"
+    ],
+    "surfaceSnapshot": {
+      "file": "tests/snapshots/api_surface.txt",
+      "MainApi": 234,
+      "BravoApi": 111,
+      "stale": true
+    }
+  },
+  "secondaryChannel": {
+    "type": "Flask blueprints",
+    "file": "app/__init__.py",
+    "usedByDesktop": false
+  },
+  "legacyCandidates": [
+    {
+      "path": "templates/partials/*.html",
+      "reason": "not referenced by index.html or any code",
+      "status": "deprecated_candidate"
+    },
+    {
+      "path": "WIN-EVENT-LISTENER",
+      "reason": "no UI trigger",
+      "status": "needs_confirmation"
+    },
+    {
+      "path": "#menu-tools-profiler, #ide-profiler-btn listeners",
+      "reason": "elements absent from DOM",
+      "status": "needs_confirmation"
+    }
+  ],
+  "unknowns": [
+    "Runtime appearance of all windows (no screenshots)",
+    "Tabulator vendor usage",
+    "Whether WIN-EVENT-LISTENER is intentionally hidden",
+    "Exact WIN-GSHEET-COMPANION size"
+  ]
+}

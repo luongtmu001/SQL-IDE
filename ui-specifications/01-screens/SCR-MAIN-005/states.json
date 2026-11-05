@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-005",
+  "states": [
+    {
+      "id": "ST-SB-001",
+      "name": "no_tab",
+      "shows": "connection hidden, cursor hidden"
+    },
+    {
+      "id": "ST-SB-002",
+      "name": "disconnected",
+      "dot": "fg-subtle",
+      "text": "Not connected"
+    },
+    {
+      "id": "ST-SB-003",
+      "name": "connected",
+      "dot": "success"
+    },
+    {
+      "id": "ST-SB-004",
+      "name": "running",
+      "dot": "warning",
+      "last_run": "spinner + elapsed"
+    },
+    {
+      "id": "ST-SB-005",
+      "name": "last_run_ok",
+      "last_run": "✓ rows · ms"
+    },
+    {
+      "id": "ST-SB-006",
+      "name": "last_run_error",
+      "last_run": "✗ error, danger-fg"
+    },
+    {
+      "id": "ST-SB-007",
+      "name": "prod_connected",
+      "background": "danger-emphasis (if Q2=3)"
+    },
+    {
+      "id": "ST-SB-008",
+      "name": "window_inactive",
+      "text": "fg-subtle"
+    }
+  ]
+}

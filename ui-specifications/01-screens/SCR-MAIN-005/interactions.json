@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-005",
+  "interactions": [
+    {
+      "id": "INT-SB-001",
+      "target": "connection",
+      "trigger": "click",
+      "result": "open Connection Manager"
+    },
+    {
+      "id": "INT-SB-002",
+      "target": "pid",
+      "trigger": "click",
+      "result": "copy PID"
+    },
+    {
+      "id": "INT-SB-003",
+      "target": "problems",
+      "trigger": "click",
+      "result": "select Errors tab"
+    },
+    {
+      "id": "INT-SB-004",
+      "target": "last-run",
+      "trigger": "click",
+      "result": "select Results tab"
+    },
+    {
+      "id": "INT-SB-005",
+      "target": "cursor",
+      "trigger": "click",
+      "result": "Go to Line"
+    },
+    {
+      "id": "INT-SB-006",
+      "target": "indent",
+      "trigger": "click",
+      "result": "toggle Spaces/Tabs (editor only)"
+    },
+    {
+      "id": "INT-SB-007",
+      "target": "eol",
+      "trigger": "click",
+      "result": "toggle LF/CRLF (editor only)"
+    },
+    {
+      "id": "INT-SB-008",
+      "target": "zoom",
+      "trigger": "click",
+      "result": "zoom menu 50/75/90/100/125/150/200 + Reset; Ctrl+= / Ctrl+- / Ctrl+0"
+    },
+    {
+      "id": "INT-SB-009",
+      "target": "notifications",
+      "trigger": "click",
+      "result": "open notification list"
+    }
+  ]
+}

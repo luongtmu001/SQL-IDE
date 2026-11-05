@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-002",
+  "mappings": [
+    {
+      "source_id": ".ide-sidebar-header",
+      "target": "sidebar.fxml panel-header",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "partial"
+    },
+    {
+      "source_id": "group folders + drag-drop",
+      "target": "DatabaseNodeType.GROUP (new)",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "missing"
+    },
+    {
+      "source_id": "connection node",
+      "target": "DatabaseTreeCell CONNECTION",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "changed"
+    },
+    {
+      "source_id": "tree-node-actions",
+      "target": "hover ⋯ button",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "missing"
+    },
+    {
+      "source_id": "context-menu.js registry",
+      "target": "DatabaseTreeCell.buildContextMenu",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "partial"
+    },
+    {
+      "source_id": "#ide-sidebar-collapsed-rail",
+      "target": "miniSidebarView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial"
+    }
+  ]
+}

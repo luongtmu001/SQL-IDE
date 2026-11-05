@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-005",
+  "regions": [
+    {
+      "id": "REG-SB-001",
+      "name": "Status bar",
+      "position": "bottom",
+      "sizing": {
+        "height": "22px",
+        "width": "fill"
+      },
+      "children": [
+        "REG-SB-002",
+        "REG-SB-003"
+      ]
+    },
+    {
+      "id": "REG-SB-002",
+      "name": "Left group",
+      "alignment": "left"
+    },
+    {
+      "id": "REG-SB-003",
+      "name": "Right group",
+      "alignment": "right"
+    }
+  ]
+}

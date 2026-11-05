@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monaco Editor Host</title>
+    <!-- Preload Monaco Editor CSS upfront to prevent WebKit style recalculation flicker -->
+    <link rel="stylesheet" href="vs/editor/editor.main.css">
+    <link rel="stylesheet" href="editor.css">
+    <script>
+        window.MonacoEnvironment = {
+            getWorker: function (moduleId, label) {
+                throw new Error("Local main thread fallback");
+            }
+        };
+    </script>
+    <script src="vs/loader.js"></script>
+</head>
+<body style="background-color: transparent !important;">
+    <div id="monaco-container"></div>
+    <script src="editor-bridge.js"></script>
+</body>
+</html>
+

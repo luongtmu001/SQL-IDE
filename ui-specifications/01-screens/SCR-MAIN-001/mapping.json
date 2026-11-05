@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-001",
+  "mappings": [
+    {
+      "source_id": "#ide-main-area",
+      "target_component": "mainHorizontalSplit + centerVerticalSplit",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "partial",
+      "differences": [
+        "card layout vs flat",
+        "sidebar ratio vs fixed px",
+        "no sash hover feedback"
+      ]
+    },
+    {
+      "source_id": "#ide-sidebar (260px)",
+      "target_component": "sidebar.fxml",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "partial",
+      "differences": [
+        "ratio 0.22 instead of px"
+      ]
+    },
+    {
+      "source_id": "#ide-sidebar-collapsed-rail",
+      "target_component": "mini-sidebar-strip",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "partial",
+      "differences": [
+        "ratio 0.038 instead of 46px"
+      ]
+    },
+    {
+      "source_id": ".ide-sidebar-resizer / .ide-resizer-horizontal",
+      "target_component": "split-pane-divider",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "partial",
+      "differences": [
+        "no accent on hover"
+      ]
+    }
+  ]
+}

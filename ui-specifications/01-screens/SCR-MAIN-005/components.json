@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-005",
+  "components": [
+    {
+      "id": "CMP-SB-001",
+      "name": "connection",
+      "type": "Label+Region dot",
+      "region": "left"
+    },
+    {
+      "id": "CMP-SB-002",
+      "name": "pid",
+      "type": "Label",
+      "region": "left"
+    },
+    {
+      "id": "CMP-SB-003",
+      "name": "problems",
+      "type": "Label",
+      "region": "left"
+    },
+    {
+      "id": "CMP-SB-004",
+      "name": "readonly",
+      "type": "Label (conditional)",
+      "region": "left"
+    },
+    {
+      "id": "CMP-SB-005",
+      "name": "tx",
+      "type": "Label (conditional)",
+      "region": "left"
+    },
+    {
+      "id": "CMP-SB-006",
+      "name": "last-run",
+      "type": "Label+ProgressIndicator",
+      "region": "left"
+    },
+    {
+      "id": "CMP-SB-007",
+      "name": "cursor",
+      "type": "Label",
+      "region": "right"
+    },
+    {
+      "id": "CMP-SB-008",
+      "name": "indent",
+      "type": "Label",
+      "region": "right"
+    },
+    {
+      "id": "CMP-SB-009",
+      "name": "encoding",
+      "type": "Label",
+      "region": "right"
+    },
+    {
+      "id": "CMP-SB-010",
+      "name": "eol",
+      "type": "Label",
+      "region": "right"
+    },
+    {
+      "id": "CMP-SB-011",
+      "name": "language",
+      "type": "Label",
+      "region": "right"
+    },
+    {
+      "id": "CMP-SB-012",
+      "name": "zoom",
+      "type": "Label + ContextMenu",
+      "region": "right"
+    },
+    {
+      "id": "CMP-SB-013",
+      "name": "notifications",
+      "type": "Button",
+      "region": "right"
+    }
+  ]
+}

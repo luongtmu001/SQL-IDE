@@ -1,0 +1,175 @@
+/* =====================================================================
+   R-UI-01 (2026-11-05) — shared element shapes, loaded for every Scene by ThemeService.
+   Rounded mode (default): inputs, selections, check boxes and buttons are rounded.
+   Flat mode: shape-flat.css is loaded after this file and squares every corner.
+   Popups (ComboBox list, context menu, tooltip) copy their owner's stylesheets,
+   so these global selectors reach them too.
+   ===================================================================== */
+
+/* ---------- rounded corners ---------- */
+.text-field,
+.password-field,
+.text-area,
+.combo-box-base,
+.choice-box,
+.spinner,
+.button,
+.toggle-button,
+.menu-button,
+.split-menu-button {
+    /* T9 (Phase 7): AtlantaFX paints the outline as an outer background layer and the fill
+       as a second layer inset by 1px. A single radius (6) left the inner corner too large,
+       so the outline looked thicker at the corners ("viền" on selections). Outer 6, inner 5. */
+    -fx-background-radius: 6, 5;
+    -fx-border-radius: 6;
+}
+
+/* the value cell inside a selection must not paint its own box over the control */
+.combo-box-base > .list-cell,
+.combo-box-base:focused > .list-cell,
+.combo-box-base:hover > .list-cell {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: null;
+}
+
+.spinner > .text-field {
+    -fx-background-radius: 6 0 0 6, 5 0 0 5;
+}
+
+.spinner .increment-arrow-button {
+    -fx-background-radius: 0 6 0 0;
+}
+
+.spinner .decrement-arrow-button {
+    -fx-background-radius: 0 0 6 0;
+}
+
+/* editable selection: one outline around the whole control, no divider before the chevron */
+.combo-box-base.editable {
+    -fx-background-color: -color-border-default, -color-bg-default;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+}
+
+.combo-box-base.editable:focused {
+    -fx-background-color: -color-accent-emphasis, -color-bg-default;
+}
+
+.combo-box-base.editable > .text-field,
+.combo-box-base.editable > .text-field:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+.combo-box-base > .arrow-button,
+.combo-box-base:focused > .arrow-button,
+.combo-box-base:hover > .arrow-button {
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+.combo-box-base > .arrow-button {
+    -fx-background-radius: 0 6 6 0;
+}
+
+.check-box > .box {
+    -fx-background-radius: 4, 3;
+    -fx-border-radius: 4;
+}
+
+.check-box > .box > .mark {
+    -fx-background-radius: 0;
+}
+
+/* title bar window controls stay square (native look) */
+.window-control-button,
+.window-control-button:hover,
+.window-control-button:armed {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* ---------- selections: chevron down / up instead of the triangle ---------- */
+.combo-box-base > .arrow-button > .arrow,
+.choice-box > .open-button > .arrow,
+.menu-button > .arrow-button > .arrow,
+.split-menu-button > .arrow-button > .arrow {
+    -fx-shape: "M0,0.9 L0.9,0 L4,3.1 L7.1,0 L8,0.9 L4,4.9 Z";
+    -fx-scale-shape: true;
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
+    -fx-min-height: 5;
+    -fx-pref-height: 5;
+    -fx-max-height: 5;
+    -fx-padding: 0;
+    -fx-background-color: -color-fg-muted;
+}
+
+.combo-box-base:showing > .arrow-button > .arrow,
+.choice-box:showing > .open-button > .arrow,
+.menu-button:showing > .arrow-button > .arrow,
+.split-menu-button:showing > .arrow-button > .arrow {
+    -fx-rotate: 180;
+}
+
+.combo-box-base > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 9 0 6;
+}
+
+.spinner .increment-arrow-button > .increment-arrow,
+.spinner .decrement-arrow-button > .decrement-arrow {
+    -fx-scale-shape: true;
+    -fx-min-width: 7;
+    -fx-pref-width: 7;
+    -fx-max-width: 7;
+    -fx-min-height: 4;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+    -fx-padding: 0;
+    -fx-background-color: -color-fg-muted;
+}
+
+.spinner .increment-arrow-button > .increment-arrow {
+    -fx-shape: "M0,4 L0.9,4.9 L4,1.8 L7.1,4.9 L8,4 L4,0 Z";
+}
+
+.spinner .decrement-arrow-button > .decrement-arrow {
+    -fx-shape: "M0,0.9 L0.9,0 L4,3.1 L7.1,0 L8,0.9 L4,4.9 Z";
+}
+
+/* ---------- selection list (ComboBox popup): no inner padding, rounded hover ---------- */
+.combo-box-popup > .list-view {
+    -fx-padding: 0;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-padding: 4 8 4 8;
+    -fx-font-size: 12px;
+    -fx-background-radius: 5;
+    -fx-background-insets: 0;
+}
+
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:hover,
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
+    -fx-background-radius: 5;
+}
+
+.context-menu {
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.context-menu .menu-item {
+    -fx-background-radius: 4;
+}

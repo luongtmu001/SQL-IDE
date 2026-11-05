@@ -1,0 +1,668 @@
+{
+  "schemaVersion": "1.0",
+  "workflow": "02-screen-inventory",
+  "generatedAt": "2026-11-04",
+  "sourceApp": "luoBTool IDE v1.3.1 (screenshots from running dist/LLTool_v1.3.1)",
+  "captureEnvironment": {
+    "screen": "1456x816 logical (screenshot frame)",
+    "displayScale": "unknown",
+    "theme": "Ambiance [beta] (dark)"
+  },
+  "scopeDecision": {
+    "include": "main window, settings, dialogs",
+    "editor": "keep Monaco",
+    "titleBar": "VS Code-style custom, verify native behaviour",
+    "legacy": "excluded",
+    "fidelity": "equivalent, not pixel-identical; target look ≈ VS Code"
+  },
+  "screens": [
+    {
+      "id": "SCR-SHELL-001",
+      "name": "Window shell & title bar",
+      "nameVi": "Khung cửa sổ & thanh tiêu đề",
+      "kind": "window-chrome",
+      "parent": null,
+      "trigger": "startup",
+      "source": {
+        "files": [
+          "main.py",
+          "app/utils/dwm.py",
+          "templates/index.html#navbar"
+        ],
+        "notes": "Native Windows caption recoloured via DWM + in-page navbar (File/Edit/Format/View/Settings/Help, Snippets, Sheets, BRAVO Tool, theme/settings/env badge)"
+      },
+      "target": {
+        "files": [
+          "fxml/titlebar.fxml",
+          "ui/titlebar/*",
+          "ui/window/*",
+          "ui/window/platform/WindowsWindowAdapter.java"
+        ],
+        "note": "Approved direction: VS Code-style custom title bar with embedded menu, must behave like native (snap, hit-test, double-click, system menu, DPI)"
+      },
+      "status": "partially_observed",
+      "importance": "critical",
+      "dependsOn": [],
+      "evidence": "observed (bar) + code_verified (menus; dropdowns not capturable: rendered by msedgewebview2 process)",
+      "screenshots": [
+        "main-full-1456x816.jpg"
+      ]
+    },
+    {
+      "id": "SCR-MAIN-001",
+      "name": "Main workspace layout",
+      "nameVi": "Bố cục workspace chính",
+      "kind": "screen",
+      "parent": "SCR-SHELL-001",
+      "trigger": "startup",
+      "source": {
+        "files": [
+          "templates/index.html#ide-main-area",
+          "static/js/app.js",
+          "static/js/autohide-navbar.js"
+        ]
+      },
+      "target": {
+        "files": [
+          "fxml/main-window.fxml",
+          "controllers/MainController.java",
+          "services/LayoutService.java"
+        ]
+      },
+      "status": "observed",
+      "importance": "critical",
+      "dependsOn": [
+        "SCR-SHELL-001"
+      ],
+      "evidence": "observed + code_verified",
+      "screenshots": [
+        "main-full-1456x816.jpg",
+        "main-disconnected-tab-1456x816.jpg",
+        "main-sidebar-collapsed-rail.jpg"
+      ]
+    },
+    {
+      "id": "SCR-MAIN-002",
+      "name": "Object Explorer sidebar",
+      "nameVi": "Object Explorer",
+      "kind": "region",
+      "parent": "SCR-MAIN-001",
+      "trigger": "always visible (toggle/collapse)",
+      "source": {
+        "files": [
+          "templates/index.html#ide-sidebar",
+          "static/js/explorer.js",
+          "static/js/context-menu.js",
+          "static/js/connections.js"
+        ],
+        "notes": "toolbar (connect, new group, filter DB, refresh, collapse), search, tree, collapsed rail, per-node context menus (≥17 node types)"
+      },
+      "target": {
+        "files": [
+          "fxml/sidebar.fxml",
+          "controllers/SidebarController.java",
+          "ui/components/DatabaseTreeCell.java",
+          "ui/components/LazyDatabaseTreeItem.java"
+        ]
+      },
+      "status": "observed",
+      "importance": "critical",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "observed + code_verified",
+      "screenshots": [
+        "main-full-1456x816.jpg",
+        "main-sidebar-collapsed-rail.jpg",
+        "ctx-explorer-connection.jpg",
+        "ctx-explorer-group.jpg"
+      ]
+    },
+    {
+      "id": "SCR-MAIN-003",
+      "name": "Editor workspace",
+      "nameVi": "Vùng soạn thảo",
+      "kind": "region",
+      "parent": "SCR-MAIN-001",
+      "trigger": "always visible",
+      "source": {
+        "files": [
+          "templates/index.html#ide-editor-pane",
+          "static/js/editor.js",
+          "static/js/tabs.js",
+          "static/js/monaco-init.js",
+          "static/js/syntax-catalog.js"
+        ],
+        "notes": "connection/db/schema breadcrumb selectors, action bar (Run/Debug/Stop/Tx/… + overflow), tab strip, connection-lost banner, Monaco editor + split + diff, empty-tabs placeholder, editor status bar (zoom, issues, PID, Ln/Col, TABS, LF, UTF-8)"
+      },
+      "target": {
+        "files": [
+          "fxml/editor.fxml",
+          "controllers/EditorController.java",
+          "ui/editor/MonacoEditorHost.java",
+          "ui/editor/SqlEditorTab.java",
+          "resources/monaco/*"
+        ]
+      },
+      "status": "observed",
+      "importance": "critical",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "observed + code_verified",
+      "screenshots": [
+        "main-full-1456x816.jpg",
+        "main-disconnected-tab-1456x816.jpg",
+        "actionbar-overflow-menu.jpg"
+      ]
+    },
+    {
+      "id": "SCR-MAIN-004",
+      "name": "Result panel",
+      "nameVi": "Bảng kết quả",
+      "kind": "region",
+      "parent": "SCR-MAIN-001",
+      "trigger": "query tab active",
+      "source": {
+        "files": [
+          "templates/index.html#ide-result-panel",
+          "static/js/query.js",
+          "static/js/grid-result.js",
+          "static/js/execution-plan-tab.js",
+          "static/js/structured-data-viewer.js"
+        ],
+        "notes": "tabs Results/Messages/Errors/Logs/Plan, multi-result header, AG Grid, structured viewer side panel, footer stats"
+      },
+      "target": {
+        "files": [
+          "fxml/results.fxml",
+          "controllers/ResultsController.java",
+          "ui/results/*"
+        ]
+      },
+      "status": "partially_observed",
+      "importance": "critical",
+      "dependsOn": [
+        "SCR-MAIN-003"
+      ],
+      "evidence": "observed (Results tab only) + code_verified",
+      "screenshots": [
+        "main-full-1456x816.jpg"
+      ]
+    },
+    {
+      "id": "SCR-MAIN-005",
+      "name": "Status bars",
+      "nameVi": "Thanh trạng thái",
+      "kind": "region",
+      "parent": "SCR-MAIN-001",
+      "trigger": "always visible",
+      "source": {
+        "files": [
+          "templates/index.html#ide-editor-status-bar",
+          "templates/index.html#ide-result-footer"
+        ],
+        "notes": "Source has NO global window status bar: editor status bar + result footer only"
+      },
+      "target": {
+        "files": [
+          "fxml/status-bar.fxml",
+          "controllers/StatusBarController.java"
+        ],
+        "note": "JavaFX adds a global VS Code-style status bar → decide mapping"
+      },
+      "status": "observed",
+      "importance": "high",
+      "dependsOn": [
+        "SCR-MAIN-003",
+        "SCR-MAIN-004"
+      ],
+      "evidence": "observed + code_verified",
+      "screenshots": [
+        "main-full-1456x816.jpg"
+      ]
+    },
+    {
+      "id": "SCR-SET-001",
+      "name": "Settings window",
+      "nameVi": "Cửa sổ Cài đặt",
+      "kind": "window",
+      "parent": "SCR-SHELL-001",
+      "trigger": "Settings menu, gear button",
+      "source": {
+        "files": [
+          "templates/settings_window.html",
+          "static/js/settings.js",
+          "app/desktop/windows.py:1178"
+        ],
+        "notes": "search, Visual/JSON views, Save/Copy JSON/Reset defaults/Close, 9 categories, live font preview"
+      },
+      "target": {
+        "files": [
+          "fxml/settings-dialog.fxml",
+          "controllers/SettingsDialogController.java",
+          "ui/dialogs/SettingsDialog.java",
+          "models/IdeSettings.java"
+        ]
+      },
+      "status": "observed",
+      "importance": "high",
+      "dependsOn": [
+        "SCR-SHELL-001"
+      ],
+      "evidence": "observed + code_verified",
+      "screenshots": [
+        "settings-editor.jpg",
+        "settings-grid.jpg",
+        "settings-appearance.jpg",
+        "settings-sql.jpg"
+      ]
+    },
+    {
+      "id": "SCR-DLG-001",
+      "name": "Connection create/edit",
+      "nameVi": "Tạo/sửa kết nối",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "Explorer toolbar Connect, context menu Edit Connection / New connection",
+      "source": {
+        "dom": "connectionModal"
+      },
+      "target": {
+        "files": [
+          "fxml/connection-manager-dialog.fxml",
+          "controllers/ConnectionManagerController.java"
+        ]
+      },
+      "status": "observed",
+      "importance": "critical",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "observed + code_verified",
+      "screenshots": [
+        "dialog-new-connection.jpg"
+      ]
+    },
+    {
+      "id": "SCR-DLG-002",
+      "name": "Reconnect password prompt",
+      "nameVi": "Nhập mật khẩu khi kết nối lại",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "connect to profile without cached password",
+      "source": {
+        "dom": "reconnectPasswordModal"
+      },
+      "target": {
+        "files": []
+      },
+      "status": "discovered",
+      "importance": "high",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-003",
+      "name": "Group create/rename",
+      "nameVi": "Tạo/đổi tên nhóm",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "Explorer toolbar New group, context menu New/Rename Group",
+      "source": {
+        "dom": "groupInputModal"
+      },
+      "target": {
+        "files": []
+      },
+      "status": "observed",
+      "importance": "medium",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "observed + code_verified",
+      "screenshots": [
+        "dialog-new-group.jpg"
+      ]
+    },
+    {
+      "id": "SCR-DLG-004",
+      "name": "Group delete confirmation",
+      "nameVi": "Xác nhận xóa nhóm",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "context menu Delete Group",
+      "source": {
+        "dom": "groupConfirmModal"
+      },
+      "target": {
+        "files": []
+      },
+      "status": "discovered",
+      "importance": "medium",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-005",
+      "name": "Database filter",
+      "nameVi": "Lọc database",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "Explorer toolbar Filter DB",
+      "source": {
+        "dom": "#ide-db-filter-modal (built in explorer.js)"
+      },
+      "target": {
+        "files": [
+          "ui/dialogs/DatabaseFilterDialog.java"
+        ]
+      },
+      "status": "discovered",
+      "importance": "medium",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-006",
+      "name": "Object filter",
+      "nameVi": "Lọc object",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "folder node filter action",
+      "source": {
+        "dom": "showFilterModal (explorer.js)"
+      },
+      "target": {
+        "files": [
+          "ui/dialogs/ObjectFilterDialog.java"
+        ]
+      },
+      "status": "discovered",
+      "importance": "medium",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-007",
+      "name": "Dangerous SQL guard",
+      "nameVi": "Cảnh báo câu lệnh nguy hiểm",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "Run with DELETE/UPDATE without WHERE, TRUNCATE (sql.sqlprotection=1)",
+      "source": {
+        "dom": "fatalActionsGuardBackdrop"
+      },
+      "target": {
+        "files": [
+          "framework/query/SqlProtectionService.java (logic); UI unknown"
+        ]
+      },
+      "status": "discovered",
+      "importance": "high",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-008",
+      "name": "Format confirmation",
+      "nameVi": "Xác nhận định dạng code",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "Format action",
+      "source": {
+        "dom": "ide-modal-format-confirm"
+      },
+      "target": {
+        "files": []
+      },
+      "status": "discovered",
+      "importance": "low",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-009",
+      "name": "SQL code style manager",
+      "nameVi": "Quản lý định dạng mã SQL",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "Format ▸ SQL Style Manager, Settings ▸ Editor",
+      "source": {
+        "dom": "ide-modal-code-style"
+      },
+      "target": {
+        "files": []
+      },
+      "status": "discovered",
+      "importance": "medium",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-010",
+      "name": "Debug extension warning",
+      "nameVi": "Cảnh báo extension debug",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "Run when debug extension markers present",
+      "source": {
+        "dom": "ide-modal-debug-extension-warning"
+      },
+      "target": {
+        "files": []
+      },
+      "status": "discovered",
+      "importance": "low",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-011",
+      "name": "Generic message popup",
+      "nameVi": "Popup thông báo",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "various notifications",
+      "source": {
+        "dom": "settingsPopupBackdrop"
+      },
+      "target": {
+        "files": [
+          "ui/components/AppDialog.java (candidate)"
+        ]
+      },
+      "status": "discovered",
+      "importance": "low",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-012",
+      "name": "About",
+      "nameVi": "Thông tin phần mềm",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "Help ▸ About",
+      "source": {
+        "dom": "about_window.html (+ #ide-about-modal fallback)"
+      },
+      "target": {
+        "files": []
+      },
+      "status": "discovered",
+      "importance": "low",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-013",
+      "name": "Check for updates",
+      "nameVi": "Kiểm tra cập nhật",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "Help ▸ Check updates, update badge",
+      "source": {
+        "dom": "update_window.html (+ #ide-update-modal fallback)"
+      },
+      "target": {
+        "files": []
+      },
+      "status": "discovered",
+      "importance": "low",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    },
+    {
+      "id": "SCR-DLG-014",
+      "name": "App loading overlay",
+      "nameVi": "Lớp phủ đang tải",
+      "kind": "dialog",
+      "parent": "SCR-MAIN-001",
+      "trigger": "long operations",
+      "source": {
+        "dom": "appLoadingModal / AppLoader"
+      },
+      "target": {
+        "files": [
+          "ui/components/LoadingView.java (candidate)"
+        ]
+      },
+      "status": "discovered",
+      "importance": "low",
+      "dependsOn": [
+        "SCR-MAIN-001"
+      ],
+      "evidence": "code_verified",
+      "screenshots": []
+    }
+  ],
+  "excluded": [
+    {
+      "item": "Workspace tab views: table designer, data editor, dependency graph, object search, SQL visualizer, structured data, activity monitor, schema compare, user permissions, diff",
+      "reason": "out of approved scope"
+    },
+    {
+      "item": "Sub-windows: Profiler, Query History, BRAVO, Activity Monitor, Schema Compare, Result Comparator, Google Sheets, Syntax Reference, Report Gen",
+      "reason": "out of approved scope"
+    },
+    {
+      "item": "Table design apply preview modal (belongs to table designer)",
+      "reason": "out of approved scope"
+    },
+    {
+      "item": "Result comparator in-page modal",
+      "reason": "out of approved scope"
+    },
+    {
+      "item": "templates/partials/*",
+      "reason": "legacy candidate — excluded by user decision"
+    },
+    {
+      "item": "Event Listener window",
+      "reason": "legacy candidate — excluded by user decision"
+    },
+    {
+      "item": "#menu-tools-profiler / #ide-profiler-btn listeners",
+      "reason": "legacy candidate — excluded by user decision"
+    }
+  ],
+  "proposedOrder": [
+    {
+      "step": 1,
+      "screens": [
+        "SCR-SHELL-001"
+      ],
+      "why": "User priority: title bar must behave like native; all other screens sit inside it"
+    },
+    {
+      "step": 2,
+      "screens": [
+        "SCR-MAIN-001",
+        "SCR-MAIN-005"
+      ],
+      "why": "Overall VS Code-like layout, splitters, status bar mapping"
+    },
+    {
+      "step": 3,
+      "screens": [
+        "SCR-MAIN-002",
+        "SCR-DLG-001",
+        "SCR-DLG-002",
+        "SCR-DLG-003",
+        "SCR-DLG-004",
+        "SCR-DLG-005",
+        "SCR-DLG-006"
+      ],
+      "why": "Explorer and its dialogs share connection flows"
+    },
+    {
+      "step": 4,
+      "screens": [
+        "SCR-MAIN-003",
+        "SCR-DLG-007",
+        "SCR-DLG-008",
+        "SCR-DLG-010"
+      ],
+      "why": "Editor + execution-related dialogs"
+    },
+    {
+      "step": 5,
+      "screens": [
+        "SCR-MAIN-004"
+      ],
+      "why": "Result panel"
+    },
+    {
+      "step": 6,
+      "screens": [
+        "SCR-SET-001",
+        "SCR-DLG-009"
+      ],
+      "why": "Settings + code style manager"
+    },
+    {
+      "step": 7,
+      "screens": [
+        "SCR-DLG-011",
+        "SCR-DLG-012",
+        "SCR-DLG-013",
+        "SCR-DLG-014"
+      ],
+      "why": "Low-risk auxiliary dialogs"
+    }
+  ]
+}

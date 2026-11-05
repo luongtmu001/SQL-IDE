@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-002",
+  "components": [
+    {
+      "id": "CMP-EXP-001",
+      "name": "title",
+      "type": "Label",
+      "text": "OBJECT EXPLORER"
+    },
+    {
+      "id": "CMP-EXP-002",
+      "name": "btnNewConnection",
+      "type": "Button",
+      "icon": "plug",
+      "opens": "SCR-DLG-001"
+    },
+    {
+      "id": "CMP-EXP-003",
+      "name": "btnNewGroup",
+      "type": "Button",
+      "icon": "folder-plus",
+      "opens": "SCR-DLG-003",
+      "status": "missing"
+    },
+    {
+      "id": "CMP-EXP-004",
+      "name": "btnFilterDb",
+      "type": "Button",
+      "icon": "filter",
+      "opens": "SCR-DLG-005"
+    },
+    {
+      "id": "CMP-EXP-005",
+      "name": "btnRefresh",
+      "type": "Button",
+      "icon": "refresh-cw"
+    },
+    {
+      "id": "CMP-EXP-006",
+      "name": "btnCollapseAll",
+      "type": "Button",
+      "icon": "chevrons-up"
+    },
+    {
+      "id": "CMP-EXP-007",
+      "name": "btnCollapseToRail",
+      "type": "Button",
+      "icon": "chevrons-left"
+    },
+    {
+      "id": "CMP-EXP-008",
+      "name": "btnExpandAll",
+      "type": "Button",
+      "status": "remove"
+    },
+    {
+      "id": "CMP-EXP-009",
+      "name": "searchField",
+      "type": "TextField"
+    },
+    {
+      "id": "CMP-EXP-010",
+      "name": "explorerTree",
+      "type": "TreeView"
+    },
+    {
+      "id": "CMP-EXP-011",
+      "name": "groupNode",
+      "type": "TreeCell",
+      "status": "missing"
+    },
+    {
+      "id": "CMP-EXP-012",
+      "name": "connectionNode",
+      "type": "TreeCell"
+    },
+    {
+      "id": "CMP-EXP-013",
+      "name": "categoryCountBadge",
+      "type": "Label",
+      "status": "missing"
+    },
+    {
+      "id": "CMP-EXP-014",
+      "name": "rowHoverActions",
+      "type": "Button",
+      "status": "missing"
+    },
+    {
+      "id": "CMP-EXP-015",
+      "name": "miniRail",
+      "type": "VBox"
+    }
+  ]
+}

@@ -1,0 +1,1626 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-SHELL-001",
+  "components": [
+    {
+      "id": "CMP-SHELL-001",
+      "name": "Window title",
+      "component_type": "label",
+      "region_id": "REG-SHELL-002",
+      "parent_component_id": null,
+      "visible_label": "luoBTool IDE",
+      "accessible_name": "luoBTool IDE",
+      "icon": {
+        "name": null,
+        "source": "unknown"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "main.py",
+        "selector_or_symbol": "webview.create_window(title=...)",
+        "handler": "n/a"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label (centered, VS Code style 'doc — app')",
+        "custom_component_required": false,
+        "notes": "Target shows '<document> — SQL IDE'; approved VS Code direction"
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-SHELL-002",
+      "name": "App logo",
+      "component_type": "image",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "App logo",
+      "icon": {
+        "name": "static/image/logo.png",
+        "source": "unknown"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "navbar brand img",
+        "handler": "none"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "FontIcon fth-database → replace with app logo image",
+        "custom_component_required": false,
+        "notes": "Target uses generic DB icon; native double-click on icon behaviour unknown"
+      },
+      "notes": ""
+    },
+    {
+      "id": "MNU-SHELL-001",
+      "name": "File menu",
+      "component_type": "menu",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": null,
+      "visible_label": "File",
+      "accessible_name": "File",
+      "icon": {
+        "name": "fa-chevron-down",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#menu-file",
+        "handler": "Bootstrap dropdown"
+      },
+      "behavior_confidence": "code_verified (dropdown not capturable)",
+      "target_mapping": {
+        "javafx_type": "Menu in MenuBar",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "MNU-SHELL-002",
+      "name": "Edit menu",
+      "component_type": "menu",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": null,
+      "visible_label": "Edit",
+      "accessible_name": "Edit",
+      "icon": {
+        "name": "fa-chevron-down",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#menu-edit",
+        "handler": "Bootstrap dropdown"
+      },
+      "behavior_confidence": "code_verified (dropdown not capturable)",
+      "target_mapping": {
+        "javafx_type": "Menu in MenuBar",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "MNU-SHELL-003",
+      "name": "Format menu",
+      "component_type": "menu",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": null,
+      "visible_label": "Format",
+      "accessible_name": "Format",
+      "icon": {
+        "name": "fa-chevron-down",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#menu-format",
+        "handler": "Bootstrap dropdown"
+      },
+      "behavior_confidence": "code_verified (dropdown not capturable)",
+      "target_mapping": {
+        "javafx_type": "Menu in MenuBar",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "MNU-SHELL-004",
+      "name": "View menu",
+      "component_type": "menu",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": null,
+      "visible_label": "View",
+      "accessible_name": "View",
+      "icon": {
+        "name": "fa-chevron-down",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#menu-view",
+        "handler": "Bootstrap dropdown"
+      },
+      "behavior_confidence": "code_verified (dropdown not capturable)",
+      "target_mapping": {
+        "javafx_type": "Menu in MenuBar",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "MNU-SHELL-005",
+      "name": "Settings menu",
+      "component_type": "menu",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": null,
+      "visible_label": "Settings",
+      "accessible_name": "Settings",
+      "icon": {
+        "name": null,
+        "source": "unknown"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#menu-settings",
+        "handler": "static/js/settings.js:2182 → openSettings()"
+      },
+      "behavior_confidence": "code_verified (dropdown not capturable)",
+      "target_mapping": {
+        "javafx_type": "MenuBar item that opens Settings (or Menu with single item)",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "MNU-SHELL-006",
+      "name": "Help menu",
+      "component_type": "menu",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": null,
+      "visible_label": "Help",
+      "accessible_name": "Help",
+      "icon": {
+        "name": "fa-chevron-down",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#menu-help",
+        "handler": "Bootstrap dropdown"
+      },
+      "behavior_confidence": "code_verified (dropdown not capturable)",
+      "target_mapping": {
+        "javafx_type": "Menu in MenuBar",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "MIT-SHELL-001",
+      "name": "New Query",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-001",
+      "visible_label": "New Query",
+      "accessible_name": "New Query",
+      "icon": {
+        "name": "fa-file-circle-plus",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+N",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-new-query",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope"
+    },
+    {
+      "id": "MIT-SHELL-002",
+      "name": "Open File...",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-001",
+      "visible_label": "Open File...",
+      "accessible_name": "Open File...",
+      "icon": {
+        "name": "fa-folder-open",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+O",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-open-file",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope"
+    },
+    {
+      "id": "MIT-SHELL-003",
+      "name": "Save",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-001",
+      "visible_label": "Save",
+      "accessible_name": "Save",
+      "icon": {
+        "name": "fa-floppy-disk",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+S",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-save",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope"
+    },
+    {
+      "id": "MIT-SHELL-004",
+      "name": "Close Tab",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-001",
+      "visible_label": "Close Tab",
+      "accessible_name": "Close Tab",
+      "icon": {
+        "name": "fa-xmark",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+W",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-close-tab",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope"
+    },
+    {
+      "id": "MIT-SHELL-005",
+      "name": "Goto Begin",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-002",
+      "visible_label": "Goto Begin",
+      "accessible_name": "Goto Begin",
+      "icon": {
+        "name": "fa-arrow-up-to-line",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Alt+[",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-goto-begin",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope"
+    },
+    {
+      "id": "MIT-SHELL-006",
+      "name": "Goto End",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-002",
+      "visible_label": "Goto End",
+      "accessible_name": "Goto End",
+      "icon": {
+        "name": "fa-arrow-down-to-line",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Alt+]",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-goto-end",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope"
+    },
+    {
+      "id": "MIT-SHELL-007",
+      "name": "Find in SQL Objects...",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-002",
+      "visible_label": "Find in SQL Objects...",
+      "accessible_name": "Find in SQL Objects...",
+      "icon": {
+        "name": "fa-magnifying-glass",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Shift+F",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-object-search",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred (object search feature)"
+    },
+    {
+      "id": "MIT-SHELL-008",
+      "name": "Refresh Objects & IntelliSense",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-002",
+      "visible_label": "Refresh Objects & IntelliSense",
+      "accessible_name": "Refresh Objects & IntelliSense",
+      "icon": {
+        "name": "fa-arrows-rotate",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Shift+R",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-refresh-objects-intellisense",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope"
+    },
+    {
+      "id": "MIT-SHELL-009",
+      "name": "Format Code",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-003",
+      "visible_label": "Format Code",
+      "accessible_name": "Format Code",
+      "icon": {
+        "name": "fa-align-left",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+K, Ctrl+D",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-format-code",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope"
+    },
+    {
+      "id": "MIT-SHELL-010",
+      "name": "SQL Code Styles...",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-003",
+      "visible_label": "SQL Code Styles...",
+      "accessible_name": "SQL Code Styles...",
+      "icon": {
+        "name": "fa-sliders",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Alt+F",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-sql-style-manager",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope (SCR-DLG-009)"
+    },
+    {
+      "id": "MIT-SHELL-011",
+      "name": "Search Objects Content...",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-004",
+      "visible_label": "Search Objects Content...",
+      "accessible_name": "Search Objects Content...",
+      "icon": {
+        "name": "fa-magnifying-glass",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Shift+F",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-view-object-search",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred"
+    },
+    {
+      "id": "MIT-SHELL-012",
+      "name": "Query History",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-004",
+      "visible_label": "Query History",
+      "accessible_name": "Query History",
+      "icon": {
+        "name": "fa-clock-rotate-left",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Alt+H",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-query-history",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred"
+    },
+    {
+      "id": "MIT-SHELL-013",
+      "name": "So sánh kết quả...",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-004",
+      "visible_label": "So sánh kết quả...",
+      "accessible_name": "So sánh kết quả...",
+      "icon": {
+        "name": "fa-code-compare",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-compare-results",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred"
+    },
+    {
+      "id": "MIT-SHELL-014",
+      "name": "Activity Monitor (Phiên & Khóa)",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-004",
+      "visible_label": "Activity Monitor (Phiên & Khóa)",
+      "accessible_name": "Activity Monitor (Phiên & Khóa)",
+      "icon": {
+        "name": "fa-heart-pulse",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Alt+A",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-activity-monitor",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred"
+    },
+    {
+      "id": "MIT-SHELL-015",
+      "name": "So sánh Schema...",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-004",
+      "visible_label": "So sánh Schema...",
+      "accessible_name": "So sánh Schema...",
+      "icon": {
+        "name": "fa-code-compare",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Alt+C",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-schema-compare",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred"
+    },
+    {
+      "id": "MIT-SHELL-016",
+      "name": "Google Sheets Manager...",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-004",
+      "visible_label": "Google Sheets Manager...",
+      "accessible_name": "Google Sheets Manager...",
+      "icon": {
+        "name": "fa-table-cells",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Alt+G",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-google-sheets",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred"
+    },
+    {
+      "id": "MIT-SHELL-017",
+      "name": "Sinh Layout Bravo từ Excel...",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-004",
+      "visible_label": "Sinh Layout Bravo từ Excel...",
+      "accessible_name": "Sinh Layout Bravo từ Excel...",
+      "icon": {
+        "name": "fa-file-excel",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Alt+E",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-report-gen",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred"
+    },
+    {
+      "id": "MIT-SHELL-018",
+      "name": "Tự động ẩn Navbar (checkable)",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-004",
+      "visible_label": "Tự động ẩn Navbar (checkable)",
+      "accessible_name": "Tự động ẩn Navbar (checkable)",
+      "icon": {
+        "name": "fa-window-maximize",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-toggle-autohide-navbar",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckMenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope"
+    },
+    {
+      "id": "MIT-SHELL-019",
+      "name": "Kiểm tra Cập nhật...",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-006",
+      "visible_label": "Kiểm tra Cập nhật...",
+      "accessible_name": "Kiểm tra Cập nhật...",
+      "icon": {
+        "name": "fa-arrows-rotate",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-check-updates",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope (SCR-DLG-013)"
+    },
+    {
+      "id": "MIT-SHELL-020",
+      "name": "Thông tin (About)...",
+      "component_type": "menu_item",
+      "region_id": "REG-SHELL-004",
+      "parent_component_id": "MNU-SHELL-006",
+      "visible_label": "Thông tin (About)...",
+      "accessible_name": "Thông tin (About)...",
+      "icon": {
+        "name": "fa-circle-info",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-menu-about",
+        "handler": "see interactions.json"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuItem",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "in-scope (SCR-DLG-012)"
+    },
+    {
+      "id": "BTN-SHELL-001",
+      "name": "Snippets",
+      "component_type": "button",
+      "region_id": "REG-SHELL-005",
+      "parent_component_id": null,
+      "visible_label": "Snippets",
+      "accessible_name": "Snippets",
+      "icon": {
+        "name": "fa-code",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "static/js/snippets-manager.js:47",
+        "selector_or_symbol": "#ide-snippets-btn",
+        "handler": "static/js/snippets-manager.js:47"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button with graphic",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred (snippets manager)"
+    },
+    {
+      "id": "BTN-SHELL-002",
+      "name": "Sheets",
+      "component_type": "button",
+      "region_id": "REG-SHELL-005",
+      "parent_component_id": null,
+      "visible_label": "Sheets",
+      "accessible_name": "Sheets",
+      "icon": {
+        "name": "fa-table-cells",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html:2723",
+        "selector_or_symbol": "#ide-google-sheets-btn",
+        "handler": "templates/index.html:2723"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button with graphic",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred (Google Sheets window)"
+    },
+    {
+      "id": "BTN-SHELL-003",
+      "name": "BRAVO Tool",
+      "component_type": "button",
+      "region_id": "REG-SHELL-005",
+      "parent_component_id": null,
+      "visible_label": "BRAVO Tool",
+      "accessible_name": "BRAVO Tool",
+      "icon": {
+        "name": "fa-bolt",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "addons.bravo_tool.enabled",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "static/js/bravo/bravo-manager.js:88",
+        "selector_or_symbol": "#ide-bravo-launcher",
+        "handler": "static/js/bravo/bravo-manager.js:88"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button with graphic",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "deferred; visible only if addons.bravo_tool.enabled"
+    },
+    {
+      "id": "BTN-SHELL-004",
+      "name": "Update available",
+      "component_type": "button",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "New",
+      "accessible_name": "New",
+      "icon": {
+        "name": "fa-cloud-arrow-down",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "none",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "update available",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html:2716",
+        "selector_or_symbol": "#ide-update-btn",
+        "handler": "templates/index.html:2716"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button with graphic",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "hidden until onAppUpdateAvailable; opens SCR-DLG-013"
+    },
+    {
+      "id": "BTN-SHELL-005",
+      "name": "Theme toggle",
+      "component_type": "icon_button",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "Theme toggle",
+      "icon": {
+        "name": "fa-moon",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "Theme toggle",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "static/js/app.js:48",
+        "selector_or_symbol": "#ide-theme-btn",
+        "handler": "static/js/app.js:48"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "IconButton",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Toggle Light/Dark Theme"
+    },
+    {
+      "id": "BTN-SHELL-006",
+      "name": "Settings",
+      "component_type": "icon_button",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "Settings",
+      "icon": {
+        "name": "fa-gear",
+        "source": "Font Awesome 6 (source)"
+      },
+      "tooltip": "Settings",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "static/js/settings.js",
+        "selector_or_symbol": "#ide-settings-btn",
+        "handler": "static/js/settings.js"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "IconButton",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Cài đặt (Settings) → SCR-SET-001"
+    },
+    {
+      "id": "CMP-SHELL-005",
+      "name": "Environment badge",
+      "component_type": "badge",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "DEV",
+      "accessible_name": "DEV",
+      "icon": {
+        "name": null,
+        "source": "unknown"
+      },
+      "tooltip": "Môi trường kết nối hiện tại (DEV / TEST / PROD)",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "templates/index.html",
+        "selector_or_symbol": "#ide-topbar-env-badge",
+        "handler": "set from active connection environment"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Badge (app.ui.components.Badge)",
+        "custom_component_required": false,
+        "notes": "Missing in target"
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-SHELL-003",
+      "name": "Document title (target only)",
+      "component_type": "label",
+      "region_id": "REG-SHELL-005",
+      "parent_component_id": null,
+      "visible_label": "Bravo10Setup console.sql — SQL IDE",
+      "accessible_name": "Bravo10Setup console.sql — SQL IDE",
+      "icon": {
+        "name": null,
+        "source": "unknown"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "none",
+      "source_reference": {
+        "file": "n/a (target)",
+        "selector_or_symbol": "titlebar.fxml#windowTitleLabel",
+        "handler": "WindowTitleModel"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": "Target-only, VS Code pattern; keep"
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-SHELL-004",
+      "name": "Global search (target only)",
+      "component_type": "text_field",
+      "region_id": "REG-SHELL-005",
+      "parent_component_id": null,
+      "visible_label": "Search objects (Ctrl+F)",
+      "accessible_name": "Search objects (Ctrl+F)",
+      "icon": {
+        "name": "fth-search",
+        "source": "Ikonli Feather (target)"
+      },
+      "tooltip": "none",
+      "classification": "navigation",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+F",
+      "source_reference": {
+        "file": "n/a (target)",
+        "selector_or_symbol": "main-window.fxml#searchField",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "TextField in HBox",
+        "custom_component_required": false,
+        "notes": "Source has explorer search only; keep as VS Code command-center equivalent"
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SHELL-010",
+      "name": "Toggle Database Explorer (target only)",
+      "component_type": "icon_button",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "Toggle Database Explorer (target only)",
+      "icon": {
+        "name": "fth-sidebar",
+        "source": "Ikonli Feather (target)"
+      },
+      "tooltip": "Toggle Database Explorer (Alt+1)",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Alt+1",
+      "source_reference": {
+        "file": "n/a (target)",
+        "selector_or_symbol": "main-window.fxml#layoutActions",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button.icon-button",
+        "custom_component_required": false,
+        "notes": "Target-only layout toggles (VS Code has equivalent layout controls)"
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SHELL-011",
+      "name": "Toggle Results Panel (target only)",
+      "component_type": "icon_button",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "Toggle Results Panel (target only)",
+      "icon": {
+        "name": "fth-layout",
+        "source": "Ikonli Feather (target)"
+      },
+      "tooltip": "Toggle Results Panel (Ctrl+R)",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+R",
+      "source_reference": {
+        "file": "n/a (target)",
+        "selector_or_symbol": "main-window.fxml#layoutActions",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button.icon-button",
+        "custom_component_required": false,
+        "notes": "Target-only layout toggles (VS Code has equivalent layout controls)"
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SHELL-012",
+      "name": "Maximize / Restore Results (target only)",
+      "component_type": "icon_button",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "Maximize / Restore Results (target only)",
+      "icon": {
+        "name": "fth-maximize-2",
+        "source": "Ikonli Feather (target)"
+      },
+      "tooltip": "Maximize / Restore Results (Ctrl+Alt+R)",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Alt+R",
+      "source_reference": {
+        "file": "n/a (target)",
+        "selector_or_symbol": "main-window.fxml#layoutActions",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button.icon-button",
+        "custom_component_required": false,
+        "notes": "Target-only layout toggles (VS Code has equivalent layout controls)"
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SHELL-013",
+      "name": "Float Results Panel (target only)",
+      "component_type": "icon_button",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "Float Results Panel (target only)",
+      "icon": {
+        "name": "fth-external-link",
+        "source": "Ikonli Feather (target)"
+      },
+      "tooltip": "Float Results Panel (Ctrl+Shift+U)",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Shift+U",
+      "source_reference": {
+        "file": "n/a (target)",
+        "selector_or_symbol": "main-window.fxml#layoutActions",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button.icon-button",
+        "custom_component_required": false,
+        "notes": "Target-only layout toggles (VS Code has equivalent layout controls)"
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SHELL-014",
+      "name": "Restore Default Layout (target only)",
+      "component_type": "icon_button",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "Restore Default Layout (target only)",
+      "icon": {
+        "name": "fth-sliders",
+        "source": "Ikonli Feather (target)"
+      },
+      "tooltip": "Restore Default Layout (Ctrl+Shift+F10)",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Ctrl+Shift+F10",
+      "source_reference": {
+        "file": "n/a (target)",
+        "selector_or_symbol": "main-window.fxml#layoutActions",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button.icon-button",
+        "custom_component_required": false,
+        "notes": "Target-only layout toggles (VS Code has equivalent layout controls)"
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SHELL-020",
+      "name": "Minimize",
+      "component_type": "window_control",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "Minimize",
+      "icon": {
+        "name": "fth-minus",
+        "source": "Ikonli Feather (target)"
+      },
+      "tooltip": "Minimize",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Win+Down",
+      "source_reference": {
+        "file": "Windows DWM caption",
+        "selector_or_symbol": "native caption min",
+        "handler": "DefWindowProc"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button.window-control-button",
+        "custom_component_required": true,
+        "notes": "WindowStateManager.minimize → ShowWindow(SW_MINIMIZE)"
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SHELL-021",
+      "name": "Maximize / Restore",
+      "component_type": "window_control",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "Maximize / Restore",
+      "icon": {
+        "name": "fth-square / fth-copy",
+        "source": "Ikonli Feather (target)"
+      },
+      "tooltip": "Maximize / Restore",
+      "classification": "secondary",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Win+Up / Win+Down",
+      "source_reference": {
+        "file": "Windows DWM caption",
+        "selector_or_symbol": "native caption max",
+        "handler": "DefWindowProc"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button.window-control-button",
+        "custom_component_required": true,
+        "notes": "HTMAXBUTTON → Snap Layouts; toggleMaximize"
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SHELL-022",
+      "name": "Close",
+      "component_type": "window_control",
+      "region_id": "REG-SHELL-006",
+      "parent_component_id": null,
+      "visible_label": "",
+      "accessible_name": "Close",
+      "icon": {
+        "name": "fth-x",
+        "source": "Ikonli Feather (target)"
+      },
+      "tooltip": "Close",
+      "classification": "destructive",
+      "enabled_when": "always",
+      "visible_when": "always",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused"
+      ],
+      "shortcut": "Alt+F4",
+      "source_reference": {
+        "file": "Windows DWM caption",
+        "selector_or_symbol": "native caption close",
+        "handler": "DefWindowProc"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button.window-control-button",
+        "custom_component_required": true,
+        "notes": "WindowStateManager.close → stage.close"
+      },
+      "notes": ""
+    }
+  ]
+}

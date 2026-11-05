@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:id="mainWindowRoot"
+            fx:controller="app.controllers.MainController"
+            styleClass="main-window">
+
+    <!-- Definitions for nodes dynamically embedded into the custom Title Bar -->
+    <fx:define>
+        <!-- Quick Search Box (relocated to Title Bar) -->
+        <HBox fx:id="searchBox" styleClass="titlebar-search-box" alignment="CENTER_LEFT" spacing="6">
+            <FontIcon iconLiteral="fth-search" styleClass="search-icon"/>
+            <TextField fx:id="searchField" promptText="Search objects (Ctrl+F)" styleClass="titlebar-search-input" prefWidth="200"/>
+        </HBox>
+
+        <!-- Layout & Theme Toggles (relocated to Title Bar) -->
+        <HBox fx:id="layoutActions" styleClass="titlebar-layout-actions" alignment="CENTER_RIGHT" spacing="2">
+            <Button onAction="#handleToggleSidebar" styleClass="icon-button">
+                <graphic><FontIcon iconLiteral="fth-sidebar"/></graphic>
+                <tooltip><Tooltip text="Toggle Database Explorer (Alt+1)"/></tooltip>
+            </Button>
+            <Button onAction="#handleToggleResults" styleClass="icon-button">
+                <graphic><FontIcon iconLiteral="fth-layout"/></graphic>
+                <tooltip><Tooltip text="Toggle Results Panel (Ctrl+R)"/></tooltip>
+            </Button>
+            <Button onAction="#handleMaximizeResults" styleClass="icon-button">
+                <graphic><FontIcon iconLiteral="fth-maximize-2"/></graphic>
+                <tooltip><Tooltip text="Maximize / Restore Results (Ctrl+Alt+R)"/></tooltip>
+            </Button>
+            <Button onAction="#handleUndockResults" styleClass="icon-button">
+                <graphic><FontIcon iconLiteral="fth-external-link"/></graphic>
+                <tooltip><Tooltip text="Float Results Panel (Ctrl+Shift+U)"/></tooltip>
+            </Button>
+            <Button onAction="#handleResetLayout" styleClass="icon-button">
+                <graphic><FontIcon iconLiteral="fth-sliders"/></graphic>
+                <tooltip><Tooltip text="Restore Default Layout (Ctrl+Shift+F10)"/></tooltip>
+            </Button>
+            <Button fx:id="themeToggleButton" onAction="#handleToggleTheme" styleClass="icon-button">
+                <graphic><FontIcon fx:id="themeToggleIcon" iconLiteral="fth-sun"/></graphic>
+                <tooltip><Tooltip text="Toggle Dark / Light Theme"/></tooltip>
+            </Button>
+            <Button fx:id="settingsButton" onAction="#handleOpenSettings" styleClass="icon-button">
+                <graphic><FontIcon iconLiteral="fth-settings"/></graphic>
+                <tooltip><Tooltip text="Cài đặt hệ thống (Ctrl+,)"/></tooltip>
+            </Button>
+        </HBox>
+    </fx:define>
+
+    <!-- Top Area: Custom Title Bar, Menu Bar & Tool Bar -->
+    <top>
+        <VBox styleClass="top-container">
+            <!-- Modern Custom Window Title Bar (Modular Component) -->
+            <fx:include fx:id="titleBar" source="titlebar.fxml"/>
+
+            <!-- Main Menu Bar (relocated into the custom title bar by MainController, VS Code style) -->
+            <MenuBar fx:id="mainMenuBar" styleClass="main-menu-bar">
+                <Menu text="_File">
+                    <MenuItem text="New Query Tab" onAction="#handleNewTab" accelerator="Shortcut+N">
+                        <graphic><FontIcon iconLiteral="fth-file-plus"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Open SQL Script..." accelerator="Shortcut+O">
+                        <graphic><FontIcon iconLiteral="fth-folder"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Save" accelerator="Shortcut+S">
+                        <graphic><FontIcon iconLiteral="fth-save"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Save As..." accelerator="Shortcut+Shift+S"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Close Tab" onAction="#handleCloseTab" accelerator="Shortcut+W">
+                        <graphic><FontIcon iconLiteral="fth-x"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Close All Tabs" onAction="#handleCloseAllTabs" accelerator="Shortcut+Shift+W">
+                        <graphic><FontIcon iconLiteral="fth-x-circle"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Database Connections..." onAction="#handleManageConnections" accelerator="Shortcut+Alt+C">
+                        <graphic><FontIcon iconLiteral="mdi2d-database"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Save Workspace" onAction="#handleSaveWorkspace" accelerator="Shortcut+Alt+W">
+                        <graphic><FontIcon iconLiteral="fth-hard-drive"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Preferences: Settings..." onAction="#handleOpenSettings" accelerator="Shortcut+,">
+                        <graphic><FontIcon iconLiteral="fth-settings"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Exit" onAction="#handleClose" accelerator="Alt+F4">
+                        <graphic><FontIcon iconLiteral="fth-log-out"/></graphic>
+                    </MenuItem>
+                </Menu>
+
+                <Menu text="_Edit">
+                    <MenuItem text="Undo" accelerator="Shortcut+Z"/>
+                    <MenuItem text="Redo" accelerator="Shortcut+Y"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Cut" accelerator="Shortcut+X"/>
+                    <MenuItem text="Copy" accelerator="Shortcut+C"/>
+                    <MenuItem text="Paste" accelerator="Shortcut+V"/>
+                    <SeparatorMenuItem/>
+                    <!-- Accelerators Alt+[ / Alt+] are installed in MainController (bracket keys) -->
+                    <MenuItem fx:id="menuGotoBegin" text="Go to Beginning" onAction="#handleGotoBegin">
+                        <graphic><FontIcon iconLiteral="fth-chevrons-up"/></graphic>
+                    </MenuItem>
+                    <MenuItem fx:id="menuGotoEnd" text="Go to End" onAction="#handleGotoEnd">
+                        <graphic><FontIcon iconLiteral="fth-chevrons-down"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Refresh Objects &amp; IntelliSense" onAction="#handleRefreshObjects" accelerator="Shortcut+Shift+R">
+                        <graphic><FontIcon iconLiteral="fth-refresh-cw"/></graphic>
+                    </MenuItem>
+                </Menu>
+
+                <Menu text="F_ormat">
+                    <MenuItem text="Format SQL" onAction="#handleFormatSql" accelerator="Shortcut+Alt+L">
+                        <graphic><FontIcon iconLiteral="fth-align-left"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="SQL Code Styles..." onAction="#handleOpenCodeStyles" accelerator="Shortcut+Alt+F">
+                        <graphic><FontIcon iconLiteral="fth-sliders"/></graphic>
+                    </MenuItem>
+                </Menu>
+
+                <Menu text="_View">
+                    <CheckMenuItem fx:id="menuViewExplorer" text="Database Explorer" onAction="#handleToggleSidebar" accelerator="Alt+1"/>
+                    <CheckMenuItem fx:id="menuViewResults" text="Results Panel" onAction="#handleToggleResults" accelerator="Shortcut+R"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Maximize / Restore Results" onAction="#handleMaximizeResults" accelerator="Shortcut+Alt+R">
+                        <graphic><FontIcon iconLiteral="fth-maximize-2"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Float Results Panel" onAction="#handleUndockResults" accelerator="Shortcut+Shift+U">
+                        <graphic><FontIcon iconLiteral="fth-external-link"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <Menu fx:id="themesMenu" text="Theme">
+                        <graphic><FontIcon iconLiteral="fth-sun"/></graphic>
+                    </Menu>
+                    <SeparatorMenuItem/>
+                    <CheckMenuItem fx:id="menuViewAutoHideMenu" text="Auto-hide Menu Bar (Alt to show)" onAction="#handleToggleAutoHideMenu"/>
+                </Menu>
+
+                <Menu text="_Navigate">
+                    <MenuItem text="Go to Line..." accelerator="Shortcut+G"/>
+                    <MenuItem text="Find Database Object..." accelerator="Shortcut+Shift+N"/>
+                </Menu>
+
+                <Menu text="_Tools">
+                    <MenuItem text="Execute Statement" onAction="#handleExecute" accelerator="F5">
+                        <graphic><FontIcon iconLiteral="fth-play"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Execute (Alternative)" onAction="#handleExecute" accelerator="Shortcut+Enter"/>
+                    <MenuItem text="Stop Execution" onAction="#handleStop" accelerator="Shortcut+F2">
+                        <graphic><FontIcon iconLiteral="fth-square"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Display Estimated Execution Plan" onAction="#handleFetchEstimatedPlan" accelerator="Shortcut+L">
+                        <graphic><FontIcon iconLiteral="fth-file-text"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Include Actual Execution Plan" onAction="#handleFetchActualPlan" accelerator="Shortcut+M">
+                        <graphic><FontIcon iconLiteral="fth-play"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <!-- Features of the source app that are not migrated yet (deferred, kept for discoverability) -->
+                    <MenuItem text="Search Objects Content... (chưa hỗ trợ)" disable="true"/>
+                    <MenuItem text="Query History (chưa hỗ trợ)" disable="true"/>
+                    <MenuItem text="So sánh kết quả... (chưa hỗ trợ)" disable="true"/>
+                    <MenuItem text="Activity Monitor (chưa hỗ trợ)" disable="true"/>
+                    <MenuItem text="So sánh Schema... (chưa hỗ trợ)" disable="true"/>
+                    <MenuItem text="Google Sheets Manager... (chưa hỗ trợ)" disable="true"/>
+                    <MenuItem text="Sinh Layout Bravo từ Excel... (chưa hỗ trợ)" disable="true"/>
+                </Menu>
+
+                <Menu text="_Window">
+                    <MenuItem text="Split Editor Right" onAction="#handleSplitRight">
+                        <graphic><FontIcon iconLiteral="fth-columns"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Split Editor Down" onAction="#handleSplitDown">
+                        <graphic><FontIcon iconLiteral="fth-layout"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Maximize Editor (Distraction-Free)" onAction="#handleMaximizeEditor" accelerator="Shortcut+Shift+F12"/>
+                    <Menu text="Layout Presets">
+                        <MenuItem text="Default Layout" onAction="#handlePresetDefault"/>
+                        <MenuItem text="Editor Focused" onAction="#handlePresetEditorFocused"/>
+                        <MenuItem text="Database Explorer Focused" onAction="#handlePresetExplorerFocused"/>
+                        <MenuItem text="Results Maximized" onAction="#handlePresetResultsMaximized"/>
+                    </Menu>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Restore Default Layout" onAction="#handleResetLayout" accelerator="Shortcut+Shift+F10"/>
+                </Menu>
+
+                <Menu text="_Help">
+                    <MenuItem text="Check for Updates..." onAction="#handleCheckUpdates">
+                        <graphic><FontIcon iconLiteral="fth-download-cloud"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="About SQL IDE" onAction="#handleAbout">
+                        <graphic><FontIcon iconLiteral="fth-info"/></graphic>
+                    </MenuItem>
+                </Menu>
+            </MenuBar>
+
+            <!-- Editor context bar (approved redesign, SCR-MAIN-003 / REG toolbar):
+                 [connection › database › schema]  ===  [Limit][Run][Stop] | [Plan][Format][Refresh][⋯] -->
+            <HBox fx:id="contextToolBar" styleClass="context-tool-bar" alignment="CENTER_LEFT" spacing="4">
+                <!-- Left: execution context breadcrumb -->
+                <HBox styleClass="context-breadcrumb" alignment="CENTER_LEFT" spacing="2">
+                    <HBox styleClass="context-pill" alignment="CENTER_LEFT" spacing="4">
+                        <FontIcon fx:id="connectionTypeIcon" iconLiteral="fth-server" styleClass="context-pill-icon"/>
+                        <ComboBox fx:id="connectionComboBox" prefWidth="170" promptText="Chọn kết nối..." styleClass="context-combo"/>
+                        <Label fx:id="toolbarEnvBadge" styleClass="titlebar-env-badge" visible="false" managed="false"/>
+                    </HBox>
+                    <FontIcon iconLiteral="fth-chevron-right" styleClass="context-separator"/>
+                    <HBox styleClass="context-pill" alignment="CENTER_LEFT" spacing="4">
+                        <FontIcon iconLiteral="fth-database" styleClass="context-pill-icon"/>
+                        <ComboBox fx:id="databaseComboBox" prefWidth="120" promptText="Database" styleClass="context-combo"/>
+                    </HBox>
+                    <FontIcon iconLiteral="fth-chevron-right" styleClass="context-separator"/>
+                    <HBox styleClass="context-pill" alignment="CENTER_LEFT" spacing="4">
+                        <FontIcon iconLiteral="fth-layers" styleClass="context-pill-icon"/>
+                        <ComboBox fx:id="schemaComboBox" prefWidth="90" promptText="Schema" styleClass="context-combo"/>
+                    </HBox>
+                </HBox>
+
+                <Region HBox.hgrow="ALWAYS" minWidth="8"/>
+
+                <!-- Right: execution actions -->
+                <HBox styleClass="context-actions" alignment="CENTER_RIGHT" spacing="4">
+                    <HBox styleClass="context-limit-box" alignment="CENTER_LEFT" spacing="2">
+                        <Label text="Giới hạn:" styleClass="context-label"/>
+                        <ComboBox fx:id="limitComboBox" prefWidth="64" promptText="All" styleClass="context-combo"/>
+                    </HBox>
+                    <Button fx:id="executeButton" onAction="#handleExecute" text="Run" styleClass="run-button">
+                        <graphic><FontIcon fx:id="executeButtonIcon" iconLiteral="fth-play"/></graphic>
+                        <tooltip><Tooltip text="Run (F5 / Ctrl+Enter)"/></tooltip>
+                    </Button>
+                    <Button fx:id="stopButton" onAction="#handleStop" text="Stop" styleClass="stop-button" disable="true">
+                        <graphic><FontIcon iconLiteral="fth-square"/></graphic>
+                        <tooltip><Tooltip text="Stop Execution (Ctrl+F2)"/></tooltip>
+                    </Button>
+                    <Separator orientation="VERTICAL" styleClass="context-divider"/>
+                    <Button fx:id="planToolbarButton" onAction="#handleFetchEstimatedPlan" styleClass="context-icon-button">
+                        <graphic><FontIcon iconLiteral="fth-git-commit"/></graphic>
+                        <tooltip><Tooltip text="Display Estimated Execution Plan (Ctrl+L)"/></tooltip>
+                    </Button>
+                    <Button onAction="#handleFormatSql" styleClass="context-icon-button">
+                        <graphic><FontIcon iconLiteral="fth-align-left"/></graphic>
+                        <tooltip><Tooltip text="Format SQL (Ctrl+Alt+L)"/></tooltip>
+                    </Button>
+                    <Button onAction="#handleRefreshObjects" styleClass="context-icon-button">
+                        <graphic><FontIcon iconLiteral="fth-refresh-cw"/></graphic>
+                        <tooltip><Tooltip text="Refresh Objects &amp; IntelliSense (Ctrl+Shift+R)"/></tooltip>
+                    </Button>
+                    <MenuButton fx:id="toolbarOverflowButton" styleClass="context-icon-button, context-overflow" focusTraversable="false">
+                        <graphic><FontIcon iconLiteral="fth-more-horizontal"/></graphic>
+                        <tooltip><Tooltip text="Thêm thao tác"/></tooltip>
+                        <items>
+                            <MenuItem text="New query tab" onAction="#handleNewTab" accelerator="Shortcut+N">
+                                <graphic><FontIcon iconLiteral="fth-plus"/></graphic>
+                            </MenuItem>
+                            <MenuItem text="Open file" accelerator="Shortcut+O">
+                                <graphic><FontIcon iconLiteral="fth-folder"/></graphic>
+                            </MenuItem>
+                            <MenuItem text="Save" accelerator="Shortcut+S">
+                                <graphic><FontIcon iconLiteral="fth-save"/></graphic>
+                            </MenuItem>
+                            <SeparatorMenuItem/>
+                            <MenuItem text="Connection manager" onAction="#handleManageConnections">
+                                <graphic><FontIcon iconLiteral="fth-settings"/></graphic>
+                            </MenuItem>
+                            <MenuItem fx:id="menuBravoTool" text="BRAVO Tool">
+                                <graphic><FontIcon iconLiteral="fth-box"/></graphic>
+                            </MenuItem>
+                        </items>
+                    </MenuButton>
+                </HBox>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Center Work Area: SplitPane for Explorer, Editor, and Results -->
+    <center>
+        <SplitPane fx:id="mainHorizontalSplit" orientation="HORIZONTAL" dividerPositions="0.22" styleClass="main-split-pane">
+            <!-- Left: Database Explorer Panel (Included) -->
+            <fx:include fx:id="sidebar" source="sidebar.fxml"/>
+
+            <!-- Right: Split Vertical (Editor on top, Results on bottom) -->
+            <SplitPane fx:id="centerVerticalSplit" orientation="VERTICAL" dividerPositions="0.65" styleClass="workspace-split-pane">
+                <!-- Editor Area (Included). The slot's bottom padding is the visible gap between
+                     the editor and results cards (SCR-MAIN-001); set by MainController. -->
+                <VBox fx:id="editorSlot" styleClass="editor-slot">
+                    <fx:include fx:id="editor" source="editor.fxml"/>
+                </VBox>
+
+                <!-- Results Area (Included) -->
+                <fx:include fx:id="results" source="results.fxml"/>
+            </SplitPane>
+        </SplitPane>
+    </center>
+
+    <!-- Bottom: Status Bar (Included) -->
+    <bottom>
+        <fx:include fx:id="statusBar" source="status-bar.fxml"/>
+    </bottom>
+</BorderPane>

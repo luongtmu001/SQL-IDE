@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-SHELL-001",
+  "screen_name": "Window shell & title bar",
+  "source_window_size": {
+    "width": 1456,
+    "height": 816,
+    "display_scale": "unknown",
+    "note": "screenshot frame, maximized"
+  },
+  "target_window_size": {
+    "width": 1212,
+    "height": 776,
+    "display_scale": "unknown",
+    "note": "restored, observed; default 1280x820 min 960x620 (AppLauncher)"
+  },
+  "layout_type": "desktop",
+  "regions": [
+    {
+      "id": "REG-SHELL-001",
+      "name": "Native window frame",
+      "purpose": "OS window: shadow, rounded corners, snap, resize borders",
+      "parent_id": null,
+      "layout_role": "overlay",
+      "position": "overlay",
+      "sizing": {
+        "width": "window",
+        "height": "window",
+        "min_width": "source 900 / target 960",
+        "min_height": "source 600 / target 620",
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [
+        "REG-SHELL-002",
+        "REG-SHELL-003"
+      ],
+      "visibility_rules": [
+        "resize borders disabled when maximized"
+      ],
+      "evidence": [
+        "EVD-001",
+        "EVD-010",
+        "EVD-015"
+      ]
+    },
+    {
+      "id": "REG-SHELL-002",
+      "name": "Caption bar (source: native Windows caption)",
+      "purpose": "Window title + min/max/close",
+      "parent_id": "REG-SHELL-001",
+      "layout_role": "header",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": "Windows default (~30-32px)",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [
+        "CMP-SHELL-001",
+        "BTN-SHELL-020",
+        "BTN-SHELL-021",
+        "BTN-SHELL-022"
+      ],
+      "visibility_rules": [
+        "always"
+      ],
+      "evidence": [
+        "EVD-001",
+        "EVD-002"
+      ]
+    },
+    {
+      "id": "REG-SHELL-003",
+      "name": "Navbar / menu row (source) → merged into title bar (target)",
+      "purpose": "App menus + global launch buttons + theme/settings/env",
+      "parent_id": "REG-SHELL-001",
+      "layout_role": "navigation",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": "~42px source (observed) / 34px target title bar (titlebar.css)",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [
+        "REG-SHELL-004",
+        "REG-SHELL-005",
+        "REG-SHELL-006"
+      ],
+      "visibility_rules": [
+        "source: auto-hide when appearance.autoHideNavbar=true (hover sensor at top)",
+        "target: menus collapse to hamburger when title bar width < 950"
+      ],
+      "evidence": [
+        "EVD-003",
+        "EVD-004",
+        "EVD-011"
+      ]
+    },
+    {
+      "id": "REG-SHELL-004",
+      "name": "Left: logo + menu bar",
+      "purpose": "App icon and File/Edit/Format/View/Settings/Help",
+      "parent_id": "REG-SHELL-003",
+      "layout_role": "navigation",
+      "position": "left",
+      "sizing": {
+        "width": "content",
+        "height": "fill",
+        "resizable": false,
+        "flexible": false
+      },
+      "children": [
+        "CMP-SHELL-002",
+        "MNU-SHELL-001",
+        "MNU-SHELL-002",
+        "MNU-SHELL-003",
+        "MNU-SHELL-004",
+        "MNU-SHELL-005",
+        "MNU-SHELL-006"
+      ],
+      "visibility_rules": [],
+      "evidence": [
+        "EVD-003"
+      ]
+    },
+    {
+      "id": "REG-SHELL-005",
+      "name": "Center: launchers / title / search",
+      "purpose": "Source: Snippets, Sheets, BRAVO; Target: document title + search",
+      "parent_id": "REG-SHELL-003",
+      "layout_role": "navigation",
+      "position": "center",
+      "sizing": {
+        "width": "content",
+        "height": "fill",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [
+        "BTN-SHELL-001",
+        "BTN-SHELL-002",
+        "BTN-SHELL-003",
+        "CMP-SHELL-003",
+        "CMP-SHELL-004"
+      ],
+      "visibility_rules": [
+        "BTN-SHELL-003 only when addons.bravo_tool.enabled"
+      ],
+      "evidence": [
+        "EVD-003",
+        "EVD-005"
+      ]
+    },
+    {
+      "id": "REG-SHELL-006",
+      "name": "Right: global actions + window controls",
+      "purpose": "Update badge, theme, settings, env badge; target adds layout toggles + window controls",
+      "parent_id": "REG-SHELL-003",
+      "layout_role": "navigation",
+      "position": "right",
+      "sizing": {
+        "width": "content",
+        "height": "fill",
+        "resizable": false,
+        "flexible": false
+      },
+      "children": [
+        "BTN-SHELL-004",
+        "BTN-SHELL-005",
+        "BTN-SHELL-006",
+        "CMP-SHELL-005",
+        "BTN-SHELL-010",
+        "BTN-SHELL-011",
+        "BTN-SHELL-012",
+        "BTN-SHELL-013",
+        "BTN-SHELL-014",
+        "BTN-SHELL-020",
+        "BTN-SHELL-021",
+        "BTN-SHELL-022"
+      ],
+      "visibility_rules": [
+        "BTN-SHELL-004 hidden until update found"
+      ],
+      "evidence": [
+        "EVD-003",
+        "EVD-006"
+      ]
+    }
+  ]
+}

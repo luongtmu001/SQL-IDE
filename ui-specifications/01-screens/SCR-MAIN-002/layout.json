@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-002",
+  "regions": [
+    {
+      "id": "REG-EXP-001",
+      "name": "Header",
+      "sizing": {
+        "height": "28px"
+      }
+    },
+    {
+      "id": "REG-EXP-002",
+      "name": "Search",
+      "sizing": {
+        "height": "26px",
+        "margin": "6px 8px"
+      }
+    },
+    {
+      "id": "REG-EXP-003",
+      "name": "Tree",
+      "sizing": {
+        "row": "22px",
+        "indent": "14px",
+        "hscroll": false
+      }
+    },
+    {
+      "id": "REG-EXP-004",
+      "name": "Rail",
+      "sizing": {
+        "width": "46px"
+      }
+    }
+  ]
+}

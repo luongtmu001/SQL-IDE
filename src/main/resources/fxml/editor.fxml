@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.controllers.EditorController"
+      fx:id="editorContainer"
+      styleClass="editor-container"
+      VBox.vgrow="ALWAYS">
+
+    <!-- StackPane embedding split actions directly into the Tab header row -->
+    <StackPane fx:id="editorStackPane" alignment="TOP_RIGHT" VBox.vgrow="ALWAYS" styleClass="editor-stack-pane">
+        <!-- Split Editor Area: Primary TabPane and Optional Secondary TabPane -->
+        <SplitPane fx:id="editorSplitContainer" orientation="HORIZONTAL" VBox.vgrow="ALWAYS" styleClass="editor-split-pane">
+            <!-- Primary TabPane -->
+            <TabPane fx:id="primaryTabPane" VBox.vgrow="ALWAYS" styleClass="editor-tab-pane"/>
+
+            <!-- Secondary TabPane (for split editor view) -->
+            <TabPane fx:id="secondaryTabPane" VBox.vgrow="ALWAYS" styleClass="editor-tab-pane"/>
+        </SplitPane>
+
+        <!-- Empty State Box (visible when no tabs are open) -->
+        <VBox fx:id="emptyEditorStateBox" visible="false" managed="false" alignment="CENTER" spacing="12" styleClass="explorer-empty-state" VBox.vgrow="ALWAYS">
+            <FontIcon iconLiteral="fth-file-text" iconSize="42" styleClass="empty-state-icon"/>
+            <Label text="No Editor Tabs Open" styleClass="empty-state-title"/>
+            <Label text="Open an SQL script or create a new query tab to start editing." styleClass="empty-state-subtext"/>
+            <Button text="New Query Tab" onAction="#handleNewTab" styleClass="accent, small">
+                <graphic><FontIcon iconLiteral="fth-plus"/></graphic>
+            </Button>
+        </VBox>
+
+        <!-- Tab Header Right Actions (Embedded on the same row as the tabs) -->
+        <HBox fx:id="tabHeaderActions" alignment="CENTER_RIGHT" spacing="4" pickOnBounds="false"
+              maxHeight="34" prefHeight="34" styleClass="tab-header-actions">
+            <Button onAction="#handleFormatSql" styleClass="icon-button, mini" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-align-left"/></graphic>
+                <tooltip><Tooltip text="Format SQL Statement (Ctrl+Alt+L)"/></tooltip>
+            </Button>
+            <Button onAction="#handleSplitRight" styleClass="icon-button, mini" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-columns"/></graphic>
+                <tooltip><Tooltip text="Split Editor Right"/></tooltip>
+            </Button>
+            <Button onAction="#handleSplitDown" styleClass="icon-button, mini" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-layout"/></graphic>
+                <tooltip><Tooltip text="Split Editor Down"/></tooltip>
+            </Button>
+            <Button fx:id="closeSplitButton" onAction="#closeSplit" visible="false" managed="false" styleClass="icon-button, mini" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-x"/></graphic>
+                <tooltip><Tooltip text="Close Split"/></tooltip>
+            </Button>
+        </HBox>
+    </StackPane>
+</VBox>

@@ -1,0 +1,563 @@
+/* =====================================================================
+   Layout, Toolbars & Modern Card-Based Workspace Styling
+   ===================================================================== */
+
+.main-window {
+    /* canvas behind the cards: bg-inset is darker than the cards in dark themes and
+       lighter-grey in light themes, so the 6px gaps are always visible */
+    -fx-background-color: -color-bg-inset;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+}
+
+.main-window.window-maximized,
+.main-window:maximized {
+    -fx-border-width: 0px;
+}
+
+.top-container {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.main-menu-bar {
+    -fx-padding: 2 6 2 6;
+}
+
+/* Compact Main Tool Bar (matches sleek filter bar height ~28px) */
+.main-tool-bar {
+    -fx-padding: 2 8 2 8;
+    -fx-spacing: 5;
+    -fx-pref-height: 28px;
+    -fx-min-height: 28px;
+    -fx-max-height: 28px;
+    -fx-background-insets: 0;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.main-tool-bar .button {
+    -fx-padding: 2 7 2 7;
+    -fx-font-size: 11px;
+    -fx-pref-height: 22px;
+    -fx-max-height: 22px;
+}
+
+.main-tool-bar .button .ikonli-font-icon {
+    -fx-icon-size: 11px;
+}
+
+.main-tool-bar .combo-box {
+    -fx-font-size: 11px;
+    -fx-padding: 0 4 0 6;
+    -fx-pref-height: 22px;
+    -fx-max-height: 22px;
+}
+
+/* =====================================================================
+   Card-Based Workspace Layout: Soft Margins & Rounded Corners
+   ===================================================================== */
+
+.main-split-pane {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 6 6 6 6;
+}
+
+.workspace-split-pane {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+/* 6px gaps between cards. The :horizontal / :vertical pseudo-classes are required:
+   AtlantaFX styles ".split-pane:vertical > .split-pane-divider" with higher specificity,
+   which used to shrink the editor/results gap to 2px. */
+.main-split-pane:horizontal > .split-pane-divider {
+    -fx-cursor: h_resize;
+    -fx-padding: 0 3 0 3;
+    -fx-min-width: 6px;
+    -fx-pref-width: 6px;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+}
+
+.workspace-split-pane:vertical > .split-pane-divider {
+    /* thin draggable sash; the wider grab area is .editor-sash above it */
+    -fx-padding: 1 0 1 0;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-cursor: v_resize;
+}
+
+.editor-slot {
+    -fx-background-color: transparent;
+}
+
+/* T7: the gap under the editor card is a draggable sash (MainController.installEditorSash) */
+.editor-sash {
+    -fx-background-color: transparent;
+}
+
+.editor-sash:hover,
+.editor-sash:dragging {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-background-insets: 1 0 1 0;
+}
+
+/* Cards (SCR-MAIN-001, approved 2026-11-05: keep cards, fix clipped corners).
+   The outline is painted by RoundedCard's overlay ON TOP of the content, and the
+   card + children are clipped to the same 8px radius, so corners are never hidden. */
+.sidebar-panel,
+.editor-container,
+.results-container {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8px;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.card-border-overlay {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-border-insets: 0;
+}
+
+/* Rail lives inside the sidebar card: no own outline. */
+.sidebar-panel .mini-sidebar-strip {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+/* Sash feedback (LLTool / VS Code): 2px accent line on hover. */
+/* No grip dots on the gaps (AtlantaFX draws a grabber in the divider). */
+.main-split-pane > .split-pane-divider > .vertical-grabber,
+.main-split-pane > .split-pane-divider > .horizontal-grabber,
+.workspace-split-pane > .split-pane-divider > .vertical-grabber,
+.workspace-split-pane > .split-pane-divider > .horizontal-grabber {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-shape: null;
+}
+
+.main-split-pane:horizontal > .split-pane-divider:hover {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-background-insets: 0 2 0 2;
+}
+
+.workspace-split-pane:vertical > .split-pane-divider:hover {
+    -fx-background-color: -color-accent-emphasis;
+}
+
+/* Compact Panel Header (Database Explorer - height ~28px) */
+.panel-header {
+    -fx-padding: 2 6 2 10;
+    -fx-spacing: 5;
+    -fx-pref-height: 28px;
+    -fx-min-height: 28px;
+    -fx-max-height: 28px;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 7px 7px 0 0;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.panel-header-icon {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-accent-fg;
+}
+
+.panel-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 2 4 2 4;
+    -fx-background-radius: 4px;
+}
+
+.icon-button:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.explorer-tree {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 0 0 7px 7px;
+}
+
+.explorer-tree .virtual-flow {
+    -fx-background-radius: 0 0 7px 7px;
+}
+
+/* =====================================================================
+   Status bar — SCR-MAIN-005 (approved 2026-11-05)
+   22px, background = colour of the active connection (default blue, set inline
+   as -status-bar-bg by StatusBarController), white text like VS Code.
+   ===================================================================== */
+.status-bar {
+    -status-bar-bg: #007acc;
+    -fx-background-color: -status-bar-bg;
+    -fx-background-radius: 6px;
+    -fx-padding: 0 4 0 4;
+    -fx-pref-height: 22px;
+    -fx-min-height: 22px;
+    -fx-max-height: 22px;
+    -fx-font-size: 12px;
+}
+
+.status-bar .status-entry {
+    -fx-padding: 0 7 0 7;
+    -fx-pref-height: 22px;
+    -fx-min-height: 22px;
+    -fx-max-height: 22px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 4;
+}
+
+.status-bar .status-entry:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.14);
+}
+
+.status-bar .status-entry:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.22);
+}
+
+.status-bar .status-text,
+.status-bar .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+}
+
+.status-bar .status-icon,
+.status-bar .ikonli-font-icon {
+    -fx-icon-color: #ffffff;
+    -fx-icon-size: 12px;
+}
+
+.status-bar .status-flag {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.status-bar .status-button {
+    -fx-border-width: 0;
+    -fx-padding: 0 7 0 7;
+}
+
+
+.status-bar .status-dot {
+    -fx-min-width: 8px;
+    -fx-min-height: 8px;
+    -fx-max-width: 8px;
+    -fx-max-height: 8px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+}
+
+.status-bar .status-dot.online {
+    -fx-background-color: #ffffff;
+    -fx-border-width: 0;
+}
+
+.status-bar .status-dot.offline {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.85);
+    -fx-border-width: 1.5px;
+}
+
+.status-bar .status-dot.busy {
+    -fx-background-color: #ffd33d;
+    -fx-border-width: 0;
+}
+
+.plan-badge-preview {
+    -fx-padding: 6 14 6 14;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 6px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+}
+
+/* =====================================================================
+   Editor context bar (SCR-MAIN-003, approved 2026-11-04)
+   [connection > database > schema] ==== [Limit][Run][Stop] | [Plan][Format][Refresh][...]
+   ===================================================================== */
+
+.context-tool-bar {
+    /* card (outline drawn by RoundedCard overlay) */
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8px;
+    -fx-border-width: 0;
+    -fx-padding: 0 6 0 6;
+    -fx-pref-height: 32px;
+    -fx-min-height: 32px;
+    -fx-max-height: 32px;
+}
+
+.context-breadcrumb .context-separator {
+    -fx-icon-color: -color-fg-subtle;
+    -fx-icon-size: 12px;
+}
+
+.context-pill {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 5px;
+    -fx-padding: 0 0 0 8;
+    -fx-pref-height: 24px;
+    -fx-max-height: 24px;
+}
+
+.context-pill:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.context-pill .titlebar-env-badge {
+    -fx-border-width: 0;
+    -fx-background-radius: 3px;
+    -fx-padding: 0 5 0 5;
+}
+
+.context-breadcrumb {
+    -fx-spacing: 6;
+}
+
+.context-limit-box {
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-background-color: -color-bg-default;
+    -fx-padding: 0 0 0 8;
+    -fx-pref-height: 24px;
+    -fx-max-height: 24px;
+}
+
+.context-limit-box:hover {
+    -fx-border-color: -color-fg-subtle;
+}
+
+.context-pill .context-pill-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 12px;
+}
+
+.context-tool-bar .context-combo {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-font-size: 11.5px;
+    -fx-pref-height: 22px;
+    -fx-max-height: 22px;
+}
+
+.context-tool-bar .context-combo > .list-cell {
+    -fx-padding: 0 2 0 0;
+    -fx-text-fill: -color-fg-default;
+}
+
+.context-tool-bar .context-combo > .arrow-button {
+    -fx-background-color: transparent;
+    /* keep the chevron away from the pill edge */
+    -fx-padding: 0 8 0 6;
+}
+
+/* Chevron icon instead of the default triangle: down when closed, up while open. */
+.context-tool-bar .context-combo > .arrow-button > .arrow {
+    -fx-background-color: -color-fg-muted;
+    -fx-shape: "M1.4 0 L5 3.6 L8.6 0 L10 1.4 L5 6.4 L0 1.4 Z";
+    -fx-padding: 2.5 4 2.5 4;
+    -fx-scale-shape: true;
+}
+
+.context-tool-bar .context-combo:showing > .arrow-button > .arrow {
+    -fx-rotate: 180;
+}
+
+.context-tool-bar .context-combo:hover > .arrow-button > .arrow,
+.context-tool-bar .context-combo:showing > .arrow-button > .arrow {
+    -fx-background-color: -color-fg-default;
+}
+
+.context-tool-bar .context-combo.bordered {
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 0 0 0 4;
+}
+
+.main-window.flat-panels .context-tool-bar .context-combo.bordered {
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+}
+
+.context-tool-bar .context-label {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 11px;
+}
+
+.context-tool-bar .context-divider {
+    -fx-padding: 0 2 0 2;
+}
+
+.context-tool-bar .run-button {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-fg-emphasis;
+    -fx-background-radius: 5px;
+    -fx-padding: 2 14 2 12;
+    -fx-font-size: 11.5px;
+    -fx-font-weight: bold;
+    -fx-pref-height: 24px;
+    -fx-max-height: 24px;
+    -fx-graphic-text-gap: 4;
+}
+
+.context-tool-bar .run-button .ikonli-font-icon {
+    -fx-icon-color: -color-fg-emphasis;
+    -fx-icon-size: 11px;
+}
+
+.context-tool-bar .run-button:hover {
+    -fx-background-color: -color-accent-fg;
+}
+
+.context-tool-bar .stop-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-danger-fg;
+    -fx-background-radius: 4px;
+    -fx-padding: 2 8 2 6;
+    -fx-font-size: 11.5px;
+    -fx-pref-height: 24px;
+    -fx-max-height: 24px;
+    -fx-graphic-text-gap: 4;
+}
+
+.context-tool-bar .stop-button .ikonli-font-icon {
+    -fx-icon-color: -color-danger-fg;
+    -fx-icon-size: 10px;
+}
+
+.context-tool-bar .stop-button:hover {
+    -fx-background-color: -color-danger-subtle;
+}
+
+.context-tool-bar .stop-button:disabled {
+    -fx-opacity: 1;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+.context-tool-bar .stop-button:disabled .ikonli-font-icon {
+    -fx-icon-color: -color-fg-subtle;
+}
+
+.context-tool-bar .context-icon-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4px;
+    -fx-padding: 4 6 4 6;
+}
+
+.context-tool-bar .context-icon-button:hover,
+.context-tool-bar .context-overflow:showing {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.context-tool-bar .context-icon-button .ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+    -fx-icon-size: 13px;
+}
+
+.context-tool-bar .context-overflow > .arrow-button {
+    -fx-padding: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-opacity: 0;
+}
+
+.context-actions {
+    -fx-spacing: 6;
+}
+
+/* Overflow (...) menu: roomy rows, shortcuts right-aligned in muted text */
+.context-overflow .context-menu {
+    -fx-padding: 6 0 6 0;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+}
+
+.context-overflow .context-menu .menu-item {
+    -fx-padding: 5 14 5 12;
+}
+
+.context-overflow .context-menu .menu-item .accelerator-text {
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 0 0 0 28;
+}
+
+/* =====================================================================
+   Flat panel style (Settings > Giao diện > Kiểu khung = Phẳng, appearance.panelStyle = "flat")
+   Panels touch each other and are separated by a 1px hairline, like VS Code.
+   MainController adds .flat-panels to the root and removes margins / clip radii.
+   ===================================================================== */
+.main-window.flat-panels {
+    -fx-background-color: -color-bg-default;
+}
+
+.main-window.flat-panels .main-split-pane {
+    -fx-padding: 0;
+}
+
+.main-window.flat-panels .main-split-pane:horizontal > .split-pane-divider {
+    -fx-background-color: -color-border-default;
+    -fx-background-insets: 0 1.5 0 1.5;
+    -fx-min-width: 4px;
+    -fx-pref-width: 4px;
+}
+
+.main-window.flat-panels .workspace-split-pane:vertical > .split-pane-divider {
+    -fx-background-color: -color-border-default;
+}
+
+.main-window.flat-panels .main-split-pane:horizontal > .split-pane-divider:hover {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-background-insets: 0 1 0 1;
+}
+
+.main-window.flat-panels .workspace-split-pane:vertical > .split-pane-divider:hover {
+    -fx-background-color: -color-accent-emphasis;
+}
+
+.main-window.flat-panels .sidebar-panel,
+.main-window.flat-panels .editor-container,
+.main-window.flat-panels .results-container,
+.main-window.flat-panels .context-tool-bar,
+.main-window.flat-panels .panel-header,
+.main-window.flat-panels .explorer-tree,
+.main-window.flat-panels .explorer-tree .virtual-flow,
+.main-window.flat-panels .status-bar {
+    -fx-background-radius: 0;
+}
+
+.main-window.flat-panels .card-border-overlay {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.main-window.flat-panels .context-tool-bar {
+    -fx-border-color: transparent transparent -color-border-default transparent;
+    -fx-border-width: 0 0 1 0;
+}

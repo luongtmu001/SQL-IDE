@@ -1,0 +1,248 @@
+/* =====================================================================
+   Custom Window Title Bar (VS Code style)
+   [Icon][Menu Bar] === (draggable spacer) === [Title][Search] === (draggable spacer) === [Layout Toggles][- □ x]
+   All colors come from AtlantaFX design tokens -> follows every theme.
+   ===================================================================== */
+
+.window-title-bar {
+    -titlebar-background: -color-bg-subtle;
+    -titlebar-foreground: -color-fg-default;
+    -titlebar-foreground-muted: -color-fg-muted;
+    -titlebar-border: -color-border-subtle;
+    -titlebar-icon: -color-accent-fg;
+    -titlebar-button-hover: -color-bg-muted;
+    -titlebar-button-pressed: -color-border-default;
+
+    -fx-background-color: -titlebar-background;
+    -fx-border-color: transparent transparent -titlebar-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 0 0 10;
+    -fx-pref-height: 34px;
+    -fx-min-height: 34px;
+    -fx-max-height: 34px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.window-title-bar .app-icon {
+    /* Product logo (ImageView, 16x16 DIP) */
+}
+
+.titlebar-left-area {
+    -fx-spacing: 6;
+}
+
+/* Centered window title & search area */
+.titlebar-center-area {
+    -fx-alignment: CENTER;
+    -fx-spacing: 10;
+}
+
+.window-title-bar .window-title-label {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -titlebar-foreground-muted;
+}
+
+/* Global search box embedded in Title Bar */
+.titlebar-search-box {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 1 8 1 8;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 6;
+    -fx-pref-height: 24px;
+    -fx-max-height: 24px;
+}
+
+.titlebar-search-box:hover {
+    -fx-border-color: -color-border-default;
+}
+
+.titlebar-search-box:focused-within {
+    -fx-border-color: -color-accent-emphasis;
+}
+
+.titlebar-search-box .search-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 11px;
+}
+
+.titlebar-search-input {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -color-fg-default;
+    -fx-prompt-text-fill: -color-fg-muted;
+    -fx-border-width: 0;
+}
+
+/* Hamburger menu button (used when window width is narrow) */
+.titlebar-hamburger-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4px;
+    -fx-padding: 3 6 3 6;
+}
+
+.titlebar-hamburger-button > .arrow-button {
+    -fx-padding: 0;
+    -fx-shape: null;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-opacity: 0;
+}
+
+.titlebar-hamburger-button:hover,
+.titlebar-hamburger-button:showing {
+    -fx-background-color: -titlebar-button-hover;
+}
+
+.titlebar-hamburger-button .ikonli-font-icon {
+    -fx-icon-color: -titlebar-foreground;
+    -fx-icon-size: 13px;
+}
+
+/* ---------- Menu bar embedded in the title bar ---------- */
+
+.window-title-bar .titlebar-menu-bar {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-spacing: 0;
+}
+
+.window-title-bar .titlebar-menu-bar > .container > .menu-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4px;
+    -fx-padding: 4 7 4 7;
+}
+
+.window-title-bar .titlebar-menu-bar > .container > .menu-button > .label {
+    -fx-text-fill: -titlebar-foreground;
+    -fx-font-size: 12px;
+    -fx-padding: 0;
+}
+
+.window-title-bar .titlebar-menu-bar > .container > .menu-button:hover,
+.window-title-bar .titlebar-menu-bar > .container > .menu-button:showing,
+.window-title-bar .titlebar-menu-bar > .container > .menu-button:focused {
+    -fx-background-color: -titlebar-button-hover;
+}
+
+/* ---------- Custom / layout actions (right side) ---------- */
+
+.titlebar-custom-area {
+    -fx-alignment: CENTER_RIGHT;
+    -fx-padding: 0 4 0 0;
+}
+
+.window-title-bar .titlebar-layout-actions {
+    -fx-spacing: 2;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.window-title-bar .titlebar-layout-actions .icon-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4px;
+    -fx-padding: 4 6 4 6;
+}
+
+.window-title-bar .titlebar-layout-actions .icon-button:hover {
+    -fx-background-color: -titlebar-button-hover;
+}
+
+.window-title-bar .titlebar-layout-actions .icon-button:armed {
+    -fx-background-color: -titlebar-button-pressed;
+}
+
+.window-title-bar .titlebar-layout-actions .icon-button .ikonli-font-icon {
+    -fx-icon-color: -titlebar-foreground;
+    -fx-icon-size: 13px;
+}
+
+/* ---------- Update notification & environment badge ---------- */
+
+.titlebar-status-area {
+    -fx-alignment: CENTER_RIGHT;
+    -fx-padding: 0 6 0 0;
+}
+
+.titlebar-update-button {
+    -fx-background-color: -color-warning-subtle;
+    -fx-text-fill: -color-warning-fg;
+    -fx-background-radius: 4px;
+    -fx-padding: 2 8 2 6;
+    -fx-font-size: 11px;
+    -fx-graphic-text-gap: 4;
+}
+
+.titlebar-update-button .ikonli-font-icon {
+    -fx-icon-color: -color-warning-fg;
+    -fx-icon-size: 12px;
+}
+
+.titlebar-update-button:hover {
+    -fx-background-color: -color-warning-muted;
+}
+
+.titlebar-env-badge {
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 1 6 1 6;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+    -fx-border-width: 1px;
+}
+
+.titlebar-env-badge.env-dev {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-muted;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.titlebar-env-badge.env-test {
+    -fx-background-color: -color-success-subtle;
+    -fx-border-color: -color-success-muted;
+    -fx-text-fill: -color-success-fg;
+}
+
+.titlebar-env-badge.env-staging {
+    -fx-background-color: -color-warning-subtle;
+    -fx-border-color: -color-warning-muted;
+    -fx-text-fill: -color-warning-fg;
+}
+
+.titlebar-env-badge.env-prod {
+    -fx-background-color: -color-danger-emphasis;
+    -fx-border-color: -color-danger-emphasis;
+    -fx-text-fill: -color-fg-emphasis;
+}
+
+/* ---------- Inactive window (native caption dimming, VS Code titleBar.inactiveForeground) ---------- */
+
+.window-title-bar:window-inactive .titlebar-menu-bar > .container > .menu-button > .label,
+.window-title-bar:window-inactive .window-title-label {
+    -fx-text-fill: -color-fg-subtle;
+}
+
+.window-title-bar:window-inactive .titlebar-layout-actions .icon-button .ikonli-font-icon,
+.window-title-bar:window-inactive .titlebar-hamburger-button .ikonli-font-icon,
+.window-title-bar:window-inactive .window-control-button .ikonli-font-icon {
+    -fx-icon-color: -color-fg-subtle;
+}
+
+.window-title-bar:window-inactive .app-icon,
+.window-title-bar:window-inactive .titlebar-search-box,
+.window-title-bar:window-inactive .titlebar-env-badge,
+.window-title-bar:window-inactive .titlebar-update-button {
+    -fx-opacity: 0.6;
+}
+
+/* Close hover stays red/white even when inactive */
+.window-title-bar:window-inactive .window-control-button.close:hover .ikonli-font-icon {
+    -fx-icon-color: #ffffff;
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-002",
+  "interactions": [
+    {
+      "id": "INT-EXP-001",
+      "trigger": "double-click / Enter on connection",
+      "result": "connect (mock per Q1) + expand"
+    },
+    {
+      "id": "INT-EXP-002",
+      "trigger": "double-click table",
+      "result": "open SELECT tab (existing)"
+    },
+    {
+      "id": "INT-EXP-003",
+      "trigger": "type in search",
+      "result": "filter loaded nodes, show count"
+    },
+    {
+      "id": "INT-EXP-004",
+      "trigger": "right-click / ⋯",
+      "result": "context menu by node type"
+    },
+    {
+      "id": "INT-EXP-005",
+      "trigger": "drag connection/group onto group",
+      "result": "move (per Q2)"
+    },
+    {
+      "id": "INT-EXP-006",
+      "trigger": "F2 on group",
+      "result": "SCR-DLG-003 rename"
+    },
+    {
+      "id": "INT-EXP-007",
+      "trigger": "Delete on group/connection",
+      "result": "SCR-DLG-004 confirm"
+    },
+    {
+      "id": "INT-EXP-008",
+      "trigger": "filter icon on category",
+      "result": "SCR-DLG-006"
+    },
+    {
+      "id": "INT-EXP-009",
+      "trigger": "collapse to rail / rail icon click",
+      "result": "rail 46px / expand + select connection"
+    }
+  ]
+}

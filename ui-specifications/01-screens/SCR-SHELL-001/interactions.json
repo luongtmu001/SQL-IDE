@@ -1,0 +1,320 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-SHELL-001",
+  "interactions": [
+    {
+      "id": "INT-SHELL-001",
+      "component_id": "REG-SHELL-002",
+      "trigger": "drag",
+      "preconditions": [],
+      "source_handler": "Windows DefWindowProc (native caption)",
+      "backend_method": "none",
+      "action_summary": "Move window; drag to screen edge = Aero Snap",
+      "expected_result": "Move window; drag to screen edge = Aero Snap",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-001"
+      ],
+      "target_observation": "observed: drag moves window (target-after-drag.jpg)",
+      "parity": "matched"
+    },
+    {
+      "id": "INT-SHELL-002",
+      "component_id": "REG-SHELL-002",
+      "trigger": "double_click",
+      "preconditions": [],
+      "source_handler": "native caption",
+      "backend_method": "none",
+      "action_summary": "Toggle maximize/restore",
+      "expected_result": "Toggle maximize/restore",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-001"
+      ],
+      "target_observation": "observed: maximize + restore work; taskbar stays visible",
+      "parity": "matched"
+    },
+    {
+      "id": "INT-SHELL-003",
+      "component_id": "REG-SHELL-002",
+      "trigger": "right_click",
+      "preconditions": [],
+      "source_handler": "native caption",
+      "backend_method": "none",
+      "action_summary": "Open Windows system menu (Restore/Move/Size/Minimize/Maximize/Close)",
+      "expected_result": "Open Windows system menu (Restore/Move/Size/Minimize/Maximize/Close)",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "inferred (standard native behaviour)",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-001"
+      ],
+      "target_observation": "observed: NO system menu appears on right-click of caption",
+      "parity": "partial"
+    },
+    {
+      "id": "INT-SHELL-004",
+      "component_id": "REG-SHELL-001",
+      "trigger": "key Alt+Space",
+      "preconditions": [],
+      "source_handler": "native",
+      "backend_method": "none",
+      "action_summary": "Open system menu",
+      "expected_result": "Open system menu",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "inferred",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-001"
+      ],
+      "target_observation": "not testable on this machine: Alt+Space is captured by ChatGPT desktop global hotkey",
+      "parity": "not_checked"
+    },
+    {
+      "id": "INT-SHELL-005",
+      "component_id": "BTN-SHELL-021",
+      "trigger": "hover",
+      "preconditions": [],
+      "source_handler": "native caption (Win11)",
+      "backend_method": "none",
+      "action_summary": "Show Snap Layouts flyout",
+      "expected_result": "Show Snap Layouts flyout",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "inferred",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-001"
+      ],
+      "target_observation": "unknown: flyout not visible in capture (shell UI may be masked)",
+      "parity": "not_checked"
+    },
+    {
+      "id": "INT-SHELL-006",
+      "component_id": "REG-SHELL-001",
+      "trigger": "resize",
+      "preconditions": [],
+      "source_handler": "native frame",
+      "backend_method": "none",
+      "action_summary": "8-direction resize via invisible outer border",
+      "expected_result": "8-direction resize via invisible outer border",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-001"
+      ],
+      "target_observation": "observed: right-edge drag resizes; target resize band is 6 DIP INSIDE content (code)",
+      "parity": "partial"
+    },
+    {
+      "id": "INT-SHELL-007",
+      "component_id": "BTN-SHELL-020",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "native",
+      "backend_method": "none",
+      "action_summary": "Minimize (animated)",
+      "expected_result": "Minimize (animated)",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": [],
+      "target_observation": "code_verified",
+      "parity": "matched"
+    },
+    {
+      "id": "INT-SHELL-008",
+      "component_id": "BTN-SHELL-022",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "native",
+      "backend_method": "none",
+      "action_summary": "Close window → close_all_sessions()",
+      "expected_result": "Close window → close_all_sessions()",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "code_verified",
+      "safe_to_test": false,
+      "evidence": [
+        "EVD-002"
+      ],
+      "target_observation": "not clicked (would close app)",
+      "parity": "not_checked"
+    },
+    {
+      "id": "INT-SHELL-009",
+      "component_id": "REG-SHELL-001",
+      "trigger": "focus_lost",
+      "preconditions": [],
+      "source_handler": "native (DWM dims caption)",
+      "backend_method": "none",
+      "action_summary": "Inactive caption is dimmed",
+      "expected_result": "Inactive caption is dimmed",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "inferred",
+      "safe_to_test": true,
+      "evidence": [],
+      "target_observation": "code_verified: no inactive styling in titlebar.css",
+      "parity": "partial"
+    },
+    {
+      "id": "INT-SHELL-010",
+      "component_id": "MNU-SHELL-001",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "Bootstrap dropdown",
+      "backend_method": "none",
+      "action_summary": "Open menu dropdown",
+      "expected_result": "Open menu dropdown",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-003"
+      ],
+      "target_observation": "target MenuBar works (code)",
+      "parity": "matched"
+    },
+    {
+      "id": "INT-SHELL-011",
+      "component_id": "REG-SHELL-003",
+      "trigger": "hover",
+      "preconditions": [],
+      "source_handler": "static/js/autohide-navbar.js",
+      "backend_method": "none",
+      "action_summary": "Reveal auto-hidden navbar when pointer touches #ide-top-hover-sensor",
+      "expected_result": "Reveal auto-hidden navbar when pointer touches #ide-top-hover-sensor",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-004"
+      ],
+      "target_observation": "feature absent in target",
+      "parity": "not_checked"
+    },
+    {
+      "id": "INT-SHELL-012",
+      "component_id": "REG-SHELL-003",
+      "trigger": "resize",
+      "preconditions": [],
+      "source_handler": "n/a (source navbar fixed)",
+      "backend_method": "none",
+      "action_summary": "Menu collapses to hamburger on narrow width (target)",
+      "expected_result": "Menu collapses to hamburger on narrow width (target)",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "observed",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-011"
+      ],
+      "target_observation": "observed bug: at ~1075px width menu titles truncate to '…', 'Navig…' before hamburger threshold (950) kicks in",
+      "parity": "partial"
+    },
+    {
+      "id": "INT-SHELL-013",
+      "component_id": "BTN-SHELL-005",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "static/js/app.js:48 → ThemeManager",
+      "backend_method": "none",
+      "action_summary": "Toggle light/dark theme; DWM caption recoloured",
+      "expected_result": "Toggle light/dark theme; DWM caption recoloured",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-005"
+      ],
+      "target_observation": "",
+      "parity": "not_checked"
+    },
+    {
+      "id": "INT-SHELL-014",
+      "component_id": "BTN-SHELL-006",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "settings.js openSettings()",
+      "backend_method": "none",
+      "action_summary": "Open SCR-SET-001",
+      "expected_result": "Open SCR-SET-001",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "observed",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-006"
+      ],
+      "target_observation": "",
+      "parity": "not_checked"
+    },
+    {
+      "id": "INT-SHELL-015",
+      "component_id": "BTN-SHELL-004",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "index.html:2716 openUpdateWindow",
+      "backend_method": "none",
+      "action_summary": "Open SCR-DLG-013",
+      "expected_result": "Open SCR-DLG-013",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": [],
+      "target_observation": "",
+      "parity": "not_checked"
+    },
+    {
+      "id": "INT-SHELL-016",
+      "component_id": "MIT-SHELL-018",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "autohide-navbar.js",
+      "backend_method": "none",
+      "action_summary": "Toggle auto-hide navbar; persists appearance.autoHideNavbar",
+      "expected_result": "Toggle auto-hide navbar; persists appearance.autoHideNavbar",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "none",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": [
+        "EVD-004"
+      ],
+      "target_observation": "absent in target",
+      "parity": "not_checked"
+    }
+  ]
+}

@@ -1,0 +1,403 @@
+/* =========================================================================
+   Settings Dialog Styles (Feature 8 - Complete VS Code & Python Style)
+   ========================================================================= */
+
+.settings-window-root {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 20, 0, 0, 8);
+}
+
+/* ── TitleBar Header ────────────────────────────────────────────── */
+.settings-title-bar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 16 8 16;
+}
+
+.settings-title-icon {
+    -fx-icon-color: -color-accent-emphasis;
+}
+
+.settings-window-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 13.5px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.settings-search-box {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 2 6 2 8;
+}
+
+.settings-search-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.settings-search-input {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 12px;
+    -fx-padding: 3 4 3 4;
+}
+
+.settings-search-clear-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 2 4 2 4;
+    -fx-cursor: hand;
+}
+
+.settings-window-close-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 4 6 4 6;
+    -fx-cursor: hand;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.settings-window-close-btn:hover {
+    -fx-background-color: -color-danger-subtle;
+}
+
+/* ── Top Tabs & Action Bar ──────────────────────────────────────── */
+.settings-tabs-bar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 6 16 6 16;
+}
+
+.settings-tab-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 12px;
+    -fx-padding: 5 12 5 12;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+}
+
+.settings-tab-btn:hover {
+    -fx-background-color: -color-bg-muted;
+    -fx-text-fill: -color-fg-default;
+}
+
+.settings-tab-btn.active {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+}
+
+.settings-btn-save {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-accent-fg-emphasis;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 5 14 5 14;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+}
+
+.settings-btn-save:hover {
+    -fx-opacity: 0.9;
+}
+
+.settings-btn-secondary {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1px;
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 12px;
+    -fx-padding: 5 12 5 12;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+}
+
+.settings-btn-secondary:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+/* ── Main Container & Master-Detail ────────────────────────────── */
+.settings-main-container {
+    -fx-background-color: -color-bg-default;
+}
+
+.settings-sidebar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 8;
+}
+
+.settings-sidebar-scroll {
+    -fx-background-color: transparent;
+}
+
+.settings-sidebar-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.settings-nav-group {
+    -fx-padding: 0;
+}
+
+.settings-nav-item {
+    -fx-alignment: CENTER_LEFT;
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 12px;
+    -fx-padding: 7 12 7 12;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 10px;
+    -fx-max-width: Infinity;
+}
+
+.settings-nav-item:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.settings-nav-item.active {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+}
+
+.settings-detail-scroll {
+    -fx-background-color: transparent;
+}
+
+.settings-detail-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.settings-detail-content {
+    -fx-padding: 20 28 20 28;
+}
+
+.settings-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-padding: 0 0 2 0;
+}
+
+.settings-section-subtext {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 0 0 12 0;
+}
+
+.settings-row {
+    -fx-padding: 8 0 8 0;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.settings-row-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.settings-row-subtext {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.settings-badge-version {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 3 8 3 8;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+/* ── View 2: Raw JSON Editor ────────────────────────────────────── */
+.settings-json-container {
+    -fx-padding: 16 20 16 20;
+    -fx-background-color: -color-bg-default;
+}
+
+.settings-json-header {
+    -fx-padding: 0 0 8 0;
+}
+
+.settings-json-info-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+.settings-json-info-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.settings-json-badge-valid {
+    -fx-background-color: -color-success-subtle;
+    -fx-text-fill: -color-success-fg;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-padding: 3 8 3 8;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.settings-json-badge-invalid {
+    -fx-background-color: -color-danger-subtle;
+    -fx-text-fill: -color-danger-fg;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-padding: 3 8 3 8;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.settings-json-textarea {
+    -fx-font-family: 'Consolas', 'JetBrains Mono', monospace;
+    -fx-font-size: 12.5px;
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+/* R-UI-01 flat (appearance.panelStyle = flat): the Settings window and its own controls are square */
+.settings-window-root.flat,
+.settings-window-root.flat .settings-search-box,
+.settings-window-root.flat .settings-window-close-btn,
+.settings-window-root.flat .settings-tab-btn,
+.settings-window-root.flat .settings-btn-save,
+.settings-window-root.flat .settings-btn-secondary,
+.settings-window-root.flat .settings-nav-item,
+.settings-window-root.flat .settings-badge-version,
+.settings-window-root.flat .settings-json-badge-valid,
+.settings-window-root.flat .settings-json-badge-invalid,
+.settings-window-root.flat .settings-json-textarea {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* =====================================================================
+   Phase 5 (Gate B 2026-11-05): inside DialogChrome + VS Code style rows
+   ===================================================================== */
+.settings-window-root.in-chrome {
+    -fx-border-width: 0;
+    -fx-background-radius: 0;
+    -fx-effect: null;
+}
+
+.settings-search-row {
+    -fx-padding: 8 14 8 14;
+}
+
+.settings-search-row .settings-search-box {
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 3 8 3 8;
+}
+
+.settings-item {
+    -fx-padding: 10 14 12 14;
+    -fx-spacing: 4;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 2;
+    -fx-background-radius: 0;
+}
+
+.settings-item:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+/* modified (not saved yet): accent bar on the left, like VS Code */
+.settings-item.modified {
+    -fx-border-color: transparent transparent transparent -color-accent-emphasis;
+}
+
+.setting-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.setting-title-alt {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.setting-desc {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.setting-key {
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+.setting-control {
+    -fx-padding: 4 0 0 0;
+}
+
+.setting-more {
+    -fx-background-color: transparent;
+    -fx-padding: 0 4 0 4;
+    -fx-opacity: 0;
+}
+
+.setting-more > .arrow-button {
+    -fx-padding: 0;
+}
+
+.setting-more > .arrow-button > .arrow {
+    -fx-shape: null;
+    -fx-padding: 0;
+}
+
+.settings-item:hover .setting-more,
+.settings-item.modified .setting-more,
+.setting-more:showing {
+    -fx-opacity: 1;
+}
+
+.setting-more .ikonli-font-icon {
+    -fx-icon-size: 14px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.settings-dirty-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-accent-fg;
+    -fx-padding: 0 6 0 0;
+}
+
+.settings-window-root.flat .settings-search-row .settings-search-box,
+.settings-window-root.flat .setting-more {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* settings.json in Monaco (2026-11-05) */
+.settings-json-editor {
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-min-height: 260;
+}
+
+.settings-window-root.flat .settings-json-editor {
+    -fx-border-radius: 0;
+}

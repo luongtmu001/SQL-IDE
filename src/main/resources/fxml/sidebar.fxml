@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.controllers.SidebarController"
+      minWidth="200"
+      prefWidth="280"
+      styleClass="sidebar-panel">
+
+    <!-- 1. Full Expanded Sidebar View -->
+    <VBox fx:id="fullSidebarView" VBox.vgrow="ALWAYS" spacing="0">
+        <!-- Header (SCR-MAIN-002): OBJECT EXPLORER + 6 actions (Expand All removed: it opened every connection) -->
+        <HBox styleClass="panel-header, explorer-header" alignment="CENTER_LEFT" spacing="1">
+            <Label text="OBJECT EXPLORER" styleClass="explorer-title" minWidth="40" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+
+            <Button onAction="#handleAddConnection" styleClass="icon-button, explorer-header-button" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-power"/></graphic>
+                <tooltip><Tooltip text="Kết nối mới (New Connection)"/></tooltip>
+            </Button>
+            <Button onAction="#handleNewGroup" styleClass="icon-button, explorer-header-button" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-folder-plus"/></graphic>
+                <tooltip><Tooltip text="Nhóm mới (New Group)"/></tooltip>
+            </Button>
+            <Button onAction="#handleToolbarFilter" styleClass="icon-button, explorer-header-button" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-filter"/></graphic>
+                <tooltip><Tooltip text="Lọc database của kết nối đang chọn (Filter Databases)"/></tooltip>
+            </Button>
+            <Button onAction="#handleRefresh" styleClass="icon-button, explorer-header-button" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-refresh-cw"/></graphic>
+                <tooltip><Tooltip text="Làm mới (Refresh)"/></tooltip>
+            </Button>
+            <Button onAction="#handleCollapseAll" styleClass="icon-button, explorer-header-button" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-minus-square"/></graphic>
+                <tooltip><Tooltip text="Thu gọn tất cả (Collapse All)"/></tooltip>
+            </Button>
+            <Button onAction="#handleCollapseToMini" styleClass="icon-button, explorer-header-button" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-chevrons-left"/></graphic>
+                <tooltip><Tooltip text="Thu về thanh rail"/></tooltip>
+            </Button>
+        </HBox>
+
+        <!-- Search & Filter Bar -->
+        <HBox styleClass="explorer-filter-box" alignment="CENTER_LEFT" spacing="6">
+            <FontIcon iconLiteral="fth-search" styleClass="filter-icon"/>
+            <TextField fx:id="filterTextField" promptText="Tìm object..." styleClass="explorer-filter-input" HBox.hgrow="ALWAYS"/>
+            <Label fx:id="matchCountLabel" visible="false" managed="false" styleClass="match-count-badge"/>
+            <Button fx:id="clearFilterButton" onAction="#handleClearFilter" visible="false" managed="false" styleClass="icon-button, mini" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-x"/></graphic>
+                <tooltip><Tooltip text="Clear Filter"/></tooltip>
+            </Button>
+        </HBox>
+
+        <!-- Content Area: TreeView and Empty State Stack -->
+        <StackPane VBox.vgrow="ALWAYS">
+            <!-- TreeView for Schema Objects -->
+            <TreeView fx:id="explorerTree" styleClass="explorer-tree"/>
+
+            <!-- No connection yet -->
+            <VBox fx:id="noConnectionsBox" visible="false" managed="false" alignment="CENTER" spacing="8" styleClass="explorer-empty-state">
+                <FontIcon iconLiteral="fth-database" iconSize="28" styleClass="empty-state-icon"/>
+                <Label text="Chưa có kết nối" styleClass="empty-state-title"/>
+                <Label text="Tạo kết nối đầu tiên để duyệt database." styleClass="empty-state-subtext"/>
+                <Button text="Kết nối mới" onAction="#handleAddConnection" styleClass="accent, small"/>
+            </VBox>
+
+            <!-- Empty State Box (visible when no search results) -->
+            <VBox fx:id="emptyStateBox" visible="false" managed="false" alignment="CENTER" spacing="8" styleClass="explorer-empty-state">
+                <FontIcon iconLiteral="fth-search" iconSize="28" styleClass="empty-state-icon"/>
+                <Label text="Không tìm thấy object" styleClass="empty-state-title"/>
+                <Label text="Thử từ khóa khác" styleClass="empty-state-subtext"/>
+            </VBox>
+        </StackPane>
+    </VBox>
+
+    <!-- 2. Collapsed Mini Sidebar Strip (Icon Bar for Connections) -->
+    <VBox fx:id="miniSidebarView" visible="false" managed="false" VBox.vgrow="ALWAYS" alignment="TOP_CENTER" spacing="8" styleClass="mini-sidebar-strip">
+        <!-- Expand Button at top of mini bar -->
+        <Button onAction="#handleExpandFromMini" styleClass="icon-button, mini-strip-expand-btn" focusTraversable="false">
+            <graphic><FontIcon iconLiteral="fth-chevron-right"/></graphic>
+            <tooltip><Tooltip text="Expand Database Explorer"/></tooltip>
+        </Button>
+
+        <Separator styleClass="mini-separator"/>
+
+        <!-- Dynamic Connection Icons Container -->
+        <VBox fx:id="miniConnectionIconsBox" alignment="TOP_CENTER" spacing="8" VBox.vgrow="ALWAYS"/>
+
+        <Separator styleClass="mini-separator"/>
+
+        <!-- Add Connection Button in mini strip -->
+        <Button onAction="#handleAddConnection" styleClass="icon-button" focusTraversable="false">
+            <graphic><FontIcon iconLiteral="fth-plus"/></graphic>
+            <tooltip><Tooltip text="New Connection..."/></tooltip>
+        </Button>
+    </VBox>
+</VBox>

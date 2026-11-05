@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-001",
+  "components": [
+    {
+      "id": "CMP-MAIN-001",
+      "type": "SplitPane",
+      "fx_id": "mainHorizontalSplit",
+      "role": "sidebar | work area"
+    },
+    {
+      "id": "CMP-MAIN-002",
+      "type": "SplitPane",
+      "fx_id": "centerVerticalSplit",
+      "role": "editor / results"
+    },
+    {
+      "id": "CMP-MAIN-003",
+      "type": "VBox",
+      "style": "sidebar-panel",
+      "role": "Explorer panel"
+    },
+    {
+      "id": "CMP-MAIN-004",
+      "type": "VBox",
+      "style": "mini-sidebar-strip",
+      "role": "Rail 46px"
+    },
+    {
+      "id": "CMP-MAIN-005",
+      "type": "VBox",
+      "style": "editor-container"
+    },
+    {
+      "id": "CMP-MAIN-006",
+      "type": "VBox",
+      "style": "results-container"
+    }
+  ]
+}

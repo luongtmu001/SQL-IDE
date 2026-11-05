@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-SHELL-001",
+  "states": [
+    {
+      "id": "STA-SHELL-001",
+      "component_id": "REG-SHELL-001",
+      "state": "normal (restored)",
+      "visual_description": "Rounded corners + soft shadow (Win11)",
+      "entry_condition": "window restored",
+      "exit_condition": "inverse",
+      "interaction_allowed": "yes",
+      "evidence": [
+        "target-corner-left.jpg"
+      ],
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-SHELL-002",
+      "component_id": "REG-SHELL-001",
+      "state": "maximized",
+      "visual_description": "Fills work area, taskbar visible, no top clipping, max icon → restore icon",
+      "entry_condition": "maximize",
+      "exit_condition": "inverse",
+      "interaction_allowed": "yes",
+      "evidence": [
+        "target-maximized.jpg",
+        "target-maximized-taskbar.jpg"
+      ],
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-SHELL-003",
+      "component_id": "REG-SHELL-001",
+      "state": "inactive",
+      "visual_description": "Native: caption text/controls dimmed. Target: unchanged",
+      "entry_condition": "window loses focus",
+      "exit_condition": "inverse",
+      "interaction_allowed": "yes",
+      "evidence": [
+        "titlebar.css (no :window-inactive rule)"
+      ],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-SHELL-004",
+      "component_id": "BTN-SHELL-022",
+      "state": "hover",
+      "visual_description": "Red background #e81123-like, white glyph",
+      "entry_condition": "pointer over close",
+      "exit_condition": "inverse",
+      "interaction_allowed": "yes",
+      "evidence": [
+        "target-close-hover.jpg"
+      ],
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-SHELL-005",
+      "component_id": "BTN-SHELL-021",
+      "state": "hover",
+      "visual_description": "Light gray background (via native nc-hover pseudo-class)",
+      "entry_condition": "pointer over max button",
+      "exit_condition": "inverse",
+      "interaction_allowed": "yes",
+      "evidence": [
+        "TitleBarController.setMaximizeButtonNativeHover"
+      ],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-SHELL-006",
+      "component_id": "REG-SHELL-004",
+      "state": "compact",
+      "visual_description": "Menus moved into hamburger MenuButton",
+      "entry_condition": "title bar width < 950 (target)",
+      "exit_condition": "inverse",
+      "interaction_allowed": "yes",
+      "evidence": [
+        "TitleBarController.checkMenuResponsiveness"
+      ],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-SHELL-007",
+      "component_id": "REG-SHELL-004",
+      "state": "truncated (defect)",
+      "visual_description": "Menu titles ellipsized ('…', 'Navig…', 'T…', 'Win…', 'H…')",
+      "entry_condition": "950 ≤ width ≲ 1100",
+      "exit_condition": "inverse",
+      "interaction_allowed": "yes",
+      "evidence": [
+        "target-narrow-menu-ellipsis.jpg"
+      ],
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-SHELL-008",
+      "component_id": "REG-SHELL-003",
+      "state": "auto-hidden",
+      "visual_description": "Navbar hidden; appears on top-edge hover",
+      "entry_condition": "appearance.autoHideNavbar=true (source)",
+      "exit_condition": "inverse",
+      "interaction_allowed": "yes",
+      "evidence": [
+        "autohide-navbar.js"
+      ],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-SHELL-009",
+      "component_id": "BTN-SHELL-004",
+      "state": "hidden/visible",
+      "visual_description": "Warning-coloured 'New' badge button",
+      "entry_condition": "update available (source)",
+      "exit_condition": "inverse",
+      "interaction_allowed": "yes",
+      "evidence": [
+        "index.html:271"
+      ],
+      "confidence": "code_verified"
+    }
+  ]
+}

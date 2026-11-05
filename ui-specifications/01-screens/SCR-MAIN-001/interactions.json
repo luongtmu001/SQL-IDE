@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-001",
+  "interactions": [
+    {
+      "id": "INT-MAIN-001",
+      "trigger": "drag vertical sash",
+      "result": "resize sidebar in px; persist"
+    },
+    {
+      "id": "INT-MAIN-002",
+      "trigger": "drag horizontal sash",
+      "result": "resize editor/results ratio; persist"
+    },
+    {
+      "id": "INT-MAIN-003",
+      "trigger": "hover/drag sash",
+      "result": "sash shows 2px accent"
+    },
+    {
+      "id": "INT-MAIN-004",
+      "trigger": "Alt+1 / Ctrl+B",
+      "result": "toggle Explorer"
+    },
+    {
+      "id": "INT-MAIN-005",
+      "trigger": "Ctrl+R",
+      "result": "toggle Results"
+    },
+    {
+      "id": "INT-MAIN-006",
+      "trigger": "Ctrl+Alt+R",
+      "result": "maximize/restore Results"
+    },
+    {
+      "id": "INT-MAIN-007",
+      "trigger": "collapse button in Explorer header",
+      "result": "switch to 46px rail"
+    },
+    {
+      "id": "INT-MAIN-008",
+      "trigger": "window resize",
+      "result": "sidebar keeps px width; editor/results scale"
+    }
+  ]
+}

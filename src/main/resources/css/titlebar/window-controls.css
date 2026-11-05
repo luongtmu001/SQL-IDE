@@ -1,0 +1,52 @@
+/* Windows 11 Style Window Control Buttons */
+
+.window-controls {
+    -fx-alignment: CENTER_RIGHT;
+    -fx-spacing: 0;
+    -fx-fill-height: true;
+}
+
+.window-control-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-width: 46px;
+    -fx-min-width: 46px;
+    -fx-max-height: infinity;
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+}
+
+.window-control-button .ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+    -fx-icon-size: 12px;
+}
+
+/* :nc-hover / :nc-pressed are set by the native Windows adapter for the maximize
+   button, because Windows owns its mouse input to show the Snap Layouts flyout. */
+.window-control-button:hover,
+.window-control-button:nc-hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.window-control-button:armed,
+.window-control-button:nc-pressed {
+    -fx-background-color: -color-border-default;
+}
+
+/* Close button - Windows standard red hover effect */
+.window-control-button.close:hover {
+    -fx-background-color: #e81123;
+}
+
+.window-control-button.close:hover .ikonli-font-icon {
+    -fx-icon-color: #ffffff;
+}
+
+.window-control-button.close:armed {
+    -fx-background-color: #c4101f;
+}
+
+.window-control-button.close:armed .ikonli-font-icon {
+    -fx-icon-color: #ffffff;
+}

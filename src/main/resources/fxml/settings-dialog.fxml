@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox fx:id="settingsRoot" prefHeight="720.0" prefWidth="980.0" minHeight="580.0" minWidth="800.0"
+      spacing="0" styleClass="settings-window-root"
+      stylesheets="@../css/settings.css"
+      xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.controllers.SettingsDialogController">
+
+    <!-- Top Window Titlebar / Header -->
+    <HBox fx:id="titleBar" alignment="CENTER_LEFT" spacing="12" styleClass="settings-title-bar">
+        <FontIcon iconLiteral="fth-sliders" iconSize="16" styleClass="settings-title-icon"/>
+        <Label text="Cài đặt (Settings) — SQL IDE" styleClass="settings-window-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Search Box -->
+        <HBox alignment="CENTER_LEFT" spacing="6" styleClass="settings-search-box">
+            <FontIcon iconLiteral="fth-search" iconSize="14" styleClass="settings-search-icon"/>
+            <TextField fx:id="settingsSearchField" promptText="Tìm kiếm cài đặt (Search settings)..."
+                       prefWidth="260.0" styleClass="settings-search-input"/>
+            <Button fx:id="btnClearSearch" onAction="#handleClearSearch" styleClass="settings-search-clear-btn" visible="false">
+                <graphic>
+                    <FontIcon iconLiteral="fth-x" iconSize="12"/>
+                </graphic>
+            </Button>
+        </HBox>
+
+        <Button onAction="#handleClose" styleClass="settings-window-close-btn" focusTraversable="false">
+            <graphic>
+                <FontIcon iconLiteral="fth-x" iconSize="15"/>
+            </graphic>
+        </Button>
+    </HBox>
+
+    <!-- Top Tabs & Global Actions Bar -->
+    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="settings-tabs-bar">
+        <!-- Visual & JSON View Switchers -->
+        <Button fx:id="btnTabVisual" onAction="#handleSwitchToVisualTab" styleClass="settings-tab-btn, active">
+            <graphic>
+                <FontIcon iconLiteral="fth-sliders" iconSize="14"/>
+            </graphic>
+            <text>Cài đặt (Visual)</text>
+        </Button>
+        <Button fx:id="btnTabJson" onAction="#handleSwitchToJsonTab" styleClass="settings-tab-btn">
+            <graphic>
+                <FontIcon iconLiteral="fth-code" iconSize="14"/>
+            </graphic>
+            <text>Cấu hình JSON (settings.json)</text>
+        </Button>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Action Buttons -->
+        <Button fx:id="btnSave" onAction="#handleSaveAndApply" styleClass="settings-btn-save">
+            <graphic>
+                <FontIcon iconLiteral="fth-save" iconSize="14"/>
+            </graphic>
+            <text>Lưu (Save)</text>
+        </Button>
+        <Button fx:id="btnCopyJson" onAction="#handleCopyJson" styleClass="settings-btn-secondary">
+            <graphic>
+                <FontIcon iconLiteral="fth-copy" iconSize="13"/>
+            </graphic>
+            <text>Copy JSON</text>
+        </Button>
+        <Button fx:id="btnRestoreDefaults" onAction="#handleRestoreDefaults" styleClass="settings-btn-secondary">
+            <graphic>
+                <FontIcon iconLiteral="fth-rotate-ccw" iconSize="13"/>
+            </graphic>
+            <text>Khôi phục mặc định</text>
+        </Button>
+        <!-- "Đóng" removed (2026-11-05): the window's × closes; Save moved to the footer -->
+    </HBox>
+
+    <!-- Main Stack Container (Visual View vs Raw JSON View) -->
+    <StackPane VBox.vgrow="ALWAYS" styleClass="settings-main-container">
+
+        <!-- VIEW 1: Visual Settings Area (Master-Detail) -->
+        <HBox fx:id="visualArea" spacing="0" VBox.vgrow="ALWAYS">
+            <!-- Left Sidebar Navigation (10 Categories) -->
+            <VBox prefWidth="230.0" minWidth="200.0" styleClass="settings-sidebar">
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS" styleClass="settings-sidebar-scroll">
+                    <VBox spacing="2" styleClass="settings-nav-group">
+                        <Button fx:id="btnNavEditor" onAction="#handleNavEditor" styleClass="settings-nav-item, active">
+                            <graphic><FontIcon iconLiteral="fth-edit-3" iconSize="15"/></graphic>
+                            <text>Trình soạn thảo</text>
+                        </Button>
+                        <Button fx:id="btnNavGrid" onAction="#handleNavGrid" styleClass="settings-nav-item">
+                            <graphic><FontIcon iconLiteral="fth-grid" iconSize="15"/></graphic>
+                            <text>Bảng kết quả (Grid)</text>
+                        </Button>
+                        <Button fx:id="btnNavMessages" onAction="#handleNavMessages" styleClass="settings-nav-item">
+                            <graphic><FontIcon iconLiteral="fth-message-square" iconSize="15"/></graphic>
+                            <text>Thông báo SQL (Messages)</text>
+                        </Button>
+                        <Button fx:id="btnNavAppearance" onAction="#handleNavAppearance" styleClass="settings-nav-item">
+                            <graphic><FontIcon iconLiteral="fth-layout" iconSize="15"/></graphic>
+                            <text>Giao diện &amp; Theme</text>
+                        </Button>
+                        <Button fx:id="btnNavSql" onAction="#handleNavSql" styleClass="settings-nav-item">
+                            <graphic><FontIcon iconLiteral="fth-database" iconSize="15"/></graphic>
+                            <text>Truy vấn SQL</text>
+                        </Button>
+                        <Button fx:id="btnNavSession" onAction="#handleNavSession" styleClass="settings-nav-item">
+                            <graphic><FontIcon iconLiteral="fth-layers" iconSize="15"/></graphic>
+                            <text>Phiên làm việc</text>
+                        </Button>
+                        <Button fx:id="btnNavAddons" onAction="#handleNavAddons" styleClass="settings-nav-item">
+                            <graphic><FontIcon iconLiteral="fth-box" iconSize="15"/></graphic>
+                            <text>Tiện ích mở rộng</text>
+                        </Button>
+                        <Button fx:id="btnNavHistory" onAction="#handleNavHistory" styleClass="settings-nav-item">
+                            <graphic><FontIcon iconLiteral="fth-clock" iconSize="15"/></graphic>
+                            <text>Lịch sử truy vấn</text>
+                        </Button>
+                        <Button fx:id="btnNavLogging" onAction="#handleNavLogging" styleClass="settings-nav-item">
+                            <graphic><FontIcon iconLiteral="fth-file-text" iconSize="15"/></graphic>
+                            <text>Nhật ký hệ thống</text>
+                        </Button>
+                        <Button fx:id="btnNavUpdates" onAction="#handleNavUpdates" styleClass="settings-nav-item">
+                            <graphic><FontIcon iconLiteral="fth-info" iconSize="15"/></graphic>
+                            <text>Thông tin &amp; Cập nhật</text>
+                        </Button>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+
+            <!-- Right Detail Content ScrollPane -->
+            <ScrollPane fx:id="contentScrollPane" fitToWidth="true" hbarPolicy="NEVER" HBox.hgrow="ALWAYS" styleClass="settings-detail-scroll">
+                <VBox fx:id="contentArea" spacing="24" styleClass="settings-detail-content">
+
+                    <!-- SECTION 1: Editor -->
+                    <VBox fx:id="sectionEditor" spacing="12" styleClass="settings-section">
+                        <Label text="Trình soạn thảo SQL (Monaco Editor)" styleClass="settings-section-title"/>
+                        <Label text="Cấu hình phông chữ, khoảng cách ký tự, thụt dòng, và gợi ý IntelliSense." styleClass="settings-section-subtext"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Phông chữ soạn thảo (Editor Font Family)" styleClass="settings-row-label"/>
+                                <Label text="editor.fontFamily — Phông chữ hiển thị trong vùng soạn thảo câu lệnh SQL" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <ComboBox fx:id="cmbEditorFontFamily" prefWidth="220"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Cỡ chữ soạn thảo (Editor Font Size)" styleClass="settings-row-label"/>
+                                <Label text="editor.fontSize — Kích thước chữ trong trình soạn thảo code (pixel)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnEditorFontSize" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Chiều cao dòng (Editor Line Height)" styleClass="settings-row-label"/>
+                                <Label text="editor.lineHeight — Chiều cao dòng trong trình soạn thảo (ví dụ 1.5)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnLineHeight" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Khoảng cách ký tự (Editor Letter Spacing)" styleClass="settings-row-label"/>
+                                <Label text="editor.letterSpacing — Khoảng cách giữa các ký tự trong code (pixel)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnLetterSpacing" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Kích thước thụt dòng (Tab Size)" styleClass="settings-row-label"/>
+                                <Label text="editor.tabSize — Số lượng khoảng trắng cho mỗi lần bấm phím Tab" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnTabSize" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Chèn khoảng trắng thay vì Tab (Insert Spaces)" styleClass="settings-row-label"/>
+                                <Label text="editor.insertSpaces — Tự động chèn các khoảng trắng khi nhấn Tab" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkInsertSpaces"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Tự động xuống dòng (Word Wrap)" styleClass="settings-row-label"/>
+                                <Label text="editor.wordWrap — Ngắt dòng khi câu lệnh vượt quá chiều rộng màn hình" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkWordWrap"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Bản đồ mã nguồn thu nhỏ (Minimap)" styleClass="settings-row-label"/>
+                                <Label text="editor.minimap — Hiển thị thanh cuộn xem trước dạng bản đồ thu nhỏ bên phải" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkMinimap"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Định dạng từ khóa SQL (Keyword Case)" styleClass="settings-row-label"/>
+                                <Label text="editor.keywordCase — Viết hoa, viết thường hoặc giữ nguyên từ khóa cú pháp" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <ComboBox fx:id="cmbKeywordCase" prefWidth="220"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Kiểm tra cú pháp SQL (SQL Syntax Check)" styleClass="settings-row-label"/>
+                                <Label text="editor.syntaxCheck — Kiểm tra cú pháp SQL và hiển thị cảnh báo lỗi" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkSyntaxCheck"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Gợi ý mã thông minh (IntelliSense)" styleClass="settings-row-label"/>
+                                <Label text="editor.intellisense — Bật gợi ý tự động bảng, cột, hàm và từ khóa SQL" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkIntellisense"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Ưu tiên gợi ý theo lịch sử dùng (IntelliSense MRU)" styleClass="settings-row-label"/>
+                                <Label text="editor.intellisenseMru — Học thói quen dùng từ khóa/bảng/cột để xếp lên đầu" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkIntellisenseMru"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- SECTION 2: Grid -->
+                    <VBox fx:id="sectionGrid" spacing="12" styleClass="settings-section" visible="false" managed="false">
+                        <Label text="Bảng kết quả truy vấn (Data Grid)" styleClass="settings-section-title"/>
+                        <Label text="Cấu hình phông chữ, kích thước chữ, hiển thị số thứ tự dòng và giá trị NULL." styleClass="settings-section-subtext"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Phông chữ bảng kết quả (Grid Font Family)" styleClass="settings-row-label"/>
+                                <Label text="grid.fontFamily — Phông chữ hiển thị các hàng và cột trong bảng dữ liệu" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <ComboBox fx:id="cmbGridFontFamily" prefWidth="220"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Cỡ chữ bảng kết quả (Grid Font Size)" styleClass="settings-row-label"/>
+                                <Label text="grid.fontSize — Kích thước chữ trong các ô dữ liệu của bảng kết quả (pixel)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnGridFontSize" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Cách hiển thị nhiều bảng kết quả (Result Layout)" styleClass="settings-row-label"/>
+                                <Label text="grid.resultLayout — Danh sách: xếp dọc, mỗi bảng có thanh cuộn riêng. Tab: mỗi bảng một tab, chỉ dựng bảng khi mở tab (nhẹ hơn khi có nhiều bảng)" styleClass="settings-row-subtext" wrapText="true"/>
+                            </VBox>
+                            <ComboBox fx:id="cmbResultLayout" prefWidth="180"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Hiển thị cột số thứ tự dòng (Row Numbers)" styleClass="settings-row-label"/>
+                                <Label text="grid.showRowNumbers — Đánh số 1, 2, 3... ở cột đầu tiên của lưới" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkShowRowNumbers"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Chuỗi hiển thị giá trị NULL (NULL Display String)" styleClass="settings-row-label"/>
+                                <Label text="grid.nullDisplayString — Nhãn thay thế khi ô dữ liệu nhận giá trị NULL" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <TextField fx:id="txtNullDisplay" prefWidth="120"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- SECTION 3: Messages -->
+                    <VBox fx:id="sectionMessages" spacing="12" styleClass="settings-section" visible="false" managed="false">
+                        <Label text="Tab Thông báo SQL (Messages)" styleClass="settings-section-title"/>
+                        <Label text="Cấu hình phông chữ và kích thước chữ cho log thực thi và lệnh PRINT/RAISERROR." styleClass="settings-section-subtext"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Phông chữ tab thông báo (Messages Font Family)" styleClass="settings-row-label"/>
+                                <Label text="messages.fontFamily — Phông chữ hiển thị văn bản kết quả và thông báo thực thi" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <ComboBox fx:id="cmbMessagesFontFamily" prefWidth="220"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Cỡ chữ tab thông báo (Messages Font Size)" styleClass="settings-row-label"/>
+                                <Label text="messages.fontSize — Kích thước chữ hiển thị trong tab thông báo Messages (pixel)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnMessagesFontSize" prefWidth="120"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- SECTION 4: Appearance & Themes -->
+                    <VBox fx:id="sectionAppearance" spacing="12" styleClass="settings-section" visible="false" managed="false">
+                        <Label text="Giao diện &amp; Chủ đề (Appearance &amp; Theme)" styleClass="settings-section-title"/>
+                        <Label text="Tùy chỉnh chủ đề màu sắc, biểu tượng, phông chữ và thanh điều hướng." styleClass="settings-section-subtext"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Chế độ giao diện (Color Theme)" styleClass="settings-row-label"/>
+                                <Label text="theme — Chọn chủ đề màu sắc: Tối (Dark), Sáng (Light), Nord, Cupertino" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <ComboBox fx:id="cmbTheme" prefWidth="220"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Kích thước biểu tượng (Icon Size)" styleClass="settings-row-label"/>
+                                <Label text="appearance.iconSize — Kích thước hiển thị biểu tượng trên Object Explorer (pixel)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnIconSize" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Phông chữ giao diện IDE (UI Font Family)" styleClass="settings-row-label"/>
+                                <Label text="appearance.uiFontFamily — Phông chữ áp dụng cho menu, thanh công cụ, sidebar và dialog" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <ComboBox fx:id="cmbUiFontFamily" prefWidth="220"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Cỡ chữ giao diện IDE (UI Font Size)" styleClass="settings-row-label"/>
+                                <Label text="appearance.uiFontSize — Kích thước chữ giao diện người dùng (mặc định 13px)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnUiFontSize" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Tự động ẩn thanh Menu / Navbar (Auto-hide Navbar)" styleClass="settings-row-label"/>
+                                <Label text="appearance.autoHideNavbar — Tự động ẩn thanh điều hướng, chỉ hiện khi rê chuột" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkAutoHideNavbar"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Kiểu khung giao diện (Panel Style)" styleClass="settings-row-label"/>
+                                <Label text="appearance.panelStyle — Bo góc: các khối tách rời, bo góc 8px, cách nhau 6px. Phẳng: các khối liền nhau, ngăn bằng đường kẻ 1px" styleClass="settings-row-subtext" wrapText="true"/>
+                            </VBox>
+                            <ComboBox fx:id="cmbPanelStyle" prefWidth="220"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- SECTION 5: SQL / Query -->
+                    <VBox fx:id="sectionSql" spacing="12" styleClass="settings-section" visible="false" managed="false">
+                        <Label text="Truy vấn SQL (SQL Query)" styleClass="settings-section-title"/>
+                        <Label text="Giới hạn số dòng, thời gian chờ, bảo vệ lệnh nguy hiểm và phiên kết nối." styleClass="settings-section-subtext"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Giới hạn số dòng kết quả (Max Rows)" styleClass="settings-row-label"/>
+                                <Label text="sql.maxRows — Số dòng tối đa được nạp lên bảng (0 = không giới hạn)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnMaxRows" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Thời gian chờ truy vấn (Timeout Seconds)" styleClass="settings-row-label"/>
+                                <Label text="sql.timeoutSeconds — Thời gian tối đa (giây) cho phép câu truy vấn chạy" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnQueryTimeout" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Bảo vệ câu lệnh SQL nguy hiểm (SQL Protection Guard)" styleClass="settings-row-label"/>
+                                <Label text="sql.sqlprotection — Cảnh báo khi chạy DELETE/UPDATE không có WHERE hoặc TRUNCATE" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <ComboBox fx:id="cmbSqlProtection" prefWidth="220"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Dừng khi gặp lỗi (Stop on Error)" styleClass="settings-row-label"/>
+                                <Label text="sql.stopOnError — Tự động dừng thực thi nếu câu lệnh trước gặp lỗi" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkStopOnError"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Mỗi tab một phiên kết nối riêng biệt (Per-Tab Session)" styleClass="settings-row-label"/>
+                                <Label text="sql.perTabSession — Mở phiên kết nối riêng cho mỗi tab tránh xung đột bảng #temp" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkPerTabSession"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Tự động mở bảng kết quả (Auto-show Results)" styleClass="settings-row-label"/>
+                                <Label text="Tự động hiển thị vùng Result &amp; Messages khi nhấn F5 chạy lệnh" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkAutoShowResults"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- SECTION 6: Session -->
+                    <VBox fx:id="sectionSession" spacing="12" styleClass="settings-section" visible="false" managed="false">
+                        <Label text="Phiên làm việc (Session)" styleClass="settings-section-title"/>
+                        <Label text="Cấu hình khôi phục tab, tự động lưu nội dung SQL và kích thước tối đa." styleClass="settings-section-subtext"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Khôi phục tab khi mở lại IDE (Restore on Startup)" styleClass="settings-row-label"/>
+                                <Label text="session.restoreOnStartup — Mở lại các tab truy vấn đang mở từ phiên làm việc trước" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkRestoreOnStartup"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Tự động lưu nội dung SQL chưa đặt tên (Save SQL Content)" styleClass="settings-row-label"/>
+                                <Label text="session.saveSqlContent — Tránh mất dữ liệu khi mất điện hoặc tắt máy đột ngột" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkSaveSqlContent"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Chu kỳ tự động lưu (Auto-Save Interval Seconds)" styleClass="settings-row-label"/>
+                                <Label text="session.autoSaveIntervalSeconds — Khoảng thời gian tự động lưu nháp (giây)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnAutoSaveInterval" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Dung lượng tối đa mỗi tab (Max Tab Size Bytes)" styleClass="settings-row-label"/>
+                                <Label text="session.maxTabSizeBytes — Giới hạn kích thước file nạp vào tab (bytes)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnMaxTabSize" prefWidth="160"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- SECTION 7: Addons -->
+                    <VBox fx:id="sectionAddons" spacing="12" styleClass="settings-section" visible="false" managed="false">
+                        <Label text="Tiện ích mở rộng (Extensions / Addons)" styleClass="settings-section-title"/>
+                        <Label text="Kích hoạt và quản lý các công cụ mở rộng tích hợp." styleClass="settings-section-subtext"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Kích hoạt BRAVO Tool Extension" styleClass="settings-row-label"/>
+                                <Label text="addons.bravo_tool.enabled — Hiển thị nút công cụ BRAVO Tool trên taskbar" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkBravoToolEnabled"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- SECTION 8: History -->
+                    <VBox fx:id="sectionHistory" spacing="12" styleClass="settings-section" visible="false" managed="false">
+                        <Label text="Lịch sử truy vấn (Query History)" styleClass="settings-section-title"/>
+                        <Label text="Ghi nhật ký lịch sử thực thi SQL khi nhấn F5, dọn dẹp và giới hạn dung lượng." styleClass="settings-section-subtext"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Ghi nhật ký lịch sử truy vấn (History Logging)" styleClass="settings-row-label"/>
+                                <Label text="history.enabled — Tự động lưu lịch sử truy vấn phục vụ phục hồi và so sánh" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkHistoryEnabled"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Số bản ghi tối đa mỗi tài liệu (Max Entries Per Doc)" styleClass="settings-row-label"/>
+                                <Label text="history.maxEntriesPerDoc — Giới hạn số bản ghi lịch sử lưu trữ cho mỗi tab/file" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnMaxEntriesPerDoc" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Thời gian lưu trữ tối đa (Max Age in Days)" styleClass="settings-row-label"/>
+                                <Label text="history.maxAgeDays — Tự động xóa các bản ghi lịch sử cũ hơn số ngày này" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnMaxAgeDays" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Dung lượng tối đa DB lịch sử (Max DB Size in MB)" styleClass="settings-row-label"/>
+                                <Label text="history.maxDbSizeMb — Ngưỡng dung lượng tối đa cho file SQLite lưu trữ lịch sử" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnMaxDbSizeMb" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Kích thước tối đa 1 câu truy vấn (Max Entry Size in KB)" styleClass="settings-row-label"/>
+                                <Label text="history.maxEntrySizeKb — Giới hạn dung lượng lệnh SQL ghi vào lịch sử" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnMaxEntrySizeKb" prefWidth="120"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- SECTION 9: Logging -->
+                    <VBox fx:id="sectionLogging" spacing="12" styleClass="settings-section" visible="false" managed="false">
+                        <Label text="Nhật ký hệ thống (System &amp; Error Logs)" styleClass="settings-section-title"/>
+                        <Label text="Cấu hình cấp độ ghi log, dung lượng file log và xoay vòng file." styleClass="settings-section-subtext"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Ghi nhật ký ra file (Enable File Logging)" styleClass="settings-row-label"/>
+                                <Label text="logging.enabled — Tự động ghi nhật ký hoạt động ra file app.log" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkLoggingEnabled"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Mức độ chi tiết nhật ký (Log Level)" styleClass="settings-row-label"/>
+                                <Label text="logging.level — DEBUG (chi tiết), INFO (tiêu chuẩn), WARNING, ERROR" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <ComboBox fx:id="cmbLogLevel" prefWidth="220"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Dung lượng tối đa mỗi file log (Max File Size MB)" styleClass="settings-row-label"/>
+                                <Label text="logging.maxFileSizeMb — Kích thước file trước khi tự động xoay vòng" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnMaxLogFileSizeMb" prefWidth="120"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Số file log xoay vòng tối đa (Max Backup Files)" styleClass="settings-row-label"/>
+                                <Label text="logging.maxFiles — Số lượng file log lưu trữ tối đa trước khi ghi đè" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Spinner fx:id="spnMaxBackupFiles" prefWidth="120"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- SECTION 10: Updates & About -->
+                    <VBox fx:id="sectionUpdates" spacing="12" styleClass="settings-section" visible="false" managed="false">
+                        <Label text="Thông tin &amp; Cập nhật (About &amp; Updates)" styleClass="settings-section-title"/>
+                        <Label text="Kiểm tra bản cập nhật mới, URL phân phối và phiên bản ứng dụng." styleClass="settings-section-subtext"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Tự động kiểm tra cập nhật khi khởi động (Check on Startup)" styleClass="settings-row-label"/>
+                                <Label text="updates.checkOnStartup — Tự động kiểm tra bản phát hành mới khi mở ứng dụng" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkCheckOnStartup"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="URL máy chủ cập nhật tùy chỉnh (Custom Update URL)" styleClass="settings-row-label"/>
+                                <Label text="updates.updateUrl — Để trống để dùng GitHub Releases hoặc nhập URL nội bộ" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <TextField fx:id="txtUpdateUrl" prefWidth="260"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Phiên bản đã cài đặt (Installed Version)" styleClass="settings-row-label"/>
+                                <Label text="Phiên bản phát hành hiện tại của SQL IDE Desktop" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Label fx:id="lblInstalledVersion" text="1.2.6" styleClass="settings-badge-version"/>
+                        </HBox>
+                    </VBox>
+
+                </VBox>
+            </ScrollPane>
+        </HBox>
+
+        <!-- VIEW 2: Raw JSON Editor Area -->
+        <VBox fx:id="jsonArea" spacing="12" visible="false" managed="false" styleClass="settings-json-container">
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="settings-json-header">
+                <FontIcon iconLiteral="fth-info" iconSize="15" styleClass="settings-json-info-icon"/>
+                <Label text="Bạn có thể chỉnh sửa trực tiếp các biến cấu hình bên dưới. Nhấn Lưu (Save) hoặc phím Ctrl+S để áp dụng ngay."
+                       styleClass="settings-json-info-text" HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblJsonStatus" text="JSON Hợp lệ" styleClass="settings-json-badge-valid"/>
+            </HBox>
+            <TextArea fx:id="txtRawJson" VBox.vgrow="ALWAYS" styleClass="settings-json-textarea" wrapText="false"/>
+        </VBox>
+
+    </StackPane>
+
+</VBox>

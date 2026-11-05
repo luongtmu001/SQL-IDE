@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-AREA-001",
+  "components": [
+    {
+      "id": "BTN-AREA-001",
+      "name": "Save",
+      "component_type": "button",
+      "region_id": "REG-AREA-001",
+      "parent_component_id": null,
+      "visible_label": "Save",
+      "accessible_name": "Save",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary | secondary | destructive | navigation",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": ["normal", "hover", "pressed", "focused", "disabled"],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "unknown",
+        "selector_or_symbol": "unknown",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "observed | code_verified | inferred | unknown",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    }
+  ]
+}

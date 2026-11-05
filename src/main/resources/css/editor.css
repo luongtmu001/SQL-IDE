@@ -1,0 +1,356 @@
+/* SQL Editor and RichTextFX Styling */
+
+.editor-container {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8px;
+    -fx-background-insets: 0;
+    /* outline drawn by RoundedCard overlay (SCR-MAIN-001) */
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.editor-stack-pane {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.editor-split-pane {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.editor-split-pane > .split-pane-divider {
+    -fx-padding: 0 1 0 1;
+    -fx-background-color: -color-border-subtle;
+}
+
+/* =====================================================================
+   SCR-MAIN-003 tab strip (Phase 3 + follow-up 2026-11-05), drawn by EditorTabStrip.
+   VS Code look: active tab = editor background + 2px accent line on top.
+   Header of the TabPane itself is hidden.
+   ===================================================================== */
+.editor-tab-pane.custom-strip > .tab-header-area {
+    visibility: hidden;
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+.editor-tab-pane.custom-strip {
+    -fx-tab-max-height: 0;
+    -fx-tab-min-height: 0;
+}
+
+.editor-tab-strip {
+    -fx-background-color: -color-bg-subtle;
+    -fx-min-height: 34;
+}
+
+/* bottom line in the tab colour; the active tab paints over it, leaving the gap
+   where it opens into the editor (user sketch 2026-11-05) */
+.editor-tab-viewport,
+.editor-tab-right {
+    -fx-background-color: -color-accent-emphasis, -color-bg-subtle;
+    -fx-background-insets: 0, 0 0 1 0;
+}
+
+.editor-tab-row {
+    -fx-min-height: 34;
+}
+
+/* right-edge fade: more tabs hidden to the right */
+.editor-tab-fade {
+    -fx-background-color: linear-gradient(to right, transparent 0%, -color-bg-subtle 85%);
+    -fx-background-insets: 0 0 1 0; /* keep the bottom line visible under the fade */
+}
+
+.editor-strip-tab {
+    -fx-padding: 0 4 0 8;
+    -fx-min-height: 34;
+    -fx-pref-height: 34;
+    -fx-max-height: 34;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent -color-border-muted transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-border-insets: 8 0 8 0;
+    -fx-cursor: hand;
+}
+
+/* R-UI-01 rounded: hover / active tab have rounded top corners */
+.editor-strip-tab:hover {
+    -fx-background-color: -color-bg-muted;
+    -fx-background-insets: 0 0 1 0;
+    -fx-background-radius: 6 6 0 0;
+}
+
+/* active tab: 2px accent on top + 1px sides down to the editor separator (user request 2026-11-05), same colour as the bottom line */
+.editor-strip-tab:selected {
+    -fx-background-color: -color-bg-default;
+    -fx-background-insets: 0;
+    -fx-background-radius: 6 6 0 0;
+    -fx-border-color: -color-accent-emphasis -color-accent-emphasis transparent -color-accent-emphasis;
+    -fx-border-width: 2 1 0 1;
+    -fx-border-insets: 0;
+    -fx-border-radius: 6 6 0 0;
+    -fx-padding: 0 3 0 7; /* keep the content where it was (sides now take 1px each) */
+}
+
+.editor-tab-header {
+    -fx-spacing: 5;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0;
+}
+
+.editor-tab-row {
+    -fx-padding: 0;
+    -fx-spacing: 0;
+    -fx-hgap: 0;
+    -fx-vgap: 0;
+}
+
+.editor-tab-viewport {
+    -fx-padding: 0;
+}
+
+.editor-tab-title {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-text-overrun: ellipsis;
+}
+
+.editor-strip-tab:selected .editor-tab-title {
+    -fx-text-fill: -color-fg-default;
+}
+
+.editor-tab-file-icon {
+    -fx-icon-size: 13px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.editor-tab-conn-dot {
+    -fx-background-radius: 4;
+    -fx-background-color: -color-fg-subtle;
+}
+
+.editor-tab-trailing {
+    -fx-alignment: CENTER;
+}
+
+.editor-tab-dirty {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 10px;
+    -fx-padding: 0;
+}
+
+.editor-tab-close,
+.editor-tab-pin {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 1;
+    -fx-min-width: 16;
+    -fx-min-height: 16;
+    -fx-pref-width: 16;
+    -fx-pref-height: 16;
+    -fx-max-width: 16;
+    -fx-max-height: 16;
+    -fx-cursor: hand;
+}
+
+.editor-tab-close .ikonli-font-icon,
+.editor-tab-pin .ikonli-font-icon {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.editor-tab-close:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.editor-tab-close:hover .ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+}
+
+.editor-tab-add,
+.editor-tab-list-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 4 8 4 8;
+    -fx-min-height: 26;
+    -fx-cursor: hand;
+}
+
+.editor-tab-add {
+    -fx-translate-y: 0;
+}
+
+.editor-tab-add .ikonli-font-icon,
+.editor-tab-list-button .ikonli-font-icon {
+    -fx-icon-size: 13px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.editor-tab-add:hover,
+.editor-tab-list-button:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.editor-tab-add:hover .ikonli-font-icon,
+.editor-tab-list-button:hover .ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+}
+
+/* actions group in its own column, separated from the tabs */
+.editor-tab-actions {
+    -fx-padding: 0 2 0 6;
+    -fx-min-height: 34;
+    -fx-max-height: 34;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-border-color: transparent transparent transparent -color-border-muted;
+    -fx-border-width: 0 0 0 1;
+    -fx-border-insets: 8 0 8 0;
+}
+
+.editor-tab-actions .tab-header-actions {
+    -fx-padding: 0;
+}
+
+.editor-tab-list-button {
+    -fx-min-height: 26;
+    -fx-pref-height: 26;
+    -fx-max-height: 26;
+}
+
+.editor-tab-right {
+    -fx-padding: 0 4 0 0;
+    -fx-spacing: 2;
+}
+
+.editor-tab-list-menu .active-tab-item .label {
+    -fx-text-fill: -color-accent-fg;
+}
+
+/* ---------- "Chưa kết nối" banner (LLTool tabs.js) ---------- */
+.editor-connection-banner {
+    -fx-padding: 5 8 5 10;
+    -fx-background-color: -color-warning-subtle;
+    -fx-border-color: transparent transparent -color-warning-muted transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.editor-connection-banner .label {
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 12px;
+}
+
+.editor-connection-banner .banner-icon {
+    -fx-icon-size: 14px;
+    -fx-icon-color: -color-warning-fg;
+}
+
+.banner-button {
+    -fx-font-size: 11.5px;
+    -fx-padding: 2 10 2 10;
+}
+
+.banner-close {
+    -fx-background-color: transparent;
+    -fx-padding: 2 4 2 4;
+    -fx-cursor: hand;
+}
+
+.banner-close .ikonli-font-icon {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+/* R-UI-01 flat */
+.main-window.flat-panels .editor-strip-tab:selected {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+.main-window.flat-panels .editor-strip-tab:hover,
+.main-window.flat-panels .editor-tab-strip,
+.main-window.flat-panels .editor-tab-add,
+.main-window.flat-panels .editor-tab-close,
+.main-window.flat-panels .editor-tab-pin,
+.main-window.flat-panels .editor-tab-conn-dot {
+    -fx-background-radius: 0;
+}
+
+/* Tab Header Actions (Split Right, Split Down, Close Split) overlay at top-right */
+.tab-header-actions {
+    -fx-padding: 2 6 2 0;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-pref-height: 28px;
+    -fx-max-height: 28px;
+}
+
+.tab-header-actions .icon-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4px;
+    -fx-padding: 2 4 2 4;
+}
+
+.tab-header-actions .icon-button:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.tab-header-actions .icon-button:armed {
+    -fx-background-color: -color-border-default;
+}
+
+.tab-header-actions .icon-button .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 11px;
+}
+
+.tab-header-actions .icon-button:hover .ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+}
+
+/* CodeArea styling */
+.sql-code-area {
+    -fx-font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+    -fx-font-size: 13px;
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 0 0 7px 7px;
+}
+
+.sql-code-area .lineno {
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-background-color: -color-bg-subtle;
+    -fx-padding: 0 8 0 8;
+}
+
+/* Syntax Highlighting */
+.sql-keyword {
+    -fx-fill: #e06c75;
+    -fx-font-weight: bold;
+}
+
+.sql-datatype {
+    -fx-fill: #e5c07b;
+    -fx-font-weight: bold;
+}
+
+.sql-function {
+    -fx-fill: #61afef;
+    -fx-font-weight: bold;
+}
+
+.sql-string {
+    -fx-fill: #98c379;
+}
+
+.sql-comment {
+    -fx-fill: #5c6370;
+    -fx-font-style: italic;
+}
+
+.sql-number {
+    -fx-fill: #d19a66;
+}

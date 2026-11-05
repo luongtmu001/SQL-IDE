@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-AREA-001",
+  "interactions": [
+    {
+      "id": "INT-AREA-001",
+      "component_id": "BTN-AREA-001",
+      "trigger": "click | double_click | right_click | hover | key | drag | drop | resize | selection_changed",
+      "preconditions": [],
+      "source_handler": "unknown",
+      "backend_method": "unknown",
+      "action_summary": "Describe the verified action",
+      "expected_result": "Describe the visible result",
+      "side_effects": [],
+      "confirmation_required": "unknown",
+      "error_behavior": "unknown",
+      "confidence": "observed | code_verified | inferred | unknown",
+      "safe_to_test": false,
+      "evidence": []
+    }
+  ]
+}

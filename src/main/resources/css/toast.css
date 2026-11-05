@@ -1,0 +1,71 @@
+/* =====================================================================
+   DLG-011 toasts (ToastHost). Rounded card, square in flat mode (R-UI-01).
+   ===================================================================== */
+.toast-stack {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.toast {
+    -fx-background-color: -color-border-default, -color-bg-overlay;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 8, 7;
+    -fx-padding: 10 6 10 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 12, 0, 0, 3);
+    -fx-font-size: 12px;
+}
+
+.toast-stack.flat .toast {
+    -fx-background-radius: 0, 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 6, 0, 0, 1);
+}
+
+.toast-icon {
+    -fx-icon-size: 16px;
+    -fx-icon-color: -color-accent-fg;
+}
+
+.toast-success .toast-icon { -fx-icon-color: -color-success-fg; }
+.toast-warning .toast-icon { -fx-icon-color: -color-warning-fg; }
+.toast-error .toast-icon { -fx-icon-color: -color-danger-fg; }
+
+.toast-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.toast-message {
+    -fx-text-fill: -color-fg-muted;
+}
+
+.toast-action {
+    -fx-padding: 2 0 0 0;
+    -fx-text-fill: -color-accent-fg;
+    -fx-underline: false;
+    -fx-border-width: 0;
+}
+
+.toast-action:hover {
+    -fx-underline: true;
+}
+
+.toast-close {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 2 4 2 4;
+    -fx-min-width: 0;
+    -fx-cursor: hand;
+}
+
+.toast-close .ikonli-font-icon {
+    -fx-icon-size: 13px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.toast-close:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.toast-stack.flat .toast-close {
+    -fx-background-radius: 0;
+}

@@ -1,0 +1,1507 @@
+/* Common UI Components Styling */
+
+/* Window Title Bar */
+.window-title-bar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-padding: 4 8 4 10;
+    -fx-spacing: 8;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.window-title-bar .app-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.window-title-bar .window-title-subtext {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.window-control-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 4 8 4 8;
+    -fx-background-radius: 4;
+}
+
+.window-control-button:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.window-control-button.close:hover {
+    -fx-background-color: -color-danger-emphasis;
+}
+
+.window-control-button.close:hover .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+/* Status Indicator Dot */
+.status-indicator {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.status-indicator-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.status-dot {
+    -fx-shape: "M 0 5 A 5 5 0 1 1 10 5 A 5 5 0 1 1 0 5 Z";
+    -fx-min-width: 8px;
+    -fx-min-height: 8px;
+    -fx-max-width: 8px;
+    -fx-max-height: 8px;
+}
+
+.status-dot.online {
+    -fx-background-color: -color-success-fg;
+}
+
+.status-dot.offline {
+    -fx-background-color: -color-danger-fg;
+}
+
+.status-dot.busy {
+    -fx-background-color: -color-warning-fg;
+}
+
+.status-dot.idle {
+    -fx-background-color: -color-fg-subtle;
+}
+
+/* AppButton & IconButton */
+.app-button {
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.icon-button {
+    -fx-cursor: hand;
+    -fx-padding: 4 6 4 6;
+    -fx-background-radius: 4;
+}
+
+.icon-button:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.icon-button.mini {
+    -fx-padding: 1 3 1 3;
+}
+
+/* Custom Search Field Component */
+.custom-search-field {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 2 6 2 6;
+    -fx-spacing: 4;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.custom-search-field:focused-within {
+    -fx-border-color: -color-accent-emphasis;
+}
+
+.search-field-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 13px;
+}
+
+.search-field-input {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 2 4 2 4;
+    -fx-font-size: 11px;
+}
+
+.search-field-input:focused {
+    -fx-background-color: transparent;
+}
+
+.search-field-clear-btn {
+    -fx-padding: 1 2 1 2;
+    -fx-cursor: hand;
+}
+
+.search-field-clear-btn .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 11px;
+}
+
+.search-field-clear-btn:hover .ikonli-font-icon {
+    -fx-icon-color: -color-danger-fg;
+}
+
+/* ToolBar Search Field */
+.quick-search-box {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 2 6 2 6;
+    -fx-spacing: 6;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.quick-search-box:focused-within {
+    -fx-border-color: -color-accent-emphasis;
+}
+
+.quick-search-input {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-font-size: 12px;
+}
+
+.quick-search-input:focused {
+    -fx-background-color: transparent;
+}
+
+/* Explorer Filter Box */
+.explorer-filter-box {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 4 8 4 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.filter-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 13px;
+}
+
+.explorer-filter-input {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 2 4 2 4;
+    -fx-font-size: 11px;
+}
+
+.explorer-filter-input:focused {
+    -fx-background-color: transparent;
+}
+
+.match-count-badge {
+    -fx-font-size: 10px;
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-padding: 1 5 1 5;
+    -fx-background-radius: 8;
+    -fx-font-weight: bold;
+}
+
+/* Collapsed Mini Sidebar Strip (Icon Bar) */
+.mini-sidebar-strip {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent -color-border-subtle transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 6 3 6 3;
+}
+
+.mini-connection-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 7 6 7 6;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.mini-connection-btn:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.mini-connection-btn:armed {
+    -fx-background-color: -color-accent-subtle;
+}
+
+.mini-strip-expand-btn {
+    -fx-padding: 6 8 6 8;
+    -fx-background-radius: 4;
+}
+
+.mini-strip-expand-btn:hover {
+    -fx-background-color: -color-accent-subtle;
+}
+
+.mini-separator {
+    -fx-padding: 2 4 2 4;
+}
+
+/* UI Polish: Hover & Focus Enhancements */
+.tree-cell {
+    -fx-padding: 3 6 3 6;
+    -fx-background-radius: 4;
+}
+
+.tree-cell:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.tree-cell:selected {
+    -fx-background-color: -color-accent-subtle;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.tab-pane .tab:hover {
+    -fx-cursor: hand;
+}
+
+/* Database Tree Styling */
+.tree-cell-name {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.tree-cell-meta {
+    -fx-font-size: 10px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+}
+
+.tree-cell-badge {
+    -fx-font-size: 8.5px;
+    -fx-font-weight: bold;
+    -fx-background-color: -color-warning-subtle;
+    -fx-text-fill: -color-warning-fg;
+    -fx-padding: 0 3 0 3;
+    -fx-background-radius: 3;
+}
+
+/* Node Icons Per Object Type (DataGrip/DBeaver style - compact proportion) */
+.icon-connection {
+    -fx-icon-color: #2ec27e;
+    -fx-icon-size: 11px;
+}
+
+.icon-database {
+    -fx-icon-color: #3584e4;
+    -fx-icon-size: 11px;
+}
+
+.icon-schema {
+    -fx-icon-color: #62a0ea;
+    -fx-icon-size: 11px;
+}
+
+.icon-cat-tables {
+    -fx-icon-color: #1c71d8;
+    -fx-icon-size: 11px;
+}
+
+.icon-table {
+    -fx-icon-color: #3584e4;
+    -fx-icon-size: 11px;
+}
+
+.icon-cat-views {
+    -fx-icon-color: #9141ac;
+    -fx-icon-size: 11px;
+}
+
+.icon-view {
+    -fx-icon-color: #c061cb;
+    -fx-icon-size: 11px;
+}
+
+.icon-cat-funcs {
+    -fx-icon-color: #26a269;
+    -fx-icon-size: 11px;
+}
+
+.icon-func {
+    -fx-icon-color: #33d17a;
+    -fx-icon-size: 11px;
+}
+
+.icon-cat-procs {
+    -fx-icon-color: #e66100;
+    -fx-icon-size: 11px;
+}
+
+.icon-proc {
+    -fx-icon-color: #ff7800;
+    -fx-icon-size: 11px;
+}
+
+.icon-index {
+    -fx-icon-color: #f6d32d;
+    -fx-icon-size: 10px;
+}
+
+.icon-trigger {
+    -fx-icon-color: #ed333b;
+    -fx-icon-size: 10px;
+}
+
+.icon-pk {
+    -fx-icon-color: #f5c211;
+    -fx-icon-size: 10px;
+}
+
+.icon-fk {
+    -fx-icon-color: #3584e4;
+    -fx-icon-size: 10px;
+}
+
+.icon-col-text {
+    -fx-icon-color: #99c1f1;
+    -fx-icon-size: 10px;
+}
+
+.icon-col-num {
+    -fx-icon-color: #8ff0a4;
+    -fx-icon-size: 10px;
+}
+
+.icon-col-date {
+    -fx-icon-color: #dc8add;
+    -fx-icon-size: 10px;
+}
+
+.icon-column {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 10px;
+}
+
+.icon-folder, .icon-cat-folder {
+    -fx-icon-color: #d97706;
+    -fx-icon-size: 11px;
+}
+
+.icon-materialized-view, .icon-cat-mviews {
+    -fx-icon-color: #26a69a;
+    -fx-icon-size: 11px;
+}
+
+.icon-user-type, .icon-cat-udt {
+    -fx-icon-color: #4ade80;
+    -fx-icon-size: 11px;
+}
+
+.icon-key {
+    -fx-icon-color: #f59e0b;
+    -fx-icon-size: 10px;
+}
+
+.icon-constraint {
+    -fx-icon-color: #e06c75;
+    -fx-icon-size: 10px;
+}
+
+.icon-sequence, .icon-cat-seq {
+    -fx-icon-color: #9ca3af;
+    -fx-icon-size: 11px;
+}
+
+.icon-roles {
+    -fx-icon-color: #3584e4;
+    -fx-icon-size: 11px;
+}
+
+/* Reusable Empty State */
+.empty-state-view {
+    -fx-background-color: transparent;
+    -fx-padding: 24;
+    -fx-alignment: CENTER;
+}
+
+.empty-state-icon {
+    -fx-icon-color: -color-fg-subtle;
+}
+
+.empty-state-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.empty-state-desc {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-text-alignment: CENTER;
+}
+
+/* Explorer Empty State */
+.explorer-empty-state {
+    -fx-background-color: transparent;
+    -fx-padding: 20;
+}
+
+/* Reusable Loading View */
+.loading-view {
+    -fx-padding: 20;
+    -fx-alignment: CENTER;
+}
+
+.loading-spinner {
+    -fx-progress-color: -color-accent-emphasis;
+}
+
+.loading-text {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+/* Results Panel Styling */
+.results-tab-pane > .tab-header-area {
+    -fx-padding: 0;
+    -fx-pref-height: 28px;
+    -fx-min-height: 28px;
+    -fx-max-height: 28px;
+}
+
+.results-tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 7px 7px 0 0;
+}
+
+/* Phase 4: VS Code panel tabs (text tabs, 2px accent underline on the active one) */
+.results-tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-padding: 2 10 0 10;
+    -fx-pref-height: 28px;
+    -fx-max-height: 28px;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab:hover .tab-label {
+    -fx-text-fill: -color-fg-default;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-border-color: transparent transparent -color-accent-emphasis transparent;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: -color-fg-muted;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: -color-fg-default;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab .ikonli-font-icon {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab:selected .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-label {
+    -fx-font-size: 11.5px;
+}
+
+.results-mini-toolbar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 2 6 2 6;
+    -fx-pref-height: 28px;
+    -fx-min-height: 28px;
+    -fx-max-height: 28px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 6;
+}
+
+.results-mini-toolbar .quick-search-box {
+    -fx-padding: 1 6 1 6;
+    -fx-pref-height: 22px;
+    -fx-max-height: 22px;
+}
+
+.results-mini-toolbar .quick-search-input {
+    -fx-font-size: 11px;
+    -fx-padding: 0;
+}
+
+.results-mini-toolbar .menu-button {
+    -fx-padding: 1 6 1 6;
+    -fx-font-size: 11px;
+    -fx-pref-height: 22px;
+    -fx-max-height: 22px;
+}
+
+.results-mini-toolbar .icon-button {
+    -fx-padding: 2 4 2 4;
+}
+
+.results-mini-toolbar .icon-button .ikonli-font-icon {
+    -fx-icon-size: 11px;
+}
+
+.results-stats-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-weight: bold;
+}
+
+.row-number-column {
+    -fx-alignment: CENTER_RIGHT;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+}
+
+.badge-pill {
+    -fx-padding: 1 6 1 6;
+    -fx-background-radius: 4;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.badge-info {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.badge-success {
+    -fx-background-color: -color-success-subtle;
+    -fx-text-fill: -color-success-fg;
+}
+
+.badge-warning {
+    -fx-background-color: -color-warning-subtle;
+    -fx-text-fill: -color-warning-fg;
+}
+
+.badge-danger {
+    -fx-background-color: -color-danger-subtle;
+    -fx-text-fill: -color-danger-fg;
+}
+
+.results-table, .messages-table {
+    -fx-background-radius: 0 0 7px 7px;
+    -fx-table-cell-border-color: -color-border-subtle;
+    -fx-background-color: -color-bg-default;
+}
+
+.results-table .virtual-flow, .messages-table .virtual-flow {
+    -fx-background-radius: 0 0 7px 7px;
+}
+
+/* Compact Results Table Column Header (~24-26px, matches tab header) */
+.results-table .column-header-background {
+    -fx-max-height: 26px;
+    -fx-min-height: 26px;
+    -fx-pref-height: 26px;
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.results-table .column-header {
+    -fx-size: 26px;
+    -fx-pref-height: 26px;
+    -fx-max-height: 26px;
+    -fx-padding: 0 4 0 6;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent -color-border-subtle transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+/* the header shows only its graphic (name + type + filter button), not the plain column text */
+.results-table .column-header > .label {
+    -fx-content-display: graphic-only;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0;
+}
+
+/* Phase 4 follow-up 2026-11-05: relative sizes so they follow grid.fontSize */
+.results-table .column-header .col-header-name {
+    -fx-font-size: 1em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-text-overrun: ellipsis;
+}
+
+.results-table .column-header .col-header-type {
+    -fx-font-size: 0.8em;   /* 80 % of the column name */
+    -fx-font-style: italic;
+    -fx-font-weight: normal;
+    -fx-text-fill: -color-fg-subtle;
+    -fx-text-overrun: clip;
+}
+
+/* Filtered column header highlight (matching screenshot's orange indicator) */
+.results-table .column-header.column-header-filtered {
+    -fx-border-color: -color-accent-emphasis -color-border-subtle transparent transparent;
+    -fx-border-width: 2 1 0 0;
+    -fx-background-color: -color-accent-subtle;
+}
+
+/* small filter button, always at the column's right edge */
+.col-header-filter-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 1 2 1 2;
+    -fx-min-width: 16;
+    -fx-min-height: 16;
+    -fx-pref-width: 16;
+    -fx-pref-height: 16;
+    -fx-cursor: hand;
+    -fx-opacity: 0.5;
+}
+
+.col-header-filter-btn .ikonli-font-icon {
+    -fx-icon-size: 10px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.col-header-filter-btn:hover {
+    -fx-opacity: 1.0;
+    -fx-background-color: -color-bg-muted;
+    -fx-background-radius: 3px;
+}
+
+.col-header-filter-btn.active-filter {
+    -fx-opacity: 1.0;
+}
+
+.col-header-filter-btn.active-filter .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+/* no placeholder rows: only real data rows are drawn (2026-11-05) */
+.results-table .table-row-cell:empty,
+.results-table .table-row-cell:empty:odd,
+.results-table .table-row-cell:empty:even {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: transparent;
+}
+
+.results-table .table-row-cell:empty .table-cell {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+/* Visible grid lines and cell layout matching screenshot */
+.results-table .table-cell {
+    -fx-border-color: transparent -color-border-subtle -color-border-subtle transparent;
+    -fx-border-width: 0 1 1 0;
+    -fx-padding: 2 6 2 6;
+    -fx-font-size: 11.5px;
+    -fx-font-family: "Segoe UI", -apple-system, sans-serif;
+    -fx-text-fill: -color-fg-default;
+}
+
+.results-table .table-row-cell:odd {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.results-table .table-row-cell:even {
+    -fx-background-color: -color-bg-default;
+}
+
+.results-table .table-row-cell:filled:selected {
+    -fx-background-color: rgba(37, 99, 235, 0.12); /* light blue/accent selection background */
+}
+
+.results-table .table-cell:filled:selected {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 1.5;
+}
+
+/* Null value cell styling in Results Grid */
+.null-cell-value {
+    -fx-font-style: italic;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* Boolean cell styling matching screenshot (orange for false, green for true) */
+.boolean-cell-false {
+    -fx-text-fill: #d97706;
+    -fx-font-weight: 500;
+}
+
+.boolean-cell-true {
+    -fx-text-fill: #16a34a;
+    -fx-font-weight: 500;
+}
+
+.number-cell {
+    -fx-alignment: CENTER_RIGHT;
+    -fx-text-fill: #2563eb;
+}
+
+/* Row number '#' column styling */
+.row-number-column, .row-number-cell {
+    -fx-alignment: CENTER_RIGHT;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-background-color: -color-bg-subtle;
+    -fx-cursor: hand;
+}
+
+/* Phase 4: stacked result sets (Gate B 2026-11-05), each header collapses its grid */
+.multi-grid-scroll,
+.multi-grid-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.multi-grid-box {
+    -fx-spacing: 0;
+}
+
+.grid-subpane {
+    -fx-border-color: transparent transparent -color-border-muted transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.grid-subpane-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 4 10 4 8;
+    -fx-min-height: 28px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+}
+
+.grid-subpane-header:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.grid-subpane-chevron {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.grid-subpane-icon {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-accent-fg;
+}
+
+.grid-subpane-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.grid-subpane-count {
+    -fx-font-size: 10.5px;
+    -fx-padding: 0 6 0 6;
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8;
+    -fx-text-fill: -color-fg-muted;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.grid-subpane-source {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-text-overrun: ellipsis;
+}
+
+.grid-subpane-count.filtered {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-muted;
+    -fx-text-fill: -color-accent-fg;
+}
+
+/* frozen "#" column: opaque so the scrolled cells pass underneath (2026-11-05) */
+.results-table .column-header.frozen-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent -color-border-default -color-border-subtle transparent;
+    -fx-border-width: 0 1 1 0;
+}
+
+.results-table .table-row-cell .row-number-cell {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent -color-border-default -color-border-subtle transparent;
+    -fx-border-width: 0 1 1 0;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.results-table .table-row-cell:filled:selected .row-number-cell {
+    -fx-background-color: -color-accent-subtle;
+}
+
+.results-table .table-row-cell:empty .row-number-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.grid-subpane-sql {
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-subtle;
+    -fx-text-overrun: ellipsis;
+}
+
+.deferred-button {
+    -fx-opacity: 0.55;
+}
+
+/* Execution stats footer bar matching screenshot */
+.grid-execution-stats-bar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 2 10 2 10;
+    -fx-pref-height: 26px;
+    -fx-min-height: 26px;
+    -fx-max-height: 26px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.grid-stat-item {
+    -fx-font-size: 11px;
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-text-fill: -color-fg-default;
+}
+
+.grid-stat-badge {
+    -fx-background-color: -color-success-subtle;
+    -fx-text-fill: -color-success-fg;
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-padding: 1 5 1 5;
+    -fx-background-radius: 4px;
+    -fx-border-color: -color-success-muted;
+    -fx-border-width: 1;
+    -fx-border-radius: 4px;
+}
+
+/* R-UI-01 flat */
+.main-window.flat-panels .grid-subpane-count,
+.main-window.flat-panels .grid-stat-badge,
+.main-window.flat-panels .results-tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* Terminal Styling */
+.terminal-container {
+    -fx-background-color: #1e1f22;
+    -fx-background-radius: 0 0 7px 7px;
+}
+
+.terminal-output-area {
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-font-size: 12px;
+    -fx-control-inner-background: #1e1f22;
+    -fx-text-fill: #e6edf3;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+}
+
+.terminal-input-bar {
+    -fx-background-color: #2b2d30;
+    -fx-border-color: #3e4249 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 4 8 4 8;
+}
+
+.terminal-prompt-label {
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-success-fg;
+}
+
+.terminal-input-field {
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-font-size: 12px;
+    -fx-background-color: transparent;
+    -fx-text-fill: #e6edf3;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.terminal-input-field:focused {
+    -fx-background-color: transparent;
+}
+
+/* Loading Overlay */
+.results-loading-overlay {
+    -fx-background-color: rgba(30, 31, 34, 0.7);
+}
+
+/* =====================================================================
+   Context Menus, Submenus & Menu Items Styling
+   Unified with IDE font, icons, colors and compact proportions
+   ===================================================================== */
+
+.context-menu {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 6px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+    -fx-padding: 3 0 3 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 10, 0, 0, 4);
+}
+
+.menu-item {
+    -fx-background-color: transparent;
+    -fx-padding: 3 12 3 8;
+    -fx-spacing: 7;
+}
+
+.menu-item:hover,
+.menu-item:focused {
+    -fx-background-color: -color-bg-muted;
+}
+
+.menu-item > .label {
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 11.5px;
+}
+
+.menu-item:disabled > .label {
+    -fx-text-fill: -color-fg-muted;
+    -fx-opacity: 0.6;
+}
+
+.menu-item .ikonli-font-icon {
+    -fx-icon-size: 11.5px;
+    -fx-icon-color: -color-fg-default;
+}
+
+.menu-item:hover .ikonli-font-icon,
+.menu-item:focused .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+.menu-item:disabled .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-opacity: 0.5;
+}
+
+/* Accelerator (Shortcut text, e.g. Ctrl+N, Alt+F4) */
+.menu-item > .right-container > .accelerator-text {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 10.5px;
+    -fx-padding: 0 0 0 16;
+}
+
+.menu-item:hover > .right-container > .accelerator-text,
+.menu-item:focused > .right-container > .accelerator-text {
+    -fx-text-fill: -color-fg-default;
+}
+
+/* Submenu Arrow ('>' indicator) */
+.menu-item > .right-container > .arrow-button > .arrow {
+    -fx-background-color: -color-fg-muted;
+    -fx-padding: 3px;
+}
+
+.menu-item:hover > .right-container > .arrow-button > .arrow,
+.menu-item:focused > .right-container > .arrow-button > .arrow {
+    -fx-background-color: -color-fg-default;
+}
+
+/* Separator between menu groups */
+.context-menu > .separator-menu-item > .separator {
+    -fx-padding: 2 0 2 0;
+}
+
+.context-menu > .separator-menu-item > .separator > .line {
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+
+/* =========================================================================
+   Execution Plan View Styles (Feature 7)
+   ========================================================================= */
+.plan-tree-view {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+
+.plan-tree-view .tree-cell {
+    -fx-padding: 4 6 4 6;
+    -fx-background-color: transparent;
+}
+
+.plan-tree-view .tree-cell:selected {
+    -fx-background-color: -color-accent-subtle;
+}
+
+.plan-op-name {
+    -fx-font-weight: bold;
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.plan-op-icon {
+    -fx-icon-size: 13px;
+    -fx-icon-color: -color-accent-fg;
+}
+
+.plan-cost-badge-high {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #dc2626;
+    -fx-border-color: #fca5a5;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 1 5 1 5;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.plan-cost-badge-medium {
+    -fx-background-color: #fef3c7;
+    -fx-text-fill: #d97706;
+    -fx-border-color: #fcd34d;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 1 5 1 5;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.plan-cost-badge-low {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #16a34a;
+    -fx-border-color: #86efac;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 1 5 1 5;
+    -fx-font-size: 10px;
+}
+
+.plan-inspector-container {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 0 1;
+}
+
+.plan-raw-textarea {
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 11.5px;
+}
+
+
+/* =====================================================================
+   Object Explorer (SCR-MAIN-002, Gate B 2026-11-05)
+   22px rows, chevrons, groups, connection dot + type, count badges,
+   hover ⋯ / filter buttons, no horizontal scrolling.
+   ===================================================================== */
+.explorer-header .explorer-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+    -fx-text-overrun: ellipsis;
+    -fx-padding: 0 4 0 0;
+}
+
+.explorer-header-button {
+    -fx-padding: 3 4 3 4;
+    -fx-min-width: 22px;
+    -fx-pref-width: 22px;
+    -fx-pref-height: 22px;
+}
+
+.explorer-header-button .ikonli-font-icon {
+    -fx-icon-size: 13px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.explorer-header-button:hover .ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+}
+
+/* search: looks like an input field (26px) */
+.explorer-filter-box {
+    -fx-background-color: -color-border-default, -color-bg-default;
+    -fx-background-insets: 6 8 6 8, 7 9 7 9;
+    -fx-background-radius: 5, 4;
+    -fx-border-width: 0;
+    -fx-padding: 8 14 8 16;
+}
+
+.explorer-filter-box:focus-within {
+    -fx-background-color: -color-accent-emphasis, -color-bg-default;
+}
+
+.explorer-filter-box .explorer-filter-input {
+    -fx-font-size: 12px;
+    -fx-padding: 0 4 0 2;
+}
+
+.explorer-tree .tree-cell.explorer-cell {
+    -fx-padding: 0 4 0 2;
+    -fx-pref-height: 22px;
+    -fx-min-height: 22px;
+    -fx-max-height: 22px;
+    -fx-background-radius: 0;
+    -fx-font-size: 12px;
+}
+
+.explorer-tree .tree-cell.explorer-cell:drop-target {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 1;
+}
+
+.explorer-cell .ikonli-font-icon {
+    -fx-icon-size: 13px;
+}
+
+.explorer-cell .tree-cell-name {
+    -fx-font-size: 12px;
+    -fx-text-overrun: ellipsis;
+}
+
+.explorer-cell .tree-cell-name.conn-connected {
+    -fx-font-weight: bold;
+}
+
+.explorer-cell .tree-cell-name.conn-error {
+    -fx-text-fill: -color-danger-fg;
+}
+
+.explorer-cell .tree-cell-name.loading-name {
+    -fx-text-fill: -color-fg-subtle;
+    -fx-font-style: italic;
+}
+
+.explorer-cell .tree-cell-desc {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-subtle;
+    -fx-text-overrun: ellipsis;
+}
+
+.explorer-conn-dot {
+    -fx-min-width: 7px;
+    -fx-pref-width: 7px;
+    -fx-max-width: 7px;
+    -fx-min-height: 7px;
+    -fx-pref-height: 7px;
+    -fx-max-height: 7px;
+    -fx-background-radius: 4px;
+}
+
+.explorer-count-badge {
+    -fx-font-size: 10px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 8px;
+    -fx-padding: 0 6 0 6;
+}
+
+.explorer-count-badge.filtered {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.explorer-row-button {
+    -fx-background-color: transparent;
+    -fx-padding: 1 3 1 3;
+    -fx-background-radius: 3px;
+    -fx-cursor: hand;
+    -fx-min-width: 18px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+}
+
+.explorer-row-button:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.explorer-row-button .ikonli-font-icon {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.explorer-filter-button.active .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+.icon-group {
+    -fx-icon-color: -color-warning-fg;
+}
+
+/* chevron disclosure arrow (right; rotated when expanded).
+   Fixed 18px slot on every row (leaf rows get the same slot), fixed 12px indent per level,
+   so chevrons, folder / object icons and names line up vertically. */
+.explorer-tree .tree-cell {
+    -fx-indent: 12px;
+}
+
+/* T8 (Phase 7): TreeCellSkin reserves 18px for the disclosure slot on leaf rows but uses the
+   node's own pref width on expandable rows, so a 16px slot shifted leaves 2px right of folders.
+   The slot is therefore exactly 18px on every row. */
+.explorer-tree .tree-cell > .tree-disclosure-node {
+    -fx-padding: 0;
+    -fx-min-width: 18px;
+    -fx-pref-width: 18px;
+    -fx-max-width: 18px;
+    -fx-alignment: center;
+}
+
+.explorer-tree .tree-cell > .tree-disclosure-node > .arrow {
+    -fx-shape: "M0 1.4 L1.4 0 L6.4 5 L1.4 10 L0 8.6 L3.6 5 Z";
+    -fx-scale-shape: true;
+    -fx-background-color: -color-fg-muted;
+    /* fixed 5x8 chevron: the 16px slot must not stretch it */
+    -fx-padding: 0;
+    -fx-min-width: 5px;
+    -fx-pref-width: 5px;
+    -fx-max-width: 5px;
+    -fx-min-height: 8px;
+    -fx-pref-height: 8px;
+    -fx-max-height: 8px;
+}
+
+.explorer-tree .tree-cell:expanded > .tree-disclosure-node > .arrow {
+    -fx-rotate: 90;
+}
+
+/* never scroll horizontally: rows are as wide as the panel, long names get "…" */
+.explorer-tree .virtual-flow > .scroll-bar:horizontal {
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+    -fx-opacity: 0;
+}
+
+.explorer-context-menu .menu-item {
+    -fx-padding: 4 14 4 10;
+}
+
+.explorer-context-menu .danger-item .label {
+    -fx-text-fill: -color-danger-fg;
+}
+
+.explorer-context-menu .danger-item .ikonli-font-icon {
+    -fx-icon-color: -color-danger-fg;
+}
+
+.explorer-context-menu .deferred-item .label {
+    -fx-text-fill: -color-fg-subtle;
+}
+
+/* not connected: connection icon without colour (Gate C feedback 2026-11-05) */
+.explorer-cell .ikonli-font-icon.conn-off {
+    -fx-icon-color: -color-fg-subtle;
+}
+
+
+/* =====================================================================
+   Column filter popup (user mockup 2026-11-05)
+   ===================================================================== */
+.col-filter-popup {
+    -fx-background-color: -color-bg-overlay;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 14, 0, 0, 4);
+}
+
+.col-filter-header {
+    -fx-padding: 8 8 8 12;
+    -fx-border-color: transparent transparent -color-border-muted transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.col-filter-title-icon {
+    -fx-icon-size: 13px;
+    -fx-icon-color: -color-success-fg;
+}
+
+.col-filter-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-text-overrun: ellipsis;
+}
+
+.col-filter-close {
+    -fx-background-color: transparent;
+    -fx-padding: 2 4 2 4;
+    -fx-cursor: hand;
+}
+
+.col-filter-close .ikonli-font-icon {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.col-filter-body {
+    -fx-padding: 8 12 8 12;
+}
+
+.col-filter-section {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 4 0 0 0;
+}
+
+.col-filter-popup .text-field,
+.col-filter-popup .combo-box-base {
+    -fx-font-size: 12px;
+}
+
+.col-filter-all-row {
+    -fx-padding: 2 2 0 2;
+}
+
+.col-filter-all {
+    -fx-font-size: 12px;
+}
+
+.col-filter-counter {
+    -fx-font-size: 11.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.col-filter-list {
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.col-filter-list .list-cell {
+    -fx-padding: 3 8 3 6;
+    -fx-font-size: 12px;
+}
+
+.col-filter-count {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.col-filter-note {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-warning-fg;
+}
+
+.col-filter-footer {
+    -fx-padding: 8 12 8 12;
+    -fx-border-color: -color-border-muted transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.col-filter-button {
+    -fx-font-size: 12px;
+    -fx-padding: 4 12 4 12;
+}
+
+/* R-UI-01 flat */
+.col-filter-popup.flat,
+.col-filter-popup.flat .col-filter-list,
+.col-filter-popup.flat .text-field,
+.col-filter-popup.flat .combo-box-base,
+.col-filter-popup.flat .button,
+.col-filter-popup.flat .check-box > .box {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* tabs mode for several result sets (grid.resultLayout = tabs) */
+.result-set-tabs > .tab-header-area {
+    -fx-padding: 0 4 0 4;
+}
+
+.result-set-tabs > .tab-header-area > .tab-header-background {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.result-set-tabs > .tab-header-area > .headers-region > .tab {
+    -fx-padding: 1 10 0 10;
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+.result-set-tabs > .tab-header-area > .headers-region > .tab:selected {
+    -fx-border-color: transparent transparent -color-accent-emphasis transparent;
+}
+
+.result-set-tabs > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-font-size: 11.5px;
+}
+
+/* results grid context menu (LLTool order, 2026-11-05) */
+.grid-context-menu .grid-menu-icon,
+.grid-context-menu .menu .ikonli-font-icon {
+    -fx-icon-size: 13px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.grid-context-menu .menu-item:focused .grid-menu-icon,
+.grid-context-menu .menu:focused .ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+}
+
+.grid-context-menu .menu-item .accelerator-text {
+    -fx-text-fill: -color-fg-subtle;
+}
+
+/* DLG-014 shared loading overlay (LoadingOverlay.java) */
+.loading-overlay {
+    -fx-background-color: rgba(0, 0, 0, 0.18);
+}
+
+.loading-card {
+    -fx-background-color: -color-border-default, -color-bg-overlay;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 8, 7;
+    -fx-padding: 12 18 12 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 12, 0, 0, 3);
+}
+
+.main-window.flat-panels .loading-card,
+.dialog-shell.flat .loading-card {
+    -fx-background-radius: 0, 0;
+}
+
+.loading-card .loading-spinner {
+    -fx-pref-width: 24px;
+    -fx-pref-height: 24px;
+}
+
+.loading-message {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.loading-elapsed {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+}
+
+.loading-cancel {
+    -fx-font-size: 11px;
+    -fx-padding: 0;
+    -fx-text-fill: -color-accent-fg;
+    -fx-border-width: 0;
+}
+
+/* T11: stacked grids keep a 24px row without TableView.setFixedCellSize (see ResultsController) */
+.results-table.stacked-grid .table-row-cell {
+    -fx-cell-size: 24px;
+}

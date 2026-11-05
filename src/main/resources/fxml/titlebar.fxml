@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<!--
+    Modern Unified Title Bar:
+    [Icon][Menu Bar] === (draggable spacer) === [Title][Search] === (draggable spacer) === [Layout Toggles][- □ x]
+    No StackPane overlap: elements are laid out horizontally and shrink gracefully without text collisions.
+-->
+<HBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:id="titleBarRoot"
+      fx:controller="app.ui.titlebar.TitleBarController"
+      styleClass="window-title-bar"
+      alignment="CENTER_LEFT"
+      spacing="4">
+
+    <!-- Left: App Icon & Menu Bar -->
+    <HBox fx:id="leftArea" alignment="CENTER_LEFT" spacing="6" styleClass="titlebar-left-area" HBox.hgrow="NEVER">
+        <ImageView fx:id="appIcon" fitWidth="16" fitHeight="16" preserveRatio="true" smooth="true" styleClass="app-icon"/>
+        <MenuButton fx:id="hamburgerMenuButton" styleClass="titlebar-hamburger-button" focusTraversable="false" visible="false" managed="false">
+            <graphic><FontIcon iconLiteral="fth-menu"/></graphic>
+            <tooltip><Tooltip text="Application Menu"/></tooltip>
+        </MenuButton>
+        <HBox fx:id="menuArea" alignment="CENTER_LEFT" styleClass="titlebar-menu-area"/>
+    </HBox>
+
+    <!-- Draggable caption spacer -->
+    <Region HBox.hgrow="ALWAYS" minWidth="8" mouseTransparent="true"/>
+
+    <!-- Center: Window Title & Global Search -->
+    <HBox fx:id="centerArea" alignment="CENTER" spacing="10" styleClass="titlebar-center-area" HBox.hgrow="NEVER">
+        <Label fx:id="windowTitleLabel" styleClass="window-title-label" mouseTransparent="true"
+               minWidth="0" maxWidth="260" textOverrun="CENTER_ELLIPSIS"/>
+        <HBox fx:id="searchArea" alignment="CENTER" styleClass="titlebar-search-slot"/>
+    </HBox>
+
+    <!-- Draggable caption spacer -->
+    <Region HBox.hgrow="ALWAYS" minWidth="8" mouseTransparent="true"/>
+
+    <!-- Right: Update notification & environment badge of the active connection -->
+    <HBox fx:id="statusArea" alignment="CENTER_RIGHT" spacing="6" styleClass="titlebar-status-area" HBox.hgrow="NEVER">
+        <Button fx:id="updateButton" onAction="#handleUpdateRequested" styleClass="titlebar-update-button" focusTraversable="false"
+                visible="false" managed="false">
+            <graphic><FontIcon iconLiteral="fth-download-cloud"/></graphic>
+            <tooltip><Tooltip text="Có bản cập nhật mới"/></tooltip>
+        </Button>
+        <Label fx:id="environmentBadge" styleClass="titlebar-env-badge" mouseTransparent="false" visible="false" managed="false">
+            <tooltip><Tooltip text="Môi trường của kết nối hiện tại (DEV / TEST / STAGING / PROD)"/></tooltip>
+        </Label>
+    </HBox>
+
+    <!-- Right: Layout & Theme Actions -->
+    <HBox fx:id="customArea" alignment="CENTER_RIGHT" spacing="2" styleClass="titlebar-custom-area" HBox.hgrow="NEVER"/>
+
+    <!-- Far Right: Window Control Buttons (Minimize, Maximize/Restore, Close) -->
+    <HBox fx:id="windowControls" styleClass="window-controls" alignment="CENTER_RIGHT" spacing="0" HBox.hgrow="NEVER">
+        <Button fx:id="minimizeButton" onAction="#handleMinimize" styleClass="window-control-button, minimize" focusTraversable="false">
+            <graphic><FontIcon iconLiteral="fth-minus"/></graphic>
+            <tooltip><Tooltip text="Minimize"/></tooltip>
+        </Button>
+        <Button fx:id="maxRestoreButton" onAction="#handleMaximizeRestore" styleClass="window-control-button, maximize" focusTraversable="false">
+            <graphic><FontIcon fx:id="maxRestoreIcon" iconLiteral="fth-square"/></graphic>
+        </Button>
+        <Button fx:id="closeButton" onAction="#handleClose" styleClass="window-control-button, close" focusTraversable="false">
+            <graphic><FontIcon iconLiteral="fth-x"/></graphic>
+            <tooltip><Tooltip text="Close"/></tooltip>
+        </Button>
+    </HBox>
+</HBox>

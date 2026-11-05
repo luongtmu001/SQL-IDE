@@ -1,0 +1,14 @@
+/* Dark Theme specific overrides and enhancements */
+
+/* .main-window background: layout.css (gap colour between cards) */
+
+/* .sidebar-panel / .mini-sidebar-strip: styled in layout.css (cards, SCR-MAIN-001) */
+
+.editor-content-placeholder, .results-content-placeholder, .messages-placeholder {
+    -fx-background-color: #2b2d30;
+}
+
+/* Results Loading Overlay in Dark Mode */
+.results-loading-overlay {
+    -fx-background-color: rgba(30, 31, 34, 0.75);
+}

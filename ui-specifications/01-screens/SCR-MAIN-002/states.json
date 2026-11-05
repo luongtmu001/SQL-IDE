@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-002",
+  "states": [
+    {
+      "id": "ST-EXP-001",
+      "name": "no_connections",
+      "ui": "empty state + nút Kết nối mới"
+    },
+    {
+      "id": "ST-EXP-002",
+      "name": "search_no_match",
+      "ui": "Không tìm thấy object"
+    },
+    {
+      "id": "ST-EXP-003",
+      "name": "connection_disconnected"
+    },
+    {
+      "id": "ST-EXP-004",
+      "name": "connection_connecting",
+      "ui": "spinner"
+    },
+    {
+      "id": "ST-EXP-005",
+      "name": "connection_connected"
+    },
+    {
+      "id": "ST-EXP-006",
+      "name": "connection_error",
+      "ui": "icon đỏ + tooltip"
+    },
+    {
+      "id": "ST-EXP-007",
+      "name": "node_loading",
+      "ui": "dòng Loading…"
+    },
+    {
+      "id": "ST-EXP-008",
+      "name": "category_filtered",
+      "ui": "badge x / y + icon lọc"
+    },
+    {
+      "id": "ST-EXP-009",
+      "name": "rail"
+    },
+    {
+      "id": "ST-EXP-010",
+      "name": "drag_over_group",
+      "ui": "nền accent nhạt"
+    }
+  ]
+}

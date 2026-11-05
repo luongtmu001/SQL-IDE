@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-005",
+  "mappings": [
+    {
+      "source_id": "#ide-sb-zoom-input",
+      "target": "CMP-SB-012",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "changed",
+      "differences": [
+        "list 50–200% instead of 20–400%"
+      ]
+    },
+    {
+      "source_id": "#ide-sb-issues",
+      "target": "CMP-SB-003",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "changed",
+      "differences": [
+        "VS Code style error/warning counts"
+      ]
+    },
+    {
+      "source_id": "#ide-status-env",
+      "target": "toolbarEnvBadge (SCR-MAIN-003)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "moved_with_approval"
+    },
+    {
+      "source_id": "#ide-status-readonly / #ide-status-tx",
+      "target": "CMP-SB-004/005",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "full"
+    },
+    {
+      "source_id": "#ide-status-spid",
+      "target": "CMP-SB-002",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "full"
+    },
+    {
+      "source_id": "#ide-sb-cursor/indent/eol/encoding",
+      "target": "CMP-SB-007..010",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "full"
+    },
+    {
+      "source_id": "#ide-result-footer",
+      "target": "CMP-SB-006 (summary) + Results footer (SCR-MAIN-004)",
+      "mapping_status": "spec_draft",
+      "behavior_parity": "split"
+    },
+    {
+      "source_id": "(target only) themeLabel, tabInfoLabel",
+      "target": "removed",
+      "mapping_status": "spec_draft"
+    }
+  ]
+}

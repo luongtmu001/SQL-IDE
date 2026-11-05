@@ -1,0 +1,380 @@
+/* =====================================================================
+   Dialog chrome (Phase 2B, Gate B 2026-11-05): DialogChrome.java
+   Rounded 8px + shadow, or square when Settings > Kiểu khung = Phẳng.
+   ===================================================================== */
+.dialog-clip-host {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 18, 0, 0, 6);
+}
+
+.dialog-root.flat .dialog-clip-host {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 10, 0, 0, 2);
+}
+
+.dialog-shell {
+    -fx-background-color: -color-border-default, -color-bg-default;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 8, 7;
+    -fx-font-size: 12px;
+}
+
+.dialog-shell.flat {
+    -fx-background-radius: 0, 0;
+}
+
+.dialog-titlebar {
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
+    -fx-max-height: 34px;
+    -fx-padding: 0 4 0 12;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-insets: 1 1 0 1;
+    -fx-background-radius: 7 7 0 0;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-insets: 0 1 0 1;
+}
+
+.dialog-shell.flat .dialog-titlebar {
+    -fx-background-radius: 0;
+}
+
+.dialog-title-icon {
+    -fx-icon-size: 14px;
+    -fx-icon-color: -color-accent-fg;
+}
+
+.dialog-title-icon.danger {
+    -fx-icon-color: -color-danger-fg;
+}
+
+.dialog-title-icon.warning {
+    -fx-icon-color: -color-warning-fg;
+}
+
+.dialog-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-text-overrun: ellipsis;
+}
+
+.dialog-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-text-overrun: ellipsis;
+}
+
+.dialog-close-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 4 8 4 8;
+    -fx-cursor: hand;
+}
+
+.dialog-close-button .ikonli-font-icon {
+    -fx-icon-size: 14px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.dialog-close-button:hover {
+    -fx-background-color: #e81123;
+}
+
+.dialog-close-button:hover .ikonli-font-icon {
+    -fx-icon-color: #ffffff;
+}
+
+.dialog-body {
+    -fx-padding: 14 16 14 16;
+    -fx-spacing: 10;
+}
+
+.dialog-footer {
+    -fx-padding: 10 14 10 14;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-insets: 0 1 1 1;
+    -fx-background-radius: 0 0 7 7;
+    -fx-border-color: -color-border-subtle transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-border-insets: 0 1 0 1;
+}
+
+.dialog-shell.flat .dialog-footer {
+    -fx-background-radius: 0;
+}
+
+.dialog-button {
+    -fx-min-width: 76px;
+    -fx-pref-height: 28px;
+    -fx-font-size: 12px;
+}
+
+.dialog-button.danger {
+    -fx-background-color: -color-danger-emphasis;
+    -fx-text-fill: -color-fg-emphasis;
+    -fx-border-color: transparent;
+}
+
+.dialog-button.danger:hover {
+    -fx-background-color: -color-danger-fg;
+}
+
+.dialog-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.dialog-section {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 6 0 0 0;
+}
+
+.dialog-message {
+    -fx-font-size: 12.5px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.dialog-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+.dialog-error {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-danger-fg;
+}
+
+.dialog-success {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-success-fg;
+}
+
+.text-field.invalid,
+.password-field.invalid,
+.combo-box.invalid {
+    -fx-border-color: -color-danger-emphasis;
+    -fx-border-radius: 4;
+}
+
+.dialog-link {
+    -fx-font-size: 12px;
+    -fx-underline: false;
+    -fx-text-fill: -color-accent-fg;
+    -fx-padding: 0;
+}
+
+.dialog-link.danger {
+    -fx-text-fill: -color-danger-fg;
+}
+
+.dialog-list-box {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 6;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 6;
+}
+
+.dialog-list-box > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* small icon-only button inside dialog bodies (e.g. remove a filter condition) */
+.dialog-icon-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 4;
+    -fx-cursor: hand;
+}
+
+.dialog-icon-button .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.dialog-icon-button:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.dialog-icon-button.danger:hover .ikonli-font-icon {
+    -fx-icon-color: -color-danger-fg;
+}
+
+/* R-UI-01 element shapes (chevrons, rounded / flat corners): see shape.css and shape-flat.css */
+
+/* ---------- Phase 3: Actions Guard / debug lists ---------- */
+.guard-header {
+    -fx-padding: 4 10 4 10;
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1 1 0 1;
+    -fx-background-radius: 6 6 0 0;
+    -fx-border-radius: 6 6 0 0;
+}
+
+.guard-head {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.guard-line {
+    -fx-min-width: 40;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.guard-list {
+    -fx-background-radius: 0 0 6 6;
+    -fx-border-radius: 0 0 6 6;
+}
+
+.guard-list .list-cell {
+    -fx-font-size: 12px;
+    -fx-padding: 4 10 4 10;
+}
+
+.guard-list .list-cell.mono-cell {
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-font-size: 11.5px;
+}
+
+.guard-question {
+    -fx-text-fill: -color-danger-fg;
+    -fx-font-size: 12px;
+}
+
+.env-badge-chip {
+    -fx-font-size: 10.5px;
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-padding: 1 6 1 6;
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-muted;
+    -fx-background-radius: 3;
+}
+
+.env-badge-chip.prod {
+    -fx-background-color: -color-danger-emphasis;
+    -fx-text-fill: -color-fg-emphasis;
+}
+
+.prod-info {
+    -fx-padding: 6 8 6 8;
+    -fx-background-color: -color-danger-subtle;
+    -fx-background-radius: 4;
+}
+
+.dialog-shell.flat .guard-header,
+.dialog-shell.flat .guard-list,
+.dialog-shell.flat .env-badge-chip,
+.dialog-shell.flat .prod-info {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* =====================================================================
+   Phase 6: message boxes, About (DLG-012), update check (DLG-013),
+   loading overlay card (DLG-014). Corner radii follow R-UI-01.
+   ===================================================================== */
+.message-icon {
+    -fx-icon-size: 26px;
+    -fx-icon-color: -color-accent-fg;
+}
+
+.message-icon.success { -fx-icon-color: -color-success-fg; }
+.message-icon.warning { -fx-icon-color: -color-warning-fg; }
+.message-icon.danger { -fx-icon-color: -color-danger-fg; }
+
+.message-header {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.message-detail {
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-font-size: 11.5px;
+}
+
+.about-head {
+    -fx-padding: 4 0 0 0;
+}
+
+.about-logo {
+    -fx-icon-size: 36px;
+    -fx-icon-color: -color-accent-fg;
+}
+
+.about-name {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-padding: 4 0 0 0;
+}
+
+.about-badge {
+    -fx-font-size: 11px;
+    -fx-padding: 1 8 1 8;
+    -fx-background-color: -color-neutral-muted;
+    -fx-background-radius: 10;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.about-badge.accent {
+    -fx-background-color: -color-accent-muted;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.about-grid {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 6;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 6;
+    -fx-padding: 6 12 6 12;
+}
+
+.about-key,
+.about-value {
+    -fx-padding: 4 0 4 0;
+    -fx-font-size: 12px;
+}
+
+.about-key {
+    -fx-text-fill: -color-fg-muted;
+}
+
+.about-value {
+    -fx-text-fill: -color-fg-default;
+}
+
+.about-value.accent {
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+}
+
+.about-value.mono {
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+}
+
+.update-spinner {
+    -fx-pref-width: 26px;
+    -fx-pref-height: 26px;
+    -fx-progress-color: -color-accent-emphasis;
+}
+
+.update-notes {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 6;
+    -fx-padding: 6 12 8 12;
+}
+
+.update-progress {
+    -fx-pref-height: 8px;
+    -fx-accent: -color-success-emphasis;
+}
+
+.dialog-shell.flat .about-badge,
+.dialog-shell.flat .about-grid,
+.dialog-shell.flat .update-notes {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}

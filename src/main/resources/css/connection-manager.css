@@ -1,0 +1,196 @@
+/* SCR-DLG-001 Connection Manager — Phase 2C compact layout.
+   R-UI-01: rounded = two cards 6px apart; flat (.dialog-shell.flat) = no gap, square corners.
+   The saved-connections list reuses the Object Explorer styles (components.css). */
+
+.cm-root {
+    -fx-background-color: -color-bg-subtle;
+    -fx-padding: 6;
+    -fx-spacing: 6;
+}
+
+.cm-card {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+/* ---------- left card: same look as the Object Explorer ---------- */
+.cm-list-panel .panel-header {
+    -fx-background-radius: 7 7 0 0;
+}
+
+.cm-list-panel .explorer-tree,
+.cm-list-panel .explorer-tree .virtual-flow,
+.cm-list-panel .explorer-tree .clipped-container {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0 0 8 8;
+    -fx-border-width: 0;
+}
+
+.cm-danger:hover .ikonli-font-icon {
+    -fx-icon-color: -color-danger-fg;
+}
+
+/* ---------- right card ---------- */
+.cm-form-header {
+    -fx-padding: 8 14 8 14;
+    -fx-border-color: transparent transparent -color-border-muted transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.cm-header-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.cm-header-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.cm-form-scroll,
+.cm-form-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.cm-form {
+    -fx-padding: 2 14 10 14;
+    -fx-spacing: 7;
+}
+
+.cm-section,
+.cm-section-text {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.cm-section {
+    -fx-padding: 8 0 0 0;
+}
+
+/* R-UI-01: field captions right aligned, next to their field */
+.cm-label {
+    -fx-alignment: CENTER_RIGHT;
+    -fx-text-alignment: right;
+    -fx-padding: 0 8 0 8;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 12px;
+}
+
+/* fields size to their content so the text is never clipped */
+.cm-form .text-field,
+.cm-form .password-field,
+.cm-form .spinner > .text-field,
+.cm-form .combo-box-base.editable > .text-field {
+    -fx-font-size: 12px;
+    -fx-padding: 5 8 5 8;
+}
+
+.cm-form .combo-box > .list-cell {
+    -fx-font-size: 12px;
+    -fx-padding: 5 8 5 8;
+}
+
+.cm-form .cm-password {
+    -fx-padding: 5 30 5 8;
+}
+
+.cm-eye-button,
+.cm-field-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-border-width: 0;
+    -fx-padding: 4;
+    -fx-cursor: hand;
+}
+
+.cm-eye-button {
+    -fx-translate-x: -2;
+}
+
+.cm-field-button {
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-min-width: 28;
+    -fx-min-height: 28;
+}
+
+.cm-eye-button .ikonli-font-icon,
+.cm-field-button .ikonli-font-icon {
+    -fx-icon-size: 13px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.cm-eye-button:hover .ikonli-font-icon,
+.cm-field-button:hover .ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+}
+
+.cm-field-button:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.cm-advanced-toggle {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 8 0 0 0;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+}
+
+.cm-advanced-icon {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.cm-footer {
+    -fx-padding: 8 12;
+    -fx-border-color: -color-border-muted transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 0 0 8 8;
+}
+
+.text-field.invalid,
+.combo-box.invalid {
+    -fx-border-color: -color-danger-emphasis;
+}
+
+/* ---------- R-UI-01 flat: panels touch, no rounded corners ---------- */
+.dialog-shell.flat .cm-root {
+    -fx-padding: 0;
+    -fx-spacing: 0;
+    -fx-background-color: -color-bg-default;
+}
+
+.dialog-shell.flat .cm-card,
+.dialog-shell.flat .cm-list-panel .panel-header,
+.dialog-shell.flat .cm-list-panel .explorer-tree,
+.dialog-shell.flat .cm-list-panel .explorer-tree .virtual-flow,
+.dialog-shell.flat .cm-footer,
+.dialog-shell.flat .cm-field-button,
+.dialog-shell.flat .cm-eye-button {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+.dialog-shell.flat .cm-card {
+    -fx-border-width: 0;
+}
+
+.dialog-shell.flat .cm-list-panel {
+    -fx-border-color: transparent -color-border-default transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.dialog-shell.flat .explorer-filter-box {
+    -fx-background-radius: 0, 0;
+}

@@ -1,0 +1,578 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-SHELL-001",
+  "mappings": [
+    {
+      "source_id": "REG-SHELL-002",
+      "source_type": "python_web_ui",
+      "target_id": "REG-SHELL-002",
+      "target_type": "javafx",
+      "target_component": "Custom title bar HBox (titlebar.fxml) + WindowsWindowAdapter",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Native caption replaced by custom bar (approved)",
+        "System menu on right-click missing",
+        "No inactive state"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "REG-SHELL-003",
+      "source_type": "python_web_ui",
+      "target_id": "REG-SHELL-003",
+      "target_type": "javafx",
+      "target_component": "Merged into title bar (single 34px row)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Two rows (caption + navbar) → one VS Code-style row",
+        "Auto-hide navbar not implemented"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "CMP-SHELL-001",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SHELL-001",
+      "target_type": "javafx",
+      "target_component": "windowTitleLabel",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Shows '<doc> — SQL IDE' centered; app name differs (luoBTool IDE vs SQL IDE) — needs decision"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "CMP-SHELL-002",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SHELL-002",
+      "target_type": "javafx",
+      "target_component": "appIcon FontIcon",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Generic icon instead of product logo"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MNU-SHELL-001",
+      "source_type": "python_web_ui",
+      "target_id": "MNU-SHELL-001",
+      "target_type": "javafx",
+      "target_component": "Menu",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Item set differs, see MIT mappings"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MNU-SHELL-002",
+      "source_type": "python_web_ui",
+      "target_id": "MNU-SHELL-002",
+      "target_type": "javafx",
+      "target_component": "Menu",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Item set differs, see MIT mappings"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MNU-SHELL-003",
+      "source_type": "python_web_ui",
+      "target_id": "MNU-SHELL-003",
+      "target_type": "javafx",
+      "target_component": "Menu",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Target menu set differs: File/Edit/View/Navigate/Tools/Window/Help; no Format, no Settings top-level"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MNU-SHELL-004",
+      "source_type": "python_web_ui",
+      "target_id": "MNU-SHELL-004",
+      "target_type": "javafx",
+      "target_component": "Menu",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Item set differs, see MIT mappings"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MNU-SHELL-005",
+      "source_type": "python_web_ui",
+      "target_id": "MNU-SHELL-005",
+      "target_type": "javafx",
+      "target_component": "Menu",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Target menu set differs: File/Edit/View/Navigate/Tools/Window/Help; no Format, no Settings top-level"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MNU-SHELL-006",
+      "source_type": "python_web_ui",
+      "target_id": "MNU-SHELL-006",
+      "target_type": "javafx",
+      "target_component": "Menu",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Item set differs, see MIT mappings"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-001",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-001",
+      "target_type": "javafx",
+      "target_component": "File ▸ New Query Tab (Ctrl+N)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "matched",
+      "differences": [],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-002",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-002",
+      "target_type": "javafx",
+      "target_component": "File ▸ Open SQL Script... (Ctrl+O)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "matched",
+      "differences": [],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-003",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-003",
+      "target_type": "javafx",
+      "target_component": "File ▸ Save (Ctrl+S)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "matched",
+      "differences": [],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-004",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-004",
+      "target_type": "javafx",
+      "target_component": "File ▸ Close Tab (Ctrl+W)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "matched",
+      "differences": [],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-005",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-005",
+      "target_type": "javafx",
+      "target_component": "MenuItem (missing)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-006",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-006",
+      "target_type": "javafx",
+      "target_component": "MenuItem (missing)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-007",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-007",
+      "target_type": "javafx",
+      "target_component": "MenuItem (placeholder, disabled or opens 'coming soon')",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Feature out of scope; keep menu entry for discoverability"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-008",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-008",
+      "target_type": "javafx",
+      "target_component": "MenuItem (missing)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-009",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-009",
+      "target_type": "javafx",
+      "target_component": "Edit ▸ Format SQL (Ctrl+Alt+L — shortcut differs)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Shortcut Ctrl+K, Ctrl+D (source) vs Ctrl+Alt+L (target)"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-010",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-010",
+      "target_type": "javafx",
+      "target_component": "MenuItem (missing)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-011",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-011",
+      "target_type": "javafx",
+      "target_component": "MenuItem (placeholder, disabled or opens 'coming soon')",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Feature out of scope; keep menu entry for discoverability"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-012",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-012",
+      "target_type": "javafx",
+      "target_component": "MenuItem (placeholder, disabled or opens 'coming soon')",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Feature out of scope; keep menu entry for discoverability"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-013",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-013",
+      "target_type": "javafx",
+      "target_component": "MenuItem (placeholder, disabled or opens 'coming soon')",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Feature out of scope; keep menu entry for discoverability"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-014",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-014",
+      "target_type": "javafx",
+      "target_component": "MenuItem (placeholder, disabled or opens 'coming soon')",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Feature out of scope; keep menu entry for discoverability"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-015",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-015",
+      "target_type": "javafx",
+      "target_component": "MenuItem (placeholder, disabled or opens 'coming soon')",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Feature out of scope; keep menu entry for discoverability"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-016",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-016",
+      "target_type": "javafx",
+      "target_component": "MenuItem (placeholder, disabled or opens 'coming soon')",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Feature out of scope; keep menu entry for discoverability"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-017",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-017",
+      "target_type": "javafx",
+      "target_component": "MenuItem (placeholder, disabled or opens 'coming soon')",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Feature out of scope; keep menu entry for discoverability"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-018",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-018",
+      "target_type": "javafx",
+      "target_component": "MenuItem (missing)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-019",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-019",
+      "target_type": "javafx",
+      "target_component": "MenuItem (missing)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "MIT-SHELL-020",
+      "source_type": "python_web_ui",
+      "target_id": "MIT-SHELL-020",
+      "target_type": "javafx",
+      "target_component": "MenuItem (missing)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-001",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-001",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-002",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-002",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-003",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-003",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-004",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-004",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-005",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-005",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "matched",
+      "differences": [],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-006",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-006",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "matched",
+      "differences": [],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "CMP-SHELL-005",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SHELL-005",
+      "target_type": "javafx",
+      "target_component": "Badge",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Missing in target"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-010",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-010",
+      "target_type": "javafx",
+      "target_component": "Button.icon-button",
+      "mapping_status": "not_applicable_approved",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Target-only control (no source equivalent)"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-011",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-011",
+      "target_type": "javafx",
+      "target_component": "Button.icon-button",
+      "mapping_status": "not_applicable_approved",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Target-only control (no source equivalent)"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-012",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-012",
+      "target_type": "javafx",
+      "target_component": "Button.icon-button",
+      "mapping_status": "not_applicable_approved",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Target-only control (no source equivalent)"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-013",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-013",
+      "target_type": "javafx",
+      "target_component": "Button.icon-button",
+      "mapping_status": "not_applicable_approved",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Target-only control (no source equivalent)"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-014",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-014",
+      "target_type": "javafx",
+      "target_component": "Button.icon-button",
+      "mapping_status": "not_applicable_approved",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Target-only control (no source equivalent)"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-020",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-020",
+      "target_type": "javafx",
+      "target_component": "Button + ShowWindow(SW_MINIMIZE)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "matched",
+      "differences": [],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-021",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-021",
+      "target_type": "javafx",
+      "target_component": "Button + HTMAXBUTTON",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Snap Layouts flyout not confirmed"
+      ],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    },
+    {
+      "source_id": "BTN-SHELL-022",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-SHELL-022",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "matched",
+      "differences": [],
+      "approval_reference": "user 2026-11-04: VS Code-style title bar, native behaviour"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<!-- SCR-MAIN-005 (approved 2026-11-05): VS Code-style status bar, 22px.
+     Background = colour of the selected connection (default blue). -->
+<HBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.controllers.StatusBarController"
+      fx:id="statusBarRoot"
+      styleClass="status-bar"
+      alignment="CENTER_LEFT">
+
+    <!-- Left group -->
+    <HBox fx:id="connectionItem" styleClass="status-entry" alignment="CENTER_LEFT" spacing="6">
+        <Region fx:id="statusDot" styleClass="status-dot, offline"/>
+        <Label fx:id="connectionLabel" text="Chưa kết nối" styleClass="status-text"/>
+    </HBox>
+
+    <Label fx:id="pidLabel" styleClass="status-entry, status-text" visible="false" managed="false">
+        <graphic><FontIcon iconLiteral="fth-terminal" styleClass="status-icon"/></graphic>
+        <tooltip><Tooltip text="Phiên kết nối của tab (SPID / PID) — bấm để sao chép"/></tooltip>
+    </Label>
+
+    <HBox fx:id="problemsItem" styleClass="status-entry" alignment="CENTER_LEFT" spacing="4">
+        <FontIcon iconLiteral="fth-x-circle" styleClass="status-icon"/>
+        <Label fx:id="errorsLabel" text="0" styleClass="status-text"/>
+        <FontIcon iconLiteral="fth-alert-triangle" styleClass="status-icon"/>
+        <Label fx:id="warningsLabel" text="0" styleClass="status-text"/>
+    </HBox>
+
+    <Label fx:id="readOnlyLabel" text="READ ONLY" styleClass="status-entry, status-text, status-flag" visible="false" managed="false">
+        <graphic><FontIcon iconLiteral="fth-lock" styleClass="status-icon"/></graphic>
+        <tooltip><Tooltip text="Kết nối chỉ đọc"/></tooltip>
+    </Label>
+
+    <Label fx:id="transactionLabel" text="TX OPEN" styleClass="status-entry, status-text, status-flag" visible="false" managed="false">
+        <graphic><FontIcon iconLiteral="fth-rotate-cw" styleClass="status-icon"/></graphic>
+        <tooltip><Tooltip text="Đang có transaction mở"/></tooltip>
+    </Label>
+
+    <HBox fx:id="lastRunItem" styleClass="status-entry" alignment="CENTER_LEFT" spacing="5">
+        <FontIcon fx:id="lastRunIcon" iconLiteral="fth-check" styleClass="status-icon"/>
+        <Label fx:id="statusLabel" text="Sẵn sàng" styleClass="status-text"/>
+    </HBox>
+
+    <Pane HBox.hgrow="ALWAYS" minWidth="8"/>
+
+    <!-- Right group -->
+    <Label fx:id="cursorPositionLabel" text="Ln 1, Col 1" styleClass="status-entry, status-text">
+        <tooltip><Tooltip text="Đi tới dòng (Ctrl+G)"/></tooltip>
+    </Label>
+    <Label fx:id="indentLabel" text="Spaces: 4" styleClass="status-entry, status-text">
+        <tooltip><Tooltip text="Thụt lề (đổi trong Settings)"/></tooltip>
+    </Label>
+    <Label fx:id="encodingLabel" text="UTF-8" styleClass="status-entry, status-text"/>
+    <Label fx:id="lineSeparatorLabel" text="LF" styleClass="status-entry, status-text">
+        <tooltip><Tooltip text="Ký tự xuống dòng của tài liệu"/></tooltip>
+    </Label>
+    <Label fx:id="languageModeLabel" text="SQL" styleClass="status-entry, status-text"/>
+    <Label fx:id="zoomLabel" text="100%" styleClass="status-entry, status-text">
+        <tooltip><Tooltip text="Zoom editor (Ctrl+= / Ctrl+- / Ctrl+0)"/></tooltip>
+    </Label>
+    <Button fx:id="notificationButton" styleClass="status-entry, status-button" focusTraversable="false">
+        <graphic><FontIcon fx:id="notificationIcon" iconLiteral="fth-bell" styleClass="status-icon"/></graphic>
+        <tooltip><Tooltip fx:id="notificationsTooltip" text="Không có thông báo mới"/></tooltip>
+    </Button>
+</HBox>

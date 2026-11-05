@@ -1,0 +1,166 @@
+/* SCR-DLG-009 SQL code style manager (Phase 5). Shapes follow shape.css / shape-flat.css (R-UI-01). */
+.cs-root {
+    -fx-background-color: -color-bg-default;
+}
+
+.cs-toolbar {
+    -fx-padding: 8 14 8 14;
+    -fx-border-color: transparent transparent -color-border-muted transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.cs-body {
+    -fx-spacing: 0;
+}
+
+.cs-left {
+    -fx-padding: 10 8 10 10;
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent -color-border-muted transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.cs-middle {
+    -fx-padding: 12 14 12 16;
+    -fx-border-color: transparent -color-border-muted transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.cs-right {
+    -fx-padding: 12 14 12 14;
+}
+
+.cs-scroll,
+.cs-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.cs-group {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 10 6 4 6;
+}
+
+.cs-nav-item {
+    -fx-background-color: transparent;
+    -fx-padding: 5 8 5 10;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+    -fx-cursor: hand;
+}
+
+.cs-nav-item:hover {
+    -fx-background-color: -color-bg-muted;
+}
+
+.cs-nav-item.active {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-fg-default;
+}
+
+.cs-count {
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+.cs-cat-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.cs-opt {
+    -fx-spacing: 4;
+}
+
+.cs-opt-title {
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.cs-opt .check-box {
+    -fx-font-size: 12.5px;
+}
+
+.cs-opt-desc {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.cs-opt-cat {
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.cs-readonly-hint {
+    -fx-font-size: 11.5px;
+    -fx-padding: 6 10 6 10;
+    -fx-background-color: -color-warning-subtle;
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 6;
+}
+
+.cs-preview-title {
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+}
+
+.cs-preview {
+    -fx-font-family: "JetBrains Mono", Consolas, monospace;
+    -fx-font-size: 12px;
+}
+
+.cs-seg {
+    -fx-font-size: 11.5px;
+    -fx-padding: 3 10 3 10;
+}
+
+.cs-badge {
+    -fx-font-size: 10px;
+    -fx-padding: 0 5 0 5;
+    -fx-background-radius: 4;
+}
+
+.cs-badge.system {
+    -fx-background-color: -color-bg-muted;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.cs-badge.default {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.cs-dirty {
+    -fx-text-fill: -color-accent-fg;
+}
+
+.cs-danger-icon .ikonli-font-icon {
+    -fx-icon-color: -color-danger-fg;
+}
+
+.dialog-shell.flat .cs-readonly-hint,
+.dialog-shell.flat .cs-badge,
+.dialog-shell.flat .cs-nav-item {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* Monaco preview (editable) */
+.cs-preview-editor {
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-min-height: 200;
+}
+
+.dialog-shell.flat .cs-preview-editor {
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+}

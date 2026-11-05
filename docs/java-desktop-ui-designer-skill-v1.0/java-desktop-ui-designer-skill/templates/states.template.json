@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-AREA-001",
+  "states": [
+    {
+      "id": "STA-AREA-001",
+      "component_id": "CMP-AREA-001",
+      "state": "normal | hover | pressed | focused | disabled | selected | expanded | collapsed | loading | empty | error",
+      "visual_description": "Describe visible appearance",
+      "entry_condition": "unknown",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "observed | code_verified | inferred | unknown"
+    }
+  ]
+}

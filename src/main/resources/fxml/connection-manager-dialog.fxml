@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<!-- SCR-DLG-001 Connection Manager, Phase 2C compact layout (mockup approved 2026-11-05).
+     R-UI-01: rounded = two cards 6px apart; flat = no gap, no rounded corners (CSS in dialogs.css).
+     Saved connections list = the Object Explorer cell (DatabaseTreeCell.forList()). -->
+<HBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.controllers.ConnectionManagerController"
+      fx:id="dialogRoot"
+      styleClass="cm-root"
+      prefWidth="860" prefHeight="540">
+
+    <!-- Left card: saved connections, same rendering as the Object Explorer -->
+    <VBox styleClass="cm-card, cm-list-panel" prefWidth="236" minWidth="210" maxWidth="236">
+        <HBox styleClass="panel-header, explorer-header, cm-list-header" alignment="CENTER_LEFT" spacing="1">
+            <Label text="KẾT NỐI ĐÃ LƯU" styleClass="explorer-title" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Button fx:id="newButton" onAction="#handleNewConnection" styleClass="icon-button, explorer-header-button" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-plus"/></graphic>
+                <tooltip><Tooltip text="Kết nối mới"/></tooltip>
+            </Button>
+            <Button fx:id="duplicateButton" onAction="#handleDuplicateConnection" styleClass="icon-button, explorer-header-button" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-copy"/></graphic>
+                <tooltip><Tooltip text="Nhân bản kết nối đang chọn"/></tooltip>
+            </Button>
+            <Button fx:id="deleteButton" onAction="#handleDeleteConnection" styleClass="icon-button, explorer-header-button, cm-danger" focusTraversable="false">
+                <graphic><FontIcon iconLiteral="fth-trash-2"/></graphic>
+                <tooltip><Tooltip text="Xóa kết nối đang chọn"/></tooltip>
+            </Button>
+        </HBox>
+        <HBox styleClass="explorer-filter-box" alignment="CENTER_LEFT" spacing="6">
+            <FontIcon iconLiteral="fth-search" styleClass="filter-icon"/>
+            <TextField fx:id="searchField" promptText="Tìm kết nối…" styleClass="explorer-filter-input" HBox.hgrow="ALWAYS"/>
+        </HBox>
+        <TreeView fx:id="connectionTree" styleClass="explorer-tree" VBox.vgrow="ALWAYS" showRoot="false"/>
+    </VBox>
+
+    <!-- Right card: header + compact form + footer -->
+    <VBox styleClass="cm-card, cm-form-panel" HBox.hgrow="ALWAYS">
+        <HBox styleClass="cm-form-header" alignment="CENTER_LEFT" spacing="10">
+            <ImageView fx:id="headerLogo" fitWidth="24" fitHeight="24" preserveRatio="true"/>
+            <VBox spacing="1">
+                <Label fx:id="headerTitle" text="Kết nối mới" styleClass="cm-header-title"/>
+                <Label fx:id="headerSubtitle" styleClass="cm-header-subtitle"/>
+            </VBox>
+        </HBox>
+
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="cm-form-scroll" VBox.vgrow="ALWAYS">
+            <VBox fx:id="formBox" styleClass="cm-form">
+
+                <Label text="CHUNG" styleClass="cm-section"/>
+                <GridPane styleClass="cm-grid" hgap="0" vgap="7">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                    </columnConstraints>
+                    <Label text="Loại DB" styleClass="cm-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="dbTypeComboBox" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <Label text="Môi trường" styleClass="cm-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="envComboBox" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                    <Label text="Tên" styleClass="cm-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="nameField" promptText="staging-db" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <Label text="Nhóm" styleClass="cm-label" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <ComboBox fx:id="groupComboBox" editable="true" promptText="(Chưa phân nhóm)" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                </GridPane>
+
+                <Label fx:id="serverSection" text="MÁY CHỦ" styleClass="cm-section"/>
+                <GridPane fx:id="hostPortRow" styleClass="cm-grid" hgap="0" vgap="7">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                    </columnConstraints>
+                    <Label text="Host" styleClass="cm-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="hostField" promptText="localhost" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <Label text="Port" styleClass="cm-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <Spinner fx:id="portSpinner" editable="true" prefWidth="110" maxWidth="110" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                    <Label text="Database" styleClass="cm-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <HBox spacing="4" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <ComboBox fx:id="databaseComboBox" editable="true" promptText="Database mặc định" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="fetchDbsButton" onAction="#handleFetchDatabases" styleClass="cm-field-button" focusTraversable="false">
+                            <graphic><FontIcon iconLiteral="fth-refresh-cw"/></graphic>
+                            <tooltip><Tooltip text="Tải danh sách database"/></tooltip>
+                        </Button>
+                    </HBox>
+                    <Label text="Schema" styleClass="cm-label" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <HBox spacing="4" alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                        <ComboBox fx:id="schemaComboBox" editable="true" promptText="public" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="fetchSchemasButton" onAction="#handleFetchSchemas" styleClass="cm-field-button" focusTraversable="false">
+                            <graphic><FontIcon iconLiteral="fth-refresh-cw"/></graphic>
+                            <tooltip><Tooltip text="Tải danh sách schema"/></tooltip>
+                        </Button>
+                    </HBox>
+                </GridPane>
+                <GridPane fx:id="sqliteRow" styleClass="cm-grid" hgap="0" vgap="7">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                    </columnConstraints>
+                    <Label text="Tệp SQLite" styleClass="cm-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <HBox spacing="4" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="3">
+                        <TextField fx:id="sqliteFileField" promptText="C:\data\app.db" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="chooseFileButton" onAction="#handleChooseSqliteFile" styleClass="cm-field-button" focusTraversable="false">
+                            <graphic><FontIcon iconLiteral="fth-folder"/></graphic>
+                            <tooltip><Tooltip text="Chọn tệp"/></tooltip>
+                        </Button>
+                    </HBox>
+                </GridPane>
+
+                <Label fx:id="authSection" text="XÁC THỰC" styleClass="cm-section"/>
+                <GridPane fx:id="authTypeRow" styleClass="cm-grid" hgap="0" vgap="7">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                    </columnConstraints>
+                    <CheckBox fx:id="windowsAuthSwitch" text="Windows Authentication" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="3"/>
+                </GridPane>
+                <GridPane fx:id="usernameRow" styleClass="cm-grid" hgap="0" vgap="7">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                    </columnConstraints>
+                    <Label text="Username" styleClass="cm-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <Label text="Mật khẩu" styleClass="cm-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <StackPane fx:id="passwordRow" alignment="CENTER_RIGHT" GridPane.columnIndex="3" GridPane.rowIndex="0">
+                        <PasswordField fx:id="passwordField" styleClass="cm-password"/>
+                        <TextField fx:id="passwordVisibleField" styleClass="cm-password" visible="false"/>
+                        <ToggleButton fx:id="showPasswordToggle" styleClass="cm-eye-button" focusTraversable="false">
+                            <graphic><FontIcon fx:id="showPasswordIcon" iconLiteral="fth-eye"/></graphic>
+                            <tooltip><Tooltip text="Hiện / ẩn mật khẩu"/></tooltip>
+                        </ToggleButton>
+                    </StackPane>
+                </GridPane>
+                <GridPane fx:id="savePasswordRow" styleClass="cm-grid" hgap="0" vgap="7">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                    </columnConstraints>
+                    <HBox spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="3">
+                        <CheckBox fx:id="savePasswordCheckBox" text="Lưu mật khẩu (mã hóa)" minWidth="-Infinity"/>
+                        <Label fx:id="passwordExpiryLabel" styleClass="dialog-hint" minWidth="0"/>
+                    </HBox>
+                </GridPane>
+
+                <Button fx:id="advancedToggle" onAction="#handleToggleAdvanced" styleClass="cm-advanced-toggle" maxWidth="Infinity" focusTraversable="false">
+                    <graphic>
+                        <HBox spacing="6" alignment="CENTER_LEFT">
+                            <FontIcon fx:id="advancedIcon" iconLiteral="fth-chevron-right" styleClass="cm-advanced-icon"/>
+                            <Label text="NÂNG CAO" styleClass="cm-section-text"/>
+                            <Label fx:id="advancedSummary" styleClass="dialog-hint"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+                <GridPane fx:id="advancedBox" styleClass="cm-grid" visible="false" managed="false" hgap="0" vgap="7">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                        <ColumnConstraints minWidth="84" prefWidth="84" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS" prefWidth="140" minWidth="80"/>
+                    </columnConstraints>
+                    <Label text="Timeout (giây)" styleClass="cm-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <Spinner fx:id="timeoutSpinner" editable="true" prefWidth="110" maxWidth="110" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <CheckBox fx:id="readOnlyCheckBox" text="Chỉ đọc" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                    <CheckBox fx:id="trustCertCheckBox" text="Tin cậy chứng chỉ máy chủ (TrustServerCertificate)" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="3"/>
+                </GridPane>
+            </VBox>
+        </ScrollPane>
+
+        <HBox styleClass="cm-footer" alignment="CENTER_LEFT" spacing="8">
+            <Button fx:id="testButton" onAction="#handleTestConnection" styleClass="dialog-button">
+                <graphic><FontIcon iconLiteral="fth-activity"/></graphic>
+                <text>Kiểm tra</text>
+            </Button>
+            <ProgressIndicator fx:id="testProgressIndicator" prefWidth="16" prefHeight="16" visible="false" managed="false"/>
+            <Label fx:id="statusLabel" styleClass="dialog-hint" minWidth="0" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="closeButton" onAction="#handleClose" text="Đóng" styleClass="dialog-button" cancelButton="true"/>
+            <Button fx:id="saveButton" onAction="#handleSaveConnection" text="Lưu" styleClass="dialog-button"/>
+            <Button fx:id="connectNowButton" onAction="#handleConnectNow" text="Lưu và kết nối" styleClass="dialog-button, accent" defaultButton="true"/>
+        </HBox>
+    </VBox>
+</HBox>

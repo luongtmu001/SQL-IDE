@@ -1,0 +1,43 @@
+/* Base application styling */
+
+.root {
+    -fx-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 13px;
+}
+
+.ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+}
+
+.placeholder-text {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.placeholder-subtext {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-subtle;
+    -fx-font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+
+
+/* ---------------------------------------------------------------------------
+   Phase 0 / T3: looked-up colors used by the app but not defined by AtlantaFX.
+   Undefined looked-up colors resolve to a String and log
+   "ClassCastException: String cannot be cast to Paint". Define them once here.
+   --------------------------------------------------------------------------- */
+.root {
+    /* One step stronger than -color-bg-subtle: hover on subtle surfaces (tree rows, title bar buttons) */
+    -color-bg-muted: derive(-color-bg-subtle, -6%);
+    /* Text on accent-emphasis backgrounds */
+    -color-accent-fg-emphasis: -color-fg-emphasis;
+}
+
+/* ControlsFX notification popup expects Modena looked-ups (-fx-outer-border, -fx-body-color)
+   that AtlantaFX does not define. */
+.notification-bar > .pane {
+    -fx-background-color: -color-border-default, -color-bg-overlay;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+}
