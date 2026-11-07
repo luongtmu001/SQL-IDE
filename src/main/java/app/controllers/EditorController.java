@@ -31,8 +31,12 @@ public class EditorController implements Initializable {
     private javafx.scene.layout.VBox secondaryWrap;
     private int tabCounter = 1;
     private BiConsumer<Integer, Integer> cursorReporter;
+    /** Phase 8 / D3: last caret position (1-based) reported by the editor; used to find the statement under the caret. */
+    private int lastCursorLine = 1;
+    private int lastCursorCol = 1;
     private java.util.function.Consumer<SqlEditorTab> tabSelectionListener;
     private Runnable onExecuteRequestListener;
+    private Runnable onExecuteStatementRequestListener;
     private boolean isSplit = false;
     private app.ui.editor.MonacoEditorHost monacoHost;
 
@@ -74,21 +78,55 @@ public class EditorController implements Initializable {
         openNewTab("console_1.sql", DEFAULT_SQL);
         restoreActiveTabFromPreferences();
         updateEmptyState();
-        Platform.runLater(this::setupMonacoHost);
+
+        // Deferred idle warmup: wait 800ms after window layout stabilizes before initializing WebView & Monaco.
+        // This eliminates the 3-4s startup freeze (fx-stall) and lets the window appear instantaneously.
+        monacoWarmupDelay = new javafx.animation.PauseTransition(javafx.util.Duration.millis(800));
+        monacoWarmupDelay.setOnFinished(e -> ensureMonacoLoaded());
+        monacoWarmupDelay.play();
+
+        // Also trigger load immediately on user interaction
+        primaryTabPane.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> ensureMonacoLoaded());
+        primaryTabPane.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> ensureMonacoLoaded());
+        secondaryTabPane.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> ensureMonacoLoaded());
+        secondaryTabPane.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> ensureMonacoLoaded());
+    }
+
+    private boolean monacoInitializing = false;
+    private javafx.animation.PauseTransition monacoWarmupDelay;
+
+    public synchronized void ensureMonacoLoaded() {
+        if (monacoHost != null || monacoInitializing) return;
+        monacoInitializing = true;
+        if (monacoWarmupDelay != null) {
+            monacoWarmupDelay.stop();
+        }
+        setupMonacoHost();
     }
 
     private void setupMonacoHost() {
-        try {
+        var profiler = app.diagnostics.startup.StartupProfiler.getInstance();
+        try (var task = profiler.beginTask("MonacoHost_Init")) {
             monacoHost = new app.ui.editor.MonacoEditorHost();
             monacoHost.setOnContentChanged((modelId, content) -> {
                 for (SqlEditorTab tab : getOpenTabs()) {
                     if (tab.getDocumentId().equals(modelId)) {
                         tab.setCurrentContent(content);
+                        scheduleSyntaxCheck(modelId, content);
                         break;
                     }
                 }
             });
+            // the bar under the editor is fed straight from the editor's events (not only through the status bar)
+            final app.ui.editor.EditorBar bar = monacoHost.getEditorBar();
+            bar.setOnZoomRequested(pct -> {
+                monacoHost.setZoom(pct);
+                if (onZoomChangedListener != null) onZoomChangedListener.accept(pct);   // status bar keeps the state
+            });
             monacoHost.setOnCursorPositionChanged((line, col) -> {
+                lastCursorLine = line;
+                lastCursorCol = col;
+                bar.setCursor(line, col);
                 if (cursorReporter != null) {
                     cursorReporter.accept(line, col);
                 }
@@ -98,6 +136,31 @@ public class EditorController implements Initializable {
                     onExecuteRequestListener.run();
                 }
             });
+            monacoHost.setOnExecuteStatementRequested(() -> {
+                if (onExecuteStatementRequestListener != null) {
+                    onExecuteStatementRequestListener.run();
+                }
+            });
+            primaryTabPane.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> {
+                if (b instanceof SqlEditorTab st) {
+                    reportProblems(st.getDocumentId());
+                    Platform.runLater(this::checkActiveTabIfSessionChanged);
+                } else if (onProblemsChangedListener != null) {
+                    onProblemsChangedListener.accept(-1, 0);
+                }
+            });
+            monacoHost.applyAppTheme();   // first frame: the editor shows the theme, not Monaco's default
+            if (onEditorBarReady != null) onEditorBarReady.accept(monacoHost.getEditorBar());
+            monacoHost.setOnZoomChanged(pct -> {
+                bar.setZoom(pct);
+                if (onZoomChangedListener != null) {
+                    onZoomChangedListener.accept(pct);
+                }
+            });
+            // Settings may have been applied before the Monaco host existed
+            monacoHost.updateEditorSettings(app.services.SettingsService.getInstance().getCurrentSettings());
+            pushIntellisense();
+            monacoHost.setOnOpenScript(this::openNewTab);
             monacoHost.setOnReady(() -> {
                 Tab selected = primaryTabPane.getSelectionModel().getSelectedItem();
                 if (selected instanceof SqlEditorTab activeTab) {
@@ -114,6 +177,7 @@ public class EditorController implements Initializable {
             }
         } catch (Throwable t) {
             monacoHost = null;
+            monacoInitializing = false;
         }
     }
 
@@ -173,6 +237,11 @@ public class EditorController implements Initializable {
         editorSplitContainer.getItems().add(Math.max(0, pIdx), primaryWrap);
 
         primaryTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            if (newTab instanceof SqlEditorTab sqlTab && sqlTab.isCustomContent()) {
+                // view tab (Permissions…): no editor model, no cursor; the status bar still follows its connection
+                if (tabSelectionListener != null) tabSelectionListener.accept(sqlTab);
+                return;
+            }
             if (newTab instanceof SqlEditorTab sqlTab) {
                 if (monacoHost != null && monacoHost.isEditorReady()) {
                     if (oldTab instanceof SqlEditorTab oldSqlTab) {
@@ -206,6 +275,8 @@ public class EditorController implements Initializable {
     private void bindCursorReporting(SqlCodeArea codeArea) {
         if (codeArea != null) {
             codeArea.setCursorChangeListener((line, col) -> {
+                lastCursorLine = line;
+                lastCursorCol = col;
                 if (cursorReporter != null) {
                     cursorReporter.accept(line, col);
                 }
@@ -276,9 +347,36 @@ public class EditorController implements Initializable {
 
     public List<SqlEditorTab> getOpenTabs() {
         return primaryTabPane.getTabs().stream()
-                .filter(t -> t instanceof SqlEditorTab)
+                .filter(t -> t instanceof SqlEditorTab st && !st.isCustomContent())
                 .map(t -> (SqlEditorTab) t)
                 .toList();
+    }
+
+    /**
+     * Opens (or selects, when {@code key} is already open) a view tab such as "Permissions: name" in the editor area.
+     * The tab is not a SQL document: no editor model, not saved with the workspace, nothing to execute.
+     */
+    public SqlEditorTab openViewTab(String key, String title, java.util.function.Supplier<javafx.scene.Node> viewFactory,
+                                    String connectionName, String databaseName) {
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof SqlEditorTab st && key.equals(st.getCustomKey())) {
+                primaryTabPane.getSelectionModel().select(st);
+                return st;
+            }
+        }
+        SqlEditorTab tab = new SqlEditorTab(title, "", null, connectionName, databaseName, null, this::handleTabAction);
+        tab.setCustomContent(key, viewFactory.get());
+        tab.setOnClosed(e -> updateEmptyState());
+        primaryTabPane.getTabs().add(tab);
+        tab.pinnedProperty().addListener((o, was, pinned) -> movePinned(tab, pinned));
+        updateEmptyState();
+        refreshTabDecorations();
+        primaryTabPane.getSelectionModel().select(tab);
+        return tab;
+    }
+
+    public void selectTab(SqlEditorTab tab) {
+        if (tab != null) primaryTabPane.getSelectionModel().select(tab);
     }
 
     public SqlEditorTab getActiveTab() {
@@ -299,11 +397,7 @@ public class EditorController implements Initializable {
     /** Connection colour dot on every tab and the "Chưa kết nối" banner (mock state from the Explorer). */
     public void refreshTabDecorations() {
         java.util.Map<String, com.lltool.core.application.connection.dto.ConnectionProfileDto> byName = new java.util.HashMap<>();
-        try {
-            var res = app.framework.bootstrap.DesktopBootstrap.getInstance().getConnectionApi().getConnections();
-            if (res.isSuccess()) for (var p : res.getDataOrThrow()) if (p.name() != null) byName.put(p.name(), p);
-        } catch (Exception ignored) {
-        }
+        for (var p : app.framework.connection.ProfileLookup.all()) if (p.name() != null) byName.put(p.name(), p);
         for (SqlEditorTab tab : getOpenTabs()) {
             String name = tab.getConnectionName() != null && !tab.getConnectionName().isBlank()
                     ? tab.getConnectionName() : activeConnectionSupplier.get();
@@ -316,6 +410,8 @@ public class EditorController implements Initializable {
             }
             boolean connected;
             String dot;
+            app.ui.editor.SqlEditorTab.BannerState bannerState = null;
+            String bannerError = null;
             if (app.framework.backend.BackendFlags.real(app.framework.backend.BackendFlags.Area.CONNECTIONS)) {
                 // Phase 8 / D1: every tab shows ITS OWN session (user decision 2026-11-05)
                 var session = app.framework.session.TabSessionManager.getInstance().get(tab.getDocumentId());
@@ -325,9 +421,16 @@ public class EditorController implements Initializable {
                 dot = switch (st) {
                     case CONNECTED -> app.services.ConnectionColorService.getInstance().colorFor(profile.id()).hex();
                     case CONNECTING -> "#d29922";
-                    case ERROR -> "#f85149";
+                    case ERROR, LOST -> "#f85149";
                     default -> "#8b8b8b";
                 };
+                bannerState = switch (st) {
+                    case CONNECTED -> app.ui.editor.SqlEditorTab.BannerState.HIDDEN;
+                    case CONNECTING -> app.ui.editor.SqlEditorTab.BannerState.CONNECTING;
+                    case LOST -> app.ui.editor.SqlEditorTab.BannerState.LOST;
+                    default -> app.ui.editor.SqlEditorTab.BannerState.DISCONNECTED;
+                };
+                bannerError = st == app.framework.session.TabSession.State.LOST && session != null ? session.error() : null;
                 tab.setSessionTooltip(sessionTooltip(profile, session, st));
             } else {
                 var status = app.services.ExplorerConnectionState.getInstance().get(profile.id());
@@ -339,7 +442,8 @@ public class EditorController implements Initializable {
             tab.setConnectionColor(dot);
             if (connected) tab.resetBannerDismissed();
             String db = tab.getDatabaseName() != null ? tab.getDatabaseName() : profile.databaseName();
-            tab.updateConnectionBanner(profile.name(), db, connected);
+            if (bannerState != null) tab.updateConnectionBanner(profile.name(), db, bannerState, bannerError);
+            else tab.updateConnectionBanner(profile.name(), db, connected);
         }
     }
 
@@ -354,6 +458,7 @@ public class EditorController implements Initializable {
                 if (session.readOnly()) sb.append("\nChỉ đọc");
             }
             case CONNECTING -> sb.append("\nĐang kết nối…");
+            case LOST -> sb.append("\nMất kết nối").append(session.error() != null ? ": " + session.error() : "");
             case ERROR -> sb.append("\nLỗi: ").append(session.error());
             default -> sb.append("\nChưa kết nối (phiên riêng của tab)");
         }
@@ -476,8 +581,12 @@ public class EditorController implements Initializable {
     private void removeTab(SqlEditorTab tab) {
         if (monacoHost != null) {
             monacoHost.disposeModel(tab.getDocumentId());
+            app.framework.syntax.SyntaxCheckService.getInstance().forget(tab.getDocumentId());
+            problemCounts.remove(tab.getDocumentId());
+            lastCheckKey.remove(tab.getDocumentId());
         }
         // Phase 8 / D1: the tab's own database session closes with the tab
+        app.framework.query.DesktopQueryExecutionService.getInstance().cancel(tab.getDocumentId()); // D3: stop its run first
         app.framework.session.TabSessionManager.getInstance().release(tab.getDocumentId());
         if (primaryTabPane.getTabs().contains(tab)) {
             primaryTabPane.getTabs().remove(tab);
@@ -596,7 +705,7 @@ public class EditorController implements Initializable {
 
     @FXML
     public void handleFormatSql() {
-        if (getCurrentEditorTab() == null) return;
+        if (getCurrentEditorTab() == null || getCurrentEditorTab().isCustomContent()) return;
         if (!app.ui.dialogs.FormatConfirmDialog.confirm(owner())) return; // SCR-DLG-008
         if (monacoHost != null && monacoHost.isEditorReady()) {
             monacoHost.formatDocument();
@@ -612,7 +721,7 @@ public class EditorController implements Initializable {
 
     public String getActiveText() {
         SqlEditorTab active = getCurrentEditorTab();
-        if (active == null) return "";
+        if (active == null || active.isCustomContent()) return "";
         if (monacoHost != null && monacoHost.isEditorReady()) {
             String content = monacoHost.getContent(active.getDocumentId());
             if (content != null && !content.isEmpty()) {
@@ -622,9 +731,29 @@ public class EditorController implements Initializable {
         return active.getCurrentContent();
     }
 
-    public String getSelectedOrActiveText() {
+    /** Selection if any, else the statement under the caret, else the whole text. */
+    public String getSelectedOrStatementAtCursor() {
         SqlEditorTab active = getCurrentEditorTab();
         if (active == null) return "";
+        String selection = null;
+        if (monacoHost != null && monacoHost.isEditorReady()) {
+            selection = monacoHost.getSelectedText();
+        } else {
+            SqlCodeArea area = getActiveCodeArea();
+            if (area != null) selection = area.getSelectedText();
+        }
+        if (selection != null && !selection.isBlank()) {
+            return selection;
+        }
+        String all = getActiveText();
+        return app.framework.query.SqlStatementSplitter.atCursor(all, lastCursorLine, lastCursorCol)
+                .map(app.framework.query.SqlStatementSplitter.Part::text)
+                .orElse(all);
+    }
+
+    public String getSelectedOrActiveText() {
+        SqlEditorTab active = getCurrentEditorTab();
+        if (active == null || active.isCustomContent()) return "";
         if (monacoHost != null && monacoHost.isEditorReady()) {
             String selected = monacoHost.getSelectedText();
             if (selected != null && !selected.isBlank()) {
@@ -643,6 +772,14 @@ public class EditorController implements Initializable {
             }
         }
         return active.getCurrentContent();
+    }
+
+    /** Phase 8 / D3: Ctrl+E = run the statement under the caret. */
+    public void setOnExecuteStatementRequestListener(Runnable listener) {
+        this.onExecuteStatementRequestListener = listener;
+        if (monacoHost != null) {
+            monacoHost.setOnExecuteStatementRequested(listener);
+        }
     }
 
     public void setOnExecuteRequestListener(Runnable listener) {
@@ -702,10 +839,143 @@ public class EditorController implements Initializable {
         return emptyEditorStateBox;
     }
 
+    private java.util.function.IntConsumer onZoomChangedListener;
+    private java.util.function.Consumer<app.ui.editor.EditorBar> onEditorBarReady;
+
+    /** The bar under the editor: told once (now if the editor already exists). */
+    /** The bar under the editor, or null while the editor is not created. */
+    public app.ui.editor.EditorBar getEditorBar() {
+        return monacoHost != null ? monacoHost.getEditorBar() : null;
+    }
+
+    public void setOnEditorBarReady(java.util.function.Consumer<app.ui.editor.EditorBar> listener) {
+        this.onEditorBarReady = listener;
+        if (listener != null && monacoHost != null) listener.accept(monacoHost.getEditorBar());
+    }
+
+    // ---- syntax check (Phase 8 / D5) ----
+    private java.util.function.BiConsumer<Integer, Integer> onProblemsChangedListener;
+    private final java.util.Map<String, int[]> problemCounts = new java.util.HashMap<>();
+    private final java.util.Map<String, String> lastCheckKey = new java.util.HashMap<>();
+
+    /** Errors / warnings of the active tab (status bar). */
+    public void setOnProblemsChanged(java.util.function.BiConsumer<Integer, Integer> listener) {
+        this.onProblemsChangedListener = listener;
+    }
+
+    private void scheduleSyntaxCheck(String tabId, String content) {
+        var s = app.services.SettingsService.getInstance().getCurrentSettings();
+        boolean enabled = s != null && s.getEditor() != null && s.getEditor().isSyntaxCheck();
+        app.framework.syntax.SyntaxCheckService.getInstance().schedule(tabId, content, enabled, outcome -> {
+            int errors = outcome.checked() ? outcome.diagnostics().size() : -1;   // -1: not checked
+            problemCounts.put(tabId, new int[]{errors, 0});
+            if (monacoHost != null) monacoHost.setMarkers(tabId, outcome.checked() ? outcome.diagnostics() : java.util.List.of());
+            Tab sel = primaryTabPane.getSelectionModel().getSelectedItem();
+            if (sel instanceof SqlEditorTab st && st.getDocumentId().equals(tabId)) reportProblems(tabId);
+        });
+    }
+
+    private void reportProblems(String tabId) {
+        int[] c = problemCounts.get(tabId);
+        if (onProblemsChangedListener != null) onProblemsChangedListener.accept(c == null ? -1 : c[0], c == null ? 0 : c[1]);
+    }
+
+    /**
+     * Re-checks the active tab when its session changed (connected / switched database / reconnected) and
+     * refreshes the status bar counts. Cheap: compares a key, no I/O.
+     */
+    public void checkActiveTabIfSessionChanged() {
+        Tab sel = primaryTabPane.getSelectionModel().getSelectedItem();
+        if (!(sel instanceof SqlEditorTab st) || st.isCustomContent()) return;
+        String id = st.getDocumentId();
+        var session = app.framework.session.TabSessionManager.getInstance().get(id);
+        String key = session == null ? "none"
+                : session.state() + "|" + (session.profile() == null ? "" : session.profile().id()) + "|" + session.database();
+        if (!key.equals(lastCheckKey.put(id, key))) {
+            scheduleSyntaxCheck(id, st.getCurrentContent());
+        }
+        reportProblems(id);
+        pushIntellisense();
+    }
+
+    private String lastIntellisenseKey;
+
+    /** Sends the session of the active tab + IntelliSense Settings to the editor (only when something changed). */
+    private void pushIntellisense() {
+        if (monacoHost == null) return;
+        var s = app.services.SettingsService.getInstance().getCurrentSettings();
+        var e = s == null ? null : s.getEditor();
+        boolean enabled = e == null || e.isIntellisense();
+        boolean mru = e == null || e.isIntellisenseMru();
+        boolean detail = e == null || e.isIntellisenseDetail();
+        String detailMode = e == null ? "always" : e.getIntellisenseDetailMode();
+        String kc = e == null || e.getKeywordCase() == null ? "upper" : e.getKeywordCase();
+        String dialect = "OTHER";
+        String connectionId = null, database = null, schema = null;
+        Tab sel = primaryTabPane.getSelectionModel().getSelectedItem();
+        if (sel instanceof SqlEditorTab st) {
+            var session = app.framework.session.TabSessionManager.getInstance().get(st.getDocumentId());
+            if (session != null && session.profile() != null) {
+                dialect = app.framework.query.ScriptRunner.Dialect.of(session.profile().databaseType()).name();
+                // Without a live session: keywords and snippets only, no reads from a server the tab isn't on
+                if (session.state() == app.framework.session.TabSession.State.CONNECTED) {
+                    connectionId = session.profile().id();
+                    database = session.database();
+                    schema = app.services.DefaultSchemaService.get(connectionId);
+                }
+            }
+        }
+        String key = enabled + "|" + mru + "|" + detail + "|" + detailMode + "|" + kc + "|" + dialect
+                + "|" + connectionId + "|" + database + "|" + schema;
+        if (key.equals(lastIntellisenseKey)) return;
+        lastIntellisenseKey = key;
+        monacoHost.setIntellisense(new app.ui.editor.MonacoEditorHost.IntellisenseContext(enabled, dialect, kc, mru, detail, detailMode,
+                connectionId, database, schema));
+        app.framework.intellisense.IntellisensePerf.log("editor context changed, connected=" + (connectionId != null));
+        // read once per connection, in the background, before the first suggestion needs it
+        if (enabled && connectionId != null && sel instanceof SqlEditorTab st) {
+            var session = app.framework.session.TabSessionManager.getInstance().get(st.getDocumentId());
+            if (session != null && session.profile() != null) {
+                app.framework.intellisense.MetadataSnapshotStore.getInstance().preload(session.profile(), database);
+            }
+        }
+    }
+
+    /** "Refresh Objects & IntelliSense": the suggestions of the active tab's connection are read from the server again. */
+    public void reloadIntellisense() {
+        Tab sel = primaryTabPane.getSelectionModel().getSelectedItem();
+        if (!(sel instanceof SqlEditorTab st)) return;
+        var session = app.framework.session.TabSessionManager.getInstance().get(st.getDocumentId());
+        if (session == null || session.profile() == null || session.state() != app.framework.session.TabSession.State.CONNECTED) return;
+        var profile = session.profile();
+        String database = session.database();
+        Thread.ofVirtual().name("intellisense-reload").start(() ->
+                app.framework.intellisense.MetadataSnapshotStore.getInstance().reload(profile, database, true));
+    }
+
+    /** After a run: objects created, changed or dropped from this tab appear in the suggestions without a refresh. */
+    public void reloadIntellisenseAfterRun(String tabId, String sql) {
+        var session = app.framework.session.TabSessionManager.getInstance().get(tabId);
+        if (session == null || session.profile() == null) return;
+        var profile = session.profile();
+        String database = session.database();
+        Thread.ofVirtual().name("intellisense-ddl-check").start(() -> {
+            if (app.framework.intellisense.MetadataSnapshotStore.changesObjects(sql)) {
+                app.framework.intellisense.MetadataSnapshotStore.getInstance().reload(profile, database, false);
+            }
+        });
+    }
+
+    /** Called when the user zooms with Ctrl+Wheel inside the editor (percent of the Settings font size). */
+    public void setOnZoomChanged(java.util.function.IntConsumer listener) {
+        this.onZoomChangedListener = listener;
+    }
+
     public void applyEditorSettings(app.models.IdeSettings s) {
         if (s == null) return;
         if (monacoHost != null) {
             monacoHost.updateEditorSettings(s);
+            pushIntellisense();
         }
     }
 }

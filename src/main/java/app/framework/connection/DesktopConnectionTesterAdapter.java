@@ -38,6 +38,10 @@ public class DesktopConnectionTesterAdapter implements DatabaseConnectionTesterP
         if (profile.isTrustServerCertificate()) {
             properties.put("trustServerCertificate", "true");
         }
+        // Windows authentication (SQL Server): tell the driver, otherwise it sends the empty user/password
+        if (type == DatabaseType.SQLSERVER && "WINDOWS_AUTH".equals(String.valueOf(profile.getAuthType()))) {
+            properties.put("integratedSecurity", "true");
+        }
         if (profile.getTimeoutSeconds() > 0) {
             properties.put("loginTimeout", String.valueOf(profile.getTimeoutSeconds()));
             properties.put("connectTimeout", String.valueOf(profile.getTimeoutSeconds()));

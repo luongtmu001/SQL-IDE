@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-003",
+  "screen_name": "Editor workspace",
+  "source_window_size": {
+    "width": 1456,
+    "height": 816,
+    "display_scale": "unknown"
+  },
+  "layout_type": "desktop",
+  "regions": [
+    {
+      "id": "REG-ED-001",
+      "name": "Editor workspace",
+      "purpose": "Khung chứa toàn bộ vùng soạn thảo",
+      "parent_id": null,
+      "layout_role": "workspace",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [
+        "REG-ED-002",
+        "REG-ED-003",
+        "REG-ED-004",
+        "REG-ED-005",
+        "REG-ED-006",
+        "REG-ED-007"
+      ],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-ED-002",
+      "name": "Context bar",
+      "purpose": "Chọn kết nối/database/schema, giới hạn dòng, Run/Stop, tiện ích",
+      "parent_id": "REG-ED-001",
+      "layout_role": "header",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": "toolbar",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-ED-003",
+      "name": "Tab strip + header actions",
+      "purpose": "Dải tab, nút +, danh sách tab, Format/Split",
+      "parent_id": "REG-ED-001",
+      "layout_role": "header",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": "34px",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-ED-004",
+      "name": "Connection banner",
+      "purpose": "Báo tab trỏ tới kết nối chưa kết nối",
+      "parent_id": "REG-ED-001",
+      "layout_role": "panel",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": "auto",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [
+        "chỉ hiện khi tab có kết nối nhưng connected=false và chưa bị ẩn"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REG-ED-005",
+      "name": "Editor surface",
+      "purpose": "Monaco (WebView) hoặc SqlCodeArea",
+      "parent_id": "REG-ED-001",
+      "layout_role": "workspace",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-ED-006",
+      "name": "Empty state",
+      "purpose": "Hiện khi không còn tab nào",
+      "parent_id": "REG-ED-001",
+      "layout_role": "overlay",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [
+        "visible khi số tab = 0"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REG-ED-007",
+      "name": "Secondary pane (split)",
+      "purpose": "TabPane thứ hai khi chia đôi",
+      "parent_id": "REG-ED-001",
+      "layout_role": "workspace",
+      "position": "right",
+      "sizing": {
+        "width": "flexible",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [
+        "chỉ khi chia đôi"
+      ],
+      "evidence": []
+    }
+  ]
+}

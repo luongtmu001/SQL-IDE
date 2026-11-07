@@ -1,0 +1,948 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-003",
+  "components": [
+    {
+      "id": "CMP-CTX-001",
+      "name": "Connection selector",
+      "component_type": "combobox",
+      "region_id": "REG-ED-002",
+      "parent_component_id": null,
+      "visible_label": "Chọn kết nối...",
+      "accessible_name": "Chọn kết nối...",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "connectionComboBox",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Có icon loại DB và badge môi trường; chi tiết ở toolbar-redesign.md"
+    },
+    {
+      "id": "CMP-CTX-002",
+      "name": "Database selector",
+      "component_type": "combobox",
+      "region_id": "REG-ED-002",
+      "parent_component_id": null,
+      "visible_label": "Database",
+      "accessible_name": "Database",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "databaseComboBox",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Đổi database của tab hiện tại (K9 chưa kiểm với DB thật)"
+    },
+    {
+      "id": "CMP-CTX-003",
+      "name": "Schema selector",
+      "component_type": "combobox",
+      "region_id": "REG-ED-002",
+      "parent_component_id": null,
+      "visible_label": "schema",
+      "accessible_name": "schema",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "schemaComboBox",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-CTX-004",
+      "name": "Row limit",
+      "component_type": "combobox",
+      "region_id": "REG-ED-002",
+      "parent_component_id": null,
+      "visible_label": "All",
+      "accessible_name": "All",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "limitComboBox",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Lưu vào sql.maxRows"
+    },
+    {
+      "id": "BTN-CTX-001",
+      "name": "Run",
+      "component_type": "button",
+      "region_id": "REG-ED-002",
+      "parent_component_id": null,
+      "visible_label": "Run",
+      "accessible_name": "Run",
+      "icon": {
+        "name": "fth-play",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "có tab và không đang chạy",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "F5 / Ctrl+Enter",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "executeButton",
+        "handler": "MainController#handleExecute"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nút nhấn chính duy nhất"
+    },
+    {
+      "id": "BTN-CTX-002",
+      "name": "Stop",
+      "component_type": "button",
+      "region_id": "REG-ED-002",
+      "parent_component_id": null,
+      "visible_label": "Stop",
+      "accessible_name": "Stop",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "chỉ khi đang chạy",
+      "visible_when": "luôn (mờ khi tắt)",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "stopButton",
+        "handler": "MainController#handleStop"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "disable=true mặc định trong FXML"
+    },
+    {
+      "id": "BTN-CTX-003",
+      "name": "Plan",
+      "component_type": "icon_button",
+      "region_id": "REG-ED-002",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Plan",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+L",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "planToolbarButton",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-CTX-004",
+      "name": "Format (toolbar)",
+      "component_type": "icon_button",
+      "region_id": "REG-ED-002",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Format (toolbar)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+Alt+L",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "unknown",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-CTX-005",
+      "name": "Refresh objects",
+      "component_type": "icon_button",
+      "region_id": "REG-ED-002",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Refresh objects",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+Shift+R",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "unknown",
+        "handler": "handleRefreshObjects"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-CTX-006",
+      "name": "Overflow menu",
+      "component_type": "menu_button",
+      "region_id": "REG-ED-002",
+      "parent_component_id": null,
+      "visible_label": "⋯",
+      "accessible_name": "⋯",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "toolbarOverflowButton",
+        "handler": "MainController"
+      },
+      "behavior_confidence": "observed",
+      "target_mapping": {
+        "javafx_type": "MenuButton",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "New, Open, Save, Connection Manager, BRAVO Tool (ẩn khi add-on tắt)"
+    },
+    {
+      "id": "BTN-ED-001",
+      "name": "New Query Tab (empty state)",
+      "component_type": "button",
+      "region_id": "REG-ED-006",
+      "parent_component_id": null,
+      "visible_label": "New Query Tab",
+      "accessible_name": "New Query Tab",
+      "icon": {
+        "name": "fth-plus",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "luôn",
+      "visible_when": "khi không có tab",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "emptyEditorStateBox > Button",
+        "handler": "EditorController#handleNewTab"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhãn tiếng Anh, các nhãn khác tiếng Việt: chưa nhất quán"
+    },
+    {
+      "id": "BTN-ED-002",
+      "name": "Format SQL (tab header)",
+      "component_type": "icon_button",
+      "region_id": "REG-ED-003",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Format SQL (tab header)",
+      "icon": {
+        "name": "fth-align-left",
+        "source": "ikonli"
+      },
+      "tooltip": "Format SQL Statement (Ctrl+Alt+L)",
+      "classification": "secondary",
+      "enabled_when": "có tab",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+Alt+L",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "tabHeaderActions",
+        "handler": "EditorController#handleFormatSql"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Hỏi xác nhận qua DLG-008 nếu chưa chọn \"Không hỏi lại\""
+    },
+    {
+      "id": "BTN-ED-003",
+      "name": "Split Right",
+      "component_type": "icon_button",
+      "region_id": "REG-ED-003",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Split Right",
+      "icon": {
+        "name": "fth-columns",
+        "source": "ikonli"
+      },
+      "tooltip": "Split Editor Right",
+      "classification": "secondary",
+      "enabled_when": "có tab",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "tabHeaderActions",
+        "handler": "EditorController#handleSplitRight"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-ED-004",
+      "name": "Split Down",
+      "component_type": "icon_button",
+      "region_id": "REG-ED-003",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Split Down",
+      "icon": {
+        "name": "fth-layout",
+        "source": "ikonli"
+      },
+      "tooltip": "Split Editor Down",
+      "classification": "secondary",
+      "enabled_when": "có tab",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "tabHeaderActions",
+        "handler": "EditorController#handleSplitDown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-ED-005",
+      "name": "Close Split",
+      "component_type": "icon_button",
+      "region_id": "REG-ED-003",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Close Split",
+      "icon": {
+        "name": "fth-x",
+        "source": "ikonli"
+      },
+      "tooltip": "Close Split",
+      "classification": "secondary",
+      "enabled_when": "đang chia đôi",
+      "visible_when": "chỉ khi chia đôi (visible/managed=false mặc định)",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "closeSplitButton",
+        "handler": "EditorController#closeSplit"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-ED-006",
+      "name": "Tab chip",
+      "component_type": "tab",
+      "region_id": "REG-ED-003",
+      "parent_component_id": null,
+      "visible_label": "tiêu đề tab",
+      "accessible_name": "tiêu đề tab",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "tooltip phiên (setSessionTooltip)",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "mỗi tab",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "SqlEditorTab / EditorTabStrip.chip",
+        "handler": "EditorTabStrip"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Tab (custom chip)",
+        "custom_component_required": true,
+        "notes": ""
+      },
+      "notes": "Gồm chấm màu kết nối, icon/logo DB, tiêu đề, dấu ● chưa lưu, nút ghim, nút đóng"
+    },
+    {
+      "id": "BTN-ED-007",
+      "name": "Add tab",
+      "component_type": "icon_button",
+      "region_id": "REG-ED-003",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Add tab",
+      "icon": {
+        "name": "fth-plus",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "EditorTabStrip.addButton",
+        "handler": "onNewTab"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-ED-008",
+      "name": "Tab list",
+      "component_type": "icon_button",
+      "region_id": "REG-ED-003",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Tab list",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "có tab",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "EditorTabStrip.listButton",
+        "handler": "EditorTabStrip#showTabList"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button + ContextMenu",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Liệt kê toàn bộ tab, cuộn tới tab chọn"
+    },
+    {
+      "id": "CMP-ED-009",
+      "name": "Tab context menu",
+      "component_type": "menu",
+      "region_id": "REG-ED-003",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Tab context menu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "chuột phải tab",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "SqlEditorTab.setupContextMenu",
+        "handler": "EditorController#handleTabAction"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ContextMenu",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Lưu · Đóng · Đóng các tab khác/bên phải/tất cả · Ghim · Nhân bản · Đổi tên… · Sao chép tiêu đề · Chia editor (4 hướng + đóng) · So sánh (deferred ×2)"
+    },
+    {
+      "id": "CMP-ED-010",
+      "name": "Connection banner",
+      "component_type": "banner",
+      "region_id": "REG-ED-004",
+      "parent_component_id": null,
+      "visible_label": "Chưa kết nối: tab này trỏ tới <kết nối (database)> nhưng chưa được kết nối.",
+      "accessible_name": "Chưa kết nối: tab này trỏ tới <kết nối (database)> nhưng chưa được kết nối.",
+      "icon": {
+        "name": "mdi2p-power-plug-off-outline",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "tab trỏ kết nối chưa kết nối, chưa bị ẩn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "SqlEditorTab.banner",
+        "handler": "SqlEditorTab#updateConnectionBanner"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "HBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-ED-011",
+      "name": "Banner: Kết nối",
+      "component_type": "button",
+      "region_id": "REG-ED-004",
+      "parent_component_id": null,
+      "visible_label": "Kết nối",
+      "accessible_name": "Kết nối",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "khi banner hiện",
+      "visible_when": "khi banner hiện",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "banner-button accent",
+        "handler": "BannerActions#connect"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-ED-012",
+      "name": "Banner: Đổi kết nối",
+      "component_type": "button",
+      "region_id": "REG-ED-004",
+      "parent_component_id": null,
+      "visible_label": "Đổi kết nối",
+      "accessible_name": "Đổi kết nối",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "khi banner hiện",
+      "visible_when": "khi banner hiện",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "banner-button",
+        "handler": "BannerActions#changeConnection"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-ED-013",
+      "name": "Banner: Ẩn",
+      "component_type": "icon_button",
+      "region_id": "REG-ED-004",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Banner: Ẩn",
+      "icon": {
+        "name": "fth-x",
+        "source": "ikonli"
+      },
+      "tooltip": "Ẩn thông báo",
+      "classification": "secondary",
+      "enabled_when": "khi banner hiện",
+      "visible_when": "khi banner hiện",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "banner-close",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Ẩn đến khi kết nối thành công rồi mất lại (resetBannerDismissed)"
+    },
+    {
+      "id": "CMP-ED-014",
+      "name": "Monaco editor",
+      "component_type": "embedded_editor",
+      "region_id": "REG-ED-005",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Monaco editor",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "khi Monaco sẵn sàng (readyCallbacks)",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+Enter → onExecuteRequested",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "MonacoEditorHost",
+        "handler": "MonacoEditorHost (bridge JS)"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "WebView (Monaco)",
+        "custom_component_required": true,
+        "notes": ""
+      },
+      "notes": "Mô hình dùng chung, mỗi tab một model (createModel/switchModel/disposeModel)"
+    },
+    {
+      "id": "CMP-ED-015",
+      "name": "Fallback code area",
+      "component_type": "text_editor",
+      "region_id": "REG-ED-005",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Fallback code area",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "khi không dùng Monaco",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "SqlCodeArea",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "RichTextFX CodeArea",
+        "custom_component_required": true,
+        "notes": ""
+      },
+      "notes": "Điều kiện chuyển sang dự phòng chưa kiểm"
+    },
+    {
+      "id": "CMP-ED-016",
+      "name": "Secondary tab pane",
+      "component_type": "tab_pane",
+      "region_id": "REG-ED-007",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Secondary tab pane",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "đang chia đôi",
+      "visible_when": "chỉ khi chia đôi",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/editor.fxml + controllers/EditorController.java + ui/editor/*",
+        "selector_or_symbol": "secondaryTabPane",
+        "handler": "EditorController#enableSplit"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TabPane",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    }
+  ]
+}

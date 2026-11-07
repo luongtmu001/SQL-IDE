@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-011",
+  "interactions": [
+    {
+      "id": "INT-DLG11-001",
+      "component_id": "CMP-DLG11-004",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "copy",
+      "backend_method": "unknown",
+      "action_summary": "Sao chép nội dung",
+      "expected_result": "Clipboard; đổi nhãn \"Đã sao chép\"",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG11-002",
+      "component_id": "BTN-DLG11-006",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "ok",
+      "backend_method": "unknown",
+      "action_summary": "Đóng hoặc xác nhận",
+      "expected_result": "Trả true (confirm) hoặc đóng",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

@@ -4,73 +4,30 @@
 
 /* .sidebar-panel / .mini-sidebar-strip: styled in layout.css (cards, SCR-MAIN-001) */
 
+/* T2: light-mode defaults of the -ide-* variables (ide-vars.css holds the dark / shared ones);
+   an imported VS Code theme overrides them in its own theme.css */
+.root {
+    -ide-placeholder-bg: #ffffff;
+    -ide-icon-connection: #26a269;
+    -ide-icon-database: #1a5fb4;
+    -ide-icon-schema: #3584e4;
+    -ide-icon-cat-tables: #1a5fb4;
+    -ide-icon-table: #1c71d8;
+    -ide-icon-cat-views: #613583;
+    -ide-icon-view: #813d9c;
+    -ide-icon-cat-funcs: #26a269;
+    -ide-icon-func: #2ec27e;
+    -ide-icon-cat-procs: #c64600;
+    -ide-icon-proc: #e66100;
+    -ide-icon-pk: #c67800;
+    -ide-icon-fk: #1a5fb4;
+    -ide-icon-col-text: #1c71d8;
+    -ide-icon-col-num: #26a269;
+    -ide-icon-col-date: #813d9c;
+}
+
 .editor-content-placeholder, .results-content-placeholder, .messages-placeholder {
-    -fx-background-color: #ffffff;
-}
-
-/* Light Theme Icon Refinements */
-.icon-connection {
-    -fx-icon-color: #26a269;
-}
-
-.icon-database {
-    -fx-icon-color: #1a5fb4;
-}
-
-.icon-schema {
-    -fx-icon-color: #3584e4;
-}
-
-.icon-cat-tables {
-    -fx-icon-color: #1a5fb4;
-}
-
-.icon-table {
-    -fx-icon-color: #1c71d8;
-}
-
-.icon-cat-views {
-    -fx-icon-color: #613583;
-}
-
-.icon-view {
-    -fx-icon-color: #813d9c;
-}
-
-.icon-cat-funcs {
-    -fx-icon-color: #26a269;
-}
-
-.icon-func {
-    -fx-icon-color: #2ec27e;
-}
-
-.icon-cat-procs {
-    -fx-icon-color: #c64600;
-}
-
-.icon-proc {
-    -fx-icon-color: #e66100;
-}
-
-.icon-pk {
-    -fx-icon-color: #c67800;
-}
-
-.icon-fk {
-    -fx-icon-color: #1a5fb4;
-}
-
-.icon-col-text {
-    -fx-icon-color: #1c71d8;
-}
-
-.icon-col-num {
-    -fx-icon-color: #26a269;
-}
-
-.icon-col-date {
-    -fx-icon-color: #813d9c;
+    -fx-background-color: -ide-placeholder-bg;
 }
 
 /* Results Loading Overlay in Light Mode */

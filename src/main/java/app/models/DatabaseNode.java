@@ -23,8 +23,11 @@ public class DatabaseNode {
     private TableMetadata tableMetadata;
     private ColumnMetadata columnMetadata;
     private boolean loaded = false;
+    private final javafx.beans.property.SimpleBooleanProperty loading = new javafx.beans.property.SimpleBooleanProperty(false);
     /** Full group path ('A/B') for GROUP nodes and the group of CONNECTION nodes. */
     private String groupPath;
+    /** Linked server this node belongs to (LINKED_SERVER, REMOTE_*). */
+    private String linkedServer;
     private final List<DatabaseNode> children = new ArrayList<>();
 
     public DatabaseNode(String name, DatabaseNodeType type) {
@@ -54,6 +57,15 @@ public class DatabaseNode {
 
     public DatabaseNodeType getType() {
         return type;
+    }
+
+    public String getLinkedServer() {
+        return linkedServer;
+    }
+
+    public DatabaseNode setLinkedServer(String linkedServer) {
+        this.linkedServer = linkedServer;
+        return this;
     }
 
     public String getSubText() {
@@ -104,9 +116,20 @@ public class DatabaseNode {
             case CATEGORY_INDEXES -> (tableMetadata != null) ? "fth-folder" : "fth-bookmark";
             case INDEX -> "fth-bookmark";
             case CATEGORY_SEQUENCES, SEQUENCE -> "mdi2a-arrow-up-down";
+            case CATEGORY_SYNONYMS -> "fth-link";
+            case SYNONYM -> "fth-link-2";
+            case CATEGORY_USERS -> "fth-users";
+            case DB_USER -> subText != null && subText.contains("Disabled") ? "fth-user-x"
+                    : subText != null && subText.toUpperCase().contains("WINDOWS") ? "fth-shield" : "fth-user";
             case CATEGORY_USER_TYPES, USER_TYPE -> "mdi2c-cube-outline";
+            case PARAMETER -> "mdi2a-at";
             case ROLES_USERS -> "mdi2a-account-group";
+            case ROLE -> "mdi2a-account-outline";
             case SERVER_OBJECTS -> "fth-server";
+            case LINKED_SERVER -> "fth-link";
+            case REMOTE_DATABASE -> "fth-database";
+            case REMOTE_TABLE -> "mdi2t-table";
+            case REMOTE_VIEW -> "mdi2t-table-eye";
             case LOADING -> "fth-loader";
             case COLUMN -> resolveColumnIcon();
         };
@@ -217,6 +240,23 @@ public class DatabaseNode {
 
     public DatabaseNode setLoaded(boolean loaded) {
         this.loaded = loaded;
+        if (loaded) {
+            loading.set(false);
+        }
+        return this;
+    }
+
+    /** True while the children are being fetched: the Explorer row shows a small spinner next to the name. */
+    public javafx.beans.property.BooleanProperty loadingProperty() {
+        return loading;
+    }
+
+    public boolean isLoading() {
+        return loading.get();
+    }
+
+    public DatabaseNode setLoading(boolean value) {
+        loading.set(value);
         return this;
     }
 

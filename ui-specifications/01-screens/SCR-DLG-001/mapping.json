@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-001",
+  "mappings": [
+    {
+      "source_id": "connectionModal",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-001",
+      "target_type": "javafx",
+      "target_component": "DialogChrome + FXML",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Đích là Connection Manager (cây + form), nguồn là modal một kết nối",
+        "Phụ đề \"Dữ liệu mẫu — chưa kết nối database thật\" đã cũ sau D1"
+      ],
+      "approval_reference": "none"
+    }
+  ]
+}

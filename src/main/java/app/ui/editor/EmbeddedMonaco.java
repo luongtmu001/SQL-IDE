@@ -20,7 +20,7 @@ public final class EmbeddedMonaco {
         host.createModel(modelId, lastSet, language);
         host.switchModel(modelId);
         host.setOnReady(() -> {
-            host.setTheme(app.services.ThemeService.getInstance().isDarkMode() ? "ide-dark" : "ide-light");
+            host.applyAppTheme(); // T1: same Monaco theme as the main editor
             host.updateEditorSettings(app.services.SettingsService.getInstance().getCurrentSettings());
         });
         host.setOnContentChanged((id, text) -> {

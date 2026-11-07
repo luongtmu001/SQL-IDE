@@ -18,22 +18,46 @@ public class AppLauncher extends Application {
     @Override
     public void init() throws Exception {
         super.init();
+        var profiler = app.diagnostics.startup.StartupProfiler.getInstance();
+        profiler.markAppStarted();
+        try (var task = profiler.beginTask("DiagnosticsManager_Init")) {
+            app.diagnostics.core.DiagnosticsManager.getInstance().initialize(null);
+        }
         app.framework.error.DesktopErrorHandler.getInstance().install();
-        app.framework.bootstrap.DesktopBootstrap.getInstance();
+        try (var task = profiler.beginTask("DesktopBootstrap")) {
+            app.framework.bootstrap.DesktopBootstrap.getInstance();
+        }
+        // S3: log level + rolling log file from Settings (logging.*) before anything else logs much
+        try (var task = profiler.beginTask("Logging_Apply")) {
+            app.services.LoggingService.apply(app.services.SettingsService.getInstance().getCurrentSettings());
+        }
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         AppContext.getInstance().setPrimaryStage(primaryStage);
+        // the saved theme is the theme from the first frame (was always Primer Dark until Settings were saved)
+        try {
+            String saved = app.services.SettingsService.getInstance().getCurrentSettings().getTheme();
+            ThemeService.getInstance().apply(app.services.theme.ThemeRegistry.getInstance().find(saved), null);
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(AppLauncher.class).warn("Saved theme not applied: {}", e.getMessage());
+        }
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-window.fxml"));
-        Parent root = loader.load();
+        Parent root;
+        try (var task = app.diagnostics.startup.StartupProfiler.getInstance().beginTask("FXML_MainWindow_Load")) {
+            root = loader.load();
+        }
         app.controllers.MainController mainController = loader.getController();
 
         Scene scene = new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
         // Initialize Theme via ThemeService
         ThemeService.getInstance().initializeTheme(scene);
+
+        // Global shortcut to open Application Diagnostics & Debug Center (Ctrl+Shift+D / Ctrl+Alt+D)
+        app.diagnostics.ui.DiagnosticsWindow.installGlobalShortcut(scene);
 
         primaryStage.setTitle(APP_TITLE);
         addStageIcons(primaryStage);
@@ -43,6 +67,7 @@ public class AppLauncher extends Application {
         customWindow.setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT, 960, 620);
         customWindow.setScene(scene, mainController.getTitleBarNode(), mainController.getTitleBarController());
         customWindow.show();
+        app.diagnostics.startup.StartupProfiler.getInstance().markAppReady();
     }
 
     /** Product logo for the taskbar, Alt+Tab and the window system menu. */
@@ -58,6 +83,9 @@ public class AppLauncher extends Application {
     @Override
     public void stop() throws Exception {
         try {
+            try {
+                app.diagnostics.core.DiagnosticsManager.getInstance().shutdown();
+            } catch (Throwable ignored) {}
             app.framework.lifecycle.DesktopLifecycleManager.getInstance().initiateShutdown();
             try {
                 app.framework.connection.ConnectionSessionManager.getInstance().disconnect();

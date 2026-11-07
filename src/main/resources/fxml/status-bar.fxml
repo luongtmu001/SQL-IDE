@@ -19,6 +19,19 @@
         <Label fx:id="connectionLabel" text="Chưa kết nối" styleClass="status-text"/>
     </HBox>
 
+    <HBox fx:id="databaseItem" styleClass="status-entry" alignment="CENTER_LEFT" spacing="4" visible="false" managed="false">
+        <FontIcon iconLiteral="fth-database" styleClass="status-icon"/>
+        <Label fx:id="databaseLabel" styleClass="status-text"/>
+    </HBox>
+    <HBox fx:id="schemaItem" styleClass="status-entry" alignment="CENTER_LEFT" spacing="4" visible="false" managed="false">
+        <FontIcon iconLiteral="fth-layers" styleClass="status-icon"/>
+        <Label fx:id="schemaLabel" styleClass="status-text"/>
+    </HBox>
+    <HBox fx:id="userItem" styleClass="status-entry" alignment="CENTER_LEFT" spacing="4" visible="false" managed="false">
+        <FontIcon iconLiteral="fth-user" styleClass="status-icon"/>
+        <Label fx:id="userLabel" styleClass="status-text"/>
+    </HBox>
+
     <Label fx:id="pidLabel" styleClass="status-entry, status-text" visible="false" managed="false">
         <graphic><FontIcon iconLiteral="fth-terminal" styleClass="status-icon"/></graphic>
         <tooltip><Tooltip text="Phiên kết nối của tab (SPID / PID) — bấm để sao chép"/></tooltip>

@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MainController.class);
+
 
     @FXML private BorderPane mainWindowRoot;
 
@@ -108,7 +110,68 @@ public class MainController implements Initializable {
         setupWorkspaceIntegration();
         setupToolbarSettings(app.services.SettingsService.getInstance().getCurrentSettings());
         applyUiTypography(app.services.SettingsService.getInstance().getCurrentSettings());
+        applyAutoHideToolbar(app.services.SettingsService.getInstance().getCurrentSettings());
         Platform.runLater(this::bindWindowStateToRoot);
+    }
+
+    // ------------------------------------------------------------------ appearance.autoHideNavbar (S3)
+    // LLTool autohide-navbar.js: the toolbar row is hidden; it comes back when the mouse touches the top edge
+    // (6px under the title bar) and hides again shortly after the mouse leaves it, unless one of its lists is open.
+
+    private boolean autoHideToolbar;
+    private javafx.event.EventHandler<javafx.scene.input.MouseEvent> autoHideFilter;
+    private final javafx.animation.PauseTransition toolbarHideDelay =
+            new javafx.animation.PauseTransition(javafx.util.Duration.millis(700));
+
+    private void applyAutoHideToolbar(app.models.IdeSettings settings) {
+        // LLTool: appearance.autoHideNavbar first, the root key only when there is no appearance section
+        boolean on = settings != null && (settings.getAppearance() != null
+                ? settings.getAppearance().isAutoHideNavbar() : settings.isAutoHideNavbar());
+        if (contextToolBar == null || mainWindowRoot == null || on == autoHideToolbar) return;
+        autoHideToolbar = on;
+        if (autoHideFilter == null) {
+            autoHideFilter = this::onMouseForAutoHide;
+            toolbarHideDelay.setOnFinished(e -> {
+                if (autoHideToolbar && !toolbarPopupOpen()) showToolbar(false);
+            });
+        }
+        if (on) {
+            mainWindowRoot.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_MOVED, autoHideFilter);
+            showToolbar(false);
+        } else {
+            mainWindowRoot.removeEventFilter(javafx.scene.input.MouseEvent.MOUSE_MOVED, autoHideFilter);
+            toolbarHideDelay.stop();
+            showToolbar(true);
+        }
+    }
+
+    private void showToolbar(boolean show) {
+        contextToolBar.setVisible(show);
+        contextToolBar.setManaged(show);
+    }
+
+    private void onMouseForAutoHide(javafx.scene.input.MouseEvent e) {
+        double top = titleBar != null ? titleBar.localToScene(titleBar.getBoundsInLocal()).getMaxY() : 0;
+        if (!contextToolBar.isVisible()) {
+            if (e.getSceneY() >= top && e.getSceneY() <= top + 6) {
+                toolbarHideDelay.stop();
+                showToolbar(true);
+            }
+            return;
+        }
+        double bottom = contextToolBar.localToScene(contextToolBar.getBoundsInLocal()).getMaxY();
+        if (e.getSceneY() > bottom + 12) {
+            if (toolbarHideDelay.getStatus() != javafx.animation.Animation.Status.RUNNING) toolbarHideDelay.playFromStart();
+        } else {
+            toolbarHideDelay.stop();
+        }
+    }
+
+    private boolean toolbarPopupOpen() {
+        for (ComboBox<?> c : new ComboBox<?>[]{connectionComboBox, databaseComboBox, schemaComboBox, limitComboBox}) {
+            if (c != null && c.isShowing()) return true;
+        }
+        return false;
     }
 
     /** SCR-MAIN-001: rounded cards whose outline is never covered by the content. */
@@ -183,7 +246,7 @@ public class MainController implements Initializable {
         installEditorSash();
         boolean resultsDocked = centerVerticalSplit != null && results != null
                 && centerVerticalSplit.getItems().contains(results);
-        double gap = resultsDocked ? (flatPanels ? 3 : 4) : 0;
+        double gap = resultsDocked ? 4 : 0; // flat keeps the gaps of the rounded style (user 2026-11-06)
         editorSlot.setPadding(javafx.geometry.Insets.EMPTY);
         editorSash.setMinHeight(gap);
         editorSash.setPrefHeight(gap);
@@ -196,7 +259,10 @@ public class MainController implements Initializable {
     /** appearance.panelStyle = "flat" (user setting, 2026-11-05). */
     private boolean flatPanels = false;
 
-    /** Switches between rounded cards with gaps and a flat VS Code-like layout. */
+    /**
+     * Rounded cards or flat (square) cards. Both keep the same 6px gaps and card outlines; flat only removes
+     * the rounding (user decision 2026-11-06: "margin giữa các khối như giao diện bo góc").
+     */
     private void applyPanelStyle(app.models.IdeSettings settings) {
         boolean flat = settings != null && settings.isFlatPanels();
         flatPanels = flat;
@@ -211,10 +277,10 @@ public class MainController implements Initializable {
         app.ui.components.RoundedCard.setRadius(contextToolBar, cardRadius);
         app.ui.components.RoundedCard.setRadius(statusBar, flat ? 0 : 6);
         if (contextToolBar != null) {
-            VBox.setMargin(contextToolBar, flat ? javafx.geometry.Insets.EMPTY : new javafx.geometry.Insets(6, 6, 0, 6));
+            VBox.setMargin(contextToolBar, new javafx.geometry.Insets(6, 6, 0, 6));
         }
         if (statusBar != null) {
-            BorderPane.setMargin(statusBar, flat ? javafx.geometry.Insets.EMPTY : new javafx.geometry.Insets(0, 6, 6, 6));
+            BorderPane.setMargin(statusBar, new javafx.geometry.Insets(0, 6, 6, 6));
         }
         dividerGapAppliers.forEach(Runnable::run);    // R-UI-01: element shapes (inputs, selections, buttons, popups) follow the same setting
         app.services.ThemeService.getInstance().applyShapeToAllWindows();
@@ -235,8 +301,23 @@ public class MainController implements Initializable {
                     == app.services.ExplorerConnectionState.Status.CONNECTED;
         }
         statusBarController.setConnected(connected);
-        statusBarController.setPid(connected && session.serverPid() != null ? String.valueOf(session.serverPid()) : null);
-        if (editorController != null) editorController.refreshTabDecorations();
+        // connected but PID unknown shows "—" so the PID entry is never silently missing
+        statusBarController.setPid(connected
+                ? (session != null && session.serverPid() != null ? String.valueOf(session.serverPid()) : "—")
+                : null);
+        if (editorController != null && editorController.getEditorBar() != null) {
+            editorController.getEditorBar().setPid(connected
+                    ? (session != null && session.serverPid() != null ? String.valueOf(session.serverPid()) : "—")
+                    : null);
+        }
+        statusBarController.setSessionInfo(
+                connected ? session.database() : null,
+                connected && tab != null ? tab.getSchemaName() : null,
+                connected && session.profile() != null ? session.profile().username() : null);
+        if (editorController != null) {
+            editorController.refreshTabDecorations();
+            editorController.checkActiveTabIfSessionChanged();   // check syntax once the tab is connected
+        }
     }
 
     private void setupStatusBar() {
@@ -259,7 +340,14 @@ public class MainController implements Initializable {
             }
         });
         statusBarController.setOnOpenSettings(this::handleOpenSettings);
+        statusBarController.setOnToggleIndent(this::toggleIndentation);
         statusBarController.setOnZoomChanged(pct -> applyEditorZoom());
+        // Ctrl+Wheel inside the editor: show the new percentage in the status bar (no echo back to the editor)
+        if (editorController != null) {
+            editorController.setOnZoomChanged(pct -> statusBarController.setZoom(pct));
+            editorController.setOnEditorBarReady(statusBarController::setEditorBar);
+            editorController.setOnProblemsChanged((errors, warnings) -> statusBarController.setProblems(errors, warnings));
+        }
 
         // Phase 8 / D1: the status bar shows the ACTIVE TAB's own session (state, server PID).
         Runnable refreshConnected = this::refreshActiveTabSession;
@@ -268,6 +356,64 @@ public class MainController implements Initializable {
         if (editorController != null) {
             editorController.getPrimaryTabPane().getSelectionModel().selectedItemProperty()
                     .addListener((o, a, b) -> refreshConnected.run());
+            // D3: each tab runs on its own; Run / Stop and the loading overlay follow the ACTIVE tab, and output of a
+            // tab that finished in the background is shown when the tab is opened again
+            var queries = app.framework.query.DesktopQueryExecutionService.getInstance();
+            queries.setActiveTabSupplier(this::activeTabId);
+            editorController.getPrimaryTabPane().getSelectionModel().selectedItemProperty()
+                    .addListener((o, a, b) -> {
+                        // D4.3 (LLTool restoreTabResults): each tab keeps its own results / messages / plan
+                        long t0 = System.nanoTime();
+                        if (resultsController != null) {
+                            if (a instanceof app.ui.editor.SqlEditorTab oldTab) resultsController.saveTabState(oldTab.getDocumentId());
+                            resultsController.restoreTabState(b instanceof app.ui.editor.SqlEditorTab newTab ? newTab.getDocumentId() : null);
+                        }
+                        long t1 = System.nanoTime();
+                        refreshRunState();
+                        flushTabOutput();
+                        long t2 = System.nanoTime();
+                        // connection hierarchy: an open connection reaches the tab when it is shown; its own
+                        // session is checked (a dead one turns into "Mất kết nối")
+                        if (b instanceof app.ui.editor.SqlEditorTab shown) {
+                            Platform.runLater(() -> {
+                                autoConnectNewTab(shown);
+                                app.framework.session.TabSessionManager.getInstance().probeAsync(shown.getDocumentId());
+                            });
+                        }
+                        // the rest of the switch (other listeners, CSS + layout of the panel) shows in the next pulse
+                        Platform.runLater(() -> log.info("[tab-switch] results {} ms, run state {} ms, until next pulse {} ms",
+                                (t1 - t0) / 1_000_000, (t2 - t1) / 1_000_000, (System.nanoTime() - t0) / 1_000_000));
+                    });
+            editorController.getPrimaryTabPane().getTabs().addListener((javafx.collections.ListChangeListener<javafx.scene.control.Tab>) c -> {
+                while (c.next()) {
+                    for (javafx.scene.control.Tab t : c.getAddedSubList()) {
+                        if (t instanceof app.ui.editor.SqlEditorTab st && !st.isCustomContent()) {
+                            Platform.runLater(() -> autoConnectNewTab(st));
+                        }
+                    }
+                    for (javafx.scene.control.Tab t : c.getRemoved()) {
+                        if (t instanceof app.ui.editor.SqlEditorTab st && resultsController != null) {
+                            // later: a pinned tab is removed and added back when it moves
+                            Platform.runLater(() -> {
+                                if (!editorController.getPrimaryTabPane().getTabs().contains(st)) {
+                                    resultsController.dropTabState(st.getDocumentId());
+                                    pendingTabOutput.remove(st.getDocumentId());
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+            queries.runningTabs().addListener((javafx.collections.SetChangeListener<String>) c -> refreshRunState());
+            // the Explorer connected (or a tab did): the tab on screen follows at once, the others when shown
+            app.services.ExplorerConnectionState.getInstance().revisionProperty().addListener((o, a, b) ->
+                    autoConnectNewTab(editorController.getCurrentEditorTab()));
+            // a dead session is noticed without a run: active tab only, every 30 s and when the window gets focus
+            var heartbeat = new javafx.animation.Timeline(new javafx.animation.KeyFrame(
+                    javafx.util.Duration.seconds(30), e -> probeActiveTab()));
+            heartbeat.setCycleCount(javafx.animation.Animation.INDEFINITE);
+            heartbeat.play();
+            hookWindowFocus(editorController.getPrimaryTabPane());
         }
         GlobalDesktopState.getInstance().activeConnectionProperty()
                 .addListener((o, a, b) -> Platform.runLater(refreshConnected));
@@ -295,6 +441,18 @@ public class MainController implements Initializable {
         }
     }
 
+    /** Editor bar: TABS → SPACES: 4, SPACES → TABS (saved in Settings, applied to the editor at once). */
+    private void toggleIndentation() {
+        var service = app.services.SettingsService.getInstance();
+        var settings = service.getCurrentSettings();
+        if (settings == null || settings.getEditor() == null) return;
+        var copy = settings.clone();
+        boolean toSpaces = !copy.getEditor().isInsertSpaces();
+        copy.getEditor().setInsertSpaces(toSpaces);
+        if (toSpaces) copy.getEditor().setTabSize(4);
+        service.saveSettings(copy);
+    }
+
     private void applyStatusBarEditorSettings(app.models.IdeSettings s) {
         if (statusBarController == null || s == null) return;
         boolean spaces = s.getEditor() == null || s.getEditor().isInsertSpaces();
@@ -307,7 +465,8 @@ public class MainController implements Initializable {
         var host = editorController.getMonacoHost();
         if (host == null) return;
         int base = app.services.SettingsService.getInstance().getCurrentSettings().getEditorFontSize();
-        host.setFontSize(Math.max(6, Math.round(base * statusBarController.getZoom() / 100f)));
+        host.setFontSize(base);
+        host.setZoom(statusBarController.getZoom());
     }
 
     private void bindWindowStateToRoot() {
@@ -339,6 +498,7 @@ public class MainController implements Initializable {
     private void setupEditorIntegration() {
         if (editorController != null) {
             editorController.setOnExecuteRequestListener(this::handleExecute);
+            editorController.setOnExecuteStatementRequestListener(this::handleExecuteStatement);
             // Phase 3: tabs without their own connection follow the toolbar; banner actions
             editorController.setActiveConnectionSupplier(() -> connectionComboBox != null ? connectionComboBox.getValue() : null);
             app.ui.editor.SqlEditorTab.setBannerActions(new app.ui.editor.SqlEditorTab.BannerActions() {
@@ -435,6 +595,107 @@ public class MainController implements Initializable {
         });
     }
 
+    /**
+     * A new query tab on a connection that is already open (Explorer connected, or another tab has a live
+     * session on it) gets its own session at once, so it does not show "Chưa kết nối" (LLTool opens the tab's
+     * session with the tab). Never asks for a password: a connection that needs one waits for "Kết nối" / F5.
+     */
+    private void autoConnectNewTab(app.ui.editor.SqlEditorTab tab) {
+        if (tab == null || editorController == null || !editorController.getPrimaryTabPane().getTabs().contains(tab)) return;
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.CONNECTIONS)) return;
+        var sessions = app.framework.session.TabSessionManager.getInstance();
+        if (sessions.state(tab.getDocumentId()) != app.framework.session.TabSession.State.NONE) return;
+        String name = tab.getConnectionName() != null && !tab.getConnectionName().isBlank() ? tab.getConnectionName()
+                : (connectionComboBox != null ? connectionComboBox.getValue() : null);
+        var profile = app.framework.session.TabSessionManager.profileByName(name);
+        if (profile == null) return;
+        boolean open = app.services.ExplorerConnectionState.getInstance().get(profile.id())
+                == app.services.ExplorerConnectionState.Status.CONNECTED;
+        if (!open) {
+            for (var other : editorController.getOpenTabs()) {
+                var s = sessions.get(other.getDocumentId());
+                if (other != tab && s != null && s.state() == app.framework.session.TabSession.State.CONNECTED
+                        && s.profile() != null && profile.id().equals(s.profile().id())) {
+                    open = true;
+                    break;
+                }
+            }
+        }
+        if (!open || app.services.PasswordPolicyService.getInstance().needsPrompt(profile)) return;
+        if (tab.getConnectionName() == null || tab.getConnectionName().isBlank()) tab.setConnectionName(profile.name());
+        String db = tab.getDatabaseName() != null ? tab.getDatabaseName() : profile.databaseName();
+        sessions.connectAsync(tab.getDocumentId(), profile, db, res -> {
+            if (res.isFailure()) {
+                log.info("Auto-connect of new tab to {} failed: {}", profile.name(), res.getError().map(e -> e.message()).orElse("?"));
+            }
+            editorController.refreshTabDecorations();
+        });
+    }
+
+    private void probeActiveTab() {
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.CONNECTIONS)) return;
+        String id = activeTabId();
+        if (id != null) app.framework.session.TabSessionManager.getInstance().probeAsync(id);
+    }
+
+    private void hookWindowFocus(javafx.scene.Node node) {
+        java.util.function.Consumer<javafx.stage.Window> onWindow = w -> {
+            if (w != null) w.focusedProperty().addListener((o, a, focused) -> {
+                if (focused) probeActiveTab();
+            });
+        };
+        java.util.function.Consumer<javafx.scene.Scene> onScene = sc -> {
+            if (sc == null) return;
+            if (sc.getWindow() != null) onWindow.accept(sc.getWindow());
+            else sc.windowProperty().addListener((o, a, w) -> onWindow.accept(w));
+        };
+        if (node.getScene() != null) onScene.accept(node.getScene());
+        else node.sceneProperty().addListener((o, a, sc) -> onScene.accept(sc));
+    }
+
+    /**
+     * Before a run: a tab whose session is not open (never opened, closed by an Explorer disconnect, or lost)
+     * asks the user to confirm server / database / schema first (user decision 2026-11-06); an open
+     * (or opening) session runs at once. Then DLG-002 when the profile needs a password.
+     */
+    private boolean ensureSessionForRun(String tabId, String connectionName, String database, String schema) {
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.QUERY)) return true;
+        var st = app.framework.session.TabSessionManager.getInstance().state(tabId);
+        if (st == app.framework.session.TabSession.State.CONNECTED || st == app.framework.session.TabSession.State.CONNECTING) {
+            return true;
+        }
+        var profile = app.framework.session.TabSessionManager.profileByName(connectionName);
+        if (profile == null) return true; // the run reports "no connection"
+        if (!confirmConnectForRun(profile, st == app.framework.session.TabSession.State.LOST, database, schema)) return false;
+        return ensurePasswordForRun(tabId, connectionName);
+    }
+
+    private boolean confirmConnectForRun(com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+                                         boolean lost, String database, String schema) {
+        String server;
+        if (profile.host() != null && !profile.host().isBlank()) {
+            server = profile.host() + (profile.port() > 0 ? ":" + profile.port() : "");
+        } else {
+            server = profile.sqliteFilePath() != null ? profile.sqliteFilePath() : "";
+        }
+        if (profile.databaseType() != null) server += "  (" + profile.databaseType() + ")";
+        String db = database != null && !database.isBlank() ? database : profile.databaseName();
+        String sch = schema != null && !schema.isBlank() ? schema : app.services.DefaultSchemaService.get(profile.id());
+        return app.ui.dialogs.ConnectForRunDialog.show(ownerWindow(), lost, profile.name(), server, db, sch);
+    }
+
+    /** The run found the session dead: confirm, reconnect and run the same statement again. */
+    private void retryAfterLostConnection(String tabId, String tabTitle, String sql, String tabConn, String tabDb,
+                                          String tabSchema, boolean prodConfirmed,
+                                          app.framework.query.QueryOptions queryOptions) {
+        if (!isActiveTab(tabId)) return;
+        var profile = app.framework.session.TabSessionManager.profileByName(tabConn);
+        if (profile == null || !confirmConnectForRun(profile, true, tabDb, tabSchema)) return;
+        if (!ensurePasswordForRun(tabId, tabConn)) return;
+        setExecutionRunningState(true);
+        startRun(tabId, tabTitle, sql, tabConn, tabDb, tabSchema, prodConfirmed, queryOptions);
+    }
+
     /** DLG-002 before a run opens the tab's session; false = the user cancelled. */
     private boolean ensurePasswordForRun(String tabId, String connectionName) {
         if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.QUERY)) return true;
@@ -510,14 +771,32 @@ public class MainController implements Initializable {
         }
 
         if (schemaComboBox != null) {
-            schemaComboBox.setItems(FXCollections.observableArrayList(
-                "public",
-                "auth",
-                "audit_logs",
-                "information_schema"
-            ));
-            schemaComboBox.getSelectionModel().selectFirst();
+            // Phase 8 / D2: real schemas of the tab's connection + database, loaded when the list opens
+            schemaComboBox.setOnShowing(e -> {
+                var profile = app.framework.session.TabSessionManager.profileByName(currentTabConnection());
+                if (profile == null) return;
+                String db = databaseComboBox != null ? databaseComboBox.getValue() : null;
+                app.framework.metadata.DesktopMetadataService.getInstance().fetchSchemas(profile,
+                        db != null ? db : profile.databaseName(), list -> setItemsKeepValue(schemaComboBox, list));
+            });
+            schemaComboBox.setOnAction(e -> {
+                String selected = schemaComboBox.getValue();
+                var tab = editorController != null ? editorController.getCurrentEditorTab() : null;
+                if (tab != null && selected != null) tab.setSchemaName(selected);
+            });
         }
+    }
+
+    private String currentTabConnection() {
+        var tab = editorController != null ? editorController.getCurrentEditorTab() : null;
+        if (tab != null && tab.getConnectionName() != null) return tab.getConnectionName();
+        return connectionComboBox != null ? connectionComboBox.getValue() : null;
+    }
+
+    private static void setItemsKeepValue(ComboBox<String> combo, java.util.List<String> values) {
+        String current = combo.getValue();
+        combo.getItems().setAll(values);
+        if (current != null && values.contains(current)) combo.setValue(current);
     }
 
     public void refreshConnectionDropdown() {
@@ -592,40 +871,90 @@ public class MainController implements Initializable {
         if (themesMenu != null) {
             themesMenu.getItems().clear();
             ToggleGroup group = new ToggleGroup();
-
-            for (ThemeService.AppTheme theme : ThemeService.AppTheme.values()) {
-                RadioMenuItem item = new RadioMenuItem(theme.getDisplayName());
-                item.setToggleGroup(group);
-                if (theme == ThemeService.getInstance().getCurrentTheme()) {
-                    item.setSelected(true);
+            // T1/T4: dark groups then light ones (user decision: themes split by dark / light); inside a kind the
+            // built-in themes, then each imported VS Code package ("Tối · GitHub Theme") - same groups as Settings
+            var current = ThemeService.getInstance().getCurrentDefinition();
+            for (var g : app.services.theme.ThemeRegistry.getInstance().grouped()) {
+                javafx.scene.control.MenuItem header = new javafx.scene.control.MenuItem(g.title());
+                header.setDisable(true);
+                header.getStyleClass().add("theme-group-header");
+                if (!themesMenu.getItems().isEmpty()) themesMenu.getItems().add(new SeparatorMenuItem());
+                themesMenu.getItems().add(header);
+                for (var def : g.themes()) {
+                    RadioMenuItem item = new RadioMenuItem(def.label());
+                    item.setToggleGroup(group);
+                    item.setSelected(def.id().equals(current.id()));
+                    item.setOnAction(e -> {
+                        Stage stage = AppContext.getInstance().getPrimaryStage();
+                        if (stage != null && stage.getScene() != null) {
+                            ThemeService.getInstance().apply(def, stage.getScene());
+                        }
+                    });
+                    themesMenu.getItems().add(item);
                 }
-                item.setOnAction(e -> {
-                    Stage stage = AppContext.getInstance().getPrimaryStage();
-                    if (stage != null && stage.getScene() != null) {
-                        ThemeService.getInstance().setTheme(theme, stage.getScene());
-                    }
-                });
-                themesMenu.getItems().add(item);
             }
+            // T3: themes of a VS Code extension (.vsix) become app themes
+            javafx.scene.control.MenuItem importItem = new javafx.scene.control.MenuItem("Import theme VS Code (.vsix)…");
+            importItem.setOnAction(e -> handleImportVsixTheme());
+            themesMenu.getItems().addAll(new SeparatorMenuItem(), importItem);
         }
     }
 
-    private void setupThemeListener() {
-        ThemeService.getInstance().currentThemeProperty().addListener((obs, oldTheme, newTheme) -> {
-            updateThemeIcons(newTheme);
-            if (editorController != null && editorController.getMonacoHost() != null) {
-                editorController.getMonacoHost().setTheme(newTheme.isDark() ? "ide-dark" : "ide-light");
+    /**
+     * T4: the list of themes changed (import / removal, from the menu or Settings): rebuild the menu; when the
+     * theme in use was removed, fall back to Primer of the same kind (the listener below saves it in Settings).
+     */
+    private void onThemeListChanged() {
+        Platform.runLater(() -> {
+            var registry = app.services.theme.ThemeRegistry.getInstance();
+            var current = ThemeService.getInstance().getCurrentDefinition();
+            if (current != null && !current.isBuiltIn() && registry.findOrNull(current.id()) == null) {
+                Stage stage = AppContext.getInstance().getPrimaryStage();
+                if (stage != null && stage.getScene() != null) {
+                    ThemeService.getInstance().apply(app.services.theme.ThemeDefinition.builtIn(current.isDark()
+                            ? ThemeService.AppTheme.PRIMER_DARK : ThemeService.AppTheme.PRIMER_LIGHT), stage.getScene());
+                    return; // the theme listener rebuilds the menu
+                }
             }
-            app.ui.titlebar.WindowTitleModel.getInstance().setThemeName(newTheme.getDisplayName());
-            app.services.NotificationService.getInstance().showInfo("Theme Changed", "Active theme: " + newTheme.getDisplayName());
+            setupThemeMenu();
         });
-        updateThemeIcons(ThemeService.getInstance().getCurrentTheme());
-        app.ui.titlebar.WindowTitleModel.getInstance().setThemeName(ThemeService.getInstance().getCurrentTheme().getDisplayName());
     }
 
-    private void updateThemeIcons(ThemeService.AppTheme theme) {
+    private void setupThemeListener() {
+        app.services.theme.ThemeRegistry.getInstance().addChangeListener(this::onThemeListChanged);
+        // T1: follows the chosen theme (built in or imported), not only the AtlantaFX base under it
+        ThemeService.getInstance().currentDefinitionProperty().addListener((obs, oldDef, def) -> {
+            updateThemeIcons(def.isDark());
+            if (editorController != null && editorController.getMonacoHost() != null) {
+                editorController.getMonacoHost().applyAppTheme(); // the editor follows the theme
+            }
+            app.ui.titlebar.WindowTitleModel.getInstance().setThemeName(def.label());
+            app.services.NotificationService.getInstance().showInfo("Theme Changed", "Active theme: " + def.label());
+            setupThemeMenu();
+            // a theme picked from the menu / title bar is the user's setting too; Settings keep the theme id
+            var settings = app.services.SettingsService.getInstance().getCurrentSettings();
+            if (settings != null && !def.id().equalsIgnoreCase(settings.getTheme())) {
+                var copy = settings.clone();
+                copy.setTheme(def.id());
+                app.services.SettingsService.getInstance().saveSettings(copy);
+            }
+        });
+        var def = ThemeService.getInstance().getCurrentDefinition();
+        updateThemeIcons(def.isDark());
+        app.ui.titlebar.WindowTitleModel.getInstance().setThemeName(def.label());
+        if (editorController != null && editorController.getMonacoHost() != null) {
+            editorController.getMonacoHost().applyAppTheme(); // first frame: was always the dark editor theme
+        }
+    }
+
+    /** T3: picks a .vsix and imports its themes in the background; the menu follows the registry (T4). */
+    public void handleImportVsixTheme() {
+        app.ui.theme.ThemeImportActions.importVsix(ownerWindow(), null);
+    }
+
+    private void updateThemeIcons(boolean dark) {
         if (themeToggleIcon != null) {
-            themeToggleIcon.setIconLiteral(theme.isDark() ? "fth-sun" : "fth-moon");
+            themeToggleIcon.setIconLiteral(dark ? "fth-sun" : "fth-moon");
         }
     }
 
@@ -677,13 +1006,8 @@ public class MainController implements Initializable {
             stage = (Stage) mainWindowRoot.getScene().getWindow();
         }
         if (stage != null && stage.getScene() != null) {
+            // menu, editor and Settings follow through the theme listener (setupThemeListener)
             ThemeService.getInstance().toggleDarkLight(stage.getScene());
-            setupThemeMenu();
-
-            // Persist updated theme to SettingsService
-            var s = app.services.SettingsService.getInstance().getCurrentSettings().clone();
-            s.setTheme(ThemeService.getInstance().getCurrentTheme().getDisplayName());
-            app.services.SettingsService.getInstance().saveSettings(s);
         }
     }
 
@@ -753,7 +1077,7 @@ public class MainController implements Initializable {
         }
     }
 
-    /** Database selector of the context bar (mock list: no metadata query is issued from the toolbar). */
+    /** Database selector of the context bar (Phase 8 / D2: real list, per tab). */
     private void setupDatabaseSelector() {
         if (databaseComboBox == null) return;
         GlobalDesktopState state = GlobalDesktopState.getInstance();
@@ -762,8 +1086,23 @@ public class MainController implements Initializable {
             databaseComboBox.getItems().setAll(current);
             databaseComboBox.getSelectionModel().select(current);
         }
+        // Phase 8 / D2: the list comes from the server; choosing a database changes the CURRENT TAB's database
+        // (its session switches catalog on the next run / connect)
+        databaseComboBox.setOnShowing(e -> {
+            var profile = app.framework.session.TabSessionManager.profileByName(currentTabConnection());
+            if (profile == null) return;
+            app.framework.metadata.DesktopMetadataService.getInstance().fetchCatalogs(profile,
+                    list -> setItemsKeepValue(databaseComboBox, list));
+        });
         databaseComboBox.setOnAction(e -> {
             String selected = databaseComboBox.getValue();
+            var tab = editorController != null ? editorController.getCurrentEditorTab() : null;
+            if (tab != null && selected != null && !selected.equals(tab.getDatabaseName())) {
+                tab.setDatabaseName(selected);
+                tab.setSchemaName(null);
+                if (schemaComboBox != null) schemaComboBox.getItems().clear();
+                if (editorController != null) editorController.refreshTabDecorations();
+            }
             if (selected != null && !selected.equals(state.getActiveCatalog())) {
                 state.setActiveCatalog(selected);
             }
@@ -800,6 +1139,9 @@ public class MainController implements Initializable {
         refreshConnectionDropdown();
         if (sidebarController != null) {
             sidebarController.handleRefresh();
+        }
+        if (editorController != null) {
+            editorController.reloadIntellisense();
         }
     }
 
@@ -1172,6 +1514,16 @@ public class MainController implements Initializable {
         }
     }
 
+    /** "Permissions: name" tab of a SQL Server database user / PostgreSQL role (opened once per principal). */
+    public void openPrincipalPermissions(com.lltool.core.application.connection.dto.ConnectionProfileDto profile, String database, String name) {
+        if (editorController == null || profile == null || name == null) return;
+        String key = "permissions|" + profile.id() + "|" + (database != null ? database : "") + "|" + name;
+        editorController.openViewTab(key, "Permissions: " + name,
+                () -> new app.ui.components.PrincipalPermissionsView(profile, database, name,
+                        (title, sql) -> openQueryConsole(title + ".sql", sql, profile.name(), database, null)),
+                profile.name(), database);
+    }
+
     public void executeQueryDirectly(String title, String sql) {
         executeQueryDirectly(title, sql, null, null, null);
     }
@@ -1199,7 +1551,15 @@ public class MainController implements Initializable {
 
     @FXML
     public void handleExecute() {
-        String sql = editorController != null ? editorController.getSelectedOrActiveText() : "SELECT 1;";
+        runSql(editorController != null ? editorController.getSelectedOrActiveText() : "SELECT 1;");
+    }
+
+    /** Phase 8 / D3: runs only the selection, or else the statement under the caret (not the whole script). */
+    public void handleExecuteStatement() {
+        runSql(editorController != null ? editorController.getSelectedOrStatementAtCursor() : "SELECT 1;");
+    }
+
+    private void runSql(String sql) {
         if (sql == null || sql.trim().isEmpty()) {
             if (statusBarController != null) {
                 statusBarController.setStatus("No SQL statement to execute", "warning");
@@ -1282,71 +1642,193 @@ public class MainController implements Initializable {
         setExecutionRunningState(true);
 
         String tabId = activeTab != null ? activeTab.getDocumentId() : null;
-        if (!ensurePasswordForRun(tabId, tabConn)) {
-            setExecutionRunningState(false);
+        if (!ensureSessionForRun(tabId, tabConn, tabDb, tabSchema)) {
+            refreshRunState();
+            if (statusBarController != null) statusBarController.setStatus("Đã hủy chạy: chưa kết nối", "warning");
             return;
         }
-        app.framework.query.DesktopQueryExecutionService.getInstance().execute(tabId, sql, tabConn, tabDb, tabSchema, prodConfirmed, new app.framework.query.DesktopQueryExecutionService.QueryCallback() {
+        // D3: row limit (toolbar "Giới hạn" is synced to settings.sql.maxRows) and timeout come from settings
+        var sqlSettings = settings.getSql();
+        var queryOptions = sqlSettings != null
+                ? new app.framework.query.QueryOptions(sqlSettings.getMaxRows(), sqlSettings.getTimeoutSeconds(), sqlSettings.isStopOnError())
+                : app.framework.query.QueryOptions.legacy();
+        final String tabTitle = activeTab != null ? activeTab.getTabTitle() : null;
+        startRun(tabId, tabTitle, sql, tabConn, tabDb, tabSchema, prodConfirmed, queryOptions);
+    }
+
+    private void startRun(String tabId, String tabTitle, String sql, String tabConn, String tabDb, String tabSchema,
+                          boolean prodConfirmed, app.framework.query.QueryOptions queryOptions) {
+        app.framework.query.DesktopQueryExecutionService.getInstance().execute(tabId, sql, tabConn, tabDb, tabSchema, prodConfirmed, queryOptions, new app.framework.query.DesktopQueryExecutionService.QueryCallback() {
+            @Override
+            public void onMessage(String message, app.framework.query.DesktopQueryExecutionService.QueryCallback.MessageKind kind) {
+                deliverToTab(tabId, () -> {
+                    if (resultsController == null) return;
+                    switch (kind) {
+                        case ERROR -> resultsController.addMessage(app.models.ConsoleMessage.Level.ERROR, message, "-");
+                        case WARNING -> {
+                            resultsController.appendSqlMessage(message);
+                            resultsController.addMessage(app.models.ConsoleMessage.Level.WARNING, message, "-");
+                        }
+                        default -> resultsController.appendSqlMessage(message);
+                    }
+                });
+            }
+
             @Override
             public void onStart(String querySql, String connName) {
+                if (resultsController != null) {
+                    resultsController.addMessage(app.models.ConsoleMessage.Level.INFO,
+                            "Bắt đầu chạy · " + (connName != null ? connName : "kết nối hiện tại")
+                                    + (tabDb != null ? " / " + tabDb : ""), "-");
+                }
                 if (statusBarController != null) {
                     statusBarController.setStatus("Executing query on " + (connName != null ? connName : "current connection") + "...", "busy");
                 }
                 if (resultsController != null) {
+                    resultsController.resetStreaming();
                     resultsController.showLoading(true);
                 }
             }
 
             @Override
-            public void onSuccess(app.models.QueryResult result, List<app.models.QueryResult> allResults, int rowsAffected, String summaryMessage, long durationMs) {
-                setExecutionRunningState(false);
-                if (resultsController != null) {
-                    resultsController.showLoading(false);
-                    if (allResults != null && !allResults.isEmpty()) {
-                        resultsController.setQueryResults(allResults);
-                        resultsController.selectResultsTab();
-                    } else if (result != null) {
-                        resultsController.setQueryResult(result);
-                        resultsController.selectResultsTab();
-                    } else {
-                        resultsController.selectMessagesTab();
+            public void onResultStarted(int index, String setSql, List<app.models.QueryResultColumn> columns) {
+                deliverToTab(tabId, () -> {
+                    if (resultsController != null) {
+                        resultsController.setColumnWidthScope(tabId);
+                        resultsController.streamResultStarted(index, setSql, columns);
                     }
-                    resultsController.addMessage(app.models.ConsoleMessage.Level.SUCCESS, summaryMessage, durationMs + "ms");
-                    resultsController.appendSqlMessage(summaryMessage);
+                });
+            }
+
+            @Override
+            public void onRows(int index, List<app.models.QueryResultRow> rows) {
+                deliverToTab(tabId, () -> {
+                    if (resultsController != null) resultsController.streamRows(index, rows);
+                });
+            }
+
+            @Override
+            public void onSuccess(app.models.QueryResult result, List<app.models.QueryResult> allResults, int rowsAffected, String summaryMessage, long durationMs) {
+                refreshRunState();
+                if (editorController != null) editorController.reloadIntellisenseAfterRun(tabId, sql);
+                notifyBackgroundDone(tabId, tabTitle, summaryMessage, false);
+                deliverToTab(tabId, () -> {
+                    if (resultsController != null) {
+                        resultsController.showLoading(false);
+                        resultsController.setColumnWidthScope(tabId);
+                        if (allResults != null && !allResults.isEmpty()) {
+                            // D4: a streamed grid is only finalized (no redraw, scroll kept)
+                            if (resultsController.isStreaming()) resultsController.finishStreaming(allResults);
+                            else resultsController.setQueryResults(allResults);
+                            resultsController.selectResultsTab();
+                        } else if (result != null) {
+                            resultsController.setQueryResult(result);
+                            resultsController.selectResultsTab();
+                        } else {
+                            resultsController.selectMessagesTab();
+                        }
+                        resultsController.addMessage(app.models.ConsoleMessage.Level.SUCCESS, summaryMessage, durationMs + "ms");
+                        resultsController.appendSqlMessage(summaryMessage);
+                    }
+                    if (statusBarController != null) {
+                        statusBarController.setLastRun(summaryMessage + " · " + durationMs + " ms", "online");
+                    }
+                });
+                if (isActiveTab(tabId)) {
+                    app.services.NotificationService.getInstance().showSuccess("Query Executed", summaryMessage);
                 }
-                if (statusBarController != null) {
-                    statusBarController.setLastRun(summaryMessage + " · " + durationMs + " ms", "online");
-                }
-                app.services.NotificationService.getInstance().showSuccess("Query Executed", summaryMessage);
             }
 
             @Override
             public void onError(String errorMessage, Throwable cause) {
-                setExecutionRunningState(false);
-                if (resultsController != null) {
-                    resultsController.showLoading(false);
-                    resultsController.addMessage(app.models.ConsoleMessage.Level.ERROR, errorMessage, "-");
-                    resultsController.selectMessagesTab();
+                refreshRunState();
+                // a script can fail after its first statements already changed objects
+                if (editorController != null) editorController.reloadIntellisenseAfterRun(tabId, sql);
+                notifyBackgroundDone(tabId, tabTitle, errorMessage, true);
+                deliverToTab(tabId, () -> {
+                    if (resultsController != null) {
+                        resultsController.resetStreaming();
+                        resultsController.showLoading(false);
+                        resultsController.addMessage(app.models.ConsoleMessage.Level.ERROR, errorMessage, "-");
+                        resultsController.selectMessagesTab();
+                    }
+                    if (statusBarController != null) {
+                        statusBarController.setLastRun("Lỗi: " + errorMessage, "offline");
+                    }
+                });
+                if (cause instanceof app.framework.session.ConnectionLostException) {
+                    // the tab's session was dead: ask, reconnect and run again (no silent reconnect)
+                    Platform.runLater(() -> retryAfterLostConnection(tabId, tabTitle, sql, tabConn, tabDb, tabSchema,
+                            prodConfirmed, queryOptions));
+                } else if (isActiveTab(tabId)) {
+                    app.services.NotificationService.getInstance().showWarning("Query Failed", errorMessage);
                 }
-                if (statusBarController != null) {
-                    statusBarController.setLastRun("Lỗi: " + errorMessage, "offline");
-                }
-                app.services.NotificationService.getInstance().showWarning("Query Failed", errorMessage);
             }
 
             @Override
             public void onCancelled() {
-                setExecutionRunningState(false);
-                if (resultsController != null) {
-                    resultsController.showLoading(false);
-                    resultsController.addMessage(app.models.ConsoleMessage.Level.WARNING, "Query execution cancelled by user.", "-");
-                    resultsController.selectMessagesTab();
-                }
-                if (statusBarController != null) {
-                    statusBarController.setLastRun("Đã hủy truy vấn", "warning");
-                }
+                refreshRunState();
+                deliverToTab(tabId, () -> {
+                    if (resultsController != null) {
+                        resultsController.resetStreaming(); // rows already shown stay
+                        resultsController.showLoading(false);
+                        resultsController.addMessage(app.models.ConsoleMessage.Level.WARNING, "Query execution cancelled by user.", "-");
+                        resultsController.selectMessagesTab();
+                    }
+                    if (statusBarController != null) {
+                        statusBarController.setLastRun("Đã hủy truy vấn", "warning");
+                    }
+                });
             }
         });
+    }
+
+    // ------------------------------------------------------------------ D3: one run per tab
+
+    /** Output of tabs that finished while another tab was open; shown when the tab is opened again. */
+    private final java.util.Map<String, java.util.List<Runnable>> pendingTabOutput = new java.util.HashMap<>();
+
+    private String activeTabId() {
+        app.ui.editor.SqlEditorTab t = editorController != null ? editorController.getCurrentEditorTab() : null;
+        return t != null ? t.getDocumentId() : null;
+    }
+
+    private boolean isActiveTab(String tabId) {
+        return tabId == null || java.util.Objects.equals(tabId, activeTabId());
+    }
+
+    private void deliverToTab(String tabId, Runnable output) {
+        if (isActiveTab(tabId)) {
+            output.run();
+        } else {
+            pendingTabOutput.computeIfAbsent(tabId, k -> new java.util.ArrayList<>()).add(output);
+        }
+    }
+
+    private void flushTabOutput() {
+        String id = activeTabId();
+        if (id == null) return;
+        java.util.List<Runnable> out = pendingTabOutput.remove(id);
+        if (out != null) out.forEach(Runnable::run);
+    }
+
+    /** A tab that is not open finished: say so (its results wait until the tab is opened). */
+    private void notifyBackgroundDone(String tabId, String title, String summary, boolean failed) {
+        if (isActiveTab(tabId)) return;
+        String name = title != null ? title : "khác";
+        if (failed) {
+            app.services.NotificationService.getInstance().showWarning("Tab \"" + name + "\" bị lỗi", summary);
+        } else {
+            app.services.NotificationService.getInstance().showSuccess("Tab \"" + name + "\" đã chạy xong", summary);
+        }
+    }
+
+    /** Run / Stop buttons and the loading overlay show the ACTIVE tab's state. */
+    private void refreshRunState() {
+        boolean running = app.framework.query.DesktopQueryExecutionService.getInstance().isExecuting(activeTabId());
+        setExecutionRunningState(running);
+        // a grid that is being filled shows its own progress: no overlay over it
+        if (resultsController != null) resultsController.showLoading(running && !resultsController.isStreaming());
     }
 
     private void setExecutionRunningState(boolean running) {
@@ -1363,7 +1845,7 @@ public class MainController implements Initializable {
 
     @FXML
     private void handleStop() {
-        boolean cancelled = app.framework.query.DesktopQueryExecutionService.getInstance().cancel();
+        boolean cancelled = app.framework.query.DesktopQueryExecutionService.getInstance().cancel(activeTabId());
         if (cancelled) {
             if (statusBarController != null) {
                 statusBarController.setStatus("Cancelling query execution...", "busy");
@@ -1393,15 +1875,19 @@ public class MainController implements Initializable {
             return;
         }
 
-        String activeConn = connectionComboBox != null && connectionComboBox.getValue() != null ?
-                connectionComboBox.getValue() : "PostgreSQL - dev-local";
-        String activeSchema = schemaComboBox != null && schemaComboBox.getValue() != null ?
-                schemaComboBox.getValue() : "public";
+        // D3: no hard-coded fallback ("PostgreSQL - dev-local" / "public"): the plan uses the tab's own connection
+        String activeConn = connectionComboBox != null ? connectionComboBox.getValue() : null;
+        String activeSchema = schemaComboBox != null ? schemaComboBox.getValue() : null;
 
         app.ui.editor.SqlEditorTab activeTab = editorController != null ? editorController.getCurrentEditorTab() : null;
         String tabConn = activeTab != null && activeTab.getConnectionName() != null ? activeTab.getConnectionName() : activeConn;
         String tabDb = activeTab != null && activeTab.getDatabaseName() != null ? activeTab.getDatabaseName() : null;
         String tabSchema = activeTab != null && activeTab.getSchemaName() != null ? activeTab.getSchemaName() : activeSchema;
+        if (tabConn == null || tabConn.isBlank()) {
+            app.services.NotificationService.getInstance().showWarning("Execution Plan",
+                    "Tab chưa chọn kết nối. Chọn kết nối trên thanh công cụ rồi thử lại.");
+            return;
+        }
 
         if (resultsController != null) {
             resultsController.selectExecutionPlanTab();
@@ -1499,9 +1985,10 @@ public class MainController implements Initializable {
             editorController.applyEditorSettings(settings);
         }
         applyUiTypography(settings);
-        updateThemeIcons(ThemeService.getInstance().getCurrentTheme());
+        updateThemeIcons(ThemeService.getInstance().isDarkMode());
         applyStatusBarEditorSettings(settings);
         applyPanelStyle(settings);
+        applyAutoHideToolbar(settings);
         if (statusBarController != null && statusBarController.getZoom() != 100) {
             Platform.runLater(this::applyEditorZoom);
         }

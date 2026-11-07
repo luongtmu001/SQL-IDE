@@ -201,7 +201,7 @@
 
 /* Collapsed Mini Sidebar Strip (Icon Bar) */
 .mini-sidebar-strip {
-    -fx-background-color: -color-bg-subtle;
+    -fx-background-color: -ide-rail-bg;
     -fx-border-color: transparent -color-border-subtle transparent transparent;
     -fx-border-width: 0 1 0 0;
     -fx-padding: 6 3 6 3;
@@ -242,15 +242,15 @@
 }
 
 .tree-cell:hover {
-    -fx-background-color: -color-bg-muted;
+    -fx-background-color: -ide-list-hover-bg;
 }
 
 .tree-cell:selected {
-    -fx-background-color: -color-accent-subtle;
+    -fx-background-color: -ide-list-selection-bg;
 }
 
 .table-row-cell:hover {
-    -fx-background-color: -color-bg-muted;
+    -fx-background-color: -ide-list-hover-bg;
 }
 
 .tab-pane .tab:hover {
@@ -280,92 +280,92 @@
 
 /* Node Icons Per Object Type (DataGrip/DBeaver style - compact proportion) */
 .icon-connection {
-    -fx-icon-color: #2ec27e;
+    -fx-icon-color: -ide-icon-connection;
     -fx-icon-size: 11px;
 }
 
 .icon-database {
-    -fx-icon-color: #3584e4;
+    -fx-icon-color: -ide-icon-database;
     -fx-icon-size: 11px;
 }
 
 .icon-schema {
-    -fx-icon-color: #62a0ea;
+    -fx-icon-color: -ide-icon-schema;
     -fx-icon-size: 11px;
 }
 
 .icon-cat-tables {
-    -fx-icon-color: #1c71d8;
+    -fx-icon-color: -ide-icon-cat-tables;
     -fx-icon-size: 11px;
 }
 
 .icon-table {
-    -fx-icon-color: #3584e4;
+    -fx-icon-color: -ide-icon-table;
     -fx-icon-size: 11px;
 }
 
 .icon-cat-views {
-    -fx-icon-color: #9141ac;
+    -fx-icon-color: -ide-icon-cat-views;
     -fx-icon-size: 11px;
 }
 
 .icon-view {
-    -fx-icon-color: #c061cb;
+    -fx-icon-color: -ide-icon-view;
     -fx-icon-size: 11px;
 }
 
 .icon-cat-funcs {
-    -fx-icon-color: #26a269;
+    -fx-icon-color: -ide-icon-cat-funcs;
     -fx-icon-size: 11px;
 }
 
 .icon-func {
-    -fx-icon-color: #33d17a;
+    -fx-icon-color: -ide-icon-func;
     -fx-icon-size: 11px;
 }
 
 .icon-cat-procs {
-    -fx-icon-color: #e66100;
+    -fx-icon-color: -ide-icon-cat-procs;
     -fx-icon-size: 11px;
 }
 
 .icon-proc {
-    -fx-icon-color: #ff7800;
+    -fx-icon-color: -ide-icon-proc;
     -fx-icon-size: 11px;
 }
 
 .icon-index {
-    -fx-icon-color: #f6d32d;
+    -fx-icon-color: -ide-icon-index;
     -fx-icon-size: 10px;
 }
 
 .icon-trigger {
-    -fx-icon-color: #ed333b;
+    -fx-icon-color: -ide-icon-trigger;
     -fx-icon-size: 10px;
 }
 
 .icon-pk {
-    -fx-icon-color: #f5c211;
+    -fx-icon-color: -ide-icon-pk;
     -fx-icon-size: 10px;
 }
 
 .icon-fk {
-    -fx-icon-color: #3584e4;
+    -fx-icon-color: -ide-icon-fk;
     -fx-icon-size: 10px;
 }
 
 .icon-col-text {
-    -fx-icon-color: #99c1f1;
+    -fx-icon-color: -ide-icon-col-text;
     -fx-icon-size: 10px;
 }
 
 .icon-col-num {
-    -fx-icon-color: #8ff0a4;
+    -fx-icon-color: -ide-icon-col-num;
     -fx-icon-size: 10px;
 }
 
 .icon-col-date {
-    -fx-icon-color: #dc8add;
+    -fx-icon-color: -ide-icon-col-date;
     -fx-icon-size: 10px;
 }
 
@@ -375,37 +375,37 @@
 }
 
 .icon-folder, .icon-cat-folder {
-    -fx-icon-color: #d97706;
+    -fx-icon-color: -ide-icon-folder;
     -fx-icon-size: 11px;
 }
 
 .icon-materialized-view, .icon-cat-mviews {
-    -fx-icon-color: #26a69a;
+    -fx-icon-color: -ide-icon-materialized-view;
     -fx-icon-size: 11px;
 }
 
 .icon-user-type, .icon-cat-udt {
-    -fx-icon-color: #4ade80;
+    -fx-icon-color: -ide-icon-user-type;
     -fx-icon-size: 11px;
 }
 
 .icon-key {
-    -fx-icon-color: #f59e0b;
+    -fx-icon-color: -ide-icon-key;
     -fx-icon-size: 10px;
 }
 
 .icon-constraint {
-    -fx-icon-color: #e06c75;
+    -fx-icon-color: -ide-icon-constraint;
     -fx-icon-size: 10px;
 }
 
 .icon-sequence, .icon-cat-seq {
-    -fx-icon-color: #9ca3af;
+    -fx-icon-color: -ide-icon-sequence;
     -fx-icon-size: 11px;
 }
 
 .icon-roles {
-    -fx-icon-color: #3584e4;
+    -fx-icon-color: -ide-icon-roles;
     -fx-icon-size: 11px;
 }
 
@@ -463,7 +463,7 @@
 }
 
 .results-tab-pane > .tab-header-area > .tab-header-background {
-    -fx-background-color: -color-bg-subtle;
+    -fx-background-color: -ide-panel-header-bg;
     -fx-background-radius: 7px 7px 0 0;
 }
 
@@ -484,7 +484,7 @@
 }
 
 .results-tab-pane > .tab-header-area > .headers-region > .tab:selected {
-    -fx-border-color: transparent transparent -color-accent-emphasis transparent;
+    -fx-border-color: transparent transparent -ide-panel-tab-active-border transparent;
 }
 
 .results-tab-pane > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
@@ -510,6 +510,42 @@
 
 .results-tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-label {
     -fx-font-size: 11.5px;
+}
+
+/* Results tab: icon + "Results" + number of result sets in a circle (ResultsController.setupResultsTabHeader) */
+.results-tab-pane > .tab-header-area > .headers-region > .tab.results-main-tab > .tab-container > .tab-label {
+    -fx-content-display: graphic-only;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab .results-tab-title {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab:hover .results-tab-title,
+.results-tab-pane > .tab-header-area > .headers-region > .tab:selected .results-tab-title {
+    -fx-text-fill: -color-fg-default;
+}
+
+/* a circle for 1-9, a pill for 10+; stays round in the flat style (a badge, not a panel corner) */
+.results-tab-pane > .tab-header-area > .headers-region > .tab .results-count-badge {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-min-width: 16px;
+    -fx-min-height: 16px;
+    -fx-pref-height: 16px;
+    -fx-max-height: 16px;
+    -fx-padding: 0 4 0 4;
+    -fx-background-radius: 8px;
+    -fx-background-color: -color-neutral-muted;
+    -fx-text-fill: -color-fg-default;
+}
+
+.results-tab-pane > .tab-header-area > .headers-region > .tab:selected .results-count-badge {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-fg-on-emphasis;
 }
 
 .results-mini-toolbar {
@@ -592,7 +628,7 @@
 .results-table, .messages-table {
     -fx-background-radius: 0 0 7px 7px;
     -fx-table-cell-border-color: -color-border-subtle;
-    -fx-background-color: -color-bg-default;
+    -fx-background-color: -ide-grid-bg;
 }
 
 .results-table .virtual-flow, .messages-table .virtual-flow {
@@ -604,7 +640,7 @@
     -fx-max-height: 26px;
     -fx-min-height: 26px;
     -fx-pref-height: 26px;
-    -fx-background-color: -color-bg-subtle;
+    -fx-background-color: -ide-grid-header-bg;
     -fx-border-color: transparent transparent -color-border-subtle transparent;
     -fx-border-width: 0 0 1 0;
 }
@@ -649,7 +685,34 @@
     -fx-background-color: -color-accent-subtle;
 }
 
-/* small filter button, always at the column's right edge */
+/* Header tray (user 2026-11-06): data type + filter button over the right edge of the header.
+   Hidden until the header is hovered; then a gradient fades the end of the column name under it.
+   An active filter keeps the button and the gradient. */
+.results-table .column-header .col-header-tray {
+    -fx-padding: 0 0 0 18;
+    -fx-background-color: transparent;
+}
+
+.results-table .column-header:hover .col-header-tray,
+.results-table .column-header .col-header-tray.has-filter {
+    -fx-background-color: linear-gradient(from 0px 0px to 18px 0px, transparent, -ide-grid-header-bg);
+}
+
+.results-table .column-header.column-header-filtered:hover .col-header-tray,
+.results-table .column-header.column-header-filtered .col-header-tray.has-filter {
+    -fx-background-color: linear-gradient(from 0px 0px to 18px 0px, transparent, -ide-grid-header-bg),
+                          linear-gradient(from 0px 0px to 18px 0px, transparent, -color-accent-subtle);
+}
+
+.results-table .column-header .col-header-type {
+    -fx-opacity: 0;
+}
+
+.results-table .column-header:hover .col-header-type {
+    -fx-opacity: 1;
+}
+
+/* small filter button at the column's right edge */
 .col-header-filter-btn {
     -fx-background-color: transparent;
     -fx-padding: 1 2 1 2;
@@ -658,7 +721,11 @@
     -fx-pref-width: 16;
     -fx-pref-height: 16;
     -fx-cursor: hand;
-    -fx-opacity: 0.5;
+    -fx-opacity: 0;
+}
+
+.results-table .column-header:hover .col-header-filter-btn {
+    -fx-opacity: 0.7;
 }
 
 .col-header-filter-btn .ikonli-font-icon {
@@ -666,13 +733,13 @@
     -fx-icon-color: -color-fg-muted;
 }
 
-.col-header-filter-btn:hover {
+.results-table .column-header .col-header-filter-btn:hover {
     -fx-opacity: 1.0;
     -fx-background-color: -color-bg-muted;
     -fx-background-radius: 3px;
 }
 
-.col-header-filter-btn.active-filter {
+.results-table .column-header .col-header-filter-btn.active-filter {
     -fx-opacity: 1.0;
 }
 
@@ -693,30 +760,30 @@
     -fx-background-color: transparent;
 }
 
-/* Visible grid lines and cell layout matching screenshot */
+/* Visible grid lines and cell layout matching screenshot.
+   No font here: cells inherit grid.fontFamily / grid.fontSize from the TableView's style
+   (ResultsController); a font set on .table-cell used to win over it, so only the header followed. */
 .results-table .table-cell {
     -fx-border-color: transparent -color-border-subtle -color-border-subtle transparent;
     -fx-border-width: 0 1 1 0;
     -fx-padding: 2 6 2 6;
-    -fx-font-size: 11.5px;
-    -fx-font-family: "Segoe UI", -apple-system, sans-serif;
     -fx-text-fill: -color-fg-default;
 }
 
 .results-table .table-row-cell:odd {
-    -fx-background-color: -color-bg-subtle;
+    -fx-background-color: -ide-grid-row-alt-bg;
 }
 
 .results-table .table-row-cell:even {
-    -fx-background-color: -color-bg-default;
+    -fx-background-color: -ide-grid-bg;
 }
 
 .results-table .table-row-cell:filled:selected {
-    -fx-background-color: rgba(37, 99, 235, 0.12); /* light blue/accent selection background */
+    -fx-background-color: -ide-grid-selection-bg; /* light blue/accent selection background */
 }
 
 .results-table .table-cell:filled:selected {
-    -fx-border-color: -color-accent-emphasis;
+    -fx-border-color: -ide-grid-focus-border;
     -fx-border-width: 1.5;
 }
 
@@ -728,18 +795,53 @@
 
 /* Boolean cell styling matching screenshot (orange for false, green for true) */
 .boolean-cell-false {
-    -fx-text-fill: #d97706;
+    -fx-text-fill: -ide-grid-false-fg;
     -fx-font-weight: 500;
 }
 
 .boolean-cell-true {
-    -fx-text-fill: #16a34a;
+    -fx-text-fill: -ide-grid-true-fg;
     -fx-font-weight: 500;
 }
 
 .number-cell {
     -fx-alignment: CENTER_RIGHT;
-    -fx-text-fill: #2563eb;
+    -fx-text-fill: -ide-grid-number-fg;
+}
+
+/* D4: value kinds as pseudo-classes (no style-class churn while scrolling) */
+.results-table .table-cell:null-value {
+    -fx-font-style: italic;
+    -fx-text-fill: -ide-grid-null-fg;
+}
+
+.results-table .table-cell:number {
+    -fx-alignment: CENTER_RIGHT;
+    -fx-text-fill: -ide-grid-number-fg;
+}
+
+.results-table .table-cell:bool-true {
+    -fx-text-fill: -ide-grid-true-fg;
+}
+
+.results-table .table-cell:bool-false {
+    -fx-text-fill: -ide-grid-false-fg;
+}
+
+/* D4: row number drawn by the row (ResultGridRow) over the empty "#" column */
+.results-table .table-row-cell > .row-number-cell {
+    -fx-padding: 0 6 0 2;
+    -fx-font-size: 0.9em; /* follows grid.fontSize */
+}
+
+/* D4: body of an empty result (headers stay, own horizontal bar) */
+.grid-empty-placeholder {
+    -fx-padding: 10 0 0 0;
+}
+
+.grid-no-rows {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-style: italic;
 }
 
 /* Row number '#' column styling */
@@ -777,6 +879,43 @@
     -fx-min-height: 28px;
     -fx-alignment: CENTER_LEFT;
     -fx-cursor: hand;
+}
+
+/* D4: stacked grids (StackedGridsPane) — splitter between grids, minimize button, docked headers */
+.stacked-grids {
+    -fx-background-color: -color-bg-default;
+}
+
+.grid-splitter {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle transparent -color-border-subtle transparent;
+    -fx-border-width: 1 0 1 0;
+}
+
+.grid-splitter:hover,
+.grid-splitter.dragging {
+    -fx-background-color: -color-accent-muted;
+}
+
+.grid-subpane-min-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 1 4 1 4;
+    -fx-cursor: hand;
+}
+
+.grid-subpane-min-btn .ikonli-font-icon {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.grid-subpane-min-btn:hover {
+    -fx-background-color: -color-bg-muted;
+    -fx-background-radius: 3px;
+}
+
+.grid-subpane.minimized .grid-subpane-header {
+    -fx-border-color: -color-border-subtle transparent -color-border-subtle transparent;
+    -fx-border-width: 1 0 0 0;
 }
 
 .grid-subpane-header:hover {
@@ -830,11 +969,11 @@
 }
 
 .results-table .table-row-cell .row-number-cell {
-    -fx-background-color: -color-bg-subtle;
+    -fx-background-color: -ide-grid-header-bg;
     -fx-border-color: transparent -color-border-default -color-border-subtle transparent;
     -fx-border-width: 0 1 1 0;
     -fx-alignment: CENTER_RIGHT;
-    -fx-text-fill: -color-fg-muted;
+    -fx-text-fill: -ide-grid-rownum-fg;
 }
 
 .results-table .table-row-cell:filled:selected .row-number-cell {
@@ -898,22 +1037,22 @@
 
 /* Terminal Styling */
 .terminal-container {
-    -fx-background-color: #1e1f22;
+    -fx-background-color: -ide-terminal-bg;
     -fx-background-radius: 0 0 7px 7px;
 }
 
 .terminal-output-area {
     -fx-font-family: "JetBrains Mono", Consolas, monospace;
     -fx-font-size: 12px;
-    -fx-control-inner-background: #1e1f22;
-    -fx-text-fill: #e6edf3;
+    -fx-control-inner-background: -ide-terminal-bg;
+    -fx-text-fill: -ide-terminal-fg;
     -fx-border-width: 0;
     -fx-background-insets: 0;
 }
 
 .terminal-input-bar {
-    -fx-background-color: #2b2d30;
-    -fx-border-color: #3e4249 transparent transparent transparent;
+    -fx-background-color: -ide-terminal-input-bg;
+    -fx-border-color: -ide-terminal-border transparent transparent transparent;
     -fx-border-width: 1 0 0 0;
     -fx-padding: 4 8 4 8;
 }
@@ -929,7 +1068,7 @@
     -fx-font-family: "JetBrains Mono", Consolas, monospace;
     -fx-font-size: 12px;
     -fx-background-color: transparent;
-    -fx-text-fill: #e6edf3;
+    -fx-text-fill: -ide-terminal-fg;
     -fx-border-width: 0;
     -fx-padding: 0;
 }
@@ -949,7 +1088,7 @@
    ===================================================================== */
 
 .context-menu {
-    -fx-background-color: -color-bg-default;
+    -fx-background-color: -ide-menu-bg;
     -fx-background-radius: 6px;
     -fx-border-color: -color-border-subtle;
     -fx-border-radius: 6px;
@@ -966,7 +1105,7 @@
 
 .menu-item:hover,
 .menu-item:focused {
-    -fx-background-color: -color-bg-muted;
+    -fx-background-color: -ide-menu-selection-bg;
 }
 
 .menu-item > .label {
@@ -977,6 +1116,18 @@
 .menu-item:disabled > .label {
     -fx-text-fill: -color-fg-muted;
     -fx-opacity: 0.6;
+}
+
+/* T4: group titles of the Themes menu ("Tối · GitHub Theme"): readable, not a greyed-out command */
+.menu-item.theme-group-header:disabled {
+    -fx-opacity: 1;
+}
+
+.menu-item.theme-group-header:disabled > .label {
+    -fx-opacity: 1;
+    -fx-font-weight: bold;
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -color-fg-muted;
 }
 
 .menu-item .ikonli-font-icon {
@@ -1057,9 +1208,9 @@
 }
 
 .plan-cost-badge-high {
-    -fx-background-color: #fee2e2;
-    -fx-text-fill: #dc2626;
-    -fx-border-color: #fca5a5;
+    -fx-background-color: -color-danger-subtle;
+    -fx-text-fill: -color-danger-fg;
+    -fx-border-color: -color-danger-muted;
     -fx-border-radius: 4px;
     -fx-background-radius: 4px;
     -fx-padding: 1 5 1 5;
@@ -1068,9 +1219,9 @@
 }
 
 .plan-cost-badge-medium {
-    -fx-background-color: #fef3c7;
-    -fx-text-fill: #d97706;
-    -fx-border-color: #fcd34d;
+    -fx-background-color: -color-warning-subtle;
+    -fx-text-fill: -color-warning-fg;
+    -fx-border-color: -color-warning-muted;
     -fx-border-radius: 4px;
     -fx-background-radius: 4px;
     -fx-padding: 1 5 1 5;
@@ -1079,9 +1230,9 @@
 }
 
 .plan-cost-badge-low {
-    -fx-background-color: #dcfce7;
-    -fx-text-fill: #16a34a;
-    -fx-border-color: #86efac;
+    -fx-background-color: -color-success-subtle;
+    -fx-text-fill: -color-success-fg;
+    -fx-border-color: -color-success-muted;
     -fx-border-radius: 4px;
     -fx-background-radius: 4px;
     -fx-padding: 1 5 1 5;
@@ -1232,6 +1383,26 @@
     -fx-icon-color: -color-fg-muted;
 }
 
+/* row actions float over the right end of the row (hover / selection), so names keep the full width otherwise */
+/* LLTool explorer.css .tree-node-actions: fades in from transparent over 18px (left → right), then solid,
+   so the icons read clearly over a long name. Bottom layer = panel background, top layer = hover colour. */
+.explorer-action-bar {
+    -fx-padding: 0 4 0 18;
+    -fx-background-color:
+        linear-gradient(from 0px 0px to 18px 0px, transparent, -color-bg-default),
+        linear-gradient(from 0px 0px to 18px 0px, transparent, -color-bg-muted);
+}
+
+.tree-cell:selected .explorer-action-bar {
+    -fx-background-color:
+        linear-gradient(from 0px 0px to 18px 0px, transparent, -color-bg-default),
+        linear-gradient(from 0px 0px to 18px 0px, transparent, -color-accent-subtle);
+}
+
+.explorer-filter-indicator {
+    -fx-icon-color: -color-accent-fg;
+}
+
 .explorer-filter-button.active .ikonli-font-icon {
     -fx-icon-color: -color-accent-fg;
 }
@@ -1255,6 +1426,11 @@
     -fx-min-width: 18px;
     -fx-pref-width: 18px;
     -fx-max-width: 18px;
+    /* TreeCellSkin places the disclosure node at the TOP of the row using its own height, so the chevron sat
+       ~7px above the icon / text; a full-row-high node centres the chevron on the row */
+    -fx-min-height: 22px;
+    -fx-pref-height: 22px;
+    -fx-max-height: 22px;
     -fx-alignment: center;
 }
 
@@ -1501,7 +1677,53 @@
     -fx-border-width: 0;
 }
 
-/* T11: stacked grids keep a 24px row without TableView.setFixedCellSize (see ResultsController) */
+/* T11: stacked grids set the row height in CSS (no TableView.setFixedCellSize, see ResultsController):
+   2em = 2 x grid.fontSize, the same as the fixed height of the main grid (24px at 12px) */
 .results-table.stacked-grid .table-row-cell {
-    -fx-cell-size: 24px;
+    -fx-cell-size: 2em;
 }
+
+
+/* ===== Editor bar (under the SQL editor, inside MonacoEditorHost) ===== */
+.editor-bar {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-muted transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 0 8 0 4;
+    -fx-spacing: 8;
+}
+.editor-bar-text {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 12px;
+}
+.editor-bar-icon {
+    -fx-icon-size: 12px;
+    -fx-icon-color: -color-fg-muted;
+}
+.editor-bar-entry:hover {
+    -fx-text-fill: -color-fg-default;
+}
+.editor-bar-badge {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-padding: 0 6 0 6;
+    -fx-graphic-text-gap: 4;
+}
+.editor-bar-zoom {
+    -fx-font-size: 12px;
+    -fx-padding: 0;
+    -fx-min-height: 20px;
+    -fx-pref-height: 20px;
+    -fx-max-height: 20px;
+}
+.editor-bar-zoom > .text-field {
+    -fx-font-size: 12px;
+    -fx-padding: 0 4 0 6;
+    -fx-alignment: center-right;
+}
+
+.editor-bar-ok { -fx-text-fill: -color-success-fg; }
+.editor-bar-error { -fx-text-fill: -color-danger-fg; }
+.editor-bar-icon-ok { -fx-icon-size: 13px; -fx-icon-color: -color-success-fg; }
+.editor-bar-icon-error { -fx-icon-size: 13px; -fx-icon-color: -color-danger-fg; }

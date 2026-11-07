@@ -1,0 +1,624 @@
+{
+  "schema_version": "1.0",
+  "generated": "2026-11-05",
+  "scope": "Specs hồi tố mới (MAIN-003/004, SET-001, DLG-001…014); 4 màn hình cũ chỉ kiểm từ vựng",
+  "new_mappings": [
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "breadcrumb connection / database / schema (editor.js)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-CTX-001..003",
+      "target_type": "javafx",
+      "target_component": "ComboBox ×3",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Gộp thành thanh ngữ cảnh; env badge chuyển từ title bar về ô kết nối"
+      ],
+      "approval_reference": "toolbar-redesign.md (duyệt 2026-11-04 23:46, cập nhật 2026-11-05 00:05)"
+    },
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "#ide-btn-run",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-CTX-001",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "#ide-btn-stop",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-CTX-002",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "#ide-btn-plan / #ide-btn-format",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-CTX-003/004",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đưa thành icon-only"
+      ],
+      "approval_reference": "toolbar-redesign.md"
+    },
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "#ide-btn-action-overflow",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-CTX-006",
+      "target_type": "javafx",
+      "target_component": "MenuButton",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Chỉ New/Open/Save/Connection Manager/BRAVO; nhiều mục nguồn bị hoãn"
+      ],
+      "approval_reference": "toolbar-redesign.md"
+    },
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "tab strip (tabs.js)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-ED-006..009",
+      "target_type": "javafx",
+      "target_component": "EditorTabStrip (custom)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Chấm màu kết nối, ghim, nhân bản, chia đôi, danh sách tab, chế độ nhiều hàng"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "connection-lost banner (tabs.js)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-ED-010..013",
+      "target_type": "javafx",
+      "target_component": "HBox banner",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "Monaco editor + split",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-ED-014, CMP-ED-016",
+      "target_type": "javafx",
+      "target_component": "WebView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Chế độ diff của nguồn chưa có"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "empty-tabs placeholder",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-ED-001",
+      "target_type": "javafx",
+      "target_component": "VBox",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "editor status bar (zoom, issues, PID, Ln/Col, TABS, LF, UTF-8)",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-MAIN-005",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Gộp vào status bar toàn cục"
+      ],
+      "approval_reference": "SCR-MAIN-005 screen-spec §3 (Gate B 2026-11-05)"
+    },
+    {
+      "screen_id": "SCR-MAIN-003",
+      "source_id": "Debug · Transaction · Parse · Import/Export · Compare · Syntax reference · History · File history · Object search (action bar)",
+      "source_type": "python_web_ui",
+      "target_id": "deferred",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Ngoài phạm vi lần này"
+      ],
+      "approval_reference": "screen-inventory.md §2 (phạm vi đã duyệt 2026-11-04)"
+    },
+    {
+      "screen_id": "SCR-MAIN-004",
+      "source_id": "tab Results (#ide-result-panel)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-001",
+      "target_type": "javafx",
+      "target_component": "TableView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Nguồn dùng AG Grid; đích dùng TableView (hiệu năng 100k dòng thuộc D4)"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-004",
+      "source_id": "tab Messages",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-002",
+      "target_type": "javafx",
+      "target_component": "TextArea",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Nguồn chưa quan sát; đích hiển thị PRINT/RAISERROR dạng văn bản"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-004",
+      "source_id": "tab Errors",
+      "source_type": "python_web_ui",
+      "target_id": "unmapped",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "not_started",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đích không có tab Errors riêng; lỗi có thể nằm ở Timeline (Level) — chưa xác nhận"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-004",
+      "source_id": "tab Logs",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-003 (Timeline)",
+      "target_type": "javafx",
+      "target_component": "TableView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đổi tên thành Timeline"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-004",
+      "source_id": "tab Plan (execution-plan-tab.js)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-004",
+      "target_type": "javafx",
+      "target_component": "TreeView + TableView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đích có cây + inspector + raw; nguồn chưa quan sát"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-004",
+      "source_id": "(không có trong nguồn)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-005 Terminal",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Tab chỉ có ở đích, nội dung mô phỏng"
+      ],
+      "approval_reference": "cần xác nhận lại (chưa tìm thấy ghi nhận duyệt)"
+    },
+    {
+      "screen_id": "SCR-MAIN-004",
+      "source_id": "multi-result header",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-013",
+      "target_type": "javafx",
+      "target_component": "ScrollPane + VBox",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Phase 4 Gate B 2026-11-05: xếp dọc, thu gọn được"
+      ],
+      "approval_reference": "migration-plan.md Phase 4"
+    },
+    {
+      "screen_id": "SCR-MAIN-004",
+      "source_id": "structured-data-viewer.js (side panel)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-014 (Quick View)",
+      "target_type": "javafx",
+      "target_component": "ContextMenu",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Quick View qua menu ngữ cảnh thay cho panel bên"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-004",
+      "source_id": "#ide-result-footer (rows, time, size, conn, sparkline, copy JSON)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-017..022",
+      "target_type": "javafx",
+      "target_component": "HBox + Label",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Thiếu sparkline 5 lần chạy (đích chỉ có biểu tượng tĩnh)"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-MAIN-004",
+      "source_id": "Compare results",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-008",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Hiện nút tắt"
+      ],
+      "approval_reference": "Gate B 2026-11-05 (ghi trong results.fxml)"
+    },
+    {
+      "screen_id": "SCR-SET-001",
+      "source_id": "settings_window.html (9 nhóm)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-010..019 (10 nhóm)",
+      "target_type": "javafx",
+      "target_component": "Button + VBox sections",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Đích có 10 nhóm; inventory ghi 9. Chưa đối chiếu nhóm nào thêm (có thể Messages hoặc Appearance tách ra)"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-SET-001",
+      "source_id": "Visual / JSON views",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-003/004",
+      "target_type": "javafx",
+      "target_component": "Button ×2",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-SET-001",
+      "source_id": "Save · Copy JSON · Reset defaults",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-005/007/008",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Save chuyển xuống footer; \"Đóng\" bỏ, dùng × của cửa sổ"
+      ],
+      "approval_reference": "Phase 5 Gate B 2026-11-05 (SettingsDialog.java chú thích)"
+    },
+    {
+      "screen_id": "SCR-SET-001",
+      "source_id": "Close (trong trang)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-009",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Bỏ nút Đóng; × của DialogChrome + hỏi khi chưa lưu"
+      ],
+      "approval_reference": "Phase 5 Gate B 2026-11-05"
+    },
+    {
+      "screen_id": "SCR-SET-001",
+      "source_id": "search",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-001/002",
+      "target_type": "javafx",
+      "target_component": "TextField",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-SET-001",
+      "source_id": "live font preview",
+      "source_type": "python_web_ui",
+      "target_id": "unmapped",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "not_started",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Inventory ghi nguồn có xem trước phông chữ; chưa thấy trong FXML đích"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-SET-001",
+      "source_id": "cài đặt Editor/Grid/Messages/Appearance/SQL/Session/Addons/History/Logging/Updates",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-020..066",
+      "target_type": "javafx",
+      "target_component": "ComboBox/Spinner/CheckBox/TextField",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Danh sách khóa đích khớp mô tả; chưa đối chiếu giá trị mặc định và phạm vi với settings.js"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-001",
+      "source_id": "connectionModal",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-001",
+      "target_type": "javafx",
+      "target_component": "DialogChrome + FXML",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Đích là Connection Manager (cây + form), nguồn là modal một kết nối",
+        "Phụ đề \"Dữ liệu mẫu — chưa kết nối database thật\" đã cũ sau D1"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-002",
+      "source_id": "reconnectPasswordModal",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-002",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Thời hạn 30 ngày lấy từ mã đích; chưa đối chiếu với nguồn"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-003",
+      "source_id": "groupInputModal",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-003",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-004",
+      "source_id": "groupConfirmModal",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-004",
+      "target_type": "javafx",
+      "target_component": "ConfirmDialog",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Dùng chung ConfirmDialog cho Xóa nhóm / Xóa kết nối / Đóng cài đặt / Xóa style…"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-005",
+      "source_id": "#ide-db-filter-modal",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-005",
+      "target_type": "javafx",
+      "target_component": "DialogChrome + ListView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-006",
+      "source_id": "showFilterModal",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-006",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-007",
+      "source_id": "fatalActionsGuardBackdrop",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-007 (Actions Guard)",
+      "target_type": "javafx",
+      "target_component": "ActionsGuardDialog",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "UI đích đã có; inventory ghi \"UI chưa rõ\""
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-007",
+      "source_id": "(không có trong inventory) cảnh báo PRODUCTION",
+      "source_type": "python_web_ui",
+      "target_id": "ProductionSafetyDialog",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Hộp thoại đích bổ sung, chưa có ID riêng"
+      ],
+      "approval_reference": "cần xác nhận lại"
+    },
+    {
+      "screen_id": "SCR-DLG-008",
+      "source_id": "ide-modal-format-confirm",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-008",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Có hàm resetSkip() để bật lại hỏi (chưa thấy UI gọi)"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-009",
+      "source_id": "ide-modal-code-style",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-009",
+      "target_type": "javafx",
+      "target_component": "DialogChrome + EmbeddedMonaco",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đích dùng Monaco xem trước, nhập/xuất JSON; chưa so với nguồn"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-010",
+      "source_id": "ide-modal-debug-extension-warning",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-010",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Run Debug hoãn"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-011",
+      "source_id": "settingsPopupBackdrop",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-011",
+      "target_type": "javafx",
+      "target_component": "MessageDialog/ConfirmDialog/…",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đích gồm 5 lớp: MessageDialog, AppDialog (bao MessageDialog), ConfirmDialog, CloseTabDialog, TextPromptDialog"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-012",
+      "source_id": "about_window.html",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-012",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-013",
+      "source_id": "update_window.html",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-013",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Hoàn toàn mô phỏng, chưa kết nối máy chủ/GitHub Releases"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "screen_id": "SCR-DLG-014",
+      "source_id": "appLoadingModal / AppLoader",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-014",
+      "target_type": "javafx",
+      "target_component": "LoadingOverlay (StackPane/VBox)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đích là overlay trong vùng chủ, không phải modal toàn cửa sổ"
+      ],
+      "approval_reference": "none"
+    }
+  ],
+  "existing_summary": {
+    "SCR-SHELL-001": {
+      "n": 45,
+      "status": {
+        "implemented_mock": 29,
+        "deferred": 11,
+        "not_applicable_approved": 5
+      },
+      "vocab": "đúng chuẩn skill"
+    },
+    "SCR-MAIN-001": {
+      "n": 4,
+      "status": {
+        "spec_draft": 4
+      },
+      "vocab": "`spec_draft` và schema rút gọn (thiếu source_type/target_id/approval_reference)"
+    },
+    "SCR-MAIN-002": {
+      "n": 6,
+      "status": {
+        "spec_draft": 5,
+        "implemented_mock": 1
+      },
+      "vocab": "`spec_draft`; parity `missing`/`changed` ngoài danh sách của skill"
+    },
+    "SCR-MAIN-005": {
+      "n": 8,
+      "status": {
+        "spec_draft": 7,
+        "implemented_mock": 1
+      },
+      "vocab": "`spec_draft`; parity `full`/`changed`/`split`/`moved_with_approval` ngoài danh sách của skill"
+    }
+  }
+}

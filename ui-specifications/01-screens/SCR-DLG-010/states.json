@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-010",
+  "states": [
+    {
+      "id": "STA-DLG10-001",
+      "component_id": "BTN-DLG10-005",
+      "state": "disabled",
+      "visual_description": "Nút mờ \"(chưa hỗ trợ)\"",
+      "entry_condition": "luôn (hoãn)",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}

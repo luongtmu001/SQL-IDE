@@ -1,0 +1,366 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-013",
+  "components": [
+    {
+      "id": "CMP-DLG13-001",
+      "name": "Scenario selector",
+      "component_type": "combobox",
+      "region_id": "REG-DLG13-002",
+      "parent_component_id": null,
+      "visible_label": "Kịch bản: Có bản mới / Đã là bản mới nhất / Lỗi mạng",
+      "accessible_name": "Kịch bản: Có bản mới / Đã là bản mới nhất / Lỗi mạng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/UpdateDialog.java",
+        "selector_or_symbol": "SCENARIOS",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Công cụ mô phỏng — không phải UI cuối"
+    },
+    {
+      "id": "CMP-DLG13-002",
+      "name": "Versions",
+      "component_type": "table",
+      "region_id": "REG-DLG13-002",
+      "parent_component_id": null,
+      "visible_label": "Phiên bản hiện tại / mới nhất",
+      "accessible_name": "Phiên bản hiện tại / mới nhất",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/UpdateDialog.java",
+        "selector_or_symbol": "versions",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "GridPane",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "MOCK_LATEST = 1.1.0"
+    },
+    {
+      "id": "CMP-DLG13-003",
+      "name": "Release notes",
+      "component_type": "list",
+      "region_id": "REG-DLG13-002",
+      "parent_component_id": null,
+      "visible_label": "Ghi chú phát hành",
+      "accessible_name": "Ghi chú phát hành",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/UpdateDialog.java",
+        "selector_or_symbol": "notes",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "VBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "3 dòng mẫu"
+    },
+    {
+      "id": "CMP-DLG13-004",
+      "name": "Download via browser",
+      "component_type": "hyperlink",
+      "region_id": "REG-DLG13-002",
+      "parent_component_id": null,
+      "visible_label": "Tải qua trình duyệt",
+      "accessible_name": "Tải qua trình duyệt",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/UpdateDialog.java",
+        "selector_or_symbol": "browser",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Hyperlink",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Mô phỏng (thông báo)"
+    },
+    {
+      "id": "BTN-DLG13-005",
+      "name": "Recheck",
+      "component_type": "button",
+      "region_id": "REG-DLG13-002",
+      "parent_component_id": null,
+      "visible_label": "Kiểm tra lại",
+      "accessible_name": "Kiểm tra lại",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/UpdateDialog.java",
+        "selector_or_symbol": "secondary(...)",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG13-006",
+      "name": "Download",
+      "component_type": "button",
+      "region_id": "REG-DLG13-002",
+      "parent_component_id": null,
+      "visible_label": "Tải về",
+      "accessible_name": "Tải về",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/UpdateDialog.java",
+        "selector_or_symbol": "actions",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Tên chính xác chưa kiểm"
+    },
+    {
+      "id": "BTN-DLG13-007",
+      "name": "Cancel download",
+      "component_type": "button",
+      "region_id": "REG-DLG13-002",
+      "parent_component_id": null,
+      "visible_label": "Hủy tải",
+      "accessible_name": "Hủy tải",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "destructive",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/UpdateDialog.java",
+        "selector_or_symbol": "actions",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Hỏi MessageDialog.confirm \"Hủy tải\""
+    },
+    {
+      "id": "CMP-DLG13-008",
+      "name": "Progress",
+      "component_type": "progress",
+      "region_id": "REG-DLG13-002",
+      "parent_component_id": null,
+      "visible_label": "N.N / M MB",
+      "accessible_name": "N.N / M MB",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/UpdateDialog.java",
+        "selector_or_symbol": "amount",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ProgressBar",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG13-009",
+      "name": "Open folder",
+      "component_type": "button",
+      "region_id": "REG-DLG13-002",
+      "parent_component_id": null,
+      "visible_label": "Mở thư mục",
+      "accessible_name": "Mở thư mục",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/UpdateDialog.java",
+        "selector_or_symbol": "secondary",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Mô phỏng"
+    },
+    {
+      "id": "BTN-DLG13-010",
+      "name": "Restart",
+      "component_type": "button",
+      "region_id": "REG-DLG13-002",
+      "parent_component_id": null,
+      "visible_label": "Khởi động lại",
+      "accessible_name": "Khởi động lại",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/UpdateDialog.java",
+        "selector_or_symbol": "actions",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Mô phỏng"
+    }
+  ]
+}

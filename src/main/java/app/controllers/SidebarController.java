@@ -18,6 +18,7 @@ import app.ui.components.LazyDatabaseTreeItem;
 import app.ui.dialogs.ConnectionManagerDialog;
 import app.ui.dialogs.DatabaseFilterDialog;
 import app.ui.dialogs.ObjectFilterDialog;
+import app.ui.dialogs.SchemaFilterDialog;
 import com.lltool.core.api.request.CreateConnectionRequest;
 import com.lltool.core.application.connection.dto.ConnectionProfileDto;
 import com.lltool.infrastructure.database.api.metadata.TableMetadata;
@@ -67,7 +68,6 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
         installConnectGuard();
         loadData();
         setupFilter();
-        DesktopFilterManager.getInstance().setOnFilterChanged(v -> Platform.runLater(this::loadData));
         ExplorerConnectionState.getInstance().revisionProperty().addListener((o, a, b) -> explorerTree.refresh());
         ConnectionColorService.getInstance().revisionProperty().addListener((o, a, b) -> {
             explorerTree.refresh();
@@ -77,7 +77,15 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
 
     private void setupTreeView() {
         explorerTree.setShowRoot(false);
+        // S3: appearance.iconSize (now and after every Settings save)
+        app.ui.components.DatabaseTreeCell.setIconSize(iconSizeOf(app.services.SettingsService.getInstance().getCurrentSettings()));
+        app.services.SettingsService.getInstance().addSettingsListener(s -> {
+            int before = lastIconSize;
+            app.ui.components.DatabaseTreeCell.setIconSize(iconSizeOf(s));
+            if (lastIconSize != before) explorerTree.refresh();
+        });
         explorerTree.setCellFactory(tv -> new DatabaseTreeCell(this::handleNodeAction, this));
+        LazyDatabaseTreeItem.setTreeRefresher(explorerTree::refresh);
 
         // Keyboard: Enter = connect/expand, F2 = rename group, Delete = delete, F5 = refresh node.
         explorerTree.setOnKeyPressed(e -> {
@@ -165,6 +173,8 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
     }
 
     public void loadData() {
+        app.framework.connection.ProfileLookup.invalidate();
+        app.services.DefaultSchemaService.importFromLltoolOnce();
         ensureDefaultConnections();
         rootData = new DatabaseNode("Database Explorer", DatabaseNodeType.ROOT, null, "mdi2d-database");
         profiles = new ArrayList<>();
@@ -181,6 +191,7 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
             rootData = DatabaseMockService.getInstance().createMockRoot();
         }
 
+        normalRoot = null; // data reloaded: the normal tree is rebuilt
         rebuildTree(filterTextField != null ? filterTextField.getText() : null);
         if (miniSidebarView != null && miniSidebarView.isVisible()) {
             populateMiniConnectionIcons();
@@ -236,18 +247,48 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
                     clearFilterButton.setVisible(hasText);
                     clearFilterButton.setManaged(hasText);
                 }
-                rebuildTree(newVal);
+                // empty text restores the normal tree at once; typing waits a moment so every key does not rebuild
+                if (!hasText) {
+                    searchDebounce.stop();
+                    rebuildTree(newVal);
+                } else {
+                    searchDebounce.setOnFinished(e -> rebuildTree(filterTextField.getText()));
+                    searchDebounce.playFromStart();
+                }
             });
         }
     }
 
+    /** The normal (lazy) tree. Kept while searching so clearing the search brings back the very same nodes. */
+    private TreeItem<DatabaseNode> normalRoot;
+    private final javafx.animation.PauseTransition searchDebounce = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
+
+    private static final Comparator<DatabaseNode> NODE_ORDER =
+            Comparator.comparing((DatabaseNode n) -> n.getType() == DatabaseNodeType.GROUP ? 0 : 1)
+                    .thenComparing(n -> n.getType() == DatabaseNodeType.GROUP ? n.getName().toLowerCase(Locale.ROOT) : "");
+
     private void rebuildTree(String filterText) {
         if (rootData == null) return;
         String query = filterText != null ? filterText.trim().toLowerCase(Locale.ROOT) : "";
+        app.ui.components.DatabaseTreeCell.setSearchQuery(query);
 
-        TreeItem<DatabaseNode> rootItem = new TreeItem<>(rootData);
-        int matchCount = populateTreeItem(rootData, rootItem, query);
-        explorerTree.setRoot(rootItem);
+        int matchCount = 0;
+        if (query.isEmpty()) {
+            if (normalRoot == null || normalRoot.getValue() != rootData) {
+                normalRoot = new TreeItem<>(rootData);
+                populateTreeItem(rootData, normalRoot, "");
+            }
+            if (explorerTree.getRoot() != normalRoot) explorerTree.setRoot(normalRoot);
+        } else {
+            // Search: a separate tree built from what is already loaded (groups, connections, databases, schemas,
+            // objects), keeping only the matches and their ancestors, all opened. The normal tree is untouched.
+            TreeItem<DatabaseNode> searchRoot = new TreeItem<>(rootData);
+            int[] selfMatches = {0};
+            buildSearchItems(rootData, searchRoot, query, selfMatches);
+            searchRoot.setExpanded(true);
+            explorerTree.setRoot(searchRoot);
+            matchCount = selfMatches[0];
+        }
 
         boolean noConnections = rootData.getChildren().isEmpty();
         if (noConnectionsBox != null) {
@@ -279,6 +320,27 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
             explorerTree.setVisible(true);
             explorerTree.setManaged(true);
         }
+    }
+
+    /** Returns how many nodes of the subtree were added (matches + their ancestors count only as structure). */
+    private int buildSearchItems(DatabaseNode data, TreeItem<DatabaseNode> parent, String q, int[] selfMatches) {
+        int added = 0;
+        List<DatabaseNode> kids = new ArrayList<>(data.getChildren());
+        kids.sort(NODE_ORDER);
+        for (DatabaseNode child : kids) {
+            DatabaseNodeType t = child.getType();
+            boolean folder = t.name().startsWith("CATEGORY_") || t == DatabaseNodeType.LOADING; // "Tables", … are not results
+            boolean self = !folder && child.getName() != null && child.getName().toLowerCase(Locale.ROOT).contains(q);
+            TreeItem<DatabaseNode> item = new TreeItem<>(child);
+            int below = buildSearchItems(child, item, q, selfMatches);
+            if (self || below > 0) {
+                if (below > 0) item.setExpanded(true);
+                parent.getChildren().add(item);
+                if (self) selfMatches[0]++;
+                added += 1;
+            }
+        }
+        return added;
     }
 
     /**
@@ -508,7 +570,7 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
         return switch (type) {
             case CATEGORY_TABLES, CATEGORY_VIEWS, CATEGORY_MATERIALIZED_VIEWS,
                  CATEGORY_FUNCTIONS, CATEGORY_PROCEDURES, CATEGORY_TRIGGERS,
-                 CATEGORY_USER_TYPES -> true;
+                 CATEGORY_USER_TYPES, CATEGORY_SYNONYMS -> true;
             default -> false;
         };
     }
@@ -522,6 +584,7 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
             case CATEGORY_PROCEDURES -> "PROCEDURES";
             case CATEGORY_TRIGGERS -> "TRIGGERS";
             case CATEGORY_USER_TYPES -> "USER_TYPES";
+            case CATEGORY_SYNONYMS -> "SYNONYMS";
             default -> defaultName != null ? defaultName.toUpperCase() : "OBJECTS";
         };
     }
@@ -553,6 +616,11 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
             if (sel != null && sel.getValue() == node) sel.setExpanded(true);
             return;
         }
+        if (node.getType() == DatabaseNodeType.DB_USER || node.getType() == DatabaseNodeType.ROLE) {
+            MainController mc = AppContext.getInstance().getMainController();
+            if (mc != null) mc.openPrincipalPermissions(node.getConnectionProfile(), node.getCatalog(), node.getName());
+            return;
+        }
         if (node.getType() == DatabaseNodeType.TABLE || node.getType() == DatabaseNodeType.VIEW) {
             MainController mc = AppContext.getInstance().getMainController();
             if (mc != null) {
@@ -570,7 +638,15 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
         }
     }
 
-    public TreeView<DatabaseNode> getExplorerTree() {
+    private int lastIconSize = -1;
+
+    private int iconSizeOf(app.models.IdeSettings s) {
+        int px = s != null && s.getAppearance() != null ? s.getAppearance().getIconSize() : 13;
+        lastIconSize = px;
+        return px;
+    }
+
+        public TreeView<DatabaseNode> getExplorerTree() {
         return explorerTree;
     }
 
@@ -659,6 +735,7 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
                 "Xóa kết nối", true);
         if (ok) {
             if (connection.getConnectionId() != null) {
+                app.framework.session.TabSessionManager.getInstance().closeAllFor(connection.getConnectionId());
                 DesktopBootstrap.getInstance().getConnectionApi().deleteConnection(connection.getConnectionId());
                 ExplorerConnectionState.getInstance().set(connection.getConnectionId(), ExplorerConnectionState.Status.DISCONNECTED);
                 app.services.PasswordPolicyService.getInstance().clear(connection.getConnectionId());
@@ -676,13 +753,16 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
         node.clearChildren();
         item.getChildren().clear();
         if (item instanceof LazyDatabaseTreeItem) {
-            item.getChildren().add(new TreeItem<>(new DatabaseNode("Loading...", DatabaseNodeType.LOADING)));
+            item.getChildren().add(new TreeItem<>(new DatabaseNode("Đang tải…", DatabaseNodeType.LOADING)));
         }
         if (node.getConnectionId() != null) {
+            // connection hierarchy (2026-11-06): the Explorer connection is the top level, so disconnecting it closes
+            // the session of every tab on it too (running statements are cancelled); the tabs show "Chưa kết nối"
+            app.framework.session.TabSessionManager.getInstance().closeAllFor(node.getConnectionId());
             DesktopMetadataService.getInstance().invalidate(node.getConnectionId());
             ExplorerConnectionState.getInstance().set(node.getConnectionId(), ExplorerConnectionState.Status.DISCONNECTED);
         }
-        NotificationService.getInstance().showInfo("Kết nối", "Đã ngắt kết nối " + node.getName() + ".");
+        NotificationService.getInstance().showInfo("Kết nối", "Đã ngắt kết nối " + node.getName() + " (cả các tab đang dùng).");
     }
 
     @Override
@@ -692,14 +772,49 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
         String connId = profile.id();
         Stage stage = ownerStage();
         DesktopMetadataService.getInstance().fetchCatalogs(profile, dbs ->
-                Platform.runLater(() -> DatabaseFilterDialog.show(stage, connId, node.getName(), dbs, this::loadData)));
+                Platform.runLater(() -> DatabaseFilterDialog.show(stage, connId, node.getName(), dbs, () -> refreshNodeFromCache(node))));
+    }
+
+    /**
+     * A filter changed: rebuild only that node's children from the cached metadata and keep the rest of the
+     * tree (and the open nodes below it) as it is — no whole-tree reload, no server round trip.
+     */
+    private void refreshNodeFromCache(DatabaseNode node) {
+        TreeItem<DatabaseNode> ti = findTreeItem(explorerTree.getRoot(), node);
+        if (ti instanceof LazyDatabaseTreeItem lazy) {
+            lazy.refreshFromCache();
+        }
+        explorerTree.refresh(); // filter button state / count badge
+    }
+
+    private static TreeItem<DatabaseNode> findTreeItem(TreeItem<DatabaseNode> from, DatabaseNode node) {
+        if (from == null) return null;
+        if (from.getValue() == node) return from;
+        for (TreeItem<DatabaseNode> c : from.getChildren()) {
+            TreeItem<DatabaseNode> r = findTreeItem(c, node);
+            if (r != null) return r;
+        }
+        return null;
+    }
+
+    private void filterSchemas(DatabaseNode node) {
+        ConnectionProfileDto profile = node.getConnectionProfile();
+        if (profile == null) return;
+        String catalog = node.getCatalog() != null ? node.getCatalog() : node.getName();
+        Stage stage = ownerStage();
+        DesktopMetadataService.getInstance().fetchSchemas(profile, catalog, schemas ->
+                Platform.runLater(() -> SchemaFilterDialog.show(stage, profile.id(), catalog, schemas, () -> refreshNodeFromCache(node))));
     }
 
     @Override
     public void filterObjects(DatabaseNode node) {
+        if (node.getType() == DatabaseNodeType.DATABASE) {
+            filterSchemas(node);
+            return;
+        }
         String connId = node.getConnectionProfile() != null ? node.getConnectionProfile().id() : node.getConnectionId();
         String objType = getObjectFilterType(node.getType(), node.getName());
-        ObjectFilterDialog.show(ownerStage(), connId, node.getCatalog(), node.getSchema(), objType, this::loadData);
+        ObjectFilterDialog.show(ownerStage(), connId, node.getCatalog(), node.getSchema(), objType, () -> refreshNodeFromCache(node));
     }
 
     @Override

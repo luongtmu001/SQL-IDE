@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-013",
+  "screen_name": "Check for updates",
+  "source_window_size": {
+    "width": null,
+    "height": null,
+    "display_scale": "unknown"
+  },
+  "layout_type": "desktop",
+  "regions": [
+    {
+      "id": "REG-DLG13-001",
+      "name": "Dialog window",
+      "purpose": "Cửa sổ Check for updates (DialogChrome)",
+      "parent_id": null,
+      "layout_role": "overlay",
+      "position": "center",
+      "sizing": {
+        "width": "auto",
+        "height": "auto (theo nội dung)",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-DLG13-002",
+      "name": "Content",
+      "purpose": "Nội dung",
+      "parent_id": "REG-DLG13-001",
+      "layout_role": "panel",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "auto",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-DLG13-003",
+      "name": "Footer",
+      "purpose": "Nút hành động",
+      "parent_id": "REG-DLG13-001",
+      "layout_role": "footer",
+      "position": "bottom",
+      "sizing": {
+        "width": "fill",
+        "height": "auto",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    }
+  ]
+}

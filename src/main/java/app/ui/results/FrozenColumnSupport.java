@@ -36,20 +36,39 @@ public final class FrozenColumnSupport {
         cell.toFront();
         // stacked / tabbed grids get their skin late: (re)hook from the first laid-out cells
         if (!Boolean.TRUE.equals(table.getProperties().get(READY_KEY)) && cell.getTableColumn() != null) {
-            TableColumn<?, ?> col = cell.getTableColumn();
-            Platform.runLater(() -> hook(table, col));
+            table.getProperties().putIfAbsent(COLUMN_KEY, cell.getTableColumn());
+            requestHook(table);
         }
     }
 
     private static final String READY_KEY = FrozenColumnSupport.class.getName() + ".ready";
 
+    private static final String COLUMN_KEY = FrozenColumnSupport.class.getName() + ".column";
+    private static final String LISTENING_KEY = FrozenColumnSupport.class.getName() + ".listening";
+    private static final String PENDING_KEY = FrozenColumnSupport.class.getName() + ".pending";
+
+    /**
+     * Freezes {@code column} of {@code table}. Safe to call again for each new result on the same table:
+     * listeners are added once, and hooks requested in a burst (columns added, width changes) run once.
+     */
     public static void install(TableView<?> table, TableColumn<?, ?> column) {
         table.getProperties().remove(READY_KEY);
-        Runnable hook = () -> hook(table, column);
-        table.skinProperty().addListener((o, a, b) -> Platform.runLater(hook));
-        table.getColumns().addListener((ListChangeListener<TableColumn<?, ?>>) c -> Platform.runLater(hook));
-        table.widthProperty().addListener((o, a, b) -> Platform.runLater(hook));
-        Platform.runLater(hook);
+        table.getProperties().put(COLUMN_KEY, column);
+        if (table.getProperties().putIfAbsent(LISTENING_KEY, Boolean.TRUE) == null) {
+            table.skinProperty().addListener((o, a, b) -> requestHook(table));
+            table.getColumns().addListener((ListChangeListener<TableColumn<?, ?>>) c -> requestHook(table));
+            table.widthProperty().addListener((o, a, b) -> requestHook(table));
+        }
+        requestHook(table);
+    }
+
+    private static void requestHook(TableView<?> table) {
+        if (table.getProperties().putIfAbsent(PENDING_KEY, Boolean.TRUE) != null) return; // one already queued
+        Platform.runLater(() -> {
+            table.getProperties().remove(PENDING_KEY);
+            Object col = table.getProperties().get(COLUMN_KEY);
+            if (col instanceof TableColumn<?, ?> c) hook(table, c);
+        });
     }
 
     private static void hook(TableView<?> table, TableColumn<?, ?> column) {
@@ -57,7 +76,10 @@ public final class FrozenColumnSupport {
         boolean barFound = false, headerFound = false;
         for (Node n : table.lookupAll(".scroll-bar")) {
             // only the grid's own horizontal bar (not one of a parent ScrollPane)
-            if (n instanceof ScrollBar sb && sb.getOrientation() == Orientation.HORIZONTAL && isInside(sb, table)) {
+            // the VirtualFlow's own bar only: an empty grid's placeholder has a bar of its own (EmptyGridPlaceholder),
+            // and binding to that one left the "#" numbers behind when the grid scrolled (D4 perf test)
+            if (n instanceof ScrollBar sb && sb.getOrientation() == Orientation.HORIZONTAL && isInside(sb, table)
+                    && sb.getParent() instanceof javafx.scene.control.skin.VirtualFlow<?>) {
                 barFound = true;
                 if (!sb.getProperties().containsKey(HOOKED_KEY) || !off.isBound()) {
                     sb.getProperties().put(HOOKED_KEY, Boolean.TRUE);

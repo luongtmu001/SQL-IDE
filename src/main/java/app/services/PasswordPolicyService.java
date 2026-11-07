@@ -4,6 +4,8 @@ import app.framework.bootstrap.DesktopBootstrap;
 import com.lltool.core.api.request.UpdateConnectionRequest;
 import com.lltool.core.application.connection.dto.ConnectionProfileDto;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,6 +16,9 @@ import java.util.prefs.Preferences;
  * existing credential vault and is valid for 30 days counted from the last time it was saved.
  * After that — or when no password is saved — the connection asks again (SCR-DLG-002).
  * Passwords that are not saved live only in memory until the app closes.
+ *
+ * <p>The "saved at" times live in {@code config/password-saved-at.json} of the user's data folder
+ * (older versions kept them in the Windows registry; they are copied over once).
  */
 public final class PasswordPolicyService {
 
@@ -21,6 +26,9 @@ public final class PasswordPolicyService {
     private static final PasswordPolicyService INSTANCE = new PasswordPolicyService();
 
     private final Preferences prefs = Preferences.userNodeForPackage(PasswordPolicyService.class).node("password_saved_at");
+    private final Map<String, Long> savedAtMap = new ConcurrentHashMap<>();
+    private Path file;
+    private boolean loaded;
     private final Map<String, String> sessionPasswords = new ConcurrentHashMap<>();
 
     private PasswordPolicyService() {
@@ -35,21 +43,68 @@ public final class PasswordPolicyService {
         return k.length() > Preferences.MAX_KEY_LENGTH ? k.substring(0, Preferences.MAX_KEY_LENGTH) : k;
     }
 
-    public long savedAt(String connectionId) {
-        return prefs.getLong(key(connectionId), 0L);
+    /** Loads the times on first use (the data folder is not known when this class is created). */
+    private synchronized void ensureLoaded() {
+        if (loaded) {
+            return;
+        }
+        loaded = true;
+        try {
+            file = DesktopBootstrap.getInstance().getDirectoryManager().getConfigDir().resolve("password-saved-at.json");
+        } catch (Exception e) {
+            file = null;   // no data folder: fall back to the registry like before
+        }
+        if (file != null && Files.exists(file)) {
+            try {
+                Map<String, Number> m = new com.fasterxml.jackson.databind.ObjectMapper().readValue(file.toFile(),
+                        new com.fasterxml.jackson.core.type.TypeReference<Map<String, Number>>() { });
+                m.forEach((k, v) -> savedAtMap.put(k, v.longValue()));
+                return;
+            } catch (Exception ignored) {
+                // unreadable: start again from the registry copy below
+            }
+        }
+        try {
+            for (String k : prefs.keys()) {
+                long v = prefs.getLong(k, 0L);
+                if (v > 0) {
+                    savedAtMap.put(k, v);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        persist();
     }
 
-    public void markSaved(String connectionId) {
+    private synchronized void persist() {
+        if (file == null) {
+            return;
+        }
         try {
-            prefs.putLong(key(connectionId), System.currentTimeMillis());
+            String json = new com.fasterxml.jackson.databind.ObjectMapper()
+                    .enable(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT)
+                    .writeValueAsString(new java.util.TreeMap<>(savedAtMap));
+            com.lltool.infrastructure.filesystem.AtomicFileWriter.writeString(file, json);
         } catch (Exception ignored) {
+            // the time is kept in memory; it will be written by the next change
         }
     }
 
+    public long savedAt(String connectionId) {
+        ensureLoaded();
+        return savedAtMap.getOrDefault(key(connectionId), 0L);
+    }
+
+    public void markSaved(String connectionId) {
+        ensureLoaded();
+        savedAtMap.put(key(connectionId), System.currentTimeMillis());
+        persist();
+    }
+
     public void clear(String connectionId) {
-        try {
-            prefs.remove(key(connectionId));
-        } catch (Exception ignored) {
+        ensureLoaded();
+        if (savedAtMap.remove(key(connectionId)) != null) {
+            persist();
         }
         sessionPasswords.remove(connectionId);
     }
@@ -86,6 +141,19 @@ public final class PasswordPolicyService {
             return false;
         }
         return isExpired(p.id());
+    }
+
+    /**
+     * Phase 8: the server refused the login, so the in-memory password is wrong: forget it so the next
+     * connect asks again (DLG-002). Saved passwords stay; the user can retype and save over them.
+     */
+    public void forgetSessionPasswordIfAuthError(String connectionId, String errorMessage) {
+        if (connectionId == null || errorMessage == null) return;
+        String m = errorMessage.toLowerCase();
+        if (m.contains("password") || m.contains("login failed") || m.contains("authentication")
+                || m.contains("mật khẩu") || m.contains("28p01") || m.contains("18456")) {
+            sessionPasswords.remove(connectionId);
+        }
     }
 
     public String sessionPassword(String connectionId) {

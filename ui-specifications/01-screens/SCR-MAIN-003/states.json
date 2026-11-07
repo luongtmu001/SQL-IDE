@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-003",
+  "states": [
+    {
+      "id": "STA-ED-001",
+      "component_id": "BTN-ED-001",
+      "state": "empty",
+      "visual_description": "Biểu tượng file, \"No Editor Tabs Open\", gợi ý mở script hoặc tab mới, nút New Query Tab",
+      "entry_condition": "số tab = 0",
+      "exit_condition": "có tab đầu tiên",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-ED-002",
+      "component_id": "CMP-ED-006",
+      "state": "normal",
+      "visual_description": "Tiêu đề + chấm màu kết nối + icon loại DB",
+      "entry_condition": "tab đã lưu, không ghim",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-ED-003",
+      "component_id": "CMP-ED-006",
+      "state": "selected",
+      "visual_description": "Pseudo-class selected trong EditorTabStrip",
+      "entry_condition": "tab đang được chọn",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-ED-004",
+      "component_id": "CMP-ED-006",
+      "state": "normal",
+      "visual_description": "Dấu ● thay cho nút đóng khi tab chưa lưu (dirtyIndicator)",
+      "entry_condition": "dirty=true",
+      "exit_condition": "sau Lưu (markSaved)",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-ED-005",
+      "component_id": "CMP-ED-006",
+      "state": "normal",
+      "visual_description": "Tab ghim: có ghim, menu \"Đóng\" bị tắt",
+      "entry_condition": "pinned=true",
+      "exit_condition": "bỏ ghim",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-ED-006",
+      "component_id": "CMP-ED-010",
+      "state": "normal",
+      "visual_description": "Banner vàng với 3 nút",
+      "entry_condition": "connected=false, chưa ẩn",
+      "exit_condition": "kết nối thành công hoặc bấm Ẩn",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-ED-007",
+      "component_id": "CMP-ED-010",
+      "state": "collapsed",
+      "visual_description": "Ẩn (managed=false)",
+      "entry_condition": "connected=true/null hoặc đã ẩn",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-ED-008",
+      "component_id": "BTN-ED-005",
+      "state": "normal",
+      "visual_description": "Có secondaryTabPane và nút Đóng split",
+      "entry_condition": "chia đôi",
+      "exit_condition": "closeSplit",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-ED-009",
+      "component_id": "CMP-ED-014",
+      "state": "loading",
+      "visual_description": "Thao tác được xếp hàng đợi trong readyCallbacks cho đến onEditorReady",
+      "entry_condition": "WebView chưa tải xong",
+      "exit_condition": "onEditorReady",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-ED-010",
+      "component_id": "BTN-CTX-002",
+      "state": "disabled",
+      "visual_description": "Nút Stop mờ",
+      "entry_condition": "không có câu đang chạy",
+      "exit_condition": "bắt đầu chạy",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-ED-011",
+      "component_id": "BTN-CTX-001",
+      "state": "loading",
+      "visual_description": "Trạng thái đang chạy (Stop bật)",
+      "entry_condition": "đang thực thi",
+      "exit_condition": "xong/hủy/lỗi",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "inferred"
+    }
+  ]
+}

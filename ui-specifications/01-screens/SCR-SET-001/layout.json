@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-SET-001",
+  "screen_name": "Settings window",
+  "source_window_size": {
+    "width": null,
+    "height": null,
+    "display_scale": "unknown"
+  },
+  "layout_type": "desktop",
+  "regions": [
+    {
+      "id": "REG-SET-001",
+      "name": "Settings window",
+      "purpose": "Cửa sổ modal (DialogChrome)",
+      "parent_id": null,
+      "layout_role": "overlay",
+      "position": "center",
+      "sizing": {
+        "width": "900px",
+        "height": "640px",
+        "min_width": "760px",
+        "min_height": "480px",
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-SET-002",
+      "name": "Search row",
+      "purpose": "Tìm thiết lập",
+      "parent_id": "REG-SET-001",
+      "layout_role": "header",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": "auto",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-SET-003",
+      "name": "Tabs + global actions",
+      "purpose": "Chuyển Visual/JSON, Copy JSON, Khôi phục mặc định",
+      "parent_id": "REG-SET-001",
+      "layout_role": "header",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": "auto",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-SET-004",
+      "name": "Navigation sidebar",
+      "purpose": "10 nhóm thiết lập",
+      "parent_id": "REG-SET-001",
+      "layout_role": "sidebar",
+      "position": "left",
+      "sizing": {
+        "width": "230px",
+        "height": "fill",
+        "min_width": "200px",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-SET-005",
+      "name": "Settings sections",
+      "purpose": "10 nhóm dạng danh sách dòng",
+      "parent_id": "REG-SET-001",
+      "layout_role": "workspace",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [
+        "chỉ một nhóm hiện"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REG-SET-006",
+      "name": "JSON editor area",
+      "purpose": "Sửa trực tiếp settings.json",
+      "parent_id": "REG-SET-001",
+      "layout_role": "workspace",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [
+        "chỉ ở chế độ JSON"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REG-SET-007",
+      "name": "Footer",
+      "purpose": "Bộ đếm thay đổi + nút Lưu",
+      "parent_id": "REG-SET-001",
+      "layout_role": "footer",
+      "position": "bottom",
+      "sizing": {
+        "width": "fill",
+        "height": "auto",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    }
+  ]
+}

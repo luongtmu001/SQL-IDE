@@ -101,3 +101,21 @@
     -fx-background-radius: 0;
     -fx-border-radius: 0;
 }
+
+/* S3 settings badge: flat = no rounding (R-UI-01) */
+.setting-badge {
+    -fx-background-radius: 0;
+}
+
+/* T4: imported theme packages in Settings */
+.imported-theme-package,
+.imported-theme-chip,
+.imported-theme-chip-remove {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* grid header filter button (its hover rule in components.css is more specific than the list above) */
+.results-table .column-header .col-header-filter-btn:hover {
+    -fx-background-radius: 0;
+}

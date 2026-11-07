@@ -116,7 +116,8 @@ public class ResultsController implements Initializable {
     private Runnable onFetchActualPlanCallback;
 
     // Data lists
-    private final ObservableList<QueryResultRow> masterRows = FXCollections.observableArrayList();
+    /** Rows of the single grid (swapped with the grid when another editor tab is shown, D4.3). */
+    private ObservableList<QueryResultRow> masterRows = FXCollections.observableArrayList();
     private FilteredList<QueryResultRow> filteredRows;
     private final ObservableList<ConsoleMessage> messagesList = FXCollections.observableArrayList();
 
@@ -157,7 +158,41 @@ public class ResultsController implements Initializable {
         loadInitialData();
         setupLayoutIntegration();
         setupSettingsIntegration();
+        setupResultsTabHeader();
         if (loadingOverlay != null) loadingSupport = app.ui.components.LoadingOverlay.attach(loadingOverlay);
+    }
+
+    // ------------------------------------------------------------------ Results tab header: "Results (n)" badge
+
+    /** Number of result sets of the last run, in a circle after "Results" (user 2026-11-06); hidden when 0. */
+    private Label resultsCountBadge;
+
+    private void setupResultsTabHeader() {
+        if (resultsTab == null) return;
+        javafx.scene.Node icon = resultsTab.getGraphic();
+        Label title = new Label("Results");
+        title.getStyleClass().add("results-tab-title");
+        resultsCountBadge = new Label();
+        resultsCountBadge.getStyleClass().add("results-count-badge");
+        resultsCountBadge.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        HBox box = new HBox(5);
+        if (icon != null) box.getChildren().add(icon);
+        box.getChildren().addAll(title, resultsCountBadge);
+        box.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        resultsTab.getStyleClass().add("results-main-tab");
+        resultsTab.setText("");
+        resultsTab.setGraphic(box);
+        setResultsTableCount(0);
+    }
+
+    private void setResultsTableCount(int tables) {
+        if (resultsCountBadge == null) return;
+        resultsCountBadge.setText(tables > 99 ? "99+" : String.valueOf(tables));
+        resultsCountBadge.setVisible(tables > 0);
+        resultsCountBadge.setManaged(tables > 0);
+        if (resultsTab != null) {
+            resultsTab.setTooltip(tables > 0 ? new Tooltip(tables + " bảng kết quả") : null);
+        }
     }
 
     private void setupSettingsIntegration() {
@@ -172,22 +207,27 @@ public class ResultsController implements Initializable {
         String gridFont = settings.getGrid() != null ? settings.getGrid().getFontFamily() : "Inter";
         int gridFontSize = settings.getGrid() != null ? settings.getGrid().getFontSize() : 12;
         String gridStyle = String.format(java.util.Locale.ROOT, "-fx-font-family: '%s'; -fx-font-size: %dpx;", gridFont, gridFontSize);
+        // cells inherit this font (components.css sets none on .table-cell); the row height follows the size
+        double rowHeight = Math.max(24, gridFontSize * 2);
         if (resultsTable != null) {
             resultsTable.setStyle(gridStyle);
+            if (resultsTable.getFixedCellSize() > 0) resultsTable.setFixedCellSize(rowHeight);
             if (!resultsTable.getColumns().isEmpty() && "#".equals(resultsTable.getColumns().get(0).getText())) {
                 resultsTable.getColumns().get(0).setVisible(settings.isShowRowNumbers());
             }
         }
-        if (multiGridBox != null) {
-            for (javafx.scene.Node n : multiGridBox.getChildren()) {
-                if (n instanceof VBox b) {
-                    for (javafx.scene.Node sub : b.getChildren()) {
-                        if (sub instanceof TableView<?> tv) {
-                            tv.setStyle(gridStyle);
-                            if (!tv.getColumns().isEmpty() && "#".equals(tv.getColumns().get(0).getText())) {
-                                tv.getColumns().get(0).setVisible(settings.isShowRowNumbers());
-                            }
-                        }
+        List<javafx.scene.Node> gridHosts = new ArrayList<>();
+        if (multiGridBox != null) gridHosts.add(multiGridBox);
+        if (multiGridTabs != null) { // tabs mode: grids already built (the others are built with the current setting)
+            for (Tab t : multiGridTabs.getTabs()) if (t.getContent() != null) gridHosts.add(t.getContent());
+        }
+        for (javafx.scene.Node host : gridHosts) {
+            for (javafx.scene.Node g : host.lookupAll(".results-table")) {
+                if (g instanceof TableView<?> tv) {
+                    tv.setStyle(gridStyle);
+                    if (tv.getFixedCellSize() > 0) tv.setFixedCellSize(rowHeight);
+                    if (!tv.getColumns().isEmpty() && "#".equals(tv.getColumns().get(0).getText())) {
+                        tv.getColumns().get(0).setVisible(settings.isShowRowNumbers());
                     }
                 }
             }
@@ -260,9 +300,9 @@ public class ResultsController implements Initializable {
         app.ui.results.GridFilterState.attach(resultsTable, mainFilterState);
 
         if (resultsFilterField != null) {
-            resultsFilterField.textProperty().addListener((obs, oldVal, newVal) -> {
-                applyCombinedFilter();
-            });
+            // debounced: each run scans every cell of every row (33k x 279 per keystroke was seconds of freeze)
+            quickFilterDebounce.setOnFinished(e -> applyCombinedFilter());
+            resultsFilterField.textProperty().addListener((obs, oldVal, newVal) -> quickFilterDebounce.playFromStart());
         }
 
         installGrid(resultsTable);
@@ -300,6 +340,7 @@ public class ResultsController implements Initializable {
 
     /** Context menu (LLTool grid menu) + Ctrl+C / Ctrl+Shift+C / Ctrl+A / Ctrl+Shift+S for one grid. */
     private void installGrid(TableView<QueryResultRow> table) {
+        installAutoFit(table);
         table.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> activeGrid = table);
         table.focusedProperty().addListener((o, was, now) -> {
             if (now) activeGrid = table;
@@ -437,6 +478,8 @@ public class ResultsController implements Initializable {
         try {
             if (raw instanceof byte[] b) {
                 bytes = b;
+            } else if (raw instanceof app.framework.query.CellValues.BinaryValue bv) {
+                bytes = bv.bytes();
             } else if (raw != null) {
                 String t = raw.toString().trim();
                 int comma = t.startsWith("data:") ? t.indexOf(',') : -1;
@@ -581,11 +624,9 @@ public class ResultsController implements Initializable {
         int maxC = Math.min(grid().getColumns().size() - 1, Math.max(startCol, endCol));
 
         grid().getSelectionModel().clearSelection();
-        for (int r = minR; r <= maxR; r++) {
-            for (int c = minC; c <= maxC; c++) {
-                grid().getSelectionModel().select(r, grid().getColumns().get(c));
-            }
-        }
+        if (maxR < minR || maxC < minC) return;
+        // one batched change (rows x columns single select() calls fire one event each: 33k rows froze the UI)
+        grid().getSelectionModel().selectRange(minR, grid().getColumns().get(minC), maxR, grid().getColumns().get(maxC));
     }
 
     public void copyAllHeaders() {
@@ -636,12 +677,7 @@ public class ResultsController implements Initializable {
     }
 
     public void handleSelectAll() {
-        grid().getSelectionModel().clearSelection();
-        for (int r = 0; r < gridRows().size(); r++) {
-            for (TableColumn<QueryResultRow, ?> col : grid().getColumns()) {
-                grid().getSelectionModel().select(r, col);
-            }
-        }
+        grid().getSelectionModel().selectAll(); // one batched change, not rows x columns events
     }
 
     public void handleScriptAsInsert(boolean targetAll) {
@@ -910,15 +946,21 @@ public class ResultsController implements Initializable {
                 showResultTabs(currentResultSets);
                 int total = currentResultSets.stream().mapToInt(QueryResult::getRowCount).sum();
                 long maxMs = currentResultSets.stream().mapToLong(QueryResult::getExecutionDurationMs).max().orElse(0);
-                if (resultsTab != null) {
-                    resultsTab.setText(String.format("Results (%d trong %d bảng)", total, currentResultSets.size()));
-                }
+                setResultsTableCount(currentResultSets.size());
                 updateFooterStats(total, maxMs, "multi-result");
             } else if (multiGridScroll != null) {
                 hideResultTabs();
                 multiGridScroll.setVisible(true);
                 multiGridScroll.setManaged(true);
                 multiGridBox.getChildren().clear();
+                // D4 (SSMS / LLTool): the grids fill the panel, splitters between them, minimize docks at the bottom
+                multiGridScroll.setFitToWidth(true);
+                multiGridScroll.setFitToHeight(true);
+                multiGridScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+                multiGridScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+                app.ui.results.StackedGridsPane stack = new app.ui.results.StackedGridsPane();
+                VBox.setVgrow(stack, javafx.scene.layout.Priority.ALWAYS);
+                multiGridBox.getChildren().add(stack);
 
                 int totalAllRows = 0;
                 long maxDuration = 0;
@@ -931,12 +973,11 @@ public class ResultsController implements Initializable {
                     }
 
                     VBox paneBox = createSubGridPane(res, i + 1);
-                    multiGridBox.getChildren().add(paneBox);
+                    var entry = stack.add(paneBox, (javafx.scene.Node) paneBox.getProperties().get(SUBPANE_BODY_KEY));
+                    wireSubPaneMinimize(paneBox, stack, entry);
                 }
 
-                if (resultsTab != null) {
-                    resultsTab.setText(String.format("Results (%d trong %d bảng)", totalAllRows, currentResultSets.size()));
-                }
+                setResultsTableCount(currentResultSets.size());
 
                 updateFooterStats(totalAllRows, maxDuration, "multi-result");
             }
@@ -985,37 +1026,62 @@ public class ResultsController implements Initializable {
         subTable.getStyleClass().addAll("results-table", "stacked-grid");
         subTable.getSelectionModel().setCellSelectionEnabled(true);
         subTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        subTable.getProperties().put(GRID_INDEX_KEY, tableNumber - 1);
         populateTableViewWithResult(subTable, res);
         var subState = attachRows(subTable, res);
         installGrid(subTable);
         bindCountBadge(rows, subState);
         // SSMS-like: each grid is as tall as its rows but never taller than the panel, so every
         // grid has its own scrollbar and the outer scroll moves between grids
-        // T11 (Phase 7): no setFixedCellSize here. With a fixed cell size TableRowSkin drops the
-        // cells of columns scrolled out of view, so the frozen "#" cell vanished on horizontal
-        // scroll in stacked grids. The 24px row height comes from CSS (.stacked-grid) instead.
-        double rowsHeight = 30 + Math.max(1, res.getRowCount()) * 24 + 18;
-        subTable.setMinHeight(Math.min(rowsHeight, 120));
-        subTable.setPrefHeight(rowsHeight);
-        if (multiGridScroll != null) {
-            subTable.maxHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                    () -> Math.min(rowsHeight, Math.max(150, multiGridScroll.getHeight() * 0.75)),
-                    multiGridScroll.heightProperty()));
-        } else {
-            subTable.setMaxHeight(Math.min(rowsHeight, 30 + STACKED_VISIBLE_ROWS * 24 + 18));
-        }
+        // D4: rows have a fixed height (populateTableViewWithResult); the "#" numbers are drawn by
+        // ResultGridRow, so horizontal virtualization no longer hides them (T11).
+        // D4: the height comes from StackedGridsPane (default share of the panel, splitters, minimize)
+        VBox.setVgrow(subTable, javafx.scene.layout.Priority.ALWAYS);
+        subTable.setMinHeight(0);
 
-        header.setOnMouseClicked(e -> {
-            boolean open = !subTable.isVisible();
-            subTable.setVisible(open);
-            subTable.setManaged(open);
-            chevron.setIconLiteral(open ? "fth-chevron-down" : "fth-chevron-right");
-            box.getStyleClass().remove("collapsed");
-            if (!open) box.getStyleClass().add("collapsed");
-        });
+        Button minBtn = new Button();
+        minBtn.getStyleClass().add("grid-subpane-min-btn");
+        minBtn.setFocusTraversable(false);
+        minBtn.setGraphic(new FontIcon("mdi2w-window-minimize"));
+        minBtn.setTooltip(new Tooltip("Thu nhỏ / Ẩn bảng này xuống dưới"));
+        header.getChildren().add(minBtn);
+        box.getProperties().put(SUBPANE_BODY_KEY, subTable);
+        box.getProperties().put(SUBPANE_MIN_BTN_KEY, minBtn);
+        box.getProperties().put(SUBPANE_CHEVRON_KEY, chevron);
+        box.getProperties().put(SUBPANE_HEADER_KEY, header);
 
         box.getChildren().addAll(header, subTable);
         return box;
+    }
+
+    private static final String SUBPANE_BODY_KEY = "sqlide.subpane.body";
+    private static final String SUBPANE_MIN_BTN_KEY = "sqlide.subpane.minBtn";
+    private static final String SUBPANE_CHEVRON_KEY = "sqlide.subpane.chevron";
+    private static final String SUBPANE_HEADER_KEY = "sqlide.subpane.header";
+
+    /** Header click or its minimize button: the grid docks at the bottom as a header, or comes back (LLTool). */
+    private void wireSubPaneMinimize(VBox box, app.ui.results.StackedGridsPane stack, app.ui.results.StackedGridsPane.Entry entry) {
+        Button minBtn = (Button) box.getProperties().get(SUBPANE_MIN_BTN_KEY);
+        FontIcon chevron = (FontIcon) box.getProperties().get(SUBPANE_CHEVRON_KEY);
+        HBox header = (HBox) box.getProperties().get(SUBPANE_HEADER_KEY);
+        Runnable toggle = () -> {
+            stack.toggleMinimized(entry);
+            boolean min = entry.isMinimized();
+            if (chevron != null) chevron.setIconLiteral(min ? "fth-chevron-right" : "fth-chevron-down");
+            if (minBtn != null) {
+                minBtn.setGraphic(new FontIcon(min ? "mdi2w-window-maximize" : "mdi2w-window-minimize"));
+                minBtn.getTooltip().setText(min ? "Mở rộng / Hiện lại bảng này" : "Thu nhỏ / Ẩn bảng này xuống dưới");
+            }
+            box.getStyleClass().remove("collapsed");
+            if (min) box.getStyleClass().add("collapsed");
+        };
+        if (minBtn != null) {
+            minBtn.setOnAction(e -> toggle.run());
+            minBtn.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, javafx.event.Event::consume); // not the header too
+        }
+        if (header != null) header.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY) toggle.run();
+        });
     }
 
     /** "7 / 12 dòng" when filtered; tooltip lists every filter and its row count (2026-11-05). */
@@ -1085,6 +1151,7 @@ public class ResultsController implements Initializable {
                 t.getStyleClass().addAll("results-table", "tabbed-grid");
                 t.getSelectionModel().setCellSelectionEnabled(true);
                 t.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                t.getProperties().put(GRID_INDEX_KEY, sets.indexOf(res));
                 populateTableViewWithResult(t, res);
                 var st = attachRows(t, res);
                 installGrid(t);
@@ -1149,7 +1216,9 @@ public class ResultsController implements Initializable {
         pinnedColumns.clear();
         if (mainFilterState != null) mainFilterState.clearAll();
 
-        if (result == null || result.getRowCount() == 0) {
+        // D4 (LLTool parity): a result WITH COLUMNS is shown even with 0 rows, so an empty table still shows its
+        // structure; the empty state is only for "no result set at all"
+        if (result == null || result.getColumns() == null || result.getColumns().isEmpty()) {
             if (emptyStateBox != null) {
                 emptyStateBox.setVisible(true);
                 emptyStateBox.setManaged(true);
@@ -1157,6 +1226,7 @@ public class ResultsController implements Initializable {
             if (resultsStatsLabel != null) {
                 resultsStatsLabel.setText("No query executed yet");
             }
+            setResultsTableCount(0);
             updateFooterStats(0, 0, null);
             return;
         }
@@ -1176,23 +1246,399 @@ public class ResultsController implements Initializable {
         updateStatsLabel();
 
         if (resultsTab != null) {
-            resultsTab.setText("Results (" + result.getRowCount() + ")");
+            setResultsTableCount(1);
         }
 
         updateFooterStats(result.getRowCount(), result.getExecutionDurationMs(), null);
     }
 
+    // ------------------------------------------------------------------ D4.3: results per editor tab
+
+    /**
+     * What one editor tab shows in the results panel (LLTool query.js restoreTabResults / tabGridContainers).
+     * The stacked grids are kept as live nodes, so going back to a tab keeps their scroll, sizes and filters;
+     * a single result is drawn again from its data.
+     */
+    private record TabResultsState(List<QueryResult> sets, javafx.scene.Node stackedNode, MainGrid mainGrid,
+                                   List<ConsoleMessage> messages, String sqlMessages, int selectedView,
+                                   PhysicalExecutionPlan plan, String filterText) {
+    }
+
+    /**
+     * The single-result grid with its rows and filters. Each editor tab keeps its own: switching tabs puts
+     * the tab's live grid back instead of building it again (rebuilding 30+ columns and thousands of rows
+     * on every switch made tab changes stutter).
+     */
+    private record MainGrid(TableView<QueryResultRow> table, ObservableList<QueryResultRow> master,
+                            FilteredList<QueryResultRow> filtered, app.ui.results.GridFilterState state,
+                            QueryResult result, Set<TableColumn<QueryResultRow, ?>> pinned) {
+    }
+
+    private MainGrid currentMainGrid() {
+        return new MainGrid(resultsTable, masterRows, filteredRows, mainFilterState, currentResult, new HashSet<>(pinnedColumns));
+    }
+
+    /** A new, empty single grid configured like the one from results.fxml. */
+    private MainGrid newMainGrid() {
+        TableView<QueryResultRow> t = new TableView<>();
+        t.getStyleClass().setAll(resultsTable.getStyleClass());
+        t.setId(resultsTable.getId());
+        t.setVisible(resultsTable.isVisible());
+        t.setManaged(resultsTable.isManaged());
+        t.getSelectionModel().setCellSelectionEnabled(true);
+        t.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        ObservableList<QueryResultRow> master = FXCollections.observableArrayList();
+        FilteredList<QueryResultRow> filtered = new FilteredList<>(master, p -> true);
+        t.setItems(filtered);
+        var state = new app.ui.results.GridFilterState(master, filtered);
+        state.setOnChanged(this::updateStatsLabel);
+        app.ui.results.GridFilterState.attach(t, state);
+        installGrid(t);
+        return new MainGrid(t, master, filtered, state, null, new HashSet<>());
+    }
+
+    /** Puts {@code g} where the single grid is and makes it the one every grid action uses. */
+    private void swapMainGrid(MainGrid g) {
+        if (g.table() != resultsTable && resultsTable.getParent() instanceof javafx.scene.layout.Pane parent) {
+            int i = parent.getChildren().indexOf(resultsTable);
+            if (parent instanceof StackPane) StackPane.setAlignment(g.table(), StackPane.getAlignment(resultsTable));
+            if (i >= 0) parent.getChildren().set(i, g.table());
+        }
+        resultsTable = g.table();
+        masterRows = g.master();
+        filteredRows = g.filtered();
+        mainFilterState = g.state();
+        currentResult = g.result();
+        pinnedColumns.clear();
+        pinnedColumns.addAll(g.pinned());
+        activeGrid = null;
+    }
+
+    /** The grid on screen belongs to a saved tab: give the next tab a fresh one so the saved one stays intact. */
+    private void detachCachedMainGrid() {
+        for (TabResultsState st : tabStates.values()) {
+            if (st.mainGrid() != null && st.mainGrid().table() == resultsTable) {
+                swapMainGrid(newMainGrid());
+                return;
+            }
+        }
+    }
+
+    private final Map<String, TabResultsState> tabStates = new HashMap<>();
+
+    /** Remembers what the panel shows for {@code tabId} (called when another tab is selected). */
+    public void saveTabState(String tabId) {
+        if (tabId == null) return;
+        javafx.scene.Node stacked = null;
+        if (multiGridScroll != null && multiGridScroll.isVisible() && multiGridBox != null && !multiGridBox.getChildren().isEmpty()) {
+            stacked = multiGridBox.getChildren().get(0);
+        }
+        boolean singleShown = stacked == null && currentResult != null && resultsTable.isVisible()
+                && (multiGridTabs == null || !multiGridTabs.isVisible());
+        tabStates.put(tabId, new TabResultsState(
+                new ArrayList<>(currentResultSets),
+                stacked,
+                singleShown ? currentMainGrid() : null,
+                new ArrayList<>(messagesList),
+                sqlMessagesArea != null ? sqlMessagesArea.getText() : "",
+                resultsTabPane != null ? resultsTabPane.getSelectionModel().getSelectedIndex() : 0,
+                currentExecutionPlan,
+                resultsFilterField != null ? resultsFilterField.getText() : ""));
+    }
+
+    /** Shows what {@code tabId} showed last time; a tab that never ran gets an empty panel. */
+    public void restoreTabState(String tabId) {
+        TabResultsState st = tabId != null ? tabStates.get(tabId) : null;
+        resetStreaming();
+        showLoading(false);
+        detachCachedMainGrid();
+        if (resultsFilterField != null) resultsFilterField.setText(st != null && st.filterText() != null ? st.filterText() : "");
+        if (st == null) {
+            setQueryResults(List.of());
+            messagesList.clear();
+            if (timelineTab != null) timelineTab.setText("Timeline (0)");
+            if (sqlMessagesArea != null) sqlMessagesArea.clear();
+            clearPlanView();
+            setResultsTableCount(0);
+            return;
+        }
+        if (st.mainGrid() != null) {
+            // the tab's own live grid: no rebuild
+            hideResultTabs();
+            if (multiGridScroll != null) {
+                multiGridScroll.setVisible(false);
+                multiGridScroll.setManaged(false);
+                multiGridBox.getChildren().clear();
+            }
+            subFilterStates.clear();
+            swapMainGrid(st.mainGrid());
+            resultsTable.setVisible(true);
+            resultsTable.setManaged(true);
+            currentResultSets = new ArrayList<>(st.sets());
+            boolean has = currentResult != null;
+            if (emptyStateBox != null) {
+                emptyStateBox.setVisible(!has);
+                emptyStateBox.setManaged(!has);
+            }
+            if (has) {
+                updateStatsLabel();
+                setResultsTableCount(Math.max(1, currentResultSets.size()));
+                updateFooterStats(currentResult.getRowCount(), currentResult.getExecutionDurationMs(), null);
+            }
+        } else if (st.stackedNode() != null && multiGridScroll != null && multiGridBox != null) {
+            // the live stacked grids of that tab come back as they were
+            setQueryResult(null);
+            hideResultTabs();
+            resultsTable.setVisible(false);
+            resultsTable.setManaged(false);
+            if (emptyStateBox != null) {
+                emptyStateBox.setVisible(false);
+                emptyStateBox.setManaged(false);
+            }
+            currentResultSets = new ArrayList<>(st.sets());
+            multiGridBox.getChildren().setAll(st.stackedNode());
+            for (javafx.scene.Node g : st.stackedNode().lookupAll(".results-table")) { // quick filter reaches them again
+                if (g instanceof TableView<?> tv) {
+                    var fs = app.ui.results.GridFilterState.of(tv);
+                    if (fs != null) subFilterStates.add(fs);
+                }
+            }
+            multiGridScroll.setVisible(true);
+            multiGridScroll.setManaged(true);
+            int total = st.sets().stream().mapToInt(QueryResult::getRowCount).sum();
+            long maxMs = st.sets().stream().mapToLong(QueryResult::getExecutionDurationMs).max().orElse(0);
+            setResultsTableCount(st.sets().size());
+            updateFooterStats(total, maxMs, "multi-result");
+        } else {
+            setQueryResults(st.sets());
+            if (st.sets().isEmpty()) setResultsTableCount(0);
+        }
+        messagesList.setAll(st.messages());
+        if (timelineTab != null) timelineTab.setText("Timeline (" + messagesList.size() + ")");
+        if (sqlMessagesArea != null) sqlMessagesArea.setText(st.sqlMessages());
+        if (st.plan() != null) setExecutionPlan(st.plan()); else clearPlanView();
+        if (resultsTabPane != null && st.selectedView() >= 0 && st.selectedView() < resultsTabPane.getTabs().size()) {
+            resultsTabPane.getSelectionModel().select(st.selectedView());
+        }
+    }
+
+    /** The tab was closed: its results are dropped. */
+    public void dropTabState(String tabId) {
+        if (tabId != null) tabStates.remove(tabId);
+    }
+
+    /** Execution plan view back to "no plan yet". */
+    private void clearPlanView() {
+        currentExecutionPlan = null;
+        if (planEmptyStateBox != null) {
+            planEmptyStateBox.setVisible(true);
+            planEmptyStateBox.setManaged(true);
+        }
+        if (planVisualSplitPane != null) {
+            planVisualSplitPane.setVisible(false);
+            planVisualSplitPane.setManaged(false);
+        }
+        if (planRawBox != null) {
+            planRawBox.setVisible(false);
+            planRawBox.setManaged(false);
+        }
+        if (planLoadingBox != null) {
+            planLoadingBox.setVisible(false);
+            planLoadingBox.setManaged(false);
+        }
+    }
+
+    // ------------------------------------------------------------------ D4: streaming (rows arrive in batches)
+
+    /** The first result set of the running script is being filled while rows arrive. */
+    private boolean streaming;
+    /** Live rows of the streamed first result (also the list behind currentResult). */
+    private List<QueryResultRow> streamedRows;
+    private long streamStartNanos;
+
+    /** A new run starts: nothing is streamed yet. */
+    public void resetStreaming() {
+        streaming = false;
+        streamedRows = null;
+    }
+
+    public boolean isStreaming() {
+        return streaming;
+    }
+
+    /**
+     * The first result set of the run starts: show its columns at once (LLTool shows the grid before the
+     * rows). Later result sets are drawn when the script ends.
+     */
+    public void streamResultStarted(int index, String sql, List<QueryResultColumn> columns) {
+        if (index != 0) return;
+        streamedRows = new ArrayList<>();
+        String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        setQueryResults(List.of(new QueryResult(sql, columns, streamedRows, 0, ts)));
+        streaming = true;
+        streamStartNanos = System.nanoTime();
+        showLoading(false); // the grid itself shows the progress from here
+        selectResultsTab();
+    }
+
+    /** Next rows of the first result set: appended to the grid, the counters follow. */
+    public void streamRows(int index, List<QueryResultRow> rows) {
+        if (index != 0 || !streaming || streamedRows == null) return;
+        streamedRows.addAll(rows);
+        masterRows.addAll(rows);
+        updateStatsLabel();
+        setResultsTableCount(1);
+        updateFooterStats(streamedRows.size(), (System.nanoTime() - streamStartNanos) / 1_000_000, null);
+    }
+
+    /**
+     * The script ended. One result set: the streamed grid stays as it is (no redraw, scroll position kept),
+     * only the final figures are shown. Several: they are drawn together now.
+     */
+    public void finishStreaming(List<QueryResult> all) {
+        boolean wasStreaming = streaming;
+        resetStreaming();
+        if (!wasStreaming || all == null || all.size() != 1) {
+            setQueryResults(all);
+            return;
+        }
+        QueryResult fin = all.get(0);
+        currentResultSets = new ArrayList<>(all);
+        currentResult = fin;
+        resultsTable.getProperties().put(GRID_RESULT_KEY, fin);
+        if (masterRows.size() != fin.getRowCount()) { // a batch was lost or the run was cut: show what was read
+            masterRows.setAll(fin.getRows());
+        }
+        updateStatsLabel();
+        setResultsTableCount(1);
+        updateFooterStats(fin.getRowCount(), fin.getExecutionDurationMs(), null);
+    }
+
+    // ------------------------------------------------------------------ D4: column widths
+
+    private static final String GRID_INDEX_KEY = "sqlide.gridIndex";
+    private static final String WIDTHS_READY_KEY = "sqlide.widthsReady";
+    /** Widths the user dragged: tab id → ("gridIndex_column" or "column") → px (LLTool columnWidths[tabId]). */
+    private static final Map<String, Map<String, Double>> COLUMN_WIDTHS = new HashMap<>();
+    private String widthScope = "";
+
+    /** The tab whose results are shown next (column widths are remembered per tab). */
+    public void setColumnWidthScope(String tabId) {
+        widthScope = tabId != null ? tabId : "";
+    }
+
+    private Double savedColumnWidth(int gridIndex, String colName) {
+        Map<String, Double> m = COLUMN_WIDTHS.get(widthScope);
+        if (m == null) return null;
+        Double w = m.get(gridIndex + "_" + colName);
+        return w != null ? w : m.get(colName);
+    }
+
+    private void rememberColumnWidth(int gridIndex, String colName, double w) {
+        Map<String, Double> m = COLUMN_WIDTHS.computeIfAbsent(widthScope, k -> new HashMap<>());
+        m.put(gridIndex + "_" + colName, w);
+        m.put(colName, w);
+    }
+
+    /** Rows measured by "fit to content": enough for what is on screen and a little more, never a full scan. */
+    private static final int AUTOFIT_ROWS = 1000;
+
+    /**
+     * Double-click on a column's right edge in the header: the column fits its header and the first
+     * {@value #AUTOFIT_ROWS} rows (JavaFX's own double-click measures every row, slow on large results).
+     */
+    private void installAutoFit(TableView<QueryResultRow> table) {
+        table.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
+            if (e.getButton() != MouseButton.PRIMARY || e.getClickCount() != 2) return;
+            if (!(e.getTarget() instanceof javafx.scene.shape.Rectangle r) || !insideHeader(r)) return;
+            TableColumn<QueryResultRow, ?> col = columnAtRightEdge(table, e.getSceneX(), e.getSceneY());
+            if (col == null || "#".equals(col.getText())) return;
+            e.consume();
+            autoFitColumn(table, col);
+        });
+    }
+
+    private static boolean insideHeader(javafx.scene.Node n) {
+        for (javafx.scene.Node p = n; p != null; p = p.getParent()) {
+            if (p.getStyleClass().contains("column-header-background")) return true;
+            if (p instanceof TableView<?>) return false;
+        }
+        return false;
+    }
+
+    private static TableColumn<QueryResultRow, ?> columnAtRightEdge(TableView<QueryResultRow> table, double sceneX, double sceneY) {
+        javafx.scene.Node root = table.lookup(".nested-column-header");
+        if (root == null) return null;
+        double x = root.sceneToLocal(sceneX, sceneY).getX();
+        double edge = 0;
+        TableColumn<QueryResultRow, ?> best = null;
+        double bestDist = 8;
+        for (TableColumn<QueryResultRow, ?> c : table.getVisibleLeafColumns()) {
+            edge += c.getWidth();
+            double d = Math.abs(edge - x);
+            if (d < bestDist) {
+                bestDist = d;
+                best = c;
+            }
+        }
+        return best;
+    }
+
+    private void autoFitColumn(TableView<QueryResultRow> table, TableColumn<QueryResultRow, ?> col) {
+        javafx.scene.text.Font font = null;
+        for (javafx.scene.Node n : table.lookupAll(".table-cell")) {
+            if (n instanceof TableCell<?, ?> c && c.getTableColumn() == col && !c.isEmpty()) {
+                font = c.getFont();
+                break;
+            }
+        }
+        if (font == null) font = javafx.scene.text.Font.getDefault();
+        javafx.scene.text.Text probe = new javafx.scene.text.Text();
+        probe.setFont(font);
+        String nullText = app.services.SettingsService.getInstance().getCurrentSettings().getNullDisplayString();
+        double max = 0;
+        int n = Math.min(table.getItems().size(), AUTOFIT_ROWS);
+        for (int i = 0; i < n; i++) {
+            Object v = col.getCellData(i);
+            String t = v == null ? (nullText != null ? nullText : "NULL") : v.toString();
+            if (t.length() > 300) t = t.substring(0, 300);
+            probe.setText(t);
+            max = Math.max(max, probe.getLayoutBounds().getWidth());
+        }
+        // header: name (bold) + type + filter button
+        probe.setFont(javafx.scene.text.Font.font(font.getFamily(), javafx.scene.text.FontWeight.BOLD, font.getSize()));
+        probe.setText(col.getText() != null ? col.getText() : "");
+        double header = probe.getLayoutBounds().getWidth() + 44;
+        double w = Math.max(col.getMinWidth(), Math.min(800, Math.max(max + 18, header)));
+        col.setPrefWidth(w);
+    }
+
+    private static final javafx.css.PseudoClass PC_NULL = javafx.css.PseudoClass.getPseudoClass("null-value");
+    private static final javafx.css.PseudoClass PC_NUMBER = javafx.css.PseudoClass.getPseudoClass("number");
+    private static final javafx.css.PseudoClass PC_TRUE = javafx.css.PseudoClass.getPseudoClass("bool-true");
+    private static final javafx.css.PseudoClass PC_FALSE = javafx.css.PseudoClass.getPseudoClass("bool-false");
+
     private void populateTableViewWithResult(TableView<QueryResultRow> table, QueryResult result) {
         table.getColumns().clear();
+        // D4: an empty result keeps its column headers (and can be scrolled sideways); the body says "0 dòng"
+        table.setPlaceholder(new app.ui.results.EmptyGridPlaceholder(table, "0 dòng"));
         table.getProperties().put(GRID_RESULT_KEY, result);
         table.getProperties().remove(GRID_PINNED_KEY);
 
         app.models.IdeSettings curSettings = app.services.SettingsService.getInstance().getCurrentSettings();
+        final int gridIndex = table.getProperties().get(GRID_INDEX_KEY) instanceof Integer gi ? gi : 0;
+        table.getProperties().remove(WIDTHS_READY_KEY);
+        Platform.runLater(() -> table.getProperties().put(WIDTHS_READY_KEY, Boolean.TRUE));
         String gridFont = curSettings.getGrid() != null ? curSettings.getGrid().getFontFamily() : "Inter";
         int gridFontSize = curSettings.getGrid() != null ? curSettings.getGrid().getFontSize() : 12;
         table.setStyle(String.format(java.util.Locale.ROOT, "-fx-font-family: '%s'; -fx-font-size: %dpx;", gridFont, gridFontSize));
 
-        // 1. Column 0: Row Number '#'
+        // D4 (lazy grid): fixed row height → JavaFX lays out only the rows AND the columns in view
+        // (279 columns no longer means 279 cells per row) and scrolling needs no per-row measuring.
+        table.setFixedCellSize(Math.max(24, gridFontSize * 2));
+
+        // 1. Column 0: '#'. The column only reserves the space and holds the frozen header; the numbers are
+        //    drawn by ResultGridRow so they survive horizontal virtualization (T11).
         TableColumn<QueryResultRow, Integer> rowNumCol = new TableColumn<>("#");
         // fixed while scrolling horizontally, ~50px by default, user can drag it wider (2026-11-05)
         rowNumCol.setPrefWidth(30);
@@ -1202,60 +1648,25 @@ public class ResultsController implements Initializable {
         rowNumCol.setSortable(false);
         rowNumCol.getStyleClass().add("row-number-column");
         rowNumCol.setVisible(curSettings.isShowRowNumbers());
-        rowNumCol.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getRowNumber()));
+        rowNumCol.setCellFactory(column -> new TableCell<>()); // empty: the row draws the number
 
         Label rowNumHeaderLabel = new Label("#");
         rowNumHeaderLabel.setStyle("-fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: -color-fg-muted;");
         rowNumHeaderLabel.setOnMouseClicked(event -> {
-            table.getSelectionModel().clearSelection();
-            for (int r = 0; r < table.getItems().size(); r++) {
-                for (TableColumn<QueryResultRow, ?> col : table.getColumns()) {
-                    table.getSelectionModel().select(r, col);
-                }
-            }
+            table.getSelectionModel().selectAll();
             event.consume();
         });
         rowNumCol.setGraphic(rowNumHeaderLabel);
 
-        // Clicking row number cell selects whole row
-        rowNumCol.setCellFactory(column -> {
-            TableCell<QueryResultRow, Integer> cell = new TableCell<>() {
-                @Override
-                protected void updateItem(Integer item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty || item == null) {
-                        setText(null);
-                        setGraphic(null);
-                    } else {
-                        setText(String.valueOf(item));
-                        if (!getStyleClass().contains("row-number-cell")) getStyleClass().add("row-number-cell");
-                    }
-                    app.ui.results.FrozenColumnSupport.freezeCell(this, table);
-                }
-            };
+        // Clicking a row number selects the whole row (Ctrl/Cmd adds it to the selection)
+        table.setRowFactory(tv -> new app.ui.results.ResultGridRow(table, rowNumCol, (rIdx, event) -> {
+            if (!(event.isControlDown() || event.isShortcutDown())) table.getSelectionModel().clearSelection();
+            var cols = table.getColumns();
+            if (!cols.isEmpty()) table.getSelectionModel().selectRange(rIdx, cols.get(0), rIdx, cols.get(cols.size() - 1)); // one batched change
+        }));
 
-            cell.setOnMouseClicked(event -> {
-                if (!cell.isEmpty()) {
-                    int rIdx = cell.getIndex();
-                    if (event.isControlDown() || event.isShortcutDown()) {
-                        for (TableColumn<QueryResultRow, ?> c : table.getColumns()) {
-                            table.getSelectionModel().select(rIdx, c);
-                        }
-                    } else {
-                        table.getSelectionModel().clearSelection();
-                        for (TableColumn<QueryResultRow, ?> c : table.getColumns()) {
-                            table.getSelectionModel().select(rIdx, c);
-                        }
-                    }
-                    event.consume();
-                }
-            });
-
-            return cell;
-        });
-
-        table.getColumns().add(rowNumCol);
-        app.ui.results.FrozenColumnSupport.install(table, rowNumCol);
+        List<TableColumn<QueryResultRow, ?>> newColumns = new ArrayList<>();
+        newColumns.add(rowNumCol);
 
         // 2. Dynamic Columns from query result
         for (int i = 0; i < result.getColumns().size(); i++) {
@@ -1263,11 +1674,23 @@ public class ResultsController implements Initializable {
             QueryResultColumn colMeta = result.getColumns().get(i);
 
             TableColumn<QueryResultRow, Object> col = new TableColumn<>(colMeta.getHeaderLabel());
-            col.setPrefWidth(140);
+            // D4 (LLTool query.js): width from the column NAME, never from the data (no scan of the rows);
+            // a width the user dragged is remembered per tab + grid + column and used again
+            String colName = colMeta.getName() != null ? colMeta.getName() : "";
+            double minW = Math.max(38, Math.min(160, colName.length() * 8 + 36));
+            Double saved = savedColumnWidth(gridIndex, colName);
+            col.setMinWidth(minW);
+            col.setPrefWidth(saved != null ? Math.max(minW, saved) : Math.max(minW, 120));
+            col.widthProperty().addListener((o, was, now) -> {
+                if (Boolean.TRUE.equals(table.getProperties().get(WIDTHS_READY_KEY))) {
+                    rememberColumnWidth(gridIndex, colName, now.doubleValue());
+                }
+            });
             col.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getValue(colIndex)));
 
-            // Header: name + data type (80 % size, italic, muted) and the filter button pinned to
-            // the right edge of the column, so it follows when the column is resized (2026-11-05).
+            // Header (user 2026-11-06): the name uses the whole width; the data type (80 % size, italic, muted) and
+            // the filter button sit in a tray over the right edge, shown on hover over a gradient that fades the
+            // end of the name. An active filter keeps its button (and the gradient) visible.
             Label titleLabel = new Label(colMeta.getName());
             titleLabel.getStyleClass().add("col-header-name");
             titleLabel.setMinWidth(0);
@@ -1278,19 +1701,16 @@ public class ResultsController implements Initializable {
             boolean hasType = colMeta.getDataType() != null && !colMeta.getDataType().isBlank();
             typeLabel.setVisible(hasType);
             typeLabel.setManaged(hasType);
-            javafx.scene.layout.Region headerGap = new javafx.scene.layout.Region();
-            HBox.setHgrow(headerGap, javafx.scene.layout.Priority.ALWAYS);
-            headerGap.setMinWidth(0);
 
             // Clicking the title selects the entire column
             titleLabel.setOnMouseClicked(event -> {
                 if (!(event.isControlDown() || event.isShortcutDown())) table.getSelectionModel().clearSelection();
-                for (int r = 0; r < table.getItems().size(); r++) {
-                    table.getSelectionModel().select(r, col);
-                }
+                int last = table.getItems().size() - 1;
+                if (last >= 0) table.getSelectionModel().selectRange(0, col, last, col); // one batched change
                 event.consume();
             });
 
+            HBox headerTray = new HBox(4);
             Button filterBtn = new Button();
             filterBtn.getStyleClass().add("col-header-filter-btn");
             FontIcon filterIcon = new FontIcon("fth-filter");
@@ -1304,17 +1724,26 @@ public class ResultsController implements Initializable {
                 app.ui.results.ColumnFilterPopup.show(filterBtn, state, colIndex, colMeta.getName(), nullText, () -> {
                     boolean on = state.isFiltered(colIndex);
                     filterBtn.getStyleClass().remove("active-filter");
+                    headerTray.getStyleClass().remove("has-filter");
                     col.getStyleClass().remove("column-header-filtered");
                     if (on) {
                         filterBtn.getStyleClass().add("active-filter");
+                        headerTray.getStyleClass().add("has-filter");
                         col.getStyleClass().add("column-header-filtered");
                     }
                     updateStatsLabel();
                 });
             });
 
-            HBox headerBox = new HBox(4, titleLabel, typeLabel, headerGap, filterBtn);
-            headerBox.setAlignment(Pos.CENTER_LEFT);
+            headerTray.getChildren().addAll(typeLabel, filterBtn);
+            headerTray.setAlignment(Pos.CENTER_RIGHT);
+            headerTray.getStyleClass().add("col-header-tray");
+            headerTray.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+            headerTray.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+            headerTray.setMaxHeight(Double.MAX_VALUE);
+            javafx.scene.layout.StackPane headerBox = new javafx.scene.layout.StackPane(titleLabel, headerTray);
+            javafx.scene.layout.StackPane.setAlignment(titleLabel, Pos.CENTER_LEFT);
+            javafx.scene.layout.StackPane.setAlignment(headerTray, Pos.CENTER_RIGHT);
             headerBox.getStyleClass().add("col-header-box");
             headerBox.setMinWidth(0);
             headerBox.prefWidthProperty().bind(col.widthProperty().subtract(12));
@@ -1327,37 +1756,34 @@ public class ResultsController implements Initializable {
                     @Override
                     protected void updateItem(Object item, boolean empty) {
                         super.updateItem(item, empty);
-                        getStyleClass().removeAll("null-cell-value", "boolean-cell-false", "boolean-cell-true", "number-cell");
-
+                        // D4: pseudo-classes instead of adding / removing style classes on every update, which
+                        // made each scrolled cell go through a full CSS pass
+                        boolean isNull = false, isNum = false, isTrue = false, isFalse = false;
                         if (empty) {
                             setText(null);
-                            setGraphic(null);
                         } else if (item == null) {
                             String nullText = app.services.SettingsService.getInstance().getCurrentSettings().getNullDisplayString();
                             setText(nullText != null ? nullText : "NULL");
-                            setGraphic(null);
-                            getStyleClass().add("null-cell-value");
-                            setAlignment(Pos.CENTER_LEFT);
+                            isNull = true;
                         } else {
-                            setText(item.toString());
-                            setGraphic(null);
-
+                            String text = item.toString();
+                            setText(text);
                             if (item instanceof Boolean b) {
-                                getStyleClass().add(b ? "boolean-cell-true" : "boolean-cell-false");
-                                setAlignment(Pos.CENTER_LEFT);
+                                isTrue = b;
+                                isFalse = !b;
                             } else if (item instanceof Number) {
-                                getStyleClass().add("number-cell");
-                                setAlignment(Pos.CENTER_RIGHT);
-                            } else {
-                                String str = item.toString().trim();
-                                if ("false".equalsIgnoreCase(str)) {
-                                    getStyleClass().add("boolean-cell-false");
-                                } else if ("true".equalsIgnoreCase(str)) {
-                                    getStyleClass().add("boolean-cell-true");
-                                }
-                                setAlignment(Pos.CENTER_LEFT);
+                                isNum = true;
+                            } else if (text.length() <= 5) {
+                                isTrue = "true".equalsIgnoreCase(text);
+                                isFalse = "false".equalsIgnoreCase(text);
                             }
                         }
+                        setGraphic(null);
+                        setAlignment(isNum ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+                        pseudoClassStateChanged(PC_NULL, isNull);
+                        pseudoClassStateChanged(PC_NUMBER, isNum);
+                        pseudoClassStateChanged(PC_TRUE, isTrue);
+                        pseudoClassStateChanged(PC_FALSE, isFalse);
                     }
                 };
 
@@ -1391,14 +1817,22 @@ public class ResultsController implements Initializable {
                 return cell;
             });
 
-            table.getColumns().add(col);
+            newColumns.add(col);
         }
+
+        // one change for all columns: adding 279 columns one by one re-ran the frozen-header hook 279 times
+        table.getColumns().setAll(newColumns);
+        app.ui.results.FrozenColumnSupport.install(table, rowNumCol);
 
         table.setOnDragDetected(event -> table.startFullDrag());
     }
 
     /** The quick filter above the grid applies to every visible grid. */
+    private final javafx.animation.PauseTransition quickFilterDebounce =
+            new javafx.animation.PauseTransition(javafx.util.Duration.millis(200));
+
     private void applyCombinedFilter() {
+        quickFilterDebounce.stop();
         String globalQuery = (resultsFilterField != null) ? resultsFilterField.getText() : null;
         if (mainFilterState != null) mainFilterState.setGlobalQuery(globalQuery);
         for (var st : subFilterStates) st.setGlobalQuery(globalQuery);
@@ -1412,9 +1846,12 @@ public class ResultsController implements Initializable {
                     Tooltip tip = new Tooltip();
                     tip.setShowDelay(javafx.util.Duration.millis(250));
                     tip.setShowDuration(javafx.util.Duration.seconds(30));
+                    // describe() counts rows per filter (a full scan each): only when the tooltip opens
+                    tip.setOnShowing(ev -> {
+                        if (mainFilterState != null) tip.setText(mainFilterState.describe());
+                    });
                     resultsStatsLabel.setTooltip(tip);
                 }
-                resultsStatsLabel.getTooltip().setText(mainFilterState.describe());
             } else {
                 resultsStatsLabel.setTooltip(null);
             }

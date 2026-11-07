@@ -208,6 +208,9 @@ public final class GridDataExportUtils {
         if (val instanceof Boolean b) {
             return b ? "1" : "0";
         }
+        if (val instanceof app.framework.query.CellValues.BinaryValue) {
+            return val.toString(); // 0x… literal, not a quoted string
+        }
 
         String str = val.toString();
         if (str.isEmpty()) {

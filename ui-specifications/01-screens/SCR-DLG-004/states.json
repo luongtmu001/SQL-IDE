@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-004",
+  "states": [
+    {
+      "id": "STA-DLG04-001",
+      "component_id": "BTN-DLG04-004",
+      "state": "normal",
+      "visual_description": "Nút đỏ (danger)",
+      "entry_condition": "destructive=true",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}

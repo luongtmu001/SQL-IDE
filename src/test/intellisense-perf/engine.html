@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>engine bench</title></head>
+<body>
+<div id="box" style="width:420px;height:280px;overflow:auto;position:absolute;left:0;top:0"></div>
+<script>
+/*
+ * B1 analyze, B2 getCompletions, B3 filter + rank, B4 list DOM, with the engine files of the Python project
+ * (?src=py, unchanged) or of this project (?src=java). No popup, no Monaco: only the shared logic.
+ */
+(function () {
+    var q = new URLSearchParams(location.search);
+    var SRC = q.get('src') || 'py', BROWSER = q.get('browser') || 'edge';
+    var RESULT = 'engine-' + SRC + '-' + BROWSER;
+    var FILES = SRC === 'py'
+        ? ['sql-dialects', 'sql-context-engine', 'sql-tokenizer', 'scope-resolver', 'context-analyzer', 'metadata-provider', 'metadata-cache',
+            'sql-function-signatures', 'candidate-filter', 'completion-ranker', 'candidate-generator', 'signature-help-resolver', 'hover-resolver', 'completion-engine']
+        : ['sql-dialects', 'sql-tokenizer', 'scope-resolver', 'context-analyzer', 'metadata-provider', 'metadata-cache',
+            'sql-function-signatures', 'candidate-filter', 'completion-ranker', 'candidate-generator', 'sql-completion-rules', 'signature-help-resolver', 'hover-resolver', 'completion-engine'];
+    var BASE = SRC === 'py' ? '/py/' : '/java/intellisense/engine/';
+    var errors = [];
+    window.addEventListener('error', function (e) { errors.push(String(e.message) + ' @' + e.filename + ':' + e.lineno); });
+
+    window.ActiveDbType = 'sqlserver'; window.ActiveConnectionId = 'c1'; window.ActiveDatabase = 'bravo'; window.ActiveSchema = 'dbo';
+    window.AppTabs = {
+        getActiveTabId: function () { return 'active'; },
+        getActiveTabState: function () { return { id: 'active', tabId: 'active', connectionId: 'c1', database: 'bravo', schema: 'dbo', dbType: 'sqlserver' }; },
+        getAllTabs: function () { return []; }
+    };
+
+    function post(obj) {
+        var x = new XMLHttpRequest();
+        x.open('POST', '/result?name=' + RESULT, true);
+        x.send(JSON.stringify(obj));
+        window.__benchDone = true;
+    }
+
+    function load(i) {
+        if (i >= FILES.length) { setTimeout(run, 50); return; }
+        var s = document.createElement('script');
+        s.src = BASE + FILES[i] + '.js';
+        s.onload = function () { load(i + 1); };
+        s.onerror = function () { errors.push('cannot load ' + s.src); load(i + 1); };
+        document.head.appendChild(s);
+    }
+
+    function stats(a) {
+        var s = a.slice().sort(function (x, y) { return x - y; });
+        var r = function (v) { return Math.round(v * 100) / 100; };
+        return { n: s.length, median: r(s[Math.floor(s.length / 2)]), p95: r(s[Math.min(s.length - 1, Math.floor(s.length * 0.95))]), max: r(s[s.length - 1]) };
+    }
+
+    function pause() { return new Promise(function (r) { setTimeout(r, 0); }); }
+
+    function doc(bytes) {
+        var line = "SELECT o.OrderID, c.CustomerName, o.Total FROM dbo.Orders o INNER JOIN dbo.Customers c ON o.CustomerID = c.CustomerID WHERE o.Total > 100.0;\n";
+        var s = '';
+        while (s.length < bytes) s += line;
+        return s + "SELECT o. FROM dbo.Orders o;";
+    }
+
+    function objects(n) {
+        var out = [], kinds = ['table', 'table', 'table', 'view', 'procedure', 'function'];
+        for (var i = 0; i < n; i++) out.push({ name: (i % 2 ? 'Order_' : 'Table_') + i, schema: 'dbo', type: kinds[i % kinds.length] });
+        return out;
+    }
+
+    function stubProvider(n) {
+        var objs = objects(n);
+        var cols = [{ name: 'OrderID', data_type: 'int', is_nullable: false, is_pk: true }, { name: 'CustomerID', data_type: 'int', is_nullable: true, is_pk: false }];
+        var empty = function () { return Promise.resolve([]); };
+        return {
+            fetchObjects: function () { return Promise.resolve(objs); }, fetchColumns: function () { return Promise.resolve(cols); },
+            fetchParameters: empty, fetchForeignKeys: empty, fetchDefinition: function () { return Promise.resolve(''); },
+            fetchDataTypes: function () { return Promise.resolve({ types: [], user_types: [] }); },
+            getDatabases: empty, fetchDatabases: empty, getSchemas: function () { return Promise.resolve(['dbo']); }, fetchSchemas: function () { return Promise.resolve(['dbo']); },
+            getLinkedServers: empty, getRemoteDatabases: empty, getRemoteSchemas: empty, getRemoteObjects: empty, getRemoteColumns: empty, getForeignServers: empty, getForeignTables: empty
+        };
+    }
+
+    async function run() {
+        var res = { src: SRC, browser: BROWSER, ua: navigator.userAgent, errors: errors, analyze: {}, completions: {}, filterRank: {}, listDom: {} };
+        var A = window.SqlContextAnalyzer;
+        try {
+            // B1: analyze, what runs on (nearly) every key in the Python flow
+            var sizes = { '1KB': 1024, '16KB': 16000, '54KB': 54000, '100KB': 100000 };
+            for (var name in sizes) {
+                var text = doc(sizes[name]), off = text.indexOf('SELECT o. FROM') + 9, t = [];
+                A.analyze(text, off, 'sqlserver');   // warm-up
+                var rounds = sizes[name] > 50000 ? 8 : 25;
+                for (var i = 0; i < rounds; i++) {
+                    var variant = text.slice(0, off) + 'x'.repeat(i % 3) + text.slice(off);  // never the same text twice in a row
+                    var t0 = performance.now();
+                    A.analyze(variant, off + (i % 3), 'sqlserver');
+                    t.push(performance.now() - t0);
+                    await pause();
+                }
+                res.analyze[name] = stats(t);
+            }
+
+            // B2 / B3: the list after FROM with a catalog of N objects
+            var E = window.DefaultCompletionEngine, C = window.AppMetadataCache;
+            E.setMetadataCache(C);
+            var tab = { tabId: 'active', connectionId: 'c1', database: 'bravo', schema: 'dbo', dbType: 'sqlserver' };
+            var ns = [500, 5000, 20000];
+            for (var k = 0; k < ns.length; k++) {
+                var n = ns[k];
+                E.setDataProvider(stubProvider(n));
+                var sql = 'SELECT * FROM ', tc = [], tf = [], raw = null, count = 0;
+                for (var j = 0; j < 8; j++) {
+                    C.clearCompletions();
+                    var ctx = A.analyze(sql, sql.length, 'sqlserver');
+                    var t1 = performance.now();
+                    var ranked = await E.getCompletions(sql, { line: 0, ch: sql.length }, ctx, tab);
+                    tc.push(performance.now() - t1);
+                    count = ranked ? ranked.length : -1;
+                    raw = ranked ? (ranked.rawCandidates || ranked) : [];
+                    await pause();
+                }
+                res.completions[n] = Object.assign(stats(tc), { listed: count, pool: raw.length });
+                var words = ['o', 'or', 'ord', 'orde', 'order'];
+                for (var w = 0; w < 15; w++) {
+                    var word = words[w % words.length], cx = A.analyze(sql + word, (sql + word).length, 'sqlserver');
+                    var t2 = performance.now();
+                    E.ranker.rank(E.filter.filter(raw, word), cx, word);
+                    tf.push(performance.now() - t2);
+                    await pause();
+                }
+                res.filterRank[n] = stats(tf);
+            }
+
+            // B4: building the list of the popup: same markup shape, forced layout
+            var box = document.getElementById('box');
+            var rowsList = [50, 200, 1000];
+            for (var r = 0; r < rowsList.length; r++) {
+                var rows = rowsList[r], html = '';
+                for (var h = 0; h < rows; h++) {
+                    html += '<div class="isp-item" data-index="' + h + '" style="height:22px;display:flex"><i class="codicon"></i><span class="isp-name"><b>Ord</b>er_' + h + '</span><span class="isp-badge">[Table]</span></div>';
+                }
+                var td = [];
+                for (var y = 0; y < 25; y++) {
+                    box.innerHTML = '';
+                    var t3 = performance.now();
+                    box.innerHTML = html;
+                    void box.offsetHeight;
+                    box.scrollTop = 0;
+                    td.push(performance.now() - t3);
+                    await pause();
+                }
+                res.listDom[rows] = stats(td);
+            }
+        } catch (e) {
+            res.failure = String(e && e.stack || e);
+        }
+        post(res);
+    }
+
+    load(0);
+})();
+</script>
+</body>
+</html>

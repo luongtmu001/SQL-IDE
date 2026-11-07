@@ -32,6 +32,7 @@ public final class ConnectionColorService {
     private static final ConnectionColorService INSTANCE = new ConnectionColorService();
 
     private final Preferences prefs = Preferences.userNodeForPackage(ConnectionColorService.class).node("connection_colors");
+    private final java.util.Map<String, ConnectionColor> cache = new java.util.concurrent.ConcurrentHashMap<>();
     /** Bumped on every change so views can refresh. */
     private final ReadOnlyIntegerWrapper revision = new ReadOnlyIntegerWrapper(0);
 
@@ -50,8 +51,11 @@ public final class ConnectionColorService {
         if (connectionKey == null || connectionKey.isBlank()) {
             return DEFAULT;
         }
-        String stored = prefs.get(sanitize(connectionKey), DEFAULT.key());
-        return PALETTE.stream().filter(c -> c.key().equals(stored)).findFirst().orElse(DEFAULT);
+        // cached: Preferences on Windows is a registry read per call, and this runs for every tab / tree row refresh
+        return cache.computeIfAbsent(connectionKey, k -> {
+            String stored = prefs.get(sanitize(k), DEFAULT.key());
+            return PALETTE.stream().filter(c -> c.key().equals(stored)).findFirst().orElse(DEFAULT);
+        });
     }
 
     public void setColor(String connectionKey, ConnectionColor color) {
@@ -67,6 +71,7 @@ public final class ConnectionColorService {
         } catch (Exception ignored) {
             // preference store unavailable: keep in-session behaviour only
         }
+        cache.put(connectionKey, color == null ? DEFAULT : color);
         revision.set(revision.get() + 1);
     }
 

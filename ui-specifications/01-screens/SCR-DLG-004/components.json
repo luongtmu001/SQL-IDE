@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-004",
+  "components": [
+    {
+      "id": "CMP-DLG04-001",
+      "name": "Message",
+      "component_type": "label",
+      "region_id": "REG-DLG04-002",
+      "parent_component_id": null,
+      "visible_label": "<câu hỏi xóa nhóm>",
+      "accessible_name": "<câu hỏi xóa nhóm>",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConfirmDialog.java (dùng chung)",
+        "selector_or_symbol": "msg",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nội dung do SidebarController truyền"
+    },
+    {
+      "id": "CMP-DLG04-002",
+      "name": "Detail",
+      "component_type": "label",
+      "region_id": "REG-DLG04-002",
+      "parent_component_id": null,
+      "visible_label": "<chi tiết>",
+      "accessible_name": "<chi tiết>",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConfirmDialog.java (dùng chung)",
+        "selector_or_symbol": "det",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Tùy chọn"
+    },
+    {
+      "id": "BTN-DLG04-003",
+      "name": "Cancel",
+      "component_type": "button",
+      "region_id": "REG-DLG04-003",
+      "parent_component_id": null,
+      "visible_label": "Hủy",
+      "accessible_name": "Hủy",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConfirmDialog.java (dùng chung)",
+        "selector_or_symbol": "cancel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG04-004",
+      "name": "Delete",
+      "component_type": "button",
+      "region_id": "REG-DLG04-003",
+      "parent_component_id": null,
+      "visible_label": "<actionText>",
+      "accessible_name": "<actionText>",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConfirmDialog.java (dùng chung)",
+        "selector_or_symbol": "ok",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Kiểu danger vì destructive=true"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>worker check</title></head>
+<body>
+<script>
+/* Can the analysis run off the thread that paints the app? Does the same analyze cost the same there? */
+(function () {
+    var BROWSER = new URLSearchParams(location.search).get('browser') || 'edge';
+    var res = { browser: BROWSER, ua: navigator.userAgent, workerType: typeof Worker };
+    function done() {
+        var x = new XMLHttpRequest();
+        x.open('POST', '/result?name=worker-' + BROWSER, true);
+        x.send(JSON.stringify(res));
+        window.__benchDone = true;
+    }
+    if (typeof Worker === 'undefined') { done(); return; }
+    var gaps = [], last = performance.now(), stop = false;
+    (function tick() {
+        var n = performance.now();
+        gaps.push(n - last);
+        last = n;
+        if (!stop) setTimeout(tick, 4);
+    })();
+    var w;
+    try {
+        w = new Worker('/bench/worker-bench.js');
+    } catch (e) {
+        res.createError = String(e);
+        done();
+        return;
+    }
+    var timer = setTimeout(function () { res.timeout = true; stop = true; done(); }, 120000);
+    w.onerror = function (e) { res.workerError = String(e.message) + ' @' + e.filename + ':' + e.lineno; clearTimeout(timer); stop = true; done(); };
+    w.onmessage = function (e) {
+        clearTimeout(timer);
+        stop = true;
+        res.inWorker = e.data;
+        gaps.sort(function (a, b) { return a - b; });
+        res.mainThreadGapWhileWorking = { p95: gaps[Math.floor(gaps.length * 0.95)], max: gaps[gaps.length - 1], n: gaps.length };
+        done();
+    };
+})();
+</script>
+</body>
+</html>

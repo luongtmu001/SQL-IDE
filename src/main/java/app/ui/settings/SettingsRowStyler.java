@@ -73,6 +73,17 @@ public final class SettingsRowStyler {
         }
     }
 
+    /**
+     * S3 (2026-11-06): settings that are stored (same file as LLTool) but have no effect in this version yet,
+     * so the user is not misled. Key = setting key, or "section.*". Value = {badge, tooltip}.
+     */
+    private static final java.util.Map<String, String[]> NOTES = java.util.Map.of(
+            "editor.keywordCase", new String[]{"Chưa hỗ trợ", "Được lưu lại; có tác dụng khi có bộ định dạng SQL (D6)."},
+            "editor.syntaxCheck", new String[]{"Chưa hỗ trợ", "Được lưu lại; có tác dụng khi có kiểm tra cú pháp."},
+            "sql.perTabSession", new String[]{"Luôn bật", "Bản Java luôn mở một phiên kết nối riêng cho mỗi tab; tùy chọn này không đổi được."},
+            "history.*", new String[]{"Chưa hỗ trợ", "Được lưu lại; chưa có lịch sử truy vấn trong bản Java."},
+            "updates.*", new String[]{"Chưa hỗ trợ", "Được lưu lại; kiểm tra cập nhật đang là bản mẫu (D8)."});
+
     private final List<Item> items = new ArrayList<>();
     private IntConsumer onDirtyCount;
     private boolean suspended = false;
@@ -149,6 +160,14 @@ public final class SettingsRowStyler {
         more.getStyleClass().add("setting-more");
         more.setFocusTraversable(false);
         HBox header = new HBox(6, mainLbl, altLbl, gap, more);
+        String[] note = NOTES.get(key);
+        if (note == null && key.contains(".")) note = NOTES.get(key.substring(0, key.indexOf('.')) + ".*");
+        if (note != null) {
+            Label badge = new Label(note[0]);
+            badge.getStyleClass().add("setting-badge");
+            badge.setTooltip(new Tooltip(note[1]));
+            header.getChildren().add(2, badge);
+        }
         header.setAlignment(Pos.CENTER_LEFT);
 
         Label descLbl = new Label(desc);

@@ -1,0 +1,220 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-003",
+  "components": [
+    {
+      "id": "CMP-DLG03-001",
+      "name": "Parent path",
+      "component_type": "label",
+      "region_id": "REG-DLG03-002",
+      "parent_component_id": null,
+      "visible_label": "Trong: (gốc) / Trong: <path>",
+      "accessible_name": "Trong: (gốc) / Trong: <path>",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/GroupNameDialog.java",
+        "selector_or_symbol": "where",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG03-002",
+      "name": "Group name",
+      "component_type": "text_field",
+      "region_id": "REG-DLG03-002",
+      "parent_component_id": null,
+      "visible_label": "Tên nhóm",
+      "accessible_name": "Tên nhóm",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Ví dụ: POSTGRE",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/GroupNameDialog.java",
+        "selector_or_symbol": "field",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Tự chọn hết khi mở"
+    },
+    {
+      "id": "CMP-DLG03-003",
+      "name": "Error",
+      "component_type": "label",
+      "region_id": "REG-DLG03-002",
+      "parent_component_id": null,
+      "visible_label": "<thông báo lỗi>",
+      "accessible_name": "<thông báo lỗi>",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/GroupNameDialog.java",
+        "selector_or_symbol": "error",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chỉ hiện khi apply() trả lỗi; ô nhập thêm class invalid"
+    },
+    {
+      "id": "CMP-DLG03-004",
+      "name": "Hint",
+      "component_type": "label",
+      "region_id": "REG-DLG03-002",
+      "parent_component_id": null,
+      "visible_label": "Dùng nhóm con để phân cấp, ví dụ BRAVO-SERVER ▸ POSTGRE.",
+      "accessible_name": "Dùng nhóm con để phân cấp, ví dụ BRAVO-SERVER ▸ POSTGRE.",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/GroupNameDialog.java",
+        "selector_or_symbol": "hint",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG03-005",
+      "name": "Cancel",
+      "component_type": "button",
+      "region_id": "REG-DLG03-003",
+      "parent_component_id": null,
+      "visible_label": "Hủy",
+      "accessible_name": "Hủy",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/GroupNameDialog.java",
+        "selector_or_symbol": "cancel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG03-006",
+      "name": "OK",
+      "component_type": "button",
+      "region_id": "REG-DLG03-003",
+      "parent_component_id": null,
+      "visible_label": "Tạo nhóm / Đổi tên",
+      "accessible_name": "Tạo nhóm / Đổi tên",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/GroupNameDialog.java",
+        "selector_or_symbol": "ok",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    }
+  ]
+}

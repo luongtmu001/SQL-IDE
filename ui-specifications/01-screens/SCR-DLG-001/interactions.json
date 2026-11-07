@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-001",
+  "interactions": [
+    {
+      "id": "INT-DLG01-001",
+      "component_id": "BTN-DLG01-001",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "handleNewConnection",
+      "backend_method": "unknown",
+      "action_summary": "Tạo kết nối mới",
+      "expected_result": "Form rỗng (mặc định theo loại DB)",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG01-002",
+      "component_id": "CMP-DLG01-005",
+      "trigger": "selection_changed",
+      "preconditions": [],
+      "source_handler": "connectionTree selection",
+      "backend_method": "unknown",
+      "action_summary": "Chọn một kết nối",
+      "expected_result": "Form điền sẵn giá trị của kết nối",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG01-003",
+      "component_id": "BTN-DLG01-027",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "handleTestConnection",
+      "backend_method": "ConnectionService",
+      "action_summary": "Kiểm tra kết nối",
+      "expected_result": "ProgressIndicator rồi thông báo thành công/lỗi trong statusLabel",
+      "side_effects": [
+        "mở kết nối thử tới server"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": false,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG01-004",
+      "component_id": "BTN-DLG01-029",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "handleSaveConnection",
+      "backend_method": "unknown",
+      "action_summary": "Lưu profile",
+      "expected_result": "Ghi kết nối; mật khẩu lưu mã hóa nếu bật",
+      "side_effects": [
+        "ghi file profile"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG01-005",
+      "component_id": "BTN-DLG01-030",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "handleConnectNow",
+      "backend_method": "unknown",
+      "action_summary": "Lưu rồi yêu cầu kết nối",
+      "expected_result": "Đóng hộp thoại và trả `connectRequestedId` cho người gọi",
+      "side_effects": [
+        "mở kết nối thật"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": false,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG01-006",
+      "component_id": "BTN-DLG01-003",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "handleDeleteConnection",
+      "backend_method": "unknown",
+      "action_summary": "Xóa kết nối",
+      "expected_result": "ConfirmDialog \"Xóa kết nối\" rồi xóa",
+      "side_effects": [
+        "xóa profile"
+      ],
+      "confirmation_required": "có (ConfirmDialog, nút danger)",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG01-007",
+      "component_id": "BTN-DLG01-013",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "handleFetchDatabases",
+      "backend_method": "unknown",
+      "action_summary": "Tải danh sách database",
+      "expected_result": "Điền ComboBox database",
+      "side_effects": [
+        "truy vấn server"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": false,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG01-008",
+      "component_id": "BTN-DLG01-023",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "handleToggleAdvanced",
+      "backend_method": "unknown",
+      "action_summary": "Mở/đóng phần nâng cao",
+      "expected_result": "Hiện timeout, chỉ đọc, trust cert",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

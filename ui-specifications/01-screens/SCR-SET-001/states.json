@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-SET-001",
+  "states": [
+    {
+      "id": "STA-SET-001",
+      "component_id": "BTN-SET-003",
+      "state": "selected",
+      "visual_description": "Nút có styleClass active",
+      "entry_condition": "chế độ Visual",
+      "exit_condition": "chuyển JSON",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-SET-002",
+      "component_id": "BTN-SET-004",
+      "state": "selected",
+      "visual_description": "Nút active; hộp JSON hiện",
+      "entry_condition": "chế độ JSON",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-SET-003",
+      "component_id": "BTN-SET-010",
+      "state": "selected",
+      "visual_description": "Mục điều hướng active",
+      "entry_condition": "đang ở nhóm đó",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-SET-004",
+      "component_id": "CMP-SET-006",
+      "state": "normal",
+      "visual_description": "\"N thay đổi chưa lưu\" (rỗng nếu 0)",
+      "entry_condition": "có control đổi giá trị",
+      "exit_condition": "sau Lưu",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-SET-005",
+      "component_id": "BTN-SET-002",
+      "state": "normal",
+      "visual_description": "Nút ✕ hiện khi có chữ",
+      "entry_condition": "ô tìm không rỗng",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-SET-006",
+      "component_id": "CMP-SET-069",
+      "state": "normal",
+      "visual_description": "\"JSON Hợp lệ\" (settings-json-badge-valid)",
+      "entry_condition": "JSON parse được",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-SET-007",
+      "component_id": "CMP-SET-069",
+      "state": "error",
+      "visual_description": "Badge lỗi (tên/chữ chính xác chưa kiểm)",
+      "entry_condition": "JSON không hợp lệ",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "inferred"
+    },
+    {
+      "id": "STA-SET-008",
+      "component_id": "BTN-SET-005",
+      "state": "disabled",
+      "visual_description": "Chưa xác định có tắt khi không có thay đổi",
+      "entry_condition": "unknown",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "unknown"
+    }
+  ]
+}

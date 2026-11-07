@@ -7,7 +7,7 @@
 }
 
 .toast {
-    -fx-background-color: -color-border-default, -color-bg-overlay;
+    -fx-background-color: -color-border-default, -ide-toast-bg;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 8, 7;
     -fx-padding: 10 6 10 12;

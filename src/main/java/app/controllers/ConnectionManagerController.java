@@ -61,8 +61,6 @@ public class ConnectionManagerController implements Initializable {
     private static final Logger log = LoggerFactory.getLogger(ConnectionManagerController.class);
     private static final List<String> DB_TYPES = List.of("PostgreSQL", "SQL Server", "SQLite");
     private static final Map<String, Image> LOGOS = new HashMap<>();
-    private static final Preferences SCHEMA_PREFS =
-            Preferences.userNodeForPackage(ConnectionManagerController.class).node("default_schema");
 
     @FXML private HBox dialogRoot;
 
@@ -446,7 +444,8 @@ public class ConnectionManagerController implements Initializable {
         databaseComboBox.getItems().clear();
         databaseComboBox.setValue(profile.databaseName() != null ? profile.databaseName() : "");
         schemaComboBox.getItems().clear();
-        schemaComboBox.setValue(SCHEMA_PREFS.get(prefKey(profile.id()), defaultSchema(type)));
+        String savedSchema = app.services.DefaultSchemaService.get(profile.id());
+        schemaComboBox.setValue(savedSchema != null ? savedSchema : defaultSchema(type));
         timeoutSpinner.getValueFactory().setValue(profile.timeoutSeconds() > 0 ? profile.timeoutSeconds() : 15);
         trustCertCheckBox.setSelected(profile.trustServerCertificate());
 
@@ -790,10 +789,9 @@ public class ConnectionManagerController implements Initializable {
             policy.clear(saved.id());
         }
         String schema = schemaComboBox.getValue();
-        try {
-            if (schema != null && !schema.isBlank()) SCHEMA_PREFS.put(prefKey(saved.id()), schema.trim());
-        } catch (Exception ignored) {
-        }
+        app.framework.connection.ProfileLookup.invalidate();
+        app.services.DefaultSchemaService.set(saved.id(), schema); // blank = no default schema
+        app.services.DefaultSchemaService.resetApplied(saved.id());
 
         loadConnections();
         selectConnectionByIdOrName(saved.id());

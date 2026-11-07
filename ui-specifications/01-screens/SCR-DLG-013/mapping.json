@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-013",
+  "mappings": [
+    {
+      "source_id": "update_window.html",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-013",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Hoàn toàn mô phỏng, chưa kết nối máy chủ/GitHub Releases"
+      ],
+      "approval_reference": "none"
+    }
+  ]
+}

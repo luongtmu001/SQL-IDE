@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-008",
+  "interactions": [
+    {
+      "id": "INT-DLG08-001",
+      "component_id": "BTN-DLG08-004",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "go.setOnAction",
+      "backend_method": "unknown",
+      "action_summary": "Đồng ý định dạng",
+      "expected_result": "Trả true; nếu tích \"Không hỏi lại\" thì lưu cờ",
+      "side_effects": [
+        "ghi Preferences"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

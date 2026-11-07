@@ -1,0 +1,290 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-005",
+  "components": [
+    {
+      "id": "CMP-DLG05-001",
+      "name": "Search",
+      "component_type": "text_field",
+      "region_id": "REG-DLG05-002",
+      "parent_component_id": null,
+      "visible_label": "Tìm database…",
+      "accessible_name": "Tìm database…",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Tìm database…",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DatabaseFilterDialog.java",
+        "selector_or_symbol": "searchField",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG05-002",
+      "name": "Select all",
+      "component_type": "hyperlink",
+      "region_id": "REG-DLG05-002",
+      "parent_component_id": null,
+      "visible_label": "Chọn tất cả",
+      "accessible_name": "Chọn tất cả",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DatabaseFilterDialog.java",
+        "selector_or_symbol": "selectAllLink",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Hyperlink",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG05-003",
+      "name": "Deselect all",
+      "component_type": "hyperlink",
+      "region_id": "REG-DLG05-002",
+      "parent_component_id": null,
+      "visible_label": "Bỏ chọn tất cả",
+      "accessible_name": "Bỏ chọn tất cả",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DatabaseFilterDialog.java",
+        "selector_or_symbol": "deselectAllLink",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Hyperlink",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG05-004",
+      "name": "Database list",
+      "component_type": "list",
+      "region_id": "REG-DLG05-002",
+      "parent_component_id": null,
+      "visible_label": "(danh sách có ô chọn)",
+      "accessible_name": "(danh sách có ô chọn)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DatabaseFilterDialog.java",
+        "selector_or_symbol": "list",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ListView",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG05-005",
+      "name": "Stats",
+      "component_type": "label",
+      "region_id": "REG-DLG05-002",
+      "parent_component_id": null,
+      "visible_label": "Đã chọn N/M",
+      "accessible_name": "Đã chọn N/M",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DatabaseFilterDialog.java",
+        "selector_or_symbol": "statsLabel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG05-006",
+      "name": "Reset",
+      "component_type": "hyperlink",
+      "region_id": "REG-DLG05-002",
+      "parent_component_id": null,
+      "visible_label": "Đặt lại",
+      "accessible_name": "Đặt lại",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DatabaseFilterDialog.java",
+        "selector_or_symbol": "resetBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Hyperlink",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG05-007",
+      "name": "Cancel",
+      "component_type": "button",
+      "region_id": "REG-DLG05-003",
+      "parent_component_id": null,
+      "visible_label": "Hủy",
+      "accessible_name": "Hủy",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DatabaseFilterDialog.java",
+        "selector_or_symbol": "cancelBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG05-008",
+      "name": "Apply",
+      "component_type": "button",
+      "region_id": "REG-DLG05-003",
+      "parent_component_id": null,
+      "visible_label": "Áp dụng",
+      "accessible_name": "Áp dụng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DatabaseFilterDialog.java",
+        "selector_or_symbol": "applyBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    }
+  ]
+}

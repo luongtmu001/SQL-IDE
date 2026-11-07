@@ -1,0 +1,215 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-004",
+  "screen_name": "Result panel",
+  "source_window_size": {
+    "width": 1456,
+    "height": 816,
+    "display_scale": "unknown"
+  },
+  "layout_type": "desktop",
+  "regions": [
+    {
+      "id": "REG-RES-001",
+      "name": "Results panel",
+      "purpose": "Khung chứa các tab kết quả",
+      "parent_id": null,
+      "layout_role": "panel",
+      "position": "bottom",
+      "sizing": {
+        "width": "fill",
+        "height": "260px",
+        "min_width": "unknown",
+        "min_height": "150px",
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [
+        "REG-RES-002",
+        "REG-RES-003",
+        "REG-RES-004",
+        "REG-RES-005",
+        "REG-RES-006",
+        "REG-RES-007",
+        "REG-RES-008",
+        "REG-RES-009",
+        "REG-RES-010"
+      ],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-RES-002",
+      "name": "Tab bar",
+      "purpose": "5 tab, không đóng được",
+      "parent_id": "REG-RES-001",
+      "layout_role": "header",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": "auto",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-RES-003",
+      "name": "Results mini toolbar",
+      "purpose": "Lọc, thống kê, Export, Maximize, Pop-out",
+      "parent_id": "REG-RES-001",
+      "layout_role": "header",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": "auto",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-RES-004",
+      "name": "Grid stack",
+      "purpose": "Lưới đơn / nhiều lưới / rỗng / đang tải",
+      "parent_id": "REG-RES-001",
+      "layout_role": "workspace",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-RES-005",
+      "name": "Execution stats footer",
+      "purpose": "Dòng · thời gian · dung lượng · kết nối · trend · sao chép",
+      "parent_id": "REG-RES-001",
+      "layout_role": "footer",
+      "position": "bottom",
+      "sizing": {
+        "width": "fill",
+        "height": "auto",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-RES-006",
+      "name": "Messages toolbar + area",
+      "purpose": "Thông báo SQL dạng văn bản",
+      "parent_id": "REG-RES-001",
+      "layout_role": "panel",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-RES-007",
+      "name": "Timeline toolbar + table",
+      "purpose": "Nhật ký thực thi theo thời gian",
+      "parent_id": "REG-RES-001",
+      "layout_role": "panel",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-RES-008",
+      "name": "Plan toolbar",
+      "purpose": "Lấy plan, đổi chế độ xem, badge",
+      "parent_id": "REG-RES-001",
+      "layout_role": "header",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": "auto",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    },
+    {
+      "id": "REG-RES-009",
+      "name": "Plan content",
+      "purpose": "Rỗng / đang tạo / cây+inspector / thô",
+      "parent_id": "REG-RES-001",
+      "layout_role": "workspace",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [
+        "mỗi lúc chỉ một khối hiện"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "REG-RES-010",
+      "name": "Terminal",
+      "purpose": "Output + dòng nhập",
+      "parent_id": "REG-RES-001",
+      "layout_role": "panel",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": "unknown",
+        "min_height": "unknown",
+        "resizable": false,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": []
+    }
+  ]
+}

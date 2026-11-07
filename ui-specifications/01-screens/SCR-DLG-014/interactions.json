@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-014",
+  "interactions": [
+    {
+      "id": "INT-DLG14-001",
+      "component_id": "CMP-DLG14-004",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "LoadingOverlay.cancel",
+      "backend_method": "unknown",
+      "action_summary": "Hủy thao tác",
+      "expected_result": "Hiện \"Đang hủy…\" rồi gọi cancelAction",
+      "side_effects": [
+        "hủy thao tác dài"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": false,
+      "evidence": []
+    }
+  ]
+}

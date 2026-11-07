@@ -48,12 +48,21 @@ public class StatusBarController implements Initializable {
     }
 
     public static final List<Integer> ZOOM_LEVELS = List.of(50, 75, 90, 100, 110, 125, 150, 200);
+    /** Ctrl+Wheel can zoom to any percentage in this range (as in the source app). */
+    public static final int ZOOM_MIN = 20;
+    public static final int ZOOM_MAX = 400;
 
     @FXML private HBox statusBarRoot;
     @FXML private HBox connectionItem;
     @FXML private Region statusDot;
     @FXML private Label connectionLabel;
     @FXML private Label pidLabel;
+    @FXML private HBox databaseItem;
+    @FXML private Label databaseLabel;
+    @FXML private HBox schemaItem;
+    @FXML private Label schemaLabel;
+    @FXML private HBox userItem;
+    @FXML private Label userLabel;
     @FXML private HBox problemsItem;
     @FXML private Label errorsLabel;
     @FXML private Label warningsLabel;
@@ -82,6 +91,16 @@ public class StatusBarController implements Initializable {
     private String tabInfo = "";
     private int zoomPercent = 100;
 
+    // The editor-specific items live in the bar under the editor (EditorBar); this controller keeps the state
+    private app.ui.editor.EditorBar editorBar;
+    private String lastPid;
+    private int lastErrors = -1;   // -1 = not checked
+    private int cursorLine = 1, cursorCol = 1;
+    private boolean indentSpaces = true;
+    private int indentSize = 4;
+    private String lineSep = "LF";
+    private String encoding = "UTF-8";
+
     private String lastRunText = "Sẵn sàng";
     private String lastRunState = "idle";
 
@@ -91,6 +110,7 @@ public class StatusBarController implements Initializable {
     private Runnable onShowResults;
     private Runnable onGoToLine;
     private Runnable onOpenSettings;
+    private Runnable onToggleIndent;
     private IntConsumer onZoomChanged;
 
     @Override
@@ -116,6 +136,11 @@ public class StatusBarController implements Initializable {
         messageTimer.setOnFinished(e -> renderLastRun());
         ConnectionColorService.getInstance().revisionProperty().addListener((o, a, b) -> applyColor());
 
+        // editor items moved to the bar under the editor; PID and problems too
+        for (Node n : List.of(cursorPositionLabel, indentLabel, encodingLabel, lineSeparatorLabel, languageModeLabel,
+                zoomLabel, pidLabel, problemsItem)) {
+            show(n, false);
+        }
         setConnection(null);
         setCursorPosition(1, 1);
         setZoom(100);
@@ -134,6 +159,8 @@ public class StatusBarController implements Initializable {
     public void setOnShowResults(Runnable r) { this.onShowResults = r; }
     public void setOnGoToLine(Runnable r) { this.onGoToLine = r; }
     public void setOnOpenSettings(Runnable r) { this.onOpenSettings = r; }
+    /** The indentation entry of the editor bar was clicked: TABS ⇄ SPACES: 4. */
+    public void setOnToggleIndent(Runnable r) { this.onToggleIndent = r; }
     public void setOnZoomChanged(IntConsumer c) { this.onZoomChanged = c; }
 
     // ---------------------------------------------------------------- connection
@@ -160,10 +187,44 @@ public class StatusBarController implements Initializable {
     }
 
     public void setPid(String pid) {
-        boolean has = pid != null && !pid.isBlank();
-        pidLabel.setUserData(has ? pid : null);
-        pidLabel.setText(has ? "PID " + pid : "");
-        show(pidLabel, has);
+        lastPid = pid;
+        if (editorBar != null) editorBar.setPid(pid);
+    }
+
+    /** Database / schema / user of the active tab's session; a blank value hides that item. */
+    public void setSessionInfo(String database, String schema, String user) {
+        setItem(databaseItem, databaseLabel, database, "Database");
+        setItem(schemaItem, schemaLabel, schema, "Schema");
+        setItem(userItem, userLabel, user, "Người dùng");
+    }
+
+    private void setItem(HBox item, Label label, String value, String tip) {
+        boolean has = value != null && !value.isBlank();
+        label.setText(has ? value : "");
+        Tooltip tt = (Tooltip) item.getProperties().computeIfAbsent("tooltip", k -> {
+            Tooltip t = new Tooltip();
+            Tooltip.install(item, t);
+            return t;
+        });
+        tt.setText(tip + ": " + value);
+        show(item, has);
+    }
+
+    /** Connects the bar under the editor (zoom box, PID, cursor ...) and shows the current state in it. */
+    public void setEditorBar(app.ui.editor.EditorBar bar) {
+        this.editorBar = bar;
+        if (bar == null) return;
+        bar.setOnZoomRequested(this::changeZoom);
+        bar.setOnGoToLine(() -> run(onGoToLine));
+        bar.setOnOpenSettings(() -> run(onOpenSettings));
+        bar.setOnToggleIndent(() -> run(onToggleIndent));
+        bar.setIssues(lastErrors < 0 ? null : lastErrors);
+        bar.setZoom(zoomPercent);
+        bar.setPid(lastPid);
+        bar.setCursor(cursorLine, cursorCol);
+        bar.setIndentation(indentSpaces, indentSize);
+        bar.setLineSeparator(lineSep);
+        bar.setEncoding(encoding);
     }
 
     public void setTransactionOpen(boolean open) {
@@ -171,6 +232,8 @@ public class StatusBarController implements Initializable {
     }
 
     public void setProblems(int errors, int warnings) {
+        lastErrors = errors;
+        if (editorBar != null) editorBar.setIssues(errors < 0 ? null : errors);
         errorsLabel.setText(String.valueOf(Math.max(0, errors)));
         warningsLabel.setText(String.valueOf(Math.max(0, warnings)));
         problemsTooltip.setText(errors == 0 && warnings == 0
@@ -234,25 +297,33 @@ public class StatusBarController implements Initializable {
     }
 
     public void setCursorPosition(int line, int col) {
+        cursorLine = line;
+        cursorCol = col;
         cursorPositionLabel.setText(String.format("Ln %d, Col %d", line, col));
+        if (editorBar != null) editorBar.setCursor(line, col);
     }
 
     public void setEditorInfoVisible(boolean visible) {
-        for (Node n : List.of(cursorPositionLabel, indentLabel, encodingLabel, lineSeparatorLabel, languageModeLabel, zoomLabel)) {
-            show(n, visible);
-        }
+        // the editor items are in the bar under the editor; nothing to show here
     }
 
     public void setIndentation(boolean insertSpaces, int size) {
+        indentSpaces = insertSpaces;
+        indentSize = size;
         indentLabel.setText((insertSpaces ? "Spaces: " : "Tab Size: ") + Math.max(1, size));
+        if (editorBar != null) editorBar.setIndentation(insertSpaces, size);
     }
 
     public void setEncoding(String encoding) {
+        this.encoding = encoding;
         encodingLabel.setText(encoding);
+        if (editorBar != null) editorBar.setEncoding(encoding);
     }
 
     public void setLineSeparator(String separator) {
+        lineSep = separator;
         lineSeparatorLabel.setText(separator);
+        if (editorBar != null) editorBar.setLineSeparator(separator);
     }
 
     public void setLanguageMode(String language) {
@@ -268,16 +339,25 @@ public class StatusBarController implements Initializable {
     }
 
     public void setZoom(int percent) {
-        zoomPercent = Math.max(ZOOM_LEVELS.get(0), Math.min(ZOOM_LEVELS.get(ZOOM_LEVELS.size() - 1), percent));
+        zoomPercent = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, percent));
         zoomLabel.setText(zoomPercent + "%");
+        if (editorBar != null) editorBar.setZoom(zoomPercent);
     }
 
     /** Step to the next/previous preset zoom level (Ctrl+= / Ctrl+-). */
     public void stepZoom(int direction) {
-        int idx = ZOOM_LEVELS.indexOf(zoomPercent);
-        if (idx < 0) idx = ZOOM_LEVELS.indexOf(100);
-        int next = Math.max(0, Math.min(ZOOM_LEVELS.size() - 1, idx + Integer.signum(direction)));
-        changeZoom(ZOOM_LEVELS.get(next));
+        int dir = Integer.signum(direction);
+        if (dir == 0) return;
+        Integer target = null;
+        if (dir > 0) {
+            for (int level : ZOOM_LEVELS) { if (level > zoomPercent) { target = level; break; } }
+        } else {
+            for (int i = ZOOM_LEVELS.size() - 1; i >= 0; i--) {
+                if (ZOOM_LEVELS.get(i) < zoomPercent) { target = ZOOM_LEVELS.get(i); break; }
+            }
+        }
+        if (target == null) return;
+        changeZoom(target);
     }
 
     public void changeZoom(int percent) {
@@ -345,7 +425,13 @@ public class StatusBarController implements Initializable {
     private void applyColor() {
         if (statusBarRoot == null) return;
         ConnectionColor c = ConnectionColorService.getInstance().colorFor(colorKey());
-        statusBarRoot.setStyle("-status-bar-bg: " + c.hex() + ";");
+        // T2: no colour picked for the connection -> the theme's status bar colours (-ide-statusbar-*);
+        // a picked colour wins, with white text on it as before
+        if (c == null || c.equals(ConnectionColorService.DEFAULT)) {
+            statusBarRoot.setStyle("");
+        } else {
+            statusBarRoot.setStyle("-status-bar-bg: " + c.hex() + "; -ide-statusbar-fg: #ffffff;");
+        }
     }
 
     private void applyDot() {

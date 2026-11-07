@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-003",
+  "interactions": [
+    {
+      "id": "INT-DLG03-001",
+      "component_id": "BTN-DLG03-006",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "ok.setOnAction",
+      "backend_method": "unknown",
+      "action_summary": "Áp dụng tên nhóm",
+      "expected_result": "Gọi apply(name); nếu lỗi hiện thông báo và giữ hộp thoại, nếu OK đóng",
+      "side_effects": [
+        "tạo/đổi tên nhóm trong cây"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG03-002",
+      "component_id": "CMP-DLG03-002",
+      "trigger": "key",
+      "preconditions": [],
+      "source_handler": "textProperty listener",
+      "backend_method": "unknown",
+      "action_summary": "Gõ tên",
+      "expected_result": "Xóa trạng thái lỗi",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

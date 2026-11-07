@@ -27,13 +27,26 @@ public enum DatabaseNodeType {
     PROCEDURE,
     CATEGORY_SEQUENCES,
     SEQUENCE,
+    CATEGORY_SYNONYMS,
+    SYNONYM,
     CATEGORY_USER_TYPES,
     USER_TYPE,
     CATEGORY_INDEXES,
     INDEX,
     CATEGORY_TRIGGERS,
     TRIGGER,
+    PARAMETER,
+    /** SQL Server "Users" folder under a database. */
+    CATEGORY_USERS,
+    DB_USER,
     ROLES_USERS,
+    /** PostgreSQL role under "Roles / Users". */
+    ROLE,
+    /** SQL Server "Linked Servers" group at connection level. */
     SERVER_OBJECTS,
+    LINKED_SERVER,
+    REMOTE_DATABASE,
+    REMOTE_TABLE,
+    REMOTE_VIEW,
     LOADING
 }

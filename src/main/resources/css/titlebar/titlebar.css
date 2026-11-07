@@ -5,8 +5,8 @@
    ===================================================================== */
 
 .window-title-bar {
-    -titlebar-background: -color-bg-subtle;
-    -titlebar-foreground: -color-fg-default;
+    -titlebar-background: -ide-titlebar-bg;
+    -titlebar-foreground: -ide-titlebar-fg;
     -titlebar-foreground-muted: -color-fg-muted;
     -titlebar-border: -color-border-subtle;
     -titlebar-icon: -color-accent-fg;

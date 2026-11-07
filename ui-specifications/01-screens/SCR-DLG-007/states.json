@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-007",
+  "states": [
+    {
+      "id": "STA-DLG07-001",
+      "component_id": "BTN-DLG07-004",
+      "state": "focused",
+      "visual_description": "Nút Hủy mang focus khi mở",
+      "entry_condition": "mở hộp thoại",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-DLG07-002",
+      "component_id": "CMP-DLG07-001",
+      "state": "normal",
+      "visual_description": "Chiều cao tối đa 220 px",
+      "entry_condition": "có vấn đề",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}

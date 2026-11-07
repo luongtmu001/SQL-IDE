@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-013",
+  "states": [
+    {
+      "id": "STA-DLG13-001",
+      "component_id": "CMP-DLG13-008",
+      "state": "loading",
+      "visual_description": "Đang kiểm tra / đang tải",
+      "entry_condition": "State CHECKING, DOWNLOADING",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-DLG13-002",
+      "component_id": "CMP-DLG13-002",
+      "state": "normal",
+      "visual_description": "LATEST / AVAILABLE / DONE",
+      "entry_condition": "theo kịch bản",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-DLG13-003",
+      "component_id": "CMP-DLG13-002",
+      "state": "error",
+      "visual_description": "Lỗi mạng + nút Kiểm tra lại",
+      "entry_condition": "State ERROR",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}

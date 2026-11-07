@@ -5,7 +5,7 @@
 .main-window {
     /* canvas behind the cards: bg-inset is darker than the cards in dark themes and
        lighter-grey in light themes, so the 6px gaps are always visible */
-    -fx-background-color: -color-bg-inset;
+    -fx-background-color: -ide-app-bg;
     -fx-border-color: -color-border-subtle;
     -fx-border-width: 1px;
 }
@@ -102,7 +102,7 @@
 
 .editor-sash:hover,
 .editor-sash:dragging {
-    -fx-background-color: -color-accent-emphasis;
+    -fx-background-color: -ide-sash-hover;
     -fx-background-insets: 1 0 1 0;
 }
 
@@ -112,11 +112,16 @@
 .sidebar-panel,
 .editor-container,
 .results-container {
-    -fx-background-color: -color-bg-default;
+    -fx-background-color: -ide-editor-bg;
     -fx-background-radius: 8px;
     -fx-background-insets: 0;
     -fx-border-color: transparent;
     -fx-border-width: 0;
+}
+
+/* T2: the Explorer card can differ from the editor card (VS Code sideBar.background) */
+.sidebar-panel {
+    -fx-background-color: -ide-explorer-bg;
 }
 
 .card-border-overlay {
@@ -145,12 +150,12 @@
 }
 
 .main-split-pane:horizontal > .split-pane-divider:hover {
-    -fx-background-color: -color-accent-emphasis;
+    -fx-background-color: -ide-sash-hover;
     -fx-background-insets: 0 2 0 2;
 }
 
 .workspace-split-pane:vertical > .split-pane-divider:hover {
-    -fx-background-color: -color-accent-emphasis;
+    -fx-background-color: -ide-sash-hover;
 }
 
 /* Compact Panel Header (Database Explorer - height ~28px) */
@@ -162,7 +167,7 @@
     -fx-max-height: 28px;
     -fx-border-color: transparent transparent -color-border-subtle transparent;
     -fx-border-width: 0 0 1 0;
-    -fx-background-color: -color-bg-subtle;
+    -fx-background-color: -ide-explorer-header-bg;
     -fx-background-radius: 7px 7px 0 0;
     -fx-alignment: CENTER_LEFT;
 }
@@ -201,11 +206,11 @@
 
 /* =====================================================================
    Status bar — SCR-MAIN-005 (approved 2026-11-05)
-   22px, background = colour of the active connection (default blue, set inline
-   as -status-bar-bg by StatusBarController), white text like VS Code.
+   22px. Background = the theme's status bar colour (-ide-statusbar-bg, default VS Code blue), or the colour the
+   user picked for the active connection (set inline as -status-bar-bg + -ide-statusbar-fg by StatusBarController).
    ===================================================================== */
 .status-bar {
-    -status-bar-bg: #007acc;
+    -status-bar-bg: -ide-statusbar-bg;
     -fx-background-color: -status-bar-bg;
     -fx-background-radius: 6px;
     -fx-padding: 0 4 0 4;
@@ -237,13 +242,13 @@
 
 .status-bar .status-text,
 .status-bar .label {
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: -ide-statusbar-fg;
     -fx-font-size: 12px;
 }
 
 .status-bar .status-icon,
 .status-bar .ikonli-font-icon {
-    -fx-icon-color: #ffffff;
+    -fx-icon-color: -ide-statusbar-fg;
     -fx-icon-size: 12px;
 }
 
@@ -268,7 +273,7 @@
 }
 
 .status-bar .status-dot.online {
-    -fx-background-color: #ffffff;
+    -fx-background-color: -ide-statusbar-fg;
     -fx-border-width: 0;
 }
 
@@ -279,7 +284,7 @@
 }
 
 .status-bar .status-dot.busy {
-    -fx-background-color: #ffd33d;
+    -fx-background-color: -ide-statusbar-busy;
     -fx-border-width: 0;
 }
 
@@ -299,7 +304,7 @@
 
 .context-tool-bar {
     /* card (outline drawn by RoundedCard overlay) */
-    -fx-background-color: -color-bg-default;
+    -fx-background-color: -ide-toolbar-bg;
     -fx-background-radius: 8px;
     -fx-border-width: 0;
     -fx-padding: 0 6 0 6;
@@ -510,37 +515,9 @@
 
 /* =====================================================================
    Flat panel style (Settings > Giao diện > Kiểu khung = Phẳng, appearance.panelStyle = "flat")
-   Panels touch each other and are separated by a 1px hairline, like VS Code.
-   MainController adds .flat-panels to the root and removes margins / clip radii.
+   Same cards, gaps and outlines as the rounded style, only square corners
+   (user decision 2026-11-06). MainController adds .flat-panels and sets the card radius to 0.
    ===================================================================== */
-.main-window.flat-panels {
-    -fx-background-color: -color-bg-default;
-}
-
-.main-window.flat-panels .main-split-pane {
-    -fx-padding: 0;
-}
-
-.main-window.flat-panels .main-split-pane:horizontal > .split-pane-divider {
-    -fx-background-color: -color-border-default;
-    -fx-background-insets: 0 1.5 0 1.5;
-    -fx-min-width: 4px;
-    -fx-pref-width: 4px;
-}
-
-.main-window.flat-panels .workspace-split-pane:vertical > .split-pane-divider {
-    -fx-background-color: -color-border-default;
-}
-
-.main-window.flat-panels .main-split-pane:horizontal > .split-pane-divider:hover {
-    -fx-background-color: -color-accent-emphasis;
-    -fx-background-insets: 0 1 0 1;
-}
-
-.main-window.flat-panels .workspace-split-pane:vertical > .split-pane-divider:hover {
-    -fx-background-color: -color-accent-emphasis;
-}
-
 .main-window.flat-panels .sidebar-panel,
 .main-window.flat-panels .editor-container,
 .main-window.flat-panels .results-container,
@@ -553,11 +530,5 @@
 }
 
 .main-window.flat-panels .card-border-overlay {
-    -fx-border-color: transparent;
-    -fx-border-width: 0;
-}
-
-.main-window.flat-panels .context-tool-bar {
-    -fx-border-color: transparent transparent -color-border-default transparent;
-    -fx-border-width: 0 0 1 0;
+    -fx-border-radius: 0;
 }

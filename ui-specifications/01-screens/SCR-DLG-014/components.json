@@ -1,0 +1,181 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-014",
+  "components": [
+    {
+      "id": "CMP-DLG14-001",
+      "name": "Spinner",
+      "component_type": "progress",
+      "region_id": "REG-DLG14-002",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Spinner",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/components/LoadingOverlay.java; ui/components/LoadingView.java",
+        "selector_or_symbol": "spinner",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ProgressIndicator",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG14-002",
+      "name": "Message",
+      "component_type": "label",
+      "region_id": "REG-DLG14-002",
+      "parent_component_id": null,
+      "visible_label": "Đang xử lý…",
+      "accessible_name": "Đang xử lý…",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/components/LoadingOverlay.java; ui/components/LoadingView.java",
+        "selector_or_symbol": "message",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Đổi thành \"Đang hủy…\" khi hủy"
+    },
+    {
+      "id": "CMP-DLG14-003",
+      "name": "Elapsed",
+      "component_type": "label",
+      "region_id": "REG-DLG14-002",
+      "parent_component_id": null,
+      "visible_label": "00:00",
+      "accessible_name": "00:00",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/components/LoadingOverlay.java; ui/components/LoadingView.java",
+        "selector_or_symbol": "elapsed",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "mm:ss"
+    },
+    {
+      "id": "CMP-DLG14-004",
+      "name": "Cancel",
+      "component_type": "hyperlink",
+      "region_id": "REG-DLG14-002",
+      "parent_component_id": null,
+      "visible_label": "Hủy",
+      "accessible_name": "Hủy",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/components/LoadingOverlay.java; ui/components/LoadingView.java",
+        "selector_or_symbol": "cancel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Hyperlink",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Ẩn nếu cancelAction = null"
+    },
+    {
+      "id": "CMP-DLG14-005",
+      "name": "LoadingView",
+      "component_type": "label",
+      "region_id": "REG-DLG14-002",
+      "parent_component_id": null,
+      "visible_label": "Loading...",
+      "accessible_name": "Loading...",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/components/LoadingOverlay.java; ui/components/LoadingView.java",
+        "selector_or_symbol": "textLabel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Phiên bản cũ (LoadingView) mặc định \"Executing query...\""
+    }
+  ]
+}

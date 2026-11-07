@@ -1,0 +1,469 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-006",
+  "components": [
+    {
+      "id": "CMP-DLG06-001",
+      "name": "Scope",
+      "component_type": "label",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "<catalog · schema>",
+      "accessible_name": "<catalog · schema>",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "scope",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG06-002",
+      "name": "Header: Trường",
+      "component_type": "label",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "Trường",
+      "accessible_name": "Trường",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "fieldHeader",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG06-003",
+      "name": "Header: Toán tử",
+      "component_type": "label",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "Toán tử",
+      "accessible_name": "Toán tử",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "operatorHeader",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG06-004",
+      "name": "Header: Giá trị",
+      "component_type": "label",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "Giá trị",
+      "accessible_name": "Giá trị",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "valueHeader",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG06-005",
+      "name": "Field combo",
+      "component_type": "combobox",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "Name / Schema",
+      "accessible_name": "Name / Schema",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "fieldCombo",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG06-006",
+      "name": "Operator combo",
+      "component_type": "combobox",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "Toán tử (ObjectFilter.Operator)",
+      "accessible_name": "Toán tử (ObjectFilter.Operator)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "operatorCombo",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Danh sách toán tử chưa liệt kê"
+    },
+    {
+      "id": "CMP-DLG06-007",
+      "name": "Value",
+      "component_type": "text_field",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "Giá trị",
+      "accessible_name": "Giá trị",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Nội dung lọc…",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "valueField",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG06-008",
+      "name": "Remove condition",
+      "component_type": "icon_button",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "Xóa điều kiện",
+      "accessible_name": "Xóa điều kiện",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Xóa điều kiện",
+      "classification": "destructive",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "removeBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG06-009",
+      "name": "Add condition",
+      "component_type": "button",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "Thêm điều kiện",
+      "accessible_name": "Thêm điều kiện",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "addConditionBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG06-010",
+      "name": "Logic",
+      "component_type": "combobox",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "Kết hợp: (AND/OR)",
+      "accessible_name": "Kết hợp: (AND/OR)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "logicLabel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Control chọn logic chưa đọc kỹ"
+    },
+    {
+      "id": "CMP-DLG06-011",
+      "name": "Clear filter",
+      "component_type": "hyperlink",
+      "region_id": "REG-DLG06-002",
+      "parent_component_id": null,
+      "visible_label": "Xóa bộ lọc",
+      "accessible_name": "Xóa bộ lọc",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "clearBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Hyperlink",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG06-012",
+      "name": "Cancel",
+      "component_type": "button",
+      "region_id": "REG-DLG06-003",
+      "parent_component_id": null,
+      "visible_label": "Hủy",
+      "accessible_name": "Hủy",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "cancelBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG06-013",
+      "name": "Apply",
+      "component_type": "button",
+      "region_id": "REG-DLG06-003",
+      "parent_component_id": null,
+      "visible_label": "Áp dụng",
+      "accessible_name": "Áp dụng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ObjectFilterDialog.java",
+        "selector_or_symbol": "applyBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    }
+  ]
+}
