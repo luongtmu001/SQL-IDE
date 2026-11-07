@@ -68,6 +68,9 @@ public class IdeSettings implements Serializable, Cloneable {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class EditorSettings implements Serializable, Cloneable {
+        public static final String DETAIL_MODE_ALWAYS = "always";
+        public static final String DETAIL_MODE_ON_DEMAND = "onDemand";
+
         private String fontFamily = "Cascadia Mono Light";
         private int fontSize = 13;
         private double lineHeight = 1.5;
@@ -80,6 +83,10 @@ public class IdeSettings implements Serializable, Cloneable {
         private boolean syntaxCheck = true;
         private boolean intellisense = true;
         private boolean intellisenseMru = true;
+        /** Panel with the object's summary / script beside the suggestion list. */
+        private boolean intellisenseDetail = true;
+        /** {@code always}: the panel opens with the list; {@code onDemand}: arrow right opens it, only then it loads. */
+        private String intellisenseDetailMode = DETAIL_MODE_ALWAYS;
 
         public String getFontFamily() { return fontFamily; }
         public void setFontFamily(String fontFamily) { this.fontFamily = fontFamily; }
@@ -105,6 +112,12 @@ public class IdeSettings implements Serializable, Cloneable {
         public void setIntellisense(boolean intellisense) { this.intellisense = intellisense; }
         public boolean isIntellisenseMru() { return intellisenseMru; }
         public void setIntellisenseMru(boolean intellisenseMru) { this.intellisenseMru = intellisenseMru; }
+        public boolean isIntellisenseDetail() { return intellisenseDetail; }
+        public void setIntellisenseDetail(boolean intellisenseDetail) { this.intellisenseDetail = intellisenseDetail; }
+        public String getIntellisenseDetailMode() { return intellisenseDetailMode; }
+        public void setIntellisenseDetailMode(String mode) {
+            this.intellisenseDetailMode = DETAIL_MODE_ON_DEMAND.equals(mode) ? DETAIL_MODE_ON_DEMAND : DETAIL_MODE_ALWAYS;
+        }
 
         @Override
         public EditorSettings clone() {
@@ -124,6 +137,8 @@ public class IdeSettings implements Serializable, Cloneable {
                 c.syntaxCheck = this.syntaxCheck;
                 c.intellisense = this.intellisense;
                 c.intellisenseMru = this.intellisenseMru;
+                c.intellisenseDetail = this.intellisenseDetail;
+                c.intellisenseDetailMode = this.intellisenseDetailMode;
                 return c;
             }
         }

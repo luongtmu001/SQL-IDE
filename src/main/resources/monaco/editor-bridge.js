@@ -27,10 +27,14 @@
             configurable: true,
             value: {
                 readText: function () { return Promise.resolve(readClipboard()); },
-                writeText: function (t) { writeClipboard(t); return Promise.resolve(); }
+                writeText: function (t) { writeClipboard(t); return Promise.resolve(); },
+                write: function () { return Promise.resolve(); }
             }
         });
     } catch (e) { /* ignore */ }
+    // Monaco's WebKit path prepares a ClipboardItem on every key press; this WebKit has none, and it would throw each time.
+    // Copy itself goes through installClipboard(), so an empty stand-in is enough.
+    if (!window.ClipboardItem) window.ClipboardItem = function () { };
 
     // Editor typography: Settings give the BASE size, zoom (Ctrl+Wheel / status bar) is a percentage of it.
     let baseFontSize = 13;
@@ -240,6 +244,10 @@
                 }
             });
 
+            if (window.MonacoSqlLanguage) {
+                window.MonacoSqlLanguage.register();
+            }
+
             // Create main editor instance
             const container = document.getElementById("monaco-container");
             editor = monaco.editor.create(container, {
@@ -263,8 +271,10 @@
             installClipboard();
             installWheelZoom(container);
             if (window.SqlIntellisense) {
-                window.SqlIntellisense.register(monaco);
                 window.editorBridge.applyIntellisenseOptions(window.SqlIntellisense.context());
+            }
+            if (window.IntelliSenseHost) {
+                window.IntelliSenseHost.start(editor);
             }
 
             // Listen to cursor position
@@ -366,17 +376,16 @@
             return true;
         },
 
-        /** IntelliSense on/off and MRU ordering (the completion provider itself reads SqlIntellisense.context()). */
+        /** Suggestions are the custom popup (intellisense/): Monaco's own widget stays off. Hover / signature obey the switch. */
         applyIntellisenseOptions: function (c) {
             if (!editor || !c) return;
             const on = c.enabled !== false;
             editor.updateOptions({
-                quickSuggestions: on ? { other: true, comments: false, strings: false } : false,
-                suggestOnTriggerCharacters: on,
+                quickSuggestions: false,
+                suggestOnTriggerCharacters: false,
                 wordBasedSuggestions: "off",
-                suggestSelection: c.mru === false ? "first" : "recentlyUsed",
-                snippetSuggestions: "top",
-                tabCompletion: on ? "on" : "off"
+                tabCompletion: "off",
+                parameterHints: { enabled: on }
             });
         },
 

@@ -35,8 +35,9 @@ public class SecureCredentialVault {
 
     private final Path vaultFile;
     private final SecretKey masterKey;
-    /** Key of vaults written before the per-installation key existed; only used to read and then upgrade them. */
-    private final SecretKey legacyKey;
+    private final boolean upgradeLegacy;
+    /** Key of vaults written before the per-installation key existed; lazily derived only if upgrade is needed. */
+    private volatile SecretKey legacyKey;
     private final Map<String, String> credentials = new ConcurrentHashMap<>();
 
     private static final String LEGACY_SECRET = "lltool-default-app-entropy";
@@ -53,7 +54,7 @@ public class SecureCredentialVault {
     private SecureCredentialVault(AppDirectoryManager directoryManager, String masterSecret, boolean upgradeLegacy) {
         this.vaultFile = directoryManager.getConfigDir().resolve(VAULT_FILENAME);
         this.masterKey = deriveKey(masterSecret);
-        this.legacyKey = upgradeLegacy ? deriveKey(LEGACY_SECRET) : null;
+        this.upgradeLegacy = upgradeLegacy;
         load();
     }
 
@@ -113,8 +114,11 @@ public class SecureCredentialVault {
             try {
                 decrypted = decrypt(masterKey, iv, cipherText);
             } catch (Exception primary) {
-                if (legacyKey == null) {
+                if (!upgradeLegacy) {
                     throw primary;
+                }
+                if (legacyKey == null) {
+                    legacyKey = deriveKey(LEGACY_SECRET);
                 }
                 decrypted = decrypt(legacyKey, iv, cipherText);   // vault from before the per-installation key
                 upgraded = true;

@@ -40,7 +40,14 @@ public class MonacoEditorHost extends StackPane {
     private Runnable onExecuteRequestListener;
     private Runnable onExecuteStatementRequestListener;
     private IntConsumer onZoomChangedListener;
+    private BiConsumer<String, String> onOpenScriptListener;
     private int zoomPercent = 100;
+
+    /** WebEngine keeps only a weak reference to objects set on the page: this field keeps the bridge alive. */
+    private final BridgeCallback javaBridge = new BridgeCallback();
+    private final app.framework.intellisense.IntellisenseMetadataBridge intellisense =
+            new app.framework.intellisense.IntellisenseMetadataBridge(this::respondToIntellisense);
+    private final java.util.function.Consumer<String> metadataInvalidated = this::invalidateIntellisense;
 
     private record ModelDefinition(String id, String content, String language) {}
 
@@ -60,6 +67,8 @@ public class MonacoEditorHost extends StackPane {
         inner.prefWidthProperty().bind(widthProperty());
         inner.prefHeightProperty().bind(heightProperty());
         editorBar.setOnToggleEol(this::toggleEol);
+        app.framework.metadata.DesktopMetadataService.getInstance().addInvalidationListener(metadataInvalidated);
+        app.framework.intellisense.MetadataSnapshotStore.getInstance().addListener(this::intellisenseMetadataArrived);
         // the editor colours come from the scene's theme: apply them as soon as the host is in a scene
         sceneProperty().addListener((o, a, s) -> {
             if (s != null) applyAppTheme();
@@ -88,7 +97,7 @@ public class MonacoEditorHost extends StackPane {
     private void attachJavaBridge() {
         try {
             JSObject window = (JSObject) webEngine.executeScript("window");
-            window.setMember("javaBridge", new BridgeCallback());
+            window.setMember("javaBridge", javaBridge);
             webEngine.executeScript("if (window.onJavaBridgeAttached) window.onJavaBridgeAttached();");
             log.debug("Attached javaBridge to Monaco WebView window");
         } catch (Exception e) {
@@ -192,6 +201,30 @@ public class MonacoEditorHost extends StackPane {
                 zoomPercent = pct;
                 if (onZoomChangedListener != null) {
                     onZoomChangedListener.accept(pct);
+                }
+            });
+        }
+
+        /** IntelliSense metadata question; the answer arrives later through IntelliSenseHost.resolve. */
+        public void intellisenseRequest(String requestId, String method, String argsJson) {
+            intellisense.handle(requestId, method, argsJson);
+        }
+
+        /** Measuring only (SQLIDE_PERF_IS=1): a line of the page's timeline. */
+        public void intellisensePerf(String line) {
+            app.framework.intellisense.IntellisensePerf.log("page: " + line);
+        }
+
+        /** Ctrl+Shift+R: read the metadata of this connection from the server again. */
+        public void intellisenseReload(String connectionId, String database) {
+            intellisense.reload(connectionId, database == null || database.isEmpty() ? null : database);
+        }
+
+        /** F12 on an object: its definition in a new tab. */
+        public void intellisenseOpenScript(String title, String content) {
+            Platform.runLater(() -> {
+                if (onOpenScriptListener != null) {
+                    onOpenScriptListener.accept(title, content);
                 }
             });
         }
@@ -400,12 +433,52 @@ public class MonacoEditorHost extends StackPane {
         });
     }
 
-    /** IntelliSense context of the active tab: dialect (SQLSERVER / POSTGRESQL / SQLITE / OTHER) and Settings. */
-    public void setIntellisense(boolean enabled, String dialect, String keywordCase, boolean mru) {
-        runWhenReady(() -> executeJs(String.format(java.util.Locale.ROOT,
-                "if (window.SqlIntellisense) window.SqlIntellisense.setContext({ enabled: %b, dialect: '%s', keywordCase: '%s', mru: %b });",
-                enabled, escapeJs(dialect == null ? "OTHER" : dialect),
-                escapeJs(keywordCase == null ? "upper" : keywordCase), mru)));
+    /** IntelliSense Settings and the session of the active tab; dialect: SQLSERVER / POSTGRESQL / SQLITE / OTHER. */
+    public record IntellisenseContext(boolean enabled, String dialect, String keywordCase, boolean mru,
+                                      boolean detail, String detailMode,
+                                      String connectionId, String database, String schema) {
+    }
+
+    public void setIntellisense(IntellisenseContext c) {
+        intellisense.setActiveDatabase(c.connectionId(), c.database());
+        if (app.framework.intellisense.IntellisensePerf.ENABLED) {
+            app.framework.intellisense.IntellisensePerf.watchFxThread();
+            runWhenReady(() -> executeJs("if (window.IntelliSenseHost) window.IntelliSenseHost.enablePerf();"));
+        }
+        String json = String.format(java.util.Locale.ROOT,
+                "{\"enabled\":%b,\"dialect\":\"%s\",\"keywordCase\":\"%s\",\"mru\":%b,\"detail\":%b,\"detailMode\":\"%s\",\"connectionId\":\"%s\",\"database\":\"%s\",\"schema\":\"%s\"}",
+                c.enabled(), jsonString(c.dialect() == null ? "OTHER" : c.dialect()),
+                jsonString(c.keywordCase() == null ? "upper" : c.keywordCase()), c.mru(), c.detail(),
+                jsonString(c.detailMode() == null ? "always" : c.detailMode()),
+                jsonString(c.connectionId()), jsonString(c.database()), jsonString(c.schema()));
+        runWhenReady(() -> executeJs("if (window.SqlIntellisense) window.SqlIntellisense.setContext(JSON.parse(decodeURIComponent('"
+                + encodeUri(json) + "')));"));
+    }
+
+    public void setOnOpenScript(BiConsumer<String, String> listener) {
+        this.onOpenScriptListener = listener;
+    }
+
+    /** Delivered as plain strings, no script text to build or escape: a metadata answer can be large. */
+    private void respondToIntellisense(String requestId, String json) {
+        try {
+            Object host = webEngine.executeScript("window.IntelliSenseHost");
+            if (host instanceof JSObject js) {
+                js.call("resolve", requestId, json);
+            }
+        } catch (Exception e) {
+            log.warn("IntelliSense answer not delivered: {}", e.getMessage());
+        }
+    }
+
+    /** The snapshot of a connection has new data: what the page remembered goes, and a waiting list is filled in. */
+    private void intellisenseMetadataArrived(String connectionId, String database) {
+        Platform.runLater(() -> runWhenReady(() -> executeJs("if (window.IntelliSenseHost) window.IntelliSenseHost.metadataArrived('"
+                + escapeJs(connectionId) + "');")));
+    }
+
+    private void invalidateIntellisense(String connectionId) {
+        runWhenReady(() -> executeJs("if (window.IntelliSenseHost) window.IntelliSenseHost.invalidate('" + escapeJs(connectionId) + "');"));
     }
 
     public void updateEditorSettings(app.models.IdeSettings s) {

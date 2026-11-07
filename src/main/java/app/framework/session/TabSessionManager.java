@@ -120,8 +120,10 @@ public final class TabSessionManager {
             s.connecting(profile, targetDb);
             changed();
 
+            long perfStart = System.currentTimeMillis();
             Result<DatabaseConnection> res = ConnectionSessionManager.getInstance()
                     .openSession(profile, targetDb, CredentialResolver.resolve(profile, null));
+            app.framework.intellisense.IntellisensePerf.log("tab session opened in " + (System.currentTimeMillis() - perfStart) + " ms, ok=" + res.isSuccess());
             if (res.isFailure()) {
                 String msg = res.getError().map(AppError::message).orElse("Không kết nối được.");
                 s.failed(msg);

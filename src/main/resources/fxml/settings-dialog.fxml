@@ -220,10 +220,29 @@
 
                         <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
                             <VBox HBox.hgrow="ALWAYS">
-                                <Label text="Gợi ý mã thông minh (IntelliSense)" styleClass="settings-row-label"/>
-                                <Label text="editor.intellisense — Bật gợi ý tự động bảng, cột, hàm và từ khóa SQL" styleClass="settings-row-subtext"/>
+                                <Label text="Bật gợi ý code (IntelliSense)" styleClass="settings-row-label"/>
+                                <Label text="editor.intellisense — Bật thì mới gợi ý bảng, cột, hàm và từ khóa SQL" styleClass="settings-row-subtext"/>
                             </VBox>
                             <CheckBox fx:id="chkIntellisense"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Hiển thị chi tiết gợi ý (IntelliSense)" styleClass="settings-row-label"/>
+                                <Label text="editor.intellisenseDetail — Hiện tab chi tiết (Summary, Script) bên cạnh popup gợi ý" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <CheckBox fx:id="chkIntellisenseDetail"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Cách hiển thị chi tiết (IntelliSense chi tiết)" styleClass="settings-row-label"/>
+                                <Label text="editor.intellisenseDetailMode — Luôn hiện sẵn, hoặc nhấn phím mũi tên khi cần mới hiện và mới tải chi tiết" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <VBox spacing="6">
+                                <RadioButton fx:id="rdoDetailAlways" text="Luôn hiển thị chi tiết"/>
+                                <RadioButton fx:id="rdoDetailOnDemand" text="Khi cần mới hiển thị (→ mở, ← đóng)"/>
+                            </VBox>
                         </HBox>
 
                         <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">

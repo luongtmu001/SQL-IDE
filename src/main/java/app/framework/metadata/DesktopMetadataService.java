@@ -38,9 +38,17 @@ public class DesktopMetadataService {
         return cache;
     }
 
+    private final List<Consumer<String>> invalidationListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** Other caches of the same metadata (IntelliSense) follow a refresh of the Explorer. */
+    public void addInvalidationListener(Consumer<String> listener) {
+        invalidationListeners.add(listener);
+    }
+
     public void invalidate(String connectionId) {
         cache.invalidateConnection(connectionId);
         closeConnections(connectionId);
+        invalidationListeners.forEach(l -> l.accept(connectionId));
     }
 
     public void invalidateNode(String connectionId, String path) {

@@ -1,0 +1,7 @@
+{
+  "analyze_10kb_ms": 68.6,
+  "analyze_54kb_ms": 131.1,
+  "analyze_218kb_ms": 483.8,
+  "completions_600_columns_ms": 97.3,
+  "completions_20k_objects_ms": 667.1
+}

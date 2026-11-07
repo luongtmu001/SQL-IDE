@@ -78,11 +78,35 @@ public class EditorController implements Initializable {
         openNewTab("console_1.sql", DEFAULT_SQL);
         restoreActiveTabFromPreferences();
         updateEmptyState();
-        Platform.runLater(this::setupMonacoHost);
+
+        // Deferred idle warmup: wait 800ms after window layout stabilizes before initializing WebView & Monaco.
+        // This eliminates the 3-4s startup freeze (fx-stall) and lets the window appear instantaneously.
+        monacoWarmupDelay = new javafx.animation.PauseTransition(javafx.util.Duration.millis(800));
+        monacoWarmupDelay.setOnFinished(e -> ensureMonacoLoaded());
+        monacoWarmupDelay.play();
+
+        // Also trigger load immediately on user interaction
+        primaryTabPane.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> ensureMonacoLoaded());
+        primaryTabPane.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> ensureMonacoLoaded());
+        secondaryTabPane.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> ensureMonacoLoaded());
+        secondaryTabPane.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> ensureMonacoLoaded());
+    }
+
+    private boolean monacoInitializing = false;
+    private javafx.animation.PauseTransition monacoWarmupDelay;
+
+    public synchronized void ensureMonacoLoaded() {
+        if (monacoHost != null || monacoInitializing) return;
+        monacoInitializing = true;
+        if (monacoWarmupDelay != null) {
+            monacoWarmupDelay.stop();
+        }
+        setupMonacoHost();
     }
 
     private void setupMonacoHost() {
-        try {
+        var profiler = app.diagnostics.startup.StartupProfiler.getInstance();
+        try (var task = profiler.beginTask("MonacoHost_Init")) {
             monacoHost = new app.ui.editor.MonacoEditorHost();
             monacoHost.setOnContentChanged((modelId, content) -> {
                 for (SqlEditorTab tab : getOpenTabs()) {
@@ -136,6 +160,7 @@ public class EditorController implements Initializable {
             // Settings may have been applied before the Monaco host existed
             monacoHost.updateEditorSettings(app.services.SettingsService.getInstance().getCurrentSettings());
             pushIntellisense();
+            monacoHost.setOnOpenScript(this::openNewTab);
             monacoHost.setOnReady(() -> {
                 Tab selected = primaryTabPane.getSelectionModel().getSelectedItem();
                 if (selected instanceof SqlEditorTab activeTab) {
@@ -153,6 +178,7 @@ public class EditorController implements Initializable {
             }
         } catch (Throwable t) {
             monacoHost = null;
+            monacoInitializing = false;
             editorSettled(); // no Monaco: the tabs keep their fallback code area, there is nothing to wait for
         }
     }
@@ -894,26 +920,70 @@ public class EditorController implements Initializable {
 
     private String lastIntellisenseKey;
 
-    /** Sends dialect of the active tab + IntelliSense Settings to the editor (only when something changed). */
+    /** Sends the session of the active tab + IntelliSense Settings to the editor (only when something changed). */
     private void pushIntellisense() {
         if (monacoHost == null) return;
         var s = app.services.SettingsService.getInstance().getCurrentSettings();
         var e = s == null ? null : s.getEditor();
         boolean enabled = e == null || e.isIntellisense();
         boolean mru = e == null || e.isIntellisenseMru();
+        boolean detail = e == null || e.isIntellisenseDetail();
+        String detailMode = e == null ? "always" : e.getIntellisenseDetailMode();
         String kc = e == null || e.getKeywordCase() == null ? "upper" : e.getKeywordCase();
         String dialect = "OTHER";
+        String connectionId = null, database = null, schema = null;
         Tab sel = primaryTabPane.getSelectionModel().getSelectedItem();
         if (sel instanceof SqlEditorTab st) {
             var session = app.framework.session.TabSessionManager.getInstance().get(st.getDocumentId());
             if (session != null && session.profile() != null) {
                 dialect = app.framework.query.ScriptRunner.Dialect.of(session.profile().databaseType()).name();
+                // Without a live session: keywords and snippets only, no reads from a server the tab isn't on
+                if (session.state() == app.framework.session.TabSession.State.CONNECTED) {
+                    connectionId = session.profile().id();
+                    database = session.database();
+                    schema = app.services.DefaultSchemaService.get(connectionId);
+                }
             }
         }
-        String key = enabled + "|" + mru + "|" + kc + "|" + dialect;
+        String key = enabled + "|" + mru + "|" + detail + "|" + detailMode + "|" + kc + "|" + dialect
+                + "|" + connectionId + "|" + database + "|" + schema;
         if (key.equals(lastIntellisenseKey)) return;
         lastIntellisenseKey = key;
-        monacoHost.setIntellisense(enabled, dialect, kc, mru);
+        monacoHost.setIntellisense(new app.ui.editor.MonacoEditorHost.IntellisenseContext(enabled, dialect, kc, mru, detail, detailMode,
+                connectionId, database, schema));
+        app.framework.intellisense.IntellisensePerf.log("editor context changed, connected=" + (connectionId != null));
+        // read once per connection, in the background, before the first suggestion needs it
+        if (enabled && connectionId != null && sel instanceof SqlEditorTab st) {
+            var session = app.framework.session.TabSessionManager.getInstance().get(st.getDocumentId());
+            if (session != null && session.profile() != null) {
+                app.framework.intellisense.MetadataSnapshotStore.getInstance().preload(session.profile(), database);
+            }
+        }
+    }
+
+    /** "Refresh Objects & IntelliSense": the suggestions of the active tab's connection are read from the server again. */
+    public void reloadIntellisense() {
+        Tab sel = primaryTabPane.getSelectionModel().getSelectedItem();
+        if (!(sel instanceof SqlEditorTab st)) return;
+        var session = app.framework.session.TabSessionManager.getInstance().get(st.getDocumentId());
+        if (session == null || session.profile() == null || session.state() != app.framework.session.TabSession.State.CONNECTED) return;
+        var profile = session.profile();
+        String database = session.database();
+        Thread.ofVirtual().name("intellisense-reload").start(() ->
+                app.framework.intellisense.MetadataSnapshotStore.getInstance().reload(profile, database, true));
+    }
+
+    /** After a run: objects created, changed or dropped from this tab appear in the suggestions without a refresh. */
+    public void reloadIntellisenseAfterRun(String tabId, String sql) {
+        var session = app.framework.session.TabSessionManager.getInstance().get(tabId);
+        if (session == null || session.profile() == null) return;
+        var profile = session.profile();
+        String database = session.database();
+        Thread.ofVirtual().name("intellisense-ddl-check").start(() -> {
+            if (app.framework.intellisense.MetadataSnapshotStore.changesObjects(sql)) {
+                app.framework.intellisense.MetadataSnapshotStore.getInstance().reload(profile, database, false);
+            }
+        });
     }
 
     /** Called when the user zooms with Ctrl+Wheel inside the editor (percent of the Settings font size). */

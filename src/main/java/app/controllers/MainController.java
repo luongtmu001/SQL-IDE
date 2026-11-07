@@ -1145,6 +1145,9 @@ public class MainController implements Initializable {
         if (sidebarController != null) {
             sidebarController.handleRefresh();
         }
+        if (editorController != null) {
+            editorController.reloadIntellisense();
+        }
     }
 
     @FXML
@@ -1712,6 +1715,7 @@ public class MainController implements Initializable {
             @Override
             public void onSuccess(app.models.QueryResult result, List<app.models.QueryResult> allResults, int rowsAffected, String summaryMessage, long durationMs) {
                 refreshRunState();
+                if (editorController != null) editorController.reloadIntellisenseAfterRun(tabId, sql);
                 notifyBackgroundDone(tabId, tabTitle, summaryMessage, false);
                 deliverToTab(tabId, () -> {
                     if (resultsController != null) {
@@ -1743,6 +1747,8 @@ public class MainController implements Initializable {
             @Override
             public void onError(String errorMessage, Throwable cause) {
                 refreshRunState();
+                // a script can fail after its first statements already changed objects
+                if (editorController != null) editorController.reloadIntellisenseAfterRun(tabId, sql);
                 notifyBackgroundDone(tabId, tabTitle, errorMessage, true);
                 deliverToTab(tabId, () -> {
                     if (resultsController != null) {

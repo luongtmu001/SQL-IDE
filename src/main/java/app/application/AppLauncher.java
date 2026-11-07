@@ -27,7 +27,11 @@ public class AppLauncher extends Application {
     @Override
     public void init() throws Exception {
         super.init();
-        app.diagnostics.core.DiagnosticsManager.getInstance().initialize(null);
+        var profiler = app.diagnostics.startup.StartupProfiler.getInstance();
+        profiler.markAppStarted();
+        try (var task = profiler.beginTask("DiagnosticsManager_Init")) {
+            app.diagnostics.core.DiagnosticsManager.getInstance().initialize(null);
+        }
         app.framework.error.DesktopErrorHandler.getInstance().install();
     }
 
@@ -42,14 +46,17 @@ public class AppLauncher extends Application {
 
     /** Background thread (same as {@code init()} before the splash existed). */
     private void loadBackend(java.util.function.IntConsumer onStep) {
+        var profiler = app.diagnostics.startup.StartupProfiler.getInstance();
         app.framework.bootstrap.DesktopBootstrap.setProgressListener(onStep);
-        try {
+        try (var task = profiler.beginTask("DesktopBootstrap")) {
             app.framework.bootstrap.DesktopBootstrap.getInstance();
         } finally {
             app.framework.bootstrap.DesktopBootstrap.setProgressListener(null);
         }
         // S3: log level + rolling log file from Settings (logging.*) before anything else logs much
-        app.services.LoggingService.apply(app.services.SettingsService.getInstance().getCurrentSettings());
+        try (var task = profiler.beginTask("Logging_Apply")) {
+            app.services.LoggingService.apply(app.services.SettingsService.getInstance().getCurrentSettings());
+        }
     }
 
     /**
@@ -96,7 +103,10 @@ public class AppLauncher extends Application {
         }
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-window.fxml"));
-        Parent root = loader.load();
+        Parent root;
+        try (var task = app.diagnostics.startup.StartupProfiler.getInstance().beginTask("FXML_MainWindow_Load")) {
+            root = loader.load();
+        }
         app.controllers.MainController mainController = loader.getController();
 
         Scene scene = new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -129,6 +139,7 @@ public class AppLauncher extends Application {
             public void show(boolean minimized) {
                 primaryStage.setIconified(minimized); // the user hid the splash: do not jump in front of their work
                 customWindow.show();
+                app.diagnostics.startup.StartupProfiler.getInstance().markAppReady();
             }
         };
     }

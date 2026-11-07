@@ -151,15 +151,19 @@ public final class SyntaxCheckService {
         String key = profile.id() + "|" + session.database();
         Entry entry = connections.get(key);
         if (entry == null) {
+            long perfStart = System.currentTimeMillis();
             var res = ConnectionSessionManager.getInstance()
                     .openSession(profile, session.database(), CredentialResolver.resolve(profile, null));
+            app.framework.intellisense.IntellisensePerf.log("syntax connection opened in " + (System.currentTimeMillis() - perfStart) + " ms");
             if (res.isFailure()) return none;
             entry = new Entry(res.getDataOrThrow());
             connections.put(key, entry);
         }
         try {
+            long perfCheck = System.currentTimeMillis();
             List<SyntaxDiagnostic> d = SqlServerSyntaxChecker.check(entry.connection.getRawJdbcConnection(), sql);
             entry.lastUse = System.currentTimeMillis();
+            app.framework.intellisense.IntellisensePerf.log("syntax check " + (entry.lastUse - perfCheck) + " ms, " + sql.length() + " chars, " + d.size() + " errors");
             return new Outcome(tabId, true, d);
         } catch (Exception e) {
             log.debug("Syntax connection {} dropped: {}", key, e.getMessage());

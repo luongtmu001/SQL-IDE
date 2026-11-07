@@ -85,6 +85,9 @@ public class SettingsDialogController implements Initializable {
     @FXML private CheckBox chkSyntaxCheck;
     @FXML private CheckBox chkIntellisense;
     @FXML private CheckBox chkIntellisenseMru;
+    @FXML private CheckBox chkIntellisenseDetail;
+    @FXML private RadioButton rdoDetailAlways;
+    @FXML private RadioButton rdoDetailOnDemand;
 
     // SECTION 2: Grid Controls
     @FXML private ComboBox<String> cmbGridFontFamily;
@@ -306,6 +309,15 @@ public class SettingsDialogController implements Initializable {
         });
 
         cmbKeywordCase.setItems(FXCollections.observableArrayList("upper", "lower", "preserve"));
+        // IntelliSense: each option only matters when the one above it is on
+        ToggleGroup detailMode = new ToggleGroup();
+        rdoDetailAlways.setToggleGroup(detailMode);
+        rdoDetailOnDemand.setToggleGroup(detailMode);
+        chkIntellisenseDetail.disableProperty().bind(chkIntellisense.selectedProperty().not());
+        chkIntellisenseMru.disableProperty().bind(chkIntellisense.selectedProperty().not());
+        var detailOff = chkIntellisense.selectedProperty().and(chkIntellisenseDetail.selectedProperty()).not();
+        rdoDetailAlways.disableProperty().bind(detailOff);
+        rdoDetailOnDemand.disableProperty().bind(detailOff);
         cmbSqlProtection.setItems(FXCollections.observableArrayList(
                 "1 - Bật bảo vệ (Cảnh báo trước khi chạy)",
                 "0 - Tắt bảo vệ (Không cảnh báo)"
@@ -675,6 +687,10 @@ public class SettingsDialogController implements Initializable {
         chkSyntaxCheck.setSelected(ed.isSyntaxCheck());
         chkIntellisense.setSelected(ed.isIntellisense());
         chkIntellisenseMru.setSelected(ed.isIntellisenseMru());
+        chkIntellisenseDetail.setSelected(ed.isIntellisenseDetail());
+        boolean onDemand = app.models.IdeSettings.EditorSettings.DETAIL_MODE_ON_DEMAND.equals(ed.getIntellisenseDetailMode());
+        rdoDetailOnDemand.setSelected(onDemand);
+        rdoDetailAlways.setSelected(!onDemand);
 
         // 2. Grid
         IdeSettings.GridSettings gr = s.getGrid() != null ? s.getGrid() : new IdeSettings.GridSettings();
@@ -771,6 +787,10 @@ public class SettingsDialogController implements Initializable {
         ed.setSyntaxCheck(chkSyntaxCheck.isSelected());
         ed.setIntellisense(chkIntellisense.isSelected());
         ed.setIntellisenseMru(chkIntellisenseMru.isSelected());
+        ed.setIntellisenseDetail(chkIntellisenseDetail.isSelected());
+        ed.setIntellisenseDetailMode(rdoDetailOnDemand.isSelected()
+                ? app.models.IdeSettings.EditorSettings.DETAIL_MODE_ON_DEMAND
+                : app.models.IdeSettings.EditorSettings.DETAIL_MODE_ALWAYS);
 
         // 2. Grid
         IdeSettings.GridSettings gr = s.getGrid();

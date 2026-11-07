@@ -80,8 +80,6 @@ public final class SettingsRowStyler {
     private static final java.util.Map<String, String[]> NOTES = java.util.Map.of(
             "editor.keywordCase", new String[]{"Chưa hỗ trợ", "Được lưu lại; có tác dụng khi có bộ định dạng SQL (D6)."},
             "editor.syntaxCheck", new String[]{"Chưa hỗ trợ", "Được lưu lại; có tác dụng khi có kiểm tra cú pháp."},
-            "editor.intellisense", new String[]{"Chưa hỗ trợ", "Được lưu lại; có tác dụng khi có IntelliSense (D7)."},
-            "editor.intellisenseMru", new String[]{"Chưa hỗ trợ", "Được lưu lại; có tác dụng khi có IntelliSense (D7)."},
             "sql.perTabSession", new String[]{"Luôn bật", "Bản Java luôn mở một phiên kết nối riêng cho mỗi tab; tùy chọn này không đổi được."},
             "history.*", new String[]{"Chưa hỗ trợ", "Được lưu lại; chưa có lịch sử truy vấn trong bản Java."},
             "updates.*", new String[]{"Chưa hỗ trợ", "Được lưu lại; kiểm tra cập nhật đang là bản mẫu (D8)."});

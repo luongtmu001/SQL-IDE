@@ -7,6 +7,7 @@
     <!-- Preload Monaco Editor CSS upfront to prevent WebKit style recalculation flicker -->
     <link rel="stylesheet" href="vs/editor/editor.main.css">
     <link rel="stylesheet" href="editor.css">
+    <link rel="stylesheet" href="intellisense/intellisense.css">
     <script>
         window.MonacoEnvironment = {
             getWorker: function (moduleId, label) {
@@ -18,7 +19,9 @@
 </head>
 <body style="background-color: transparent !important;">
     <div id="monaco-container"></div>
+    <script src="intellisense/monaco-sql-lang.js"></script>
     <script src="sql-intellisense.js"></script>
+    <script src="intellisense/host.js"></script>
     <script src="editor-bridge.js"></script>
 </body>
 </html>

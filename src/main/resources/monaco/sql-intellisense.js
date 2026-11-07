@@ -1,14 +1,18 @@
 /*
- * IntelliSense S2a: keywords, functions and snippets per SQL dialect, through Monaco's native completion provider.
- * Tables / columns / aliases (S2b) and routine context (S2c) plug into the same provider later.
+ * Per-dialect keywords, functions and snippets, merged into the IntelliSense engine by intellisense/host.js.
  *
- * Java drives it with  window.SqlIntellisense.setContext({ enabled, dialect, keywordCase, mru })
- *   dialect: "SQLSERVER" | "POSTGRESQL" | "SQLITE" | "OTHER";  keywordCase: "upper" | "lower" | "preserve".
+ * Java drives IntelliSense with  window.SqlIntellisense.setContext({ enabled, dialect, keywordCase, mru,
+ *   detail, detailMode, connectionId, database, schema })
+ *   dialect: "SQLSERVER" | "POSTGRESQL" | "SQLITE" | "OTHER";  keywordCase: "upper" | "lower" | "preserve";
+ *   detailMode: "always" | "onDemand".
  */
 (function () {
     "use strict";
 
-    var ctx = { enabled: true, dialect: "OTHER", keywordCase: "upper", mru: true };
+    var ctx = {
+        enabled: true, dialect: "OTHER", keywordCase: "upper", mru: true,
+        detail: true, detailMode: "always", connectionId: null, database: null, schema: null
+    };
 
     function words(s) { return s.split(/\s+/).filter(Boolean); }
 
@@ -113,27 +117,6 @@
     };
 
     // ------------------------------------------------------------------ helpers
-    function applyCase(text) {
-        if (ctx.keywordCase === "lower") return text.toLowerCase();
-        if (ctx.keywordCase === "preserve") return text;
-        return text.toUpperCase();
-    }
-
-    /** True when the cursor sits inside a '…' string or after -- on the line (a cheap single-line test). */
-    function inStringOrComment(model, position) {
-        var before = model.getValueInRange({
-            startLineNumber: position.lineNumber, startColumn: 1,
-            endLineNumber: position.lineNumber, endColumn: position.column
-        });
-        var quotes = 0;
-        for (var i = 0; i < before.length; i++) {
-            var c = before[i];
-            if (c === "'") quotes++;
-            else if (quotes % 2 === 0 && c === "-" && before[i + 1] === "-") return true;
-        }
-        return quotes % 2 === 1;
-    }
-
     function uniq(list) {
         var seen = Object.create(null), out = [];
         for (var i = 0; i < list.length; i++) {
@@ -155,68 +138,24 @@
         return cache[d];
     }
 
-    function register(monaco) {
-        monaco.languages.registerCompletionItemProvider("sql", {
-            provideCompletionItems: function (model, position) {
-                if (!ctx.enabled || inStringOrComment(model, position)) return { suggestions: [] };
-                var line = model.getLineContent(position.lineNumber);
-                var prev = line.charAt(position.column - 2);
-                if (prev === ".") return { suggestions: [] };   // columns / schema members: S2b
-
-                var word = model.getWordUntilPosition(position);
-                var range = {
-                    startLineNumber: position.lineNumber, endLineNumber: position.lineNumber,
-                    startColumn: word.startColumn, endColumn: word.endColumn
-                };
-                // "@" variables and "@@" globals: Monaco's word stops before "@", widen the range over it
-                var s = word.startColumn;
-                while (s > 1 && line.charAt(s - 2) === "@") s--;
-                range.startColumn = s;
-
-                var K = monaco.languages.CompletionItemKind;
-                var set = itemsFor(ctx.dialect);
-                var out = [];
-                var i;
-                for (i = 0; i < set.kw.length; i++) {
-                    var k = set.kw[i], t = applyCase(k);
-                    out.push({ label: t, kind: K.Keyword, insertText: t, range: range, sortText: "2" + t, filterText: k });
-                }
-                for (i = 0; i < set.fn.length; i++) {
-                    var f = set.fn[i], isVar = f.charAt(0) === "@";
-                    var ft = isVar ? f : applyCase(f);
-                    out.push({
-                        label: ft, kind: isVar ? K.Variable : K.Function,
-                        insertText: isVar ? ft : ft + "($0)",
-                        insertTextRules: isVar ? undefined : monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                        range: range, sortText: "1" + ft, filterText: f, detail: isVar ? "Global variable" : "Function"
-                    });
-                }
-                for (i = 0; i < set.sn.length; i++) {
-                    var sp = set.sn[i];
-                    out.push({
-                        label: sp[0], kind: K.Snippet, insertText: sp[1], detail: sp[2], range: range,
-                        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                        sortText: "0" + sp[0]
-                    });
-                }
-                return { suggestions: out };
-            }
-        });
-    }
-
     window.SqlIntellisense = {
-        register: register,
         setContext: function (c) {
             if (!c) return;
             if (typeof c.enabled === "boolean") ctx.enabled = c.enabled;
             if (c.dialect) ctx.dialect = String(c.dialect).toUpperCase();
             if (c.keywordCase) ctx.keywordCase = c.keywordCase;
             if (typeof c.mru === "boolean") ctx.mru = c.mru;
+            if (typeof c.detail === "boolean") ctx.detail = c.detail;
+            if (c.detailMode) ctx.detailMode = c.detailMode;
+            ctx.connectionId = c.connectionId || null;
+            ctx.database = c.database || null;
+            ctx.schema = c.schema || null;
             if (window.editorBridge && window.editorBridge.applyIntellisenseOptions) {
                 window.editorBridge.applyIntellisenseOptions(ctx);
             }
+            if (window.IntelliSenseHost) window.IntelliSenseHost.contextChanged(ctx);
         },
         context: function () { return ctx; },
-        _itemsFor: itemsFor   // for tests
+        _itemsFor: itemsFor
     };
 })();
