@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-010",
+  "interactions": [
+    {
+      "id": "INT-DLG10-001",
+      "component_id": "BTN-DLG10-004",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "comment.setOnAction",
+      "backend_method": "unknown",
+      "action_summary": "Comment các dòng bs.* và chạy",
+      "expected_result": "Trả COMMENT_AND_RUN",
+      "side_effects": [
+        "sửa SQL trước khi chạy (chưa kiểm sửa buffer hay bản sao)",
+        "chạy SQL"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": false,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG10-002",
+      "component_id": "BTN-DLG10-003",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "cancel.setOnAction",
+      "backend_method": "unknown",
+      "action_summary": "Hủy chạy",
+      "expected_result": "Trả CANCEL",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

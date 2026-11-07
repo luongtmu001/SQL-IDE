@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Secure Credential Storage & Secret Vault (Phase 3.5).
  * Encrypts passwords and sensitive secrets using AES-256-GCM.
  * Replaces plain-text passwords with reference URIs: 'cred://<uuid>'.
+ * The AES key comes from a random per-installation secret ({@link VaultKeyProvider}).
  */
 public class SecureCredentialVault {
 
@@ -34,15 +35,25 @@ public class SecureCredentialVault {
 
     private final Path vaultFile;
     private final SecretKey masterKey;
+    /** Key of vaults written before the per-installation key existed; only used to read and then upgrade them. */
+    private final SecretKey legacyKey;
     private final Map<String, String> credentials = new ConcurrentHashMap<>();
 
+    private static final String LEGACY_SECRET = "lltool-default-app-entropy";
+
+    /** Default: random per-installation key ({@code config/vault.key}); upgrades an older vault on first load. */
     public SecureCredentialVault(AppDirectoryManager directoryManager) {
-        this(directoryManager, "lltool-default-app-entropy");
+        this(directoryManager, VaultKeyProvider.resolveSecret(directoryManager), true);
     }
 
     public SecureCredentialVault(AppDirectoryManager directoryManager, String masterSecret) {
+        this(directoryManager, masterSecret, false);
+    }
+
+    private SecureCredentialVault(AppDirectoryManager directoryManager, String masterSecret, boolean upgradeLegacy) {
         this.vaultFile = directoryManager.getConfigDir().resolve(VAULT_FILENAME);
         this.masterKey = deriveKey(masterSecret);
+        this.legacyKey = upgradeLegacy ? deriveKey(LEGACY_SECRET) : null;
         load();
     }
 
@@ -97,9 +108,17 @@ public class SecureCredentialVault {
             byte[] iv = Arrays.copyOfRange(encrypted, 0, IV_LENGTH);
             byte[] cipherText = Arrays.copyOfRange(encrypted, IV_LENGTH, encrypted.length);
 
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.DECRYPT_MODE, masterKey, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
-            byte[] decrypted = cipher.doFinal(cipherText);
+            byte[] decrypted;
+            boolean upgraded = false;
+            try {
+                decrypted = decrypt(masterKey, iv, cipherText);
+            } catch (Exception primary) {
+                if (legacyKey == null) {
+                    throw primary;
+                }
+                decrypted = decrypt(legacyKey, iv, cipherText);   // vault from before the per-installation key
+                upgraded = true;
+            }
 
             String text = new String(decrypted, StandardCharsets.UTF_8);
             credentials.clear();
@@ -110,9 +129,19 @@ public class SecureCredentialVault {
                 }
             }
             log.info("Loaded {} encrypted credentials from vault", credentials.size());
+            if (upgraded) {
+                save();   // re-encrypt with the per-installation key
+                log.info("Vault upgraded to the per-installation key");
+            }
         } catch (Exception e) {
             log.error("Failed to decrypt vault file {}: {}", vaultFile, e.getMessage());
         }
+    }
+
+    private static byte[] decrypt(SecretKey key, byte[] iv, byte[] cipherText) throws Exception {
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+        return cipher.doFinal(cipherText);
     }
 
     private void save() {

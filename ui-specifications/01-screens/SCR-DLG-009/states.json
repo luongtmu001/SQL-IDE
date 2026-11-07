@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-009",
+  "states": [
+    {
+      "id": "STA-DLG09-001",
+      "component_id": "CMP-DLG09-017",
+      "state": "normal",
+      "visual_description": "\"Đã lưu\"",
+      "entry_condition": "không có thay đổi",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-DLG09-002",
+      "component_id": "CMP-DLG09-017",
+      "state": "error",
+      "visual_description": "\"Có thay đổi chưa lưu\"",
+      "entry_condition": "có sửa",
+      "exit_condition": "sau Lưu",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-DLG09-003",
+      "component_id": "CMP-DLG09-007",
+      "state": "disabled",
+      "visual_description": "Style hệ thống: các control sửa bị tắt, hiện gợi ý",
+      "entry_condition": "chọn style hệ thống",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}

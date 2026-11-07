@@ -311,9 +311,18 @@
                         <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
                             <VBox HBox.hgrow="ALWAYS">
                                 <Label text="Chế độ giao diện (Color Theme)" styleClass="settings-row-label"/>
-                                <Label text="theme — Chọn chủ đề màu sắc: Tối (Dark), Sáng (Light), Nord, Cupertino" styleClass="settings-row-subtext"/>
+                                <Label text="theme — Chủ đề màu của giao diện và editor, chia nhóm Tối / Sáng; theme VS Code đã import xếp theo gói" styleClass="settings-row-subtext"/>
                             </VBox>
-                            <ComboBox fx:id="cmbTheme" prefWidth="220"/>
+                            <ComboBox fx:id="cmbTheme" prefWidth="260"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Theme VS Code đã import (Imported VS Code Themes)" styleClass="settings-row-label"/>
+                                <Label text="Import gói .vsix của VS Code: mọi theme màu trong gói được thêm vào danh sách. Xóa cả gói hoặc từng theme." styleClass="settings-row-subtext"/>
+                                <VBox fx:id="importedThemesBox" spacing="6" styleClass="imported-themes"/>
+                            </VBox>
+                            <Button fx:id="btnImportVsix" text="Import .vsix…" onAction="#handleImportVsix" styleClass="settings-btn-secondary"/>
                         </HBox>
 
                         <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
@@ -351,7 +360,7 @@
                         <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
                             <VBox HBox.hgrow="ALWAYS">
                                 <Label text="Kiểu khung giao diện (Panel Style)" styleClass="settings-row-label"/>
-                                <Label text="appearance.panelStyle — Bo góc: các khối tách rời, bo góc 8px, cách nhau 6px. Phẳng: các khối liền nhau, ngăn bằng đường kẻ 1px" styleClass="settings-row-subtext" wrapText="true"/>
+                                <Label text="appearance.panelStyle — Các khối cách nhau 6px, có viền. Bo góc: góc bo 8px. Phẳng: góc vuông" styleClass="settings-row-subtext" wrapText="true"/>
                             </VBox>
                             <ComboBox fx:id="cmbPanelStyle" prefWidth="220"/>
                         </HBox>
@@ -545,6 +554,14 @@
                             </VBox>
                             <Spinner fx:id="spnMaxBackupFiles" prefWidth="120"/>
                         </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Mở thư mục nhật ký (Open Log Folder)" styleClass="settings-row-label"/>
+                                <Label text="Mở thư mục chứa file sql-ide.log trong trình quản lý file" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Button text="Mở thư mục" onAction="#handleOpenLogFolder" styleClass="settings-btn-secondary"/>
+                        </HBox>
                     </VBox>
 
                     <!-- SECTION 10: Updates & About -->
@@ -574,6 +591,14 @@
                                 <Label text="Phiên bản phát hành hiện tại của SQL IDE Desktop" styleClass="settings-row-subtext"/>
                             </VBox>
                             <Label fx:id="lblInstalledVersion" text="1.2.6" styleClass="settings-badge-version"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="settings-row">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Mở thư mục dữ liệu người dùng (Open User Data Folder)" styleClass="settings-row-label"/>
+                                <Label text="Kết nối, cấu hình, workspace, nhật ký (%APPDATA%\LLTool-Desktop)" styleClass="settings-row-subtext"/>
+                            </VBox>
+                            <Button text="Mở thư mục" onAction="#handleOpenDataFolder" styleClass="settings-btn-secondary"/>
                         </HBox>
                     </VBox>
 

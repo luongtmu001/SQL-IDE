@@ -1,0 +1,14 @@
+{
+  "screenId": "SCR-SPLASH-001",
+  "interactions": [
+    { "trigger": "BTN-MINIMIZE.click", "outcome": "Splash iconified; the main window later opens iconified", "evidence": "observed" },
+    { "trigger": "BTN-RETRY.click", "outcome": "StartupSequence.loadBackend runs again from step 1", "evidence": "observed" },
+    { "trigger": "BTN-OPEN-LOGS.click", "outcome": "Opens the logs folder with java.awt.Desktop", "evidence": "unknown" },
+    { "trigger": "BTN-EXIT.click", "outcome": "Platform.exit", "evidence": "unknown" },
+    { "trigger": "window.drag", "outcome": "Moves the splash", "evidence": "unknown" },
+    { "trigger": "window.closedFromTaskbar", "outcome": "Platform.exit", "evidence": "unknown" },
+    { "trigger": "ide.ready AND elapsed >= 1750 ms", "outcome": "Main window shows, splash fades out after 120 ms", "evidence": "observed" },
+    { "trigger": "elapsed >= 30000 ms after the main window was built, IDE not ready", "outcome": "Main window shows anyway, warning logged", "evidence": "unknown" },
+    { "trigger": "startup.failure", "outcome": "Error state; un-minimizes the splash", "evidence": "observed" }
+  ]
+}

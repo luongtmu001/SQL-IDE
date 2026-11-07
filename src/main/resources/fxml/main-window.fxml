@@ -153,6 +153,7 @@
                         <graphic><FontIcon iconLiteral="fth-play"/></graphic>
                     </MenuItem>
                     <MenuItem text="Execute (Alternative)" onAction="#handleExecute" accelerator="Shortcut+Enter"/>
+                    <MenuItem text="Execute Current Statement" onAction="#handleExecuteStatement" accelerator="Shortcut+E"/>
                     <MenuItem text="Stop Execution" onAction="#handleStop" accelerator="Shortcut+F2">
                         <graphic><FontIcon iconLiteral="fth-square"/></graphic>
                     </MenuItem>

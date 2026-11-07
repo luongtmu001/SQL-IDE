@@ -1,0 +1,15 @@
+{
+  "screenId": "SCR-SPLASH-001",
+  "mapping": [
+    { "python": ".logo-badge / .banner-img", "java": "SplashWindow.Canvas (double L mark) + LBL-TITLE", "note": "Redesigned" },
+    { "python": ".app-slogan", "java": "LBL-TAGLINE", "note": "Uses the commented-out product line of splash.html" },
+    { "python": ".progress-track / .progress-bar", "java": "BAR-PROGRESS", "note": "Indeterminate became step-based" },
+    { "python": ".splash-footer / .mini-spinner", "java": "LBL-STATUS + LBL-COUNTER", "note": "Spinner removed: the bar already shows activity" },
+    { "python": ".version-tag (Desktop Edition)", "java": "LBL-VERSION", "note": "Shows the real version" },
+    { "python": "main.py: 2.0 s minimum", "java": "StartupSequence.MIN_SPLASH_MILLIS = 1750", "note": "Requested by the user" },
+    { "python": "main.py: notify_app_ready", "java": "EditorController.whenEditorReady", "note": "" },
+    { "python": "main.py: 10 s fallback", "java": "StartupSequence.READY_TIMEOUT_MILLIS = 30000", "note": "Longer: the splash now waits for the editor" },
+    { "python": null, "java": "BTN-MINIMIZE", "note": "New, requested by the user" },
+    { "python": null, "java": "REG-ERROR", "note": "New, in the approved mockup" }
+  ]
+}

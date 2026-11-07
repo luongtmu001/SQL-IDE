@@ -1,0 +1,292 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-002",
+  "components": [
+    {
+      "id": "CMP-DLG02-001",
+      "name": "Target info",
+      "component_type": "label",
+      "region_id": "REG-DLG02-002",
+      "parent_component_id": null,
+      "visible_label": "<target>",
+      "accessible_name": "<target>",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/PasswordPromptDialog.java",
+        "selector_or_symbol": "info",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chuỗi đích (host/db)"
+    },
+    {
+      "id": "CMP-DLG02-002",
+      "name": "Reason",
+      "component_type": "label",
+      "region_id": "REG-DLG02-002",
+      "parent_component_id": null,
+      "visible_label": "Kết nối này chưa lưu mật khẩu. / Mật khẩu đã lưu quá 30 ngày. Nhập lại để tiếp tục.",
+      "accessible_name": "Kết nối này chưa lưu mật khẩu. / Mật khẩu đã lưu quá 30 ngày. Nhập lại để tiếp tục.",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/PasswordPromptDialog.java",
+        "selector_or_symbol": "reason",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Kiểu dialog-error khi hết hạn, dialog-hint khi chưa lưu"
+    },
+    {
+      "id": "CMP-DLG02-003",
+      "name": "Password",
+      "component_type": "password_field",
+      "region_id": "REG-DLG02-002",
+      "parent_component_id": null,
+      "visible_label": "Mật khẩu",
+      "accessible_name": "Mật khẩu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Mật khẩu",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/PasswordPromptDialog.java",
+        "selector_or_symbol": "hidden",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "PasswordField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG02-004",
+      "name": "Show password",
+      "component_type": "toggle_button",
+      "region_id": "REG-DLG02-002",
+      "parent_component_id": null,
+      "visible_label": "Hiện/ẩn",
+      "accessible_name": "Hiện/ẩn",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/PasswordPromptDialog.java",
+        "selector_or_symbol": "eye",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ToggleButton",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Đổi icon fth-eye / fth-eye-off"
+    },
+    {
+      "id": "CMP-DLG02-005",
+      "name": "Save password",
+      "component_type": "checkbox",
+      "region_id": "REG-DLG02-002",
+      "parent_component_id": null,
+      "visible_label": "Lưu mật khẩu (mã hóa, 30 ngày)",
+      "accessible_name": "Lưu mật khẩu (mã hóa, 30 ngày)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/PasswordPromptDialog.java",
+        "selector_or_symbol": "save",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Mặc định chọn"
+    },
+    {
+      "id": "CMP-DLG02-006",
+      "name": "Hint",
+      "component_type": "label",
+      "region_id": "REG-DLG02-002",
+      "parent_component_id": null,
+      "visible_label": "Không lưu: mật khẩu chỉ giữ trong bộ nhớ đến khi đóng ứng dụng.",
+      "accessible_name": "Không lưu: mật khẩu chỉ giữ trong bộ nhớ đến khi đóng ứng dụng.",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/PasswordPromptDialog.java",
+        "selector_or_symbol": "hint",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG02-007",
+      "name": "Cancel",
+      "component_type": "button",
+      "region_id": "REG-DLG02-003",
+      "parent_component_id": null,
+      "visible_label": "Hủy",
+      "accessible_name": "Hủy",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/PasswordPromptDialog.java",
+        "selector_or_symbol": "cancel",
+        "handler": "chrome.close"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG02-008",
+      "name": "Connect",
+      "component_type": "button",
+      "region_id": "REG-DLG02-003",
+      "parent_component_id": null,
+      "visible_label": "Kết nối",
+      "accessible_name": "Kết nối",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/PasswordPromptDialog.java",
+        "selector_or_symbol": "ok",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Tắt khi mật khẩu rỗng"
+    }
+  ]
+}

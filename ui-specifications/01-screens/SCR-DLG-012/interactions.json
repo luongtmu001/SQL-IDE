@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-012",
+  "interactions": [
+    {
+      "id": "INT-DLG12-001",
+      "component_id": "BTN-DLG12-003",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "check",
+      "backend_method": "unknown",
+      "action_summary": "Mở kiểm tra cập nhật",
+      "expected_result": "Gọi onCheckUpdates (UpdateDialog)",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG12-002",
+      "component_id": "CMP-DLG12-002",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "copy",
+      "backend_method": "unknown",
+      "action_summary": "Sao chép",
+      "expected_result": "Clipboard chứa thông tin",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

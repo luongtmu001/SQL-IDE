@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-010",
+  "mappings": [
+    {
+      "source_id": "ide-modal-debug-extension-warning",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-010",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Run Debug hoãn"
+      ],
+      "approval_reference": "none"
+    }
+  ]
+}

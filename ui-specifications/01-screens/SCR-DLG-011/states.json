@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-011",
+  "states": [
+    {
+      "id": "STA-DLG11-001",
+      "component_id": "CMP-DLG11-001",
+      "state": "normal",
+      "visual_description": "Màu theo tone: success/info bình thường, warning/danger có iconStyle",
+      "entry_condition": "theo Kind",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}

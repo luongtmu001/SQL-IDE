@@ -1,7 +1,7 @@
 # Giai đoạn 8 — Kế hoạch tích hợp logic thật (Gate D)
 # Phase 8 — Backend integration plan
 
-- Ngày lập: 2026-11-05. **Gate D đã đồng ý 2026-11-05.** Trạng thái: D0 + D1 đã code (chờ bạn kiểm), D2–D9 chưa làm.
+- Ngày lập: 2026-11-05. **Gate D đã đồng ý 2026-11-05.** Trạng thái: D0 + D1 tạm chấp nhận (còn mục cần kiểm lại, xem mục 7), D2 đã code (chờ kiểm), D3–D9 chưa làm.
 - Nguyên tắc: tích hợp **từng khu vực một**, mỗi khu vực có công tắc bật / tắt riêng và có mốc duyệt riêng (D1…D9). Khu vực chưa duyệt vẫn chạy dữ liệu mẫu như hiện nay.
 - Môi trường thử: chỉ dùng DB thử (SQLite file, SQL Server / PostgreSQL chạy local hoặc Docker). Không thử trên server PROD.
 
@@ -75,7 +75,9 @@ Thứ tự đề xuất: D0 → D1 → D2 → D3 → D4 → D5, còn D6, D8 làm
 | 6 | IntelliSense | Tách ra sau GĐ 8 (D7 bỏ khỏi GĐ 8) |
 | 7 | T7, T8, T9, T11 | Chỉ ghi log, chưa sửa |
 
-## 6. Đã làm: D0 + D1 (2026-11-05, chờ bạn kiểm)
+## 6. Đã làm: D0 + D1 (2026-11-05)
+
+Kết quả bạn kiểm 2026-11-05: ✅ 2 tab cùng kết nối PostgreSQL có 2 PID khác nhau (phiên theo tab đúng). Bạn tạm coi D1 là đạt; các mục chưa kiểm ghi ở mục 7.
 
 Đọc lại logic LLTool (`models/connection_session.py`, `services/connection_manager.py`, `utils/sql_safety.py`) và áp vào Java, kèm một số cải tiến.
 
@@ -93,3 +95,31 @@ Thứ tự đề xuất: D0 → D1 → D2 → D3 → D4 → D5, còn D6, D8 làm
 | Khác | Loại DB không hỗ trợ (MySQL…) báo lỗi rõ thay vì coi nhầm là PostgreSQL; không tự tạo profile mẫu (có profile trỏ `192.168.1.100`) khi chạy thật | `ConnectionSessionManager.mapDatabaseType`, `SidebarController` |
 
 Còn lại cho các mốc sau: D2 phần còn lại (lọc, lớp phủ đang tải khi chậm), D3 (Messages / PRINT / NOTICE, nhiều tab chạy song song — hiện vẫn một câu lệnh một lúc cho cả app, Hủy theo tab), D4, D5, D6, D8, D9.
+
+## 7. Danh sách cần kiểm lại (log theo yêu cầu 2026-11-05)
+
+| # | Mốc | Việc cần kiểm | Kết quả mong đợi | Trạng thái |
+|---|---|---|---|---|
+| K1 | D1 | Chạy `UPDATE` / `DELETE` trên PostgreSQL | Bị chặn trước khi gửi lên server, toast + Messages "CHỈ ĐỌC" | ⏳ chưa kiểm |
+| K2 | D1 | SQL Server `localhost,1433`: kết nối 2 tab, `SELECT @@SPID` | 2 PID khác nhau; status bar hiện PID của tab đang mở | ⏳ chưa kiểm |
+| K3 | D1 | Nhập sai mật khẩu (DLG-002) rồi mở lại | Chấm đỏ + toast lỗi; mở lại thì hỏi mật khẩu lần nữa | ⏳ chưa kiểm |
+| K4 | D1 | Đổi kết nối trên toolbar của 1 tab | Phiên cũ của tab bị ngắt, tab khác không ảnh hưởng | ⏳ chưa kiểm |
+| K5 | D1 | Đóng tab đang kết nối / thoát app | Phiên đóng (PostgreSQL: `pg_stat_activity` không còn PID đó) | ⏳ chưa kiểm |
+| K6 | D2 | Mở cây Explorer của SQL Server và PostgreSQL thật | Database → schema → bảng / view / thủ tục / hàm / trigger / sequence đúng | ⏳ chưa kiểm |
+| K7 | D2 | Chuột phải view / thủ tục / hàm / trigger → View Definition, Script as CREATE / ALTER / DROP | Mở định nghĩa thật lấy từ server | ⏳ chưa kiểm |
+| K8 | D2 | Chuột phải bảng → Script Table as CREATE / SELECT / INSERT | CREATE TABLE có cột, kiểu, NULL, default, identity, PK; DML liệt kê đủ cột | ⏳ chưa kiểm |
+| K9 | D2 | Ô chọn database / schema trên toolbar | Danh sách thật; chọn database đổi database của **tab hiện tại** | ⏳ chưa kiểm |
+| K10 | D2 | Tắt server hoặc đổi sai host rồi mở node | Dòng "⚠ Không tải được: …" dưới node, mở lại thì thử lại | ⏳ chưa kiểm |
+
+## 8. Đã làm: D2 Object Explorer (2026-11-05, chờ kiểm K6–K10)
+
+| Việc | Chi tiết | File |
+|---|---|---|
+| Định nghĩa thật | Port `get_object_definition` / `script_object` của LLTool. SQL Server: `sys.sql_modules`, `sys.sequences`, `sys.types`; PostgreSQL: `pg_get_viewdef`, `pg_get_functiondef` (mọi overload), `pg_get_triggerdef`, `pg_sequences`; SQLite: `sqlite_master`. CREATE TABLE dựng từ JDBC metadata (cột, kiểu, default, identity / serial, PK). CREATE / ALTER / DROP / DROP And CREATE đúng cú pháp từng loại (PostgreSQL DROP hàm theo từng chữ ký tham số, DROP TRIGGER … ON bảng). Chỉ chạy SELECT trên kết nối Explorer chỉ đọc | `framework/metadata/ObjectScriptService` |
+| Menu Explorer | "Script … as", "View Definition", "Drop …" của bảng, view, materialized view, thủ tục, hàm, trigger, sequence, type dùng định nghĩa thật (chế độ mock vẫn dùng mẫu cũ). SELECT / INSERT / UPDATE / DELETE To tự lấy danh sách cột nếu bảng chưa mở | `DatabaseTreeCell` |
+| Đặt tên an toàn | `[x]` cho SQL Server, `"x"` khi cần cho PostgreSQL / SQLite (tên có dấu cách, chữ hoa…) | `ObjectScriptService.quote` |
+| Sequences | Thư mục "Sequences" trước đây luôn trống (không có hàm tải). Nay tải thật cho PostgreSQL và **thêm cho SQL Server** | `DesktopMetadataService.fetchSequences`, `LazyDatabaseTreeItem` |
+| Lỗi tải | Dòng "⚠ Không tải được: …" dưới node thay cho thư mục trống; mở lại / Refresh thử lại. Sai mật khẩu thì quên mật khẩu tạm để lần sau hỏi lại | `LazyDatabaseTreeItem.showLoadError`, `PasswordPolicyService.forgetSessionPasswordIfAuthError` |
+| Toolbar | Ô database / schema lấy danh sách thật khi mở; chọn database / schema đổi của **tab hiện tại** (trước đây chỉ đổi biến chung, lần chạy sau vẫn dùng database mặc định). Bỏ danh sách schema cứng `public / auth / audit_logs…` | `MainController.setupDatabaseSelector` |
+
+Chưa làm trong D2: lớp phủ đang tải + Hủy cho Explorer (hiện dòng "Đang tải…"; API metadata chưa hủy được giữa chừng), Properties, Dependencies, Search Object Content (vẫn mờ "(chưa hỗ trợ)").

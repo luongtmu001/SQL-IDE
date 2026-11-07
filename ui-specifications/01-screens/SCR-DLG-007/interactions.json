@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-007",
+  "interactions": [
+    {
+      "id": "INT-DLG07-001",
+      "component_id": "CMP-DLG07-001",
+      "trigger": "double_click",
+      "preconditions": [],
+      "source_handler": "list.setOnMouseClicked (clickCount 2)",
+      "backend_method": "unknown",
+      "action_summary": "Nhảy tới dòng lỗi",
+      "expected_result": "Trả Result(false, line): hủy chạy và đưa con trỏ tới dòng",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG07-002",
+      "component_id": "BTN-DLG07-005",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "go.setOnAction",
+      "backend_method": "unknown",
+      "action_summary": "Tiếp tục chạy",
+      "expected_result": "Trả Result(true, 0)",
+      "side_effects": [
+        "chạy câu lệnh nguy hiểm"
+      ],
+      "confirmation_required": "đây là bước xác nhận",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": false,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG07-003",
+      "component_id": "BTN-DLG07-008",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "go.setOnAction (ProductionSafetyDialog)",
+      "backend_method": "unknown",
+      "action_summary": "Xác nhận chạy câu lệnh ghi trên PROD",
+      "expected_result": "Trả true",
+      "side_effects": [
+        "chạy câu lệnh ghi trên production"
+      ],
+      "confirmation_required": "đây là bước xác nhận",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": false,
+      "evidence": []
+    }
+  ]
+}

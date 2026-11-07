@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-004",
+  "mappings": [
+    {
+      "source_id": "tab Results (#ide-result-panel)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-001",
+      "target_type": "javafx",
+      "target_component": "TableView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Nguồn dùng AG Grid; đích dùng TableView (hiệu năng 100k dòng thuộc D4)"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "tab Messages",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-002",
+      "target_type": "javafx",
+      "target_component": "TextArea",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Nguồn chưa quan sát; đích hiển thị PRINT/RAISERROR dạng văn bản"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "tab Errors",
+      "source_type": "python_web_ui",
+      "target_id": "unmapped",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "not_started",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đích không có tab Errors riêng; lỗi có thể nằm ở Timeline (Level) — chưa xác nhận"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "tab Logs",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-003 (Timeline)",
+      "target_type": "javafx",
+      "target_component": "TableView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đổi tên thành Timeline"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "tab Plan (execution-plan-tab.js)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-004",
+      "target_type": "javafx",
+      "target_component": "TreeView + TableView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đích có cây + inspector + raw; nguồn chưa quan sát"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "(không có trong nguồn)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-005 Terminal",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Tab chỉ có ở đích, nội dung mô phỏng"
+      ],
+      "approval_reference": "cần xác nhận lại (chưa tìm thấy ghi nhận duyệt)"
+    },
+    {
+      "source_id": "multi-result header",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-013",
+      "target_type": "javafx",
+      "target_component": "ScrollPane + VBox",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Phase 4 Gate B 2026-11-05: xếp dọc, thu gọn được"
+      ],
+      "approval_reference": "migration-plan.md Phase 4"
+    },
+    {
+      "source_id": "structured-data-viewer.js (side panel)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-014 (Quick View)",
+      "target_type": "javafx",
+      "target_component": "ContextMenu",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Quick View qua menu ngữ cảnh thay cho panel bên"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "#ide-result-footer (rows, time, size, conn, sparkline, copy JSON)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-017..022",
+      "target_type": "javafx",
+      "target_component": "HBox + Label",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Thiếu sparkline 5 lần chạy (đích chỉ có biểu tượng tĩnh)"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "Compare results",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-RES-008",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Hiện nút tắt"
+      ],
+      "approval_reference": "Gate B 2026-11-05 (ghi trong results.fxml)"
+    }
+  ]
+}

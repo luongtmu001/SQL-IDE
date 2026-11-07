@@ -1,0 +1,187 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-010",
+  "components": [
+    {
+      "id": "CMP-DLG10-001",
+      "name": "Message",
+      "component_type": "label",
+      "region_id": "REG-DLG10-002",
+      "parent_component_id": null,
+      "visible_label": "Các hàm bs.* chỉ chạy ở chế độ Run Debug, không chạy được ở chế độ Run thường.",
+      "accessible_name": "Các hàm bs.* chỉ chạy ở chế độ Run Debug, không chạy được ở chế độ Run thường.",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DebugExtensionDialog.java",
+        "selector_or_symbol": "msg",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG10-002",
+      "name": "Occurrence list",
+      "component_type": "list",
+      "region_id": "REG-DLG10-002",
+      "parent_component_id": null,
+      "visible_label": "Dòng N · <text>",
+      "accessible_name": "Dòng N · <text>",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DebugExtensionDialog.java",
+        "selector_or_symbol": "list",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ListView",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Font mono"
+    },
+    {
+      "id": "BTN-DLG10-003",
+      "name": "Cancel",
+      "component_type": "button",
+      "region_id": "REG-DLG10-003",
+      "parent_component_id": null,
+      "visible_label": "Hủy",
+      "accessible_name": "Hủy",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DebugExtensionDialog.java",
+        "selector_or_symbol": "cancel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Footer trái"
+    },
+    {
+      "id": "BTN-DLG10-004",
+      "name": "Comment and run",
+      "component_type": "button",
+      "region_id": "REG-DLG10-002",
+      "parent_component_id": null,
+      "visible_label": "Comment hết bs.* và chạy",
+      "accessible_name": "Comment hết bs.* và chạy",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DebugExtensionDialog.java",
+        "selector_or_symbol": "comment",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG10-005",
+      "name": "Run Debug",
+      "component_type": "button",
+      "region_id": "REG-DLG10-002",
+      "parent_component_id": null,
+      "visible_label": "Run Debug (chưa hỗ trợ)",
+      "accessible_name": "Run Debug (chưa hỗ trợ)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/DebugExtensionDialog.java",
+        "selector_or_symbol": "debug",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Tắt (deferred)"
+    }
+  ]
+}

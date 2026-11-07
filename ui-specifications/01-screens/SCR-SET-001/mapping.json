@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-SET-001",
+  "mappings": [
+    {
+      "source_id": "settings_window.html (9 nhóm)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-010..019 (10 nhóm)",
+      "target_type": "javafx",
+      "target_component": "Button + VBox sections",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Đích có 10 nhóm; inventory ghi 9. Chưa đối chiếu nhóm nào thêm (có thể Messages hoặc Appearance tách ra)"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "Visual / JSON views",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-003/004",
+      "target_type": "javafx",
+      "target_component": "Button ×2",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "Save · Copy JSON · Reset defaults",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-005/007/008",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Save chuyển xuống footer; \"Đóng\" bỏ, dùng × của cửa sổ"
+      ],
+      "approval_reference": "Phase 5 Gate B 2026-11-05 (SettingsDialog.java chú thích)"
+    },
+    {
+      "source_id": "Close (trong trang)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-009",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Bỏ nút Đóng; × của DialogChrome + hỏi khi chưa lưu"
+      ],
+      "approval_reference": "Phase 5 Gate B 2026-11-05"
+    },
+    {
+      "source_id": "search",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-001/002",
+      "target_type": "javafx",
+      "target_component": "TextField",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "live font preview",
+      "source_type": "python_web_ui",
+      "target_id": "unmapped",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "not_started",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Inventory ghi nguồn có xem trước phông chữ; chưa thấy trong FXML đích"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "cài đặt Editor/Grid/Messages/Appearance/SQL/Session/Addons/History/Logging/Updates",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-SET-020..066",
+      "target_type": "javafx",
+      "target_component": "ComboBox/Spinner/CheckBox/TextField",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Danh sách khóa đích khớp mô tả; chưa đối chiếu giá trị mặc định và phạm vi với settings.js"
+      ],
+      "approval_reference": "none"
+    }
+  ]
+}

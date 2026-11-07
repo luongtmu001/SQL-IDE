@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-008",
+  "components": [
+    {
+      "id": "CMP-DLG08-001",
+      "name": "Message",
+      "component_type": "label",
+      "region_id": "REG-DLG08-002",
+      "parent_component_id": null,
+      "visible_label": "Toàn bộ SQL trong tab sẽ được định dạng lại. Có thể hoàn tác bằng Ctrl+Z.",
+      "accessible_name": "Toàn bộ SQL trong tab sẽ được định dạng lại. Có thể hoàn tác bằng Ctrl+Z.",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/FormatConfirmDialog.java",
+        "selector_or_symbol": "msg",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG08-002",
+      "name": "Do not ask again",
+      "component_type": "checkbox",
+      "region_id": "REG-DLG08-002",
+      "parent_component_id": null,
+      "visible_label": "Không hỏi lại",
+      "accessible_name": "Không hỏi lại",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/FormatConfirmDialog.java",
+        "selector_or_symbol": "skip",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Lưu bằng Preferences (key format_document_skip_confirm)"
+    },
+    {
+      "id": "BTN-DLG08-003",
+      "name": "Cancel",
+      "component_type": "button",
+      "region_id": "REG-DLG08-003",
+      "parent_component_id": null,
+      "visible_label": "Hủy",
+      "accessible_name": "Hủy",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/FormatConfirmDialog.java",
+        "selector_or_symbol": "cancel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG08-004",
+      "name": "Format",
+      "component_type": "button",
+      "region_id": "REG-DLG08-003",
+      "parent_component_id": null,
+      "visible_label": "Format",
+      "accessible_name": "Format",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/FormatConfirmDialog.java",
+        "selector_or_symbol": "go",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    }
+  ]
+}

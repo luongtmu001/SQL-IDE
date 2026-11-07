@@ -1,0 +1,1080 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-001",
+  "components": [
+    {
+      "id": "BTN-DLG01-001",
+      "name": "New connection",
+      "component_type": "icon_button",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Kết nối mới",
+      "accessible_name": "Kết nối mới",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Kết nối mới",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "newButton",
+        "handler": "handleNewConnection"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG01-002",
+      "name": "Duplicate",
+      "component_type": "icon_button",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Nhân bản",
+      "accessible_name": "Nhân bản",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Nhân bản kết nối đang chọn",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "duplicateButton",
+        "handler": "handleDuplicateConnection"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG01-003",
+      "name": "Delete",
+      "component_type": "icon_button",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Xóa",
+      "accessible_name": "Xóa",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Xóa kết nối đang chọn",
+      "classification": "destructive",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "deleteButton",
+        "handler": "handleDeleteConnection"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Hỏi ConfirmDialog \"Xóa kết nối\""
+    },
+    {
+      "id": "CMP-DLG01-004",
+      "name": "Search connections",
+      "component_type": "text_field",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Tìm kết nối…",
+      "accessible_name": "Tìm kết nối…",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "searchField",
+        "handler": "filter"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG01-005",
+      "name": "Saved connections tree",
+      "component_type": "tree",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "KẾT NỐI ĐÃ LƯU",
+      "accessible_name": "KẾT NỐI ĐÃ LƯU",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "connectionTree",
+        "handler": "selection"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TreeView",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Phân nhóm"
+    },
+    {
+      "id": "CMP-DLG01-006",
+      "name": "DB type",
+      "component_type": "combobox",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Loại DB",
+      "accessible_name": "Loại DB",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "dbTypeComboBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "PostgreSQL / SQL Server / SQLite (theo logic ẩn/hiện dòng)"
+    },
+    {
+      "id": "CMP-DLG01-007",
+      "name": "Environment",
+      "component_type": "combobox",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Môi trường",
+      "accessible_name": "Môi trường",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "envComboBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Quyết định badge ENV và guard PROD"
+    },
+    {
+      "id": "CMP-DLG01-008",
+      "name": "Name",
+      "component_type": "text_field",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Tên",
+      "accessible_name": "Tên",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "staging-db",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "nameField",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG01-009",
+      "name": "Group",
+      "component_type": "combobox",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Nhóm",
+      "accessible_name": "Nhóm",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "(Chưa phân nhóm)",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "groupComboBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "editable"
+    },
+    {
+      "id": "CMP-DLG01-010",
+      "name": "Host",
+      "component_type": "text_field",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Host",
+      "accessible_name": "Host",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "localhost",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "hostField",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG01-011",
+      "name": "Port",
+      "component_type": "spinner",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Port",
+      "accessible_name": "Port",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "portSpinner",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG01-012",
+      "name": "Database",
+      "component_type": "combobox",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Database",
+      "accessible_name": "Database",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Database mặc định",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "databaseComboBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "editable"
+    },
+    {
+      "id": "BTN-DLG01-013",
+      "name": "Fetch databases",
+      "component_type": "icon_button",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Tải danh sách database",
+      "accessible_name": "Tải danh sách database",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Tải danh sách database",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "fetchDbsButton",
+        "handler": "handleFetchDatabases"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chạm server thật khi backend = real"
+    },
+    {
+      "id": "CMP-DLG01-014",
+      "name": "Schema",
+      "component_type": "combobox",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Schema",
+      "accessible_name": "Schema",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "public",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "schemaComboBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "editable"
+    },
+    {
+      "id": "BTN-DLG01-015",
+      "name": "Fetch schemas",
+      "component_type": "icon_button",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Tải danh sách schema",
+      "accessible_name": "Tải danh sách schema",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Tải danh sách schema",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "fetchSchemasButton",
+        "handler": "handleFetchSchemas"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG01-016",
+      "name": "SQLite file",
+      "component_type": "text_field",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Tệp SQLite",
+      "accessible_name": "Tệp SQLite",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "C:\\data\\app.db",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "sqliteFileField",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chỉ khi loại DB = SQLite"
+    },
+    {
+      "id": "BTN-DLG01-017",
+      "name": "Choose file",
+      "component_type": "icon_button",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Chọn tệp",
+      "accessible_name": "Chọn tệp",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Chọn tệp",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "chooseFileButton",
+        "handler": "handleChooseSqliteFile"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG01-018",
+      "name": "Windows Authentication",
+      "component_type": "checkbox",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Windows Authentication",
+      "accessible_name": "Windows Authentication",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "windowsAuthSwitch",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chỉ SQL Server (suy từ tên)"
+    },
+    {
+      "id": "CMP-DLG01-019",
+      "name": "Username",
+      "component_type": "text_field",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Username",
+      "accessible_name": "Username",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "usernameField",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG01-020",
+      "name": "Password",
+      "component_type": "password_field",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Mật khẩu",
+      "accessible_name": "Mật khẩu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "passwordField",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "PasswordField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Mật khẩu chỉ giữ trong RAM nếu không lưu"
+    },
+    {
+      "id": "BTN-DLG01-021",
+      "name": "Show password",
+      "component_type": "toggle_button",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Hiện / ẩn mật khẩu",
+      "accessible_name": "Hiện / ẩn mật khẩu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Hiện / ẩn mật khẩu",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "showPasswordToggle",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ToggleButton",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG01-022",
+      "name": "Save password",
+      "component_type": "checkbox",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Lưu mật khẩu (mã hóa)",
+      "accessible_name": "Lưu mật khẩu (mã hóa)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "savePasswordCheckBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Kèm nhãn hạn dùng mật khẩu (passwordExpiryLabel)"
+    },
+    {
+      "id": "BTN-DLG01-023",
+      "name": "Advanced toggle",
+      "component_type": "button",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "NÂNG CAO",
+      "accessible_name": "NÂNG CAO",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "advancedToggle",
+        "handler": "handleToggleAdvanced"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Mở/đóng timeout, chỉ đọc, TrustServerCertificate"
+    },
+    {
+      "id": "CMP-DLG01-024",
+      "name": "Timeout",
+      "component_type": "spinner",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Timeout (giây)",
+      "accessible_name": "Timeout (giây)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "timeoutSpinner",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG01-025",
+      "name": "Read only",
+      "component_type": "checkbox",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Chỉ đọc",
+      "accessible_name": "Chỉ đọc",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "readOnlyCheckBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG01-026",
+      "name": "Trust server certificate",
+      "component_type": "checkbox",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Tin cậy chứng chỉ máy chủ (TrustServerCertificate)",
+      "accessible_name": "Tin cậy chứng chỉ máy chủ (TrustServerCertificate)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "trustCertCheckBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG01-027",
+      "name": "Test",
+      "component_type": "button",
+      "region_id": "REG-DLG01-002",
+      "parent_component_id": null,
+      "visible_label": "Kiểm tra",
+      "accessible_name": "Kiểm tra",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "testButton",
+        "handler": "handleTestConnection"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Hiện ProgressIndicator + statusLabel; chạm server khi real"
+    },
+    {
+      "id": "BTN-DLG01-028",
+      "name": "Close",
+      "component_type": "button",
+      "region_id": "REG-DLG01-003",
+      "parent_component_id": null,
+      "visible_label": "Đóng",
+      "accessible_name": "Đóng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "closeButton",
+        "handler": "handleClose"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "cancelButton=true"
+    },
+    {
+      "id": "BTN-DLG01-029",
+      "name": "Save",
+      "component_type": "button",
+      "region_id": "REG-DLG01-003",
+      "parent_component_id": null,
+      "visible_label": "Lưu",
+      "accessible_name": "Lưu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "saveButton",
+        "handler": "handleSaveConnection"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG01-030",
+      "name": "Save and connect",
+      "component_type": "button",
+      "region_id": "REG-DLG01-003",
+      "parent_component_id": null,
+      "visible_label": "Lưu và kết nối",
+      "accessible_name": "Lưu và kết nối",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ConnectionManagerDialog.java + fxml/connection-manager-dialog.fxml + controllers/ConnectionManagerController.java",
+        "selector_or_symbol": "connectNowButton",
+        "handler": "handleConnectNow"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "defaultButton; accent"
+    }
+  ]
+}

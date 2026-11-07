@@ -1,0 +1,658 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-009",
+  "components": [
+    {
+      "id": "BTN-DLG09-001",
+      "name": "New style",
+      "component_type": "button",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Style mới",
+      "accessible_name": "Style mới",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "newBtn",
+        "handler": "addStyle"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG09-002",
+      "name": "Duplicate",
+      "component_type": "button",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Nhân bản",
+      "accessible_name": "Nhân bản",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "dupBtn",
+        "handler": "addStyle(editing())"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Tên \"(bản sao)\""
+    },
+    {
+      "id": "BTN-DLG09-003",
+      "name": "Delete",
+      "component_type": "icon_button",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Xóa style",
+      "accessible_name": "Xóa style",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Xóa style",
+      "classification": "destructive",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "deleteBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Hỏi ConfirmDialog \"Xóa style\""
+    },
+    {
+      "id": "BTN-DLG09-004",
+      "name": "Rename",
+      "component_type": "button",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Đổi tên",
+      "accessible_name": "Đổi tên",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "renameBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Dùng TextPromptDialog"
+    },
+    {
+      "id": "BTN-DLG09-005",
+      "name": "Set default",
+      "component_type": "button",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Đặt mặc định",
+      "accessible_name": "Đặt mặc định",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "defaultBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Hiện badge \"Mặc định\""
+    },
+    {
+      "id": "CMP-DLG09-006",
+      "name": "Style list",
+      "component_type": "combobox",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Style",
+      "accessible_name": "Style",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "styleLbl/list",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Badge \"Hệ thống\" / \"Mặc định\""
+    },
+    {
+      "id": "CMP-DLG09-007",
+      "name": "Read-only hint",
+      "component_type": "label",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Style hệ thống chỉ đọc. Bấm Nhân bản để tạo style của bạn rồi chỉnh.",
+      "accessible_name": "Style hệ thống chỉ đọc. Bấm Nhân bản để tạo style của bạn rồi chỉnh.",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "readOnlyHint",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG09-008",
+      "name": "Search options",
+      "component_type": "text_field",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Tìm tùy chọn…",
+      "accessible_name": "Tìm tùy chọn…",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Tìm tùy chọn…",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "search",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG09-009",
+      "name": "Dialect: SQL Server",
+      "component_type": "toggle_button",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "SQL Server",
+      "accessible_name": "SQL Server",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "mssql",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ToggleButton",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG09-010",
+      "name": "Dialect: PostgreSQL",
+      "component_type": "toggle_button",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "PostgreSQL",
+      "accessible_name": "PostgreSQL",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "pg",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ToggleButton",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chuyển mẫu SQL sang cú pháp PostgreSQL"
+    },
+    {
+      "id": "CMP-DLG09-011",
+      "name": "Option rows",
+      "component_type": "setting_row",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "(boolean / number / …)",
+      "accessible_name": "(boolean / number / …)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "buildOptionRow",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Control",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Kiểu control theo metadata"
+    },
+    {
+      "id": "CMP-DLG09-012",
+      "name": "Preview",
+      "component_type": "embedded_editor",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Xem trước",
+      "accessible_name": "Xem trước",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "EmbeddedMonaco",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Monaco",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Monaco \"code-style-preview\""
+    },
+    {
+      "id": "CMP-DLG09-013",
+      "name": "Use current SQL",
+      "component_type": "checkbox",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Xem trước bằng câu lệnh đang mở",
+      "accessible_name": "Xem trước bằng câu lệnh đang mở",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "useCurrent",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG09-014",
+      "name": "Format",
+      "component_type": "button",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Format",
+      "accessible_name": "Format",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Định dạng SQL trong khung theo style đang chọn",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "formatBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG09-015",
+      "name": "Sample SQL",
+      "component_type": "button",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "SQL mẫu",
+      "accessible_name": "SQL mẫu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Trả về câu SQL mẫu của nhóm đang chọn",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "sampleBtn",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG09-016",
+      "name": "Import / Export",
+      "component_type": "button",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Nhập / Xuất",
+      "accessible_name": "Nhập / Xuất",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "FileChooser",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Định dạng `*.sqlstyle.json`; tên nút chính xác chưa kiểm"
+    },
+    {
+      "id": "CMP-DLG09-017",
+      "name": "Status",
+      "component_type": "label",
+      "region_id": "REG-DLG09-002",
+      "parent_component_id": null,
+      "visible_label": "Có thay đổi chưa lưu / Đã lưu",
+      "accessible_name": "Có thay đổi chưa lưu / Đã lưu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "status",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-DLG09-018",
+      "name": "Save",
+      "component_type": "button",
+      "region_id": "REG-DLG09-003",
+      "parent_component_id": null,
+      "visible_label": "Lưu",
+      "accessible_name": "Lưu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/CodeStyleDialog.java + ui/codestyle/{SqlStyleStore,SqlStyleMetadata,SimpleSqlFormatter}",
+        "selector_or_symbol": "save",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Không có nút Đóng; × của cửa sổ đóng (hỏi nếu chưa lưu)"
+    }
+  ]
+}

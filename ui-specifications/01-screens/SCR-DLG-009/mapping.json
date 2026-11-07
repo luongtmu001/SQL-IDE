@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-009",
+  "mappings": [
+    {
+      "source_id": "ide-modal-code-style",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-009",
+      "target_type": "javafx",
+      "target_component": "DialogChrome + EmbeddedMonaco",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đích dùng Monaco xem trước, nhập/xuất JSON; chưa so với nguồn"
+      ],
+      "approval_reference": "none"
+    }
+  ]
+}

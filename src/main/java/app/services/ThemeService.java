@@ -48,7 +48,11 @@ public class ThemeService {
     }
 
     private static final ThemeService INSTANCE = new ThemeService();
+    /** The AtlantaFX theme in use (an imported theme sits on Primer Dark / Light). */
     private final ObjectProperty<AppTheme> currentTheme = new SimpleObjectProperty<>(AppTheme.PRIMER_DARK);
+    /** T1: the theme the user chose (built in or imported); listeners use this one. */
+    private final ObjectProperty<app.services.theme.ThemeDefinition> currentDefinition =
+            new SimpleObjectProperty<>(app.services.theme.ThemeDefinition.builtIn(AppTheme.PRIMER_DARK));
 
     private ThemeService() {
     }
@@ -65,28 +69,48 @@ public class ThemeService {
         return currentTheme.get();
     }
 
+    public ObjectProperty<app.services.theme.ThemeDefinition> currentDefinitionProperty() {
+        return currentDefinition;
+    }
+
+    public app.services.theme.ThemeDefinition getCurrentDefinition() {
+        return currentDefinition.get();
+    }
+
     public boolean isDarkMode() {
-        return currentTheme.get().isDark();
+        return currentDefinition.get().isDark();
     }
 
     public void initializeTheme(Scene scene) {
         applyTheme(currentTheme.get(), scene);
     }
 
+    /** Title-bar light/dark button: the twin of the current theme (GitHub Dark Default <-> GitHub Light Default). */
     public void toggleDarkLight(Scene scene) {
-        if (isDarkMode()) {
-            setTheme(AppTheme.PRIMER_LIGHT, scene);
-        } else {
-            setTheme(AppTheme.PRIMER_DARK, scene);
-        }
+        apply(app.services.theme.ThemeRegistry.getInstance().counterpart(currentDefinition.get()), scene);
     }
 
     public void setTheme(AppTheme theme, Scene scene) {
-        this.currentTheme.set(theme);
-        applyTheme(theme, scene);
+        apply(app.services.theme.ThemeDefinition.builtIn(theme), scene);
+    }
+
+    /**
+     * T1: shows a theme. The base AtlantaFX theme first, then the definition is published (listeners: Monaco,
+     * title, icons, Settings). An imported theme's stylesheet comes after the app sheets and before R-UI-01.
+     */
+    public void apply(app.services.theme.ThemeDefinition def, Scene scene) {
+        if (def == null) return;
+        AppTheme base = def.base() != null ? def.base() : (def.isDark() ? AppTheme.PRIMER_DARK : AppTheme.PRIMER_LIGHT);
+        applyTheme(base, scene, def); // sheets first: listeners (Monaco palette) read the new colours
+        this.currentTheme.set(base);
+        this.currentDefinition.set(def);
     }
 
     private void applyTheme(AppTheme theme, Scene scene) {
+        applyTheme(theme, scene, currentDefinition.get());
+    }
+
+    private void applyTheme(AppTheme theme, Scene scene, app.services.theme.ThemeDefinition def) {
         Theme atlantafxTheme = switch (theme) {
             case PRIMER_DARK -> new PrimerDark();
             case PRIMER_LIGHT -> new PrimerLight();
@@ -102,16 +126,22 @@ public class ThemeService {
         if (scene != null) {
             scene.getStylesheets().clear();
             addStylesheet(scene, "/css/base.css");
+            addStylesheet(scene, "/css/ide-vars.css"); // T2: -ide-* region colours (defaults; themes override)
             addStylesheet(scene, "/css/layout.css");
             addStylesheet(scene, "/css/components.css");
             addStylesheet(scene, "/css/editor.css");
             addStylesheet(scene, "/css/titlebar/titlebar.css");
             addStylesheet(scene, "/css/titlebar/window-controls.css");
 
-            if (theme.isDark()) {
+            boolean dark = def != null ? def.isDark() : theme.isDark();
+            if (dark) {
                 addStylesheet(scene, "/css/dark-theme.css");
             } else {
                 addStylesheet(scene, "/css/light-theme.css");
+            }
+            // imported VS Code theme: its -color-* / -ide-* values override the base theme's
+            if (def != null && def.cssFile() != null && java.nio.file.Files.isRegularFile(def.cssFile())) {
+                scene.getStylesheets().add(def.cssFile().toUri().toString());
             }
             applyShape(scene);
         }

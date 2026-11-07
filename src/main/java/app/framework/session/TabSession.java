@@ -7,7 +7,8 @@ import com.lltool.infrastructure.database.api.DatabaseConnection;
 /** State of one editor tab's own database session (see {@link TabSessionManager}). */
 public final class TabSession {
 
-    public enum State { NONE, CONNECTING, CONNECTED, ERROR }
+    /** LOST: the session was open and broke (server down, network, killed); it is closed and needs the user to reconnect. */
+    public enum State { NONE, CONNECTING, CONNECTED, ERROR, LOST }
 
     private final String tabId;
     private volatile ConnectionProfileDto profile;
@@ -45,6 +46,13 @@ public final class TabSession {
         connection = null;
         error = message;
         state = State.ERROR;
+    }
+
+    void lost(String message) {
+        connection = null;
+        error = message;
+        serverPid = null;
+        state = State.LOST;
     }
 
     void reset() {

@@ -1,0 +1,100 @@
+/* =====================================================================
+   T2 (2026-11-06): the app's own colour variables, one per region (VS Code workbench keys).
+   Loaded right after base.css; dark-theme.css / light-theme.css set the mode-specific ones;
+   an imported VS Code theme (themes/<id>/theme.css, loaded after them) overrides any of these
+   and the AtlantaFX -color-* palette. The defaults below reproduce the look before T2.
+   VS Code key in [brackets].
+   ===================================================================== */
+.root {
+    /* ---- window and cards */
+    -ide-app-bg: -color-bg-inset;                       /* gaps behind the cards  [sideBar.background / activityBar.background] */
+    -ide-editor-bg: -color-bg-default;                  /* editor + results cards [editor.background] */
+    -ide-explorer-bg: -color-bg-default;                /* Explorer card          [sideBar.background] */
+    -ide-explorer-header-bg: -color-bg-subtle;          /* "Database Explorer"    [sideBarSectionHeader.background] */
+    -ide-rail-bg: -color-bg-subtle;                     /* collapsed Explorer     [activityBar.background] */
+    -ide-toolbar-bg: -color-bg-default;                 /* connection / Run bar   [editorGroupHeader.tabsBackground] */
+    -ide-titlebar-bg: -color-bg-subtle;                 /*                        [titleBar.activeBackground] */
+    -ide-titlebar-fg: -color-fg-default;                /*                        [titleBar.activeForeground] */
+    -ide-sash-hover: -color-accent-emphasis;            /* splitters on hover     [sash.hoverBorder] */
+
+    /* ---- editor tabs */
+    -ide-tab-strip-bg: -color-bg-subtle;                /* [editorGroupHeader.tabsBackground] */
+    -ide-tab-active-bg: -color-bg-default;              /* [tab.activeBackground] */
+    -ide-tab-hover-bg: -color-bg-muted;                 /* [tab.hoverBackground] */
+    -ide-tab-active-fg: -color-fg-default;              /* [tab.activeForeground] */
+    -ide-tab-inactive-fg: -color-fg-muted;              /* [tab.inactiveForeground] */
+    -ide-tab-active-border: -color-accent-emphasis;     /* [tab.activeBorderTop] */
+
+    /* ---- lists and trees (Explorer, plan, grid rows) */
+    -ide-list-hover-bg: -color-bg-muted;                /* [list.hoverBackground] */
+    -ide-list-selection-bg: -color-accent-subtle;       /* [list.activeSelectionBackground] */
+
+    /* ---- results grid */
+    -ide-grid-bg: -color-bg-default;                    /* [editor.background] */
+    -ide-grid-row-alt-bg: -color-bg-subtle;             /* odd rows */
+    -ide-grid-header-bg: -color-bg-subtle;              /* column header + "#" column */
+    -ide-grid-rownum-fg: -color-fg-muted;               /* [editorLineNumber.foreground] */
+    -ide-grid-selection-bg: rgba(37, 99, 235, 0.12);    /* [list.activeSelectionBackground] */
+    -ide-grid-focus-border: -color-accent-emphasis;     /* [focusBorder] */
+    -ide-grid-null-fg: -color-fg-muted;
+    -ide-grid-number-fg: #2563eb;                       /* [tokenColors constant.numeric] */
+    -ide-grid-true-fg: #16a34a;                         /* [tokenColors constant.language] */
+    -ide-grid-false-fg: #d97706;
+
+    /* ---- results / messages panel */
+    -ide-panel-header-bg: -color-bg-subtle;             /* [panel.background] */
+    -ide-panel-tab-active-border: -color-accent-emphasis; /* [panelTitle.activeBorder] */
+
+    /* ---- menus, popups, toasts */
+    -ide-menu-bg: -color-bg-default;                    /* [menu.background] */
+    -ide-menu-selection-bg: -color-bg-muted;            /* [menu.selectionBackground] */
+    -ide-toast-bg: -color-bg-overlay;                   /* [notifications.background] */
+
+    /* ---- status bar (a colour picked for the connection wins, set inline) */
+    -ide-statusbar-bg: #007acc;                         /* [statusBar.background] */
+    -ide-statusbar-fg: #ffffff;                         /* [statusBar.foreground] */
+    -ide-statusbar-busy: #ffd33d;
+
+    /* ---- terminal tab */
+    -ide-terminal-bg: #1e1f22;                          /* [terminal.background] */
+    -ide-terminal-fg: #e6edf3;                          /* [terminal.foreground] */
+    -ide-terminal-input-bg: #2b2d30;
+    -ide-terminal-border: #3e4249;
+
+    /* ---- SQL colours of the fallback code area (RichTextFX) [tokenColors] */
+    -ide-syntax-keyword: #e06c75;
+    -ide-syntax-type: #e5c07b;
+    -ide-syntax-function: #61afef;
+    -ide-syntax-string: #98c379;
+    -ide-syntax-comment: #5c6370;
+    -ide-syntax-number: #d19a66;
+
+    /* ---- Explorer object icons: SQL-IDE's own palette by default (light-theme.css: light values)
+            [symbolIcon.*] only when a theme sets them */
+    -ide-placeholder-bg: #2b2d30;
+    -ide-icon-connection: #2ec27e;
+    -ide-icon-database: #3584e4;
+    -ide-icon-schema: #62a0ea;
+    -ide-icon-cat-tables: #1c71d8;
+    -ide-icon-table: #3584e4;
+    -ide-icon-cat-views: #9141ac;
+    -ide-icon-view: #c061cb;
+    -ide-icon-cat-funcs: #26a269;
+    -ide-icon-func: #33d17a;
+    -ide-icon-cat-procs: #e66100;
+    -ide-icon-proc: #ff7800;
+    -ide-icon-index: #f6d32d;
+    -ide-icon-trigger: #ed333b;
+    -ide-icon-pk: #f5c211;
+    -ide-icon-fk: #3584e4;
+    -ide-icon-col-text: #99c1f1;
+    -ide-icon-col-num: #8ff0a4;
+    -ide-icon-col-date: #dc8add;
+    -ide-icon-folder: #d97706;
+    -ide-icon-materialized-view: #26a69a;
+    -ide-icon-user-type: #4ade80;
+    -ide-icon-key: #f59e0b;
+    -ide-icon-constraint: #e06c75;
+    -ide-icon-sequence: #9ca3af;
+    -ide-icon-roles: #3584e4;
+}

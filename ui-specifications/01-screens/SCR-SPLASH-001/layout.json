@@ -1,0 +1,17 @@
+{
+  "screenId": "SCR-SPLASH-001",
+  "window": { "width": 720, "height": 440, "cornerRadius": 12, "undecorated": true, "alwaysOnTop": true, "resizable": false, "position": "screen-center", "draggable": true },
+  "regions": [
+    { "id": "REG-MINIMIZE", "x": 676, "y": 8, "w": 36, "h": 28 },
+    { "id": "REG-IDENTITY", "x": 40, "y": 40, "w": 328, "h": 112 },
+    { "id": "REG-MARK", "x": 408, "y": 48, "w": 312, "h": 344, "parts": [
+      { "name": "outer-vertical", "x": 408, "y": 48, "w": 64, "h": 344 },
+      { "name": "outer-horizontal", "x": 472, "y": 328, "w": 248, "h": 64 },
+      { "name": "inner-vertical", "x": 504, "y": 48, "w": 64, "h": 248 },
+      { "name": "inner-horizontal", "x": 568, "y": 232, "w": 152, "h": 64 }
+    ] },
+    { "id": "REG-STATUS", "x": 40, "y": 346, "w": 328, "h": 46, "visibleIn": ["loading", "ready"] },
+    { "id": "REG-ERROR", "x": 40, "y": 270, "w": 328, "h": 122, "visibleIn": ["error"] },
+    { "id": "REG-PROGRESS", "x": 0, "y": 437, "w": 720, "h": 3 }
+  ]
+}

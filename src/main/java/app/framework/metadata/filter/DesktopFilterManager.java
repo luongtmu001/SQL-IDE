@@ -17,6 +17,9 @@ public class DesktopFilterManager {
     // connectionId::catalog::schema::objectType -> ObjectFilter
     private final Map<String, ObjectFilter> objectFilters = new ConcurrentHashMap<>();
 
+    // connectionId::catalog -> schemas to show
+    private final Map<String, DatabaseFilter> schemaFilters = new ConcurrentHashMap<>();
+
     private Consumer<Void> onFilterChangedCallback;
 
     private DesktopFilterManager() {}
@@ -50,6 +53,30 @@ public class DesktopFilterManager {
     public boolean hasDatabaseFilter(String connectionId) {
         DatabaseFilter f = databaseFilters.get(connectionId);
         return f != null && f.isActive();
+    }
+
+    /** Schemas to show under one database (Phase 8 / Explorer parity: LLTool "Filter Schemas"). Not active = all. */
+    public DatabaseFilter getSchemaFilter(String connectionId, String catalog) {
+        return schemaFilters.computeIfAbsent(schemaKey(connectionId, catalog), k -> new DatabaseFilter());
+    }
+
+    public void setSchemaFilter(String connectionId, String catalog, DatabaseFilter filter) {
+        String key = schemaKey(connectionId, catalog);
+        if (filter == null || !filter.isActive()) {
+            schemaFilters.remove(key);
+        } else {
+            schemaFilters.put(key, filter);
+        }
+        notifyChanged();
+    }
+
+    public boolean hasSchemaFilter(String connectionId, String catalog) {
+        DatabaseFilter f = schemaFilters.get(schemaKey(connectionId, catalog));
+        return f != null && f.isActive();
+    }
+
+    private static String schemaKey(String connectionId, String catalog) {
+        return (connectionId != null ? connectionId : "") + "::" + (catalog != null ? catalog.toLowerCase() : "");
     }
 
     public ObjectFilter getObjectFilter(String connectionId, String catalog, String schema, String objectType) {

@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-005",
+  "interactions": [
+    {
+      "id": "INT-DLG05-001",
+      "component_id": "BTN-DLG05-008",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "applyBtn",
+      "backend_method": "unknown",
+      "action_summary": "Áp bộ lọc",
+      "expected_result": "Lưu danh sách database đã chọn và gọi onApplied (tải lại Explorer)",
+      "side_effects": [
+        "đổi cây Explorer"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG05-002",
+      "component_id": "CMP-DLG05-001",
+      "trigger": "key",
+      "preconditions": [],
+      "source_handler": "searchField listener",
+      "backend_method": "unknown",
+      "action_summary": "Lọc danh sách",
+      "expected_result": "Danh sách thu hẹp",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

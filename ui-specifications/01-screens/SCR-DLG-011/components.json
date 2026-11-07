@@ -1,0 +1,220 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-011",
+  "components": [
+    {
+      "id": "CMP-DLG11-001",
+      "name": "Message icon",
+      "component_type": "icon",
+      "region_id": "REG-DLG11-002",
+      "parent_component_id": null,
+      "visible_label": "theo Kind",
+      "accessible_name": "theo Kind",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/MessageDialog.java; ui/components/AppDialog.java; ui/dialogs/ConfirmDialog.java; ui/dialogs/CloseTabDialog.java; ui/dialogs/TextPromptDialog.java",
+        "selector_or_symbol": "kind",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "FontIcon",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "info / success / warning / error / confirm"
+    },
+    {
+      "id": "CMP-DLG11-002",
+      "name": "Header",
+      "component_type": "label",
+      "region_id": "REG-DLG11-002",
+      "parent_component_id": null,
+      "visible_label": "header",
+      "accessible_name": "header",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/MessageDialog.java; ui/components/AppDialog.java; ui/dialogs/ConfirmDialog.java; ui/dialogs/CloseTabDialog.java; ui/dialogs/TextPromptDialog.java",
+        "selector_or_symbol": "header",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG11-003",
+      "name": "Content",
+      "component_type": "label",
+      "region_id": "REG-DLG11-002",
+      "parent_component_id": null,
+      "visible_label": "content",
+      "accessible_name": "content",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/MessageDialog.java; ui/components/AppDialog.java; ui/dialogs/ConfirmDialog.java; ui/dialogs/CloseTabDialog.java; ui/dialogs/TextPromptDialog.java",
+        "selector_or_symbol": "content",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Hoặc nút extra (Node)"
+    },
+    {
+      "id": "CMP-DLG11-004",
+      "name": "Copy",
+      "component_type": "hyperlink",
+      "region_id": "REG-DLG11-002",
+      "parent_component_id": null,
+      "visible_label": "Sao chép → Đã sao chép",
+      "accessible_name": "Sao chép → Đã sao chép",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/MessageDialog.java; ui/components/AppDialog.java; ui/dialogs/ConfirmDialog.java; ui/dialogs/CloseTabDialog.java; ui/dialogs/TextPromptDialog.java",
+        "selector_or_symbol": "copy",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Hyperlink",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chép header + content"
+    },
+    {
+      "id": "BTN-DLG11-005",
+      "name": "Cancel",
+      "component_type": "button",
+      "region_id": "REG-DLG11-003",
+      "parent_component_id": null,
+      "visible_label": "Hủy",
+      "accessible_name": "Hủy",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/MessageDialog.java; ui/components/AppDialog.java; ui/dialogs/ConfirmDialog.java; ui/dialogs/CloseTabDialog.java; ui/dialogs/TextPromptDialog.java",
+        "selector_or_symbol": "cancel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chỉ khi confirm"
+    },
+    {
+      "id": "BTN-DLG11-006",
+      "name": "OK",
+      "component_type": "button",
+      "region_id": "REG-DLG11-003",
+      "parent_component_id": null,
+      "visible_label": "Đồng ý (tùy chỉnh)",
+      "accessible_name": "Đồng ý (tùy chỉnh)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/MessageDialog.java; ui/components/AppDialog.java; ui/dialogs/ConfirmDialog.java; ui/dialogs/CloseTabDialog.java; ui/dialogs/TextPromptDialog.java",
+        "selector_or_symbol": "ok",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Danger khi danger=true"
+    }
+  ]
+}

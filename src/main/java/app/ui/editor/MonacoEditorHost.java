@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.IntConsumer;
 
 /**
  * MonacoEditorHost — Encapsulates Monaco Editor in a single JavaFX WebView.
@@ -22,6 +23,7 @@ public class MonacoEditorHost extends StackPane {
 
     private static final Logger log = LoggerFactory.getLogger(MonacoEditorHost.class);
 
+    private final EditorBar editorBar = new EditorBar();
     private final WebView webView;
     private final WebEngine webEngine;
     private boolean isEditorReady = false;
@@ -36,6 +38,9 @@ public class MonacoEditorHost extends StackPane {
     private BiConsumer<Integer, Integer> onCursorPositionListener;
     private Runnable onReadyListener;
     private Runnable onExecuteRequestListener;
+    private Runnable onExecuteStatementRequestListener;
+    private IntConsumer onZoomChangedListener;
+    private int zoomPercent = 100;
 
     private record ModelDefinition(String id, String content, String language) {}
 
@@ -47,10 +52,18 @@ public class MonacoEditorHost extends StackPane {
         webView.setPageFill(javafx.scene.paint.Color.TRANSPARENT);
         webView.setOpacity(0.0);
 
-        // Fill stack pane
-        getChildren().add(webView);
-        webView.prefWidthProperty().bind(widthProperty());
-        webView.prefHeightProperty().bind(heightProperty());
+        // The editor with its small bar underneath (zoom, PID, cursor, indentation ...), like SSMS
+        javafx.scene.layout.BorderPane inner = new javafx.scene.layout.BorderPane();
+        inner.setCenter(webView);
+        inner.setBottom(editorBar);
+        getChildren().add(inner);
+        inner.prefWidthProperty().bind(widthProperty());
+        inner.prefHeightProperty().bind(heightProperty());
+        editorBar.setOnToggleEol(this::toggleEol);
+        // the editor colours come from the scene's theme: apply them as soon as the host is in a scene
+        sceneProperty().addListener((o, a, s) -> {
+            if (s != null) applyAppTheme();
+        });
 
         setupWebEngine();
     }
@@ -101,6 +114,10 @@ public class MonacoEditorHost extends StackPane {
                     executeJs("window.editorBridge.switchModel('" + escapeJs(activeModelId) + "');");
                 }
 
+                if (zoomPercent != 100) {
+                    executeJs("window.editorBridge.setZoom(" + zoomPercent + ");");
+                }
+
                 // Run ready callbacks
                 for (Runnable r : readyCallbacks) {
                     try {
@@ -144,6 +161,49 @@ public class MonacoEditorHost extends StackPane {
             });
         }
 
+        /** System clipboard, read by Monaco paste (called on the FX thread by the WebView). */
+        public String getClipboardText() {
+            try {
+                String s = javafx.scene.input.Clipboard.getSystemClipboard().getString();
+                return s == null ? "" : s.replace("\r\n", "\n");
+            } catch (Exception e) {
+                log.warn("Clipboard read failed: {}", e.getMessage());
+                return "";
+            }
+        }
+
+        /** Monaco copy/cut: put the text on the system clipboard (Windows line endings). */
+        public void setClipboardText(String text) {
+            try {
+                String t = text == null ? "" : text.replace("\r\n", "\n").replace("\n", System.lineSeparator());
+                javafx.scene.input.ClipboardContent cc = new javafx.scene.input.ClipboardContent();
+                cc.putString(t);
+                javafx.scene.input.Clipboard.getSystemClipboard().setContent(cc);
+            } catch (Exception e) {
+                log.warn("Clipboard write failed: {}", e.getMessage());
+            }
+        }
+
+        /** Ctrl+Wheel zoom inside the editor. */
+        public void onZoomChanged(Object value) {
+            final int pct = value instanceof Number n ? (int) Math.round(n.doubleValue()) : zoomPercent;
+            log.debug("Editor zoom (Ctrl+Wheel) -> {}%", pct);
+            Platform.runLater(() -> {
+                zoomPercent = pct;
+                if (onZoomChangedListener != null) {
+                    onZoomChangedListener.accept(pct);
+                }
+            });
+        }
+
+        public void onExecuteStatementRequested() {
+            Platform.runLater(() -> {
+                if (onExecuteStatementRequestListener != null) {
+                    onExecuteStatementRequestListener.run();
+                }
+            });
+        }
+
         public void onExecuteRequested() {
             Platform.runLater(() -> {
                 if (onExecuteRequestListener != null) {
@@ -169,6 +229,10 @@ public class MonacoEditorHost extends StackPane {
         } catch (Exception e) {
             return "";
         }
+    }
+
+    public void setOnExecuteStatementRequested(Runnable listener) {
+        this.onExecuteStatementRequestListener = listener;
     }
 
     public void setOnExecuteRequested(Runnable listener) {
@@ -229,22 +293,84 @@ public class MonacoEditorHost extends StackPane {
         });
     }
 
+    /**
+     * T1: the editor shows the app's current theme with its own Monaco theme (imported: from the VS Code theme;
+     * built in: its palette + the scene's AtlantaFX colours). Replaces the shared "ide-dark" / "ide-light".
+     */
+    public void applyAppTheme() {
+        runWhenReady(() -> {
+            var def = app.services.ThemeService.getInstance().getCurrentDefinition();
+            String json = app.services.theme.MonacoThemes.json(def, getScene());
+            executeJs("window.editorBridge.defineAndSetTheme('" + escapeJs(app.services.theme.MonacoThemes.monacoId(def))
+                    + "', " + json + ");");
+        });
+    }
+
     public void setTheme(String themeName) {
         runWhenReady(() -> {
             executeJs("window.editorBridge.setTheme('" + escapeJs(themeName) + "');");
         });
     }
 
+    /** Base font size from Settings; the current zoom is applied on top of it. */
     public void setFontSize(int size) {
         runWhenReady(() -> {
             executeJs("window.editorBridge.setFontSize(" + size + ");");
         });
     }
 
+    /** Editor zoom in percent of the Settings font size. */
+    public void setZoom(int percent) {
+        zoomPercent = percent;
+        runWhenReady(() -> executeJs("window.editorBridge.setZoom(" + percent + ");"));
+    }
+
+    public int getZoom() {
+        return zoomPercent;
+    }
+
+    public void setOnZoomChanged(IntConsumer listener) {
+        this.onZoomChangedListener = listener;
+    }
+
     public void setReadOnly(boolean readOnly) {
         runWhenReady(() -> {
             executeJs("window.editorBridge.setReadOnly(" + readOnly + ");");
         });
+    }
+
+    /** Shows the syntax diagnostics of a document as squiggles (replaces the previous ones; empty clears). */
+    public void setMarkers(String modelId, java.util.List<app.framework.syntax.SyntaxDiagnostic> diagnostics) {
+        StringBuilder sb = new StringBuilder("[");
+        boolean first = true;
+        for (var d : diagnostics) {
+            if (!first) sb.append(',');
+            first = false;
+            sb.append(String.format(java.util.Locale.ROOT,
+                    "{\"startLineNumber\":%d,\"startColumn\":%d,\"endLineNumber\":%d,\"endColumn\":%d,\"severity\":%d,\"message\":\"%s\",\"source\":\"SQL\"}",
+                    d.line(), d.column(), d.endLine(), d.endColumn(), app.framework.syntax.SyntaxDiagnostic.SEVERITY_ERROR,
+                    jsonString(d.message())));
+        }
+        sb.append(']');
+        String json = sb.toString();
+        runWhenReady(() -> executeJs("window.editorBridge.setMarkers('" + escapeJs(modelId)
+                + "', JSON.parse(decodeURIComponent('" + encodeUri(json) + "')), 'sql-syntax');"));
+    }
+
+    private static String jsonString(String s) {
+        if (s == null) return "";
+        StringBuilder b = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            switch (c) {
+                case '"' -> b.append("\\\"");
+                case '\\' -> b.append("\\\\");
+                case '\n' -> b.append("\\n");
+                case '\r' -> { }
+                case '\t' -> b.append("\\t");
+                default -> b.append(c < 0x20 ? ' ' : c);
+            }
+        }
+        return b.toString();
     }
 
     public void formatDocument() {
@@ -272,6 +398,14 @@ public class MonacoEditorHost extends StackPane {
         runWhenReady(() -> {
             executeJs("window.editorBridge.layout();");
         });
+    }
+
+    /** IntelliSense context of the active tab: dialect (SQLSERVER / POSTGRESQL / SQLITE / OTHER) and Settings. */
+    public void setIntellisense(boolean enabled, String dialect, String keywordCase, boolean mru) {
+        runWhenReady(() -> executeJs(String.format(java.util.Locale.ROOT,
+                "if (window.SqlIntellisense) window.SqlIntellisense.setContext({ enabled: %b, dialect: '%s', keywordCase: '%s', mru: %b });",
+                enabled, escapeJs(dialect == null ? "OTHER" : dialect),
+                escapeJs(keywordCase == null ? "upper" : keywordCase), mru)));
     }
 
     public void updateEditorSettings(app.models.IdeSettings s) {
@@ -359,6 +493,21 @@ public class MonacoEditorHost extends StackPane {
 
     public void setOnReady(Runnable callback) {
         this.onReadyListener = callback;
+    }
+
+    /** LF ⇄ CRLF for the active document; the bar shows the result. */
+    public void toggleEol() {
+        if (!isEditorReady) return;
+        try {
+            Object r = webEngine.executeScript("window.editorBridge.toggleEol();");
+            if (r != null) editorBar.setLineSeparator(r.toString());
+        } catch (Exception e) {
+            log.warn("toggleEol failed: {}", e.getMessage());
+        }
+    }
+
+    public EditorBar getEditorBar() {
+        return editorBar;
     }
 
     public WebView getWebView() {

@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-002",
+  "mappings": [
+    {
+      "source_id": "reconnectPasswordModal",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-002",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Thời hạn 30 ngày lấy từ mã đích; chưa đối chiếu với nguồn"
+      ],
+      "approval_reference": "none"
+    }
+  ]
+}

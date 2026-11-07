@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-009",
+  "interactions": [
+    {
+      "id": "INT-DLG09-001",
+      "component_id": "BTN-DLG09-018",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "save",
+      "backend_method": "unknown",
+      "action_summary": "Lưu danh sách style",
+      "expected_result": "Ghi SqlStyleStore",
+      "side_effects": [
+        "ghi file style"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG09-002",
+      "component_id": "BTN-DLG09-003",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "deleteBtn",
+      "backend_method": "unknown",
+      "action_summary": "Xóa style",
+      "expected_result": "Xóa sau ConfirmDialog; tab dùng style này chuyển về style hệ thống",
+      "side_effects": [
+        "xóa style"
+      ],
+      "confirmation_required": "có (ConfirmDialog)",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG09-003",
+      "component_id": "BTN-DLG09-014",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "formatBtn",
+      "backend_method": "unknown",
+      "action_summary": "Định dạng khung xem trước",
+      "expected_result": "SQL trong khung được định dạng theo style đang sửa",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG09-004",
+      "component_id": "BTN-DLG09-016",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "FileChooser (xuất/nhập)",
+      "backend_method": "unknown",
+      "action_summary": "Nhập/xuất file style",
+      "expected_result": "Xuất `.sqlstyle.json`; nhập kiểm tra tính hợp lệ",
+      "side_effects": [
+        "ghi/đọc file"
+      ],
+      "confirmation_required": "hộp chọn file",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG09-005",
+      "component_id": "CMP-DLG09-006",
+      "trigger": "selection_changed",
+      "preconditions": [],
+      "source_handler": "style selection",
+      "backend_method": "unknown",
+      "action_summary": "Chọn style",
+      "expected_result": "Style hệ thống chỉ đọc (hiện gợi ý); style riêng sửa được",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

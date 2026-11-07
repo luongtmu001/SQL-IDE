@@ -30,9 +30,7 @@ import java.util.function.Consumer;
 public class SettingsService {
 
     private static final Logger log = LoggerFactory.getLogger(SettingsService.class);
-    private static final ObjectMapper mapper = new ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            .enable(SerializationFeature.INDENT_OUTPUT);
+    private static final ObjectMapper mapper = IdeSettings.jsonMapper(); // fields only (see IdeSettings.jsonMapper)
 
     private static final SettingsService INSTANCE = new SettingsService();
 
@@ -54,13 +52,21 @@ public class SettingsService {
         return INSTANCE;
     }
 
+    /**
+     * The IDE settings live in their own file. {@code settings.json} in the same folder belongs to the
+     * infrastructure {@code ConfigurationService} (RootConfig): it reads that file at start-up, fails on the IDE
+     * format, falls back to its defaults and writes them back, so IDE settings stored there were lost on every
+     * restart (found 2026-11-06).
+     */
+    static final String SETTINGS_FILE = "ide-settings.json";
+
     private void resolveSettingsPath() {
         try {
             AppDirectoryManager dirManager = DesktopBootstrap.getInstance().getDirectoryManager();
-            this.settingsFilePath = dirManager.getConfigDir().resolve("settings.json");
+            this.settingsFilePath = dirManager.getConfigDir().resolve(SETTINGS_FILE);
         } catch (Exception e) {
             String userHome = System.getProperty("user.home");
-            this.settingsFilePath = Path.of(userHome, ".lltool", "config", "settings.json");
+            this.settingsFilePath = Path.of(userHome, ".lltool", "config", SETTINGS_FILE);
         }
     }
 
@@ -76,6 +82,18 @@ public class SettingsService {
             log.warn("Failed to load settings from {}: {}. Using defaults.", settingsFilePath, e.getMessage());
         }
 
+        if (loaded == null && settingsFilePath != null && !Files.exists(settingsFilePath)) {
+            // first start of the Java IDE: take the user's LLTool settings once (same settings.json format)
+            loaded = importFromLltool();
+            if (loaded != null && !isTestRun()) {
+                try {
+                    SettingsFiles.writeAtomically(settingsFilePath, mapper.writeValueAsString(loaded));
+                } catch (Exception e) {
+                    log.warn("Could not save the imported LLTool settings: {}", e.getMessage());
+                }
+            }
+        }
+
         if (loaded == null) {
             loaded = IdeSettings.createDefault();
         }
@@ -84,13 +102,36 @@ public class SettingsService {
         return loaded;
     }
 
+    // ------------------------------------------------------------------ LLTool import (S2)
+
+    /** Reads {@code %APPDATA%\LLTool\settings.json}; null when there is none or it cannot be read. */
+    private IdeSettings importFromLltool() {
+        try {
+            String appData = System.getenv("APPDATA");
+            if (appData == null) return null;
+            Path file = Path.of(appData, "LLTool", "settings.json");
+            if (!Files.isRegularFile(file)) return null;
+            IdeSettings s = SettingsFiles.fromLltoolJson(mapper.readTree(Files.readString(file)));
+            log.info("Imported LLTool settings from {} (theme -> {})", file, s.getTheme());
+            return s;
+        } catch (Exception e) {
+            log.warn("Could not import LLTool settings: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /** Unit tests run the services without the UI: they must never write the user's real settings. */
+    private static boolean isTestRun() {
+        return "mock".equalsIgnoreCase(System.getProperty("sqlide.backend"))
+                || System.getProperty("surefire.test.class.path") != null;
+    }
+
     public synchronized boolean saveSettings(IdeSettings newSettings) {
         if (newSettings == null) return false;
 
         try {
-            if (settingsFilePath != null) {
-                Files.createDirectories(settingsFilePath.getParent());
-                mapper.writeValue(settingsFilePath.toFile(), newSettings);
+            if (settingsFilePath != null && !isTestRun()) {
+                SettingsFiles.writeAtomically(settingsFilePath, mapper.writeValueAsString(newSettings));
                 log.info("Saved IDE settings successfully to: {}", settingsFilePath);
             }
 
@@ -131,13 +172,17 @@ public class SettingsService {
      */
     public void applySettings(IdeSettings settings) {
         if (settings == null) return;
+        LoggingService.apply(settings); // S3: logging.level / enabled / file size / file count
 
         // 1. Hot-apply theme if changed
         try {
-            ThemeService.AppTheme targetTheme = ThemeService.AppTheme.fromDisplayName(settings.getTheme());
-            if (targetTheme != ThemeService.getInstance().getCurrentTheme()) {
+            // T1: id of a built-in or imported theme (old display names still resolve)
+            var target = app.services.theme.ThemeRegistry.getInstance().find(settings.getTheme());
+            if (!target.id().equals(ThemeService.getInstance().getCurrentDefinition().id())) {
                 Platform.runLater(() -> {
-                    ThemeService.getInstance().setTheme(targetTheme, null);
+                    // with the main scene, so its light/dark stylesheets switch too (null only swapped the base theme)
+                    var stage = app.application.AppContext.getInstance().getPrimaryStage();
+                    ThemeService.getInstance().apply(target, stage != null ? stage.getScene() : null);
                 });
             }
         } catch (Exception e) {

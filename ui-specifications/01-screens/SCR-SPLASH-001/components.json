@@ -1,0 +1,18 @@
+{
+  "screenId": "SCR-SPLASH-001",
+  "components": [
+    { "id": "LBL-TITLE", "type": "label", "region": "REG-IDENTITY", "text": "AppInfo.NAME", "font": "Segoe UI Semibold 44" },
+    { "id": "LBL-TAGLINE", "type": "label", "region": "REG-IDENTITY", "text": "Môi trường phát triển và quản trị cơ sở dữ liệu", "font": "Segoe UI 14" },
+    { "id": "LBL-DRIVERS", "type": "label", "region": "REG-IDENTITY", "text": "PostgreSQL · SQL Server · SQLite", "font": "Consolas 12", "hiddenIn": ["error"] },
+    { "id": "LBL-STATUS", "type": "label", "region": "REG-STATUS", "text": "dynamic", "font": "Segoe UI 13" },
+    { "id": "LBL-COUNTER", "type": "label", "region": "REG-STATUS", "text": "n/6", "font": "Consolas 12" },
+    { "id": "LBL-VERSION", "type": "label", "region": "REG-STATUS", "text": "Phiên bản + AppInfo.VERSION", "font": "Segoe UI 12" },
+    { "id": "BAR-PROGRESS", "type": "progress", "region": "REG-PROGRESS" },
+    { "id": "BTN-MINIMIZE", "type": "icon-button", "region": "REG-MINIMIZE", "tooltip": "Thu nhỏ", "accessibleName": "Thu nhỏ cửa sổ khởi động" },
+    { "id": "LBL-ERROR-TITLE", "type": "label", "region": "REG-ERROR", "text": "Không khởi động được", "font": "Segoe UI Semibold 14" },
+    { "id": "TXT-ERROR-DETAIL", "type": "wrapped-text", "region": "REG-ERROR", "text": "dynamic, max 110 chars", "font": "Segoe UI 13" },
+    { "id": "BTN-RETRY", "type": "button-primary", "region": "REG-ERROR", "text": "Thử lại" },
+    { "id": "BTN-OPEN-LOGS", "type": "button", "region": "REG-ERROR", "text": "Mở thư mục log" },
+    { "id": "BTN-EXIT", "type": "button", "region": "REG-ERROR", "text": "Thoát" }
+  ]
+}

@@ -1,7 +1,7 @@
 # Kế hoạch chuyển đổi UI — LLTool (Python) → SQL IDE (JavaFX)
 # UI Migration Plan
 
-- Cập nhật: 2026-11-05 (GĐ 8: D0 + D1 đã code, chờ kiểm)
+- Cập nhật: 2026-11-05 (GĐ 8: D1 tạm đạt, D2 đã code, chờ kiểm)
 - Phạm vi đã duyệt: màn hình chính + Settings + dialog. Giữ Monaco. Title bar kiểu VS Code nhưng hành xử native. Không làm lại mục legacy. Mục tiêu là giao diện **tương đương VS Code**, không sao chép 100% bản Python.
 - Quy trình: skill `java-desktop-ui-designer`. Mỗi màn hình đi qua: phân tích → đặc tả → **Gate B** (duyệt đặc tả) → làm prototype mock → kiểm tra trên máy → **Gate C** (duyệt prototype). Chỉ tích hợp backend thật ở **Gate D**, sau khi toàn bộ UI đã duyệt.
 
@@ -83,4 +83,4 @@ Mọi màn hình luôn vẽ theo biến cài đặt `appearance.panelStyle`, kh�
 
 ## 6. Bước tiếp theo đề xuất
 
-Giai đoạn 1–6 đã chốt 2026-11-05. Giai đoạn 7 xong phần review code (`04-reports/phase7-review.md`); T7, T8, T9, T11 đã thử sửa nhưng chưa đạt, cần bằng chứng chạy thật. **Giai đoạn 8**: Gate D đồng ý 2026-11-05; D0 + D1 (công tắc, chỉ đọc, phiên theo tab, mật khẩu, Explorer dùng lại kết nối) đã code, chờ bạn kiểm (`04-reports/phase8-plan.md` mục 6). Lỗi tồn đọng: T7, T8, T9, T11 (chỉ ghi log theo yêu cầu), T10 (D4).
+Giai đoạn 1–6 đã chốt 2026-11-05. Giai đoạn 7 xong phần review code (`04-reports/phase7-review.md`); T7, T8, T9, T11 đã thử sửa nhưng chưa đạt, cần bằng chứng chạy thật. **Giai đoạn 8**: Gate D đồng ý 2026-11-05; D0 + D1 tạm đạt (2 tab, 2 PID); D2 Explorer thật (định nghĩa / script từ server, sequences, lỗi tải, toolbar database / schema theo tab) đã code. Danh sách cần kiểm lại K1–K10: `04-reports/phase8-plan.md` mục 7. Lỗi tồn đọng: T7, T8, T9, T11 (chỉ ghi log theo yêu cầu), T10 (D4).

@@ -50,6 +50,8 @@ public class SqlEditorTab extends Tab {
     private final VBox contentBox = new VBox();
     private final HBox banner = new HBox(8);
     private final Label bannerText = new Label();
+    private final FontIcon bannerIcon = new FontIcon("mdi2p-power-plug-off-outline");
+    private final Button bannerConnect = new Button("Kết nối");
     private final StackPane editorSlot = new StackPane();
     private boolean bannerDismissed = false;
 
@@ -97,14 +99,12 @@ public class SqlEditorTab extends Tab {
         contentBox.getStyleClass().add("editor-tab-content");
         banner.getStyleClass().add("editor-connection-banner");
         banner.setAlignment(Pos.CENTER_LEFT);
-        FontIcon plug = new FontIcon("mdi2p-power-plug-off-outline");
-        plug.getStyleClass().add("banner-icon");
+        bannerIcon.getStyleClass().add("banner-icon");
         bannerText.setMinWidth(0);
         bannerText.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(bannerText, Priority.ALWAYS);
-        Button connect = new Button("Kết nối");
-        connect.getStyleClass().addAll("banner-button", "accent");
-        connect.setOnAction(e -> {
+        bannerConnect.getStyleClass().addAll("banner-button", "accent");
+        bannerConnect.setOnAction(e -> {
             if (bannerActions != null) bannerActions.connect(this);
         });
         Button change = new Button("Đổi kết nối");
@@ -120,7 +120,7 @@ public class SqlEditorTab extends Tab {
             bannerDismissed = true;
             showBanner(false);
         });
-        banner.getChildren().addAll(plug, bannerText, connect, change, dismiss);
+        banner.getChildren().addAll(bannerIcon, bannerText, bannerConnect, change, dismiss);
         showBanner(false);
         VBox.setVgrow(editorSlot, Priority.ALWAYS);
         contentBox.getChildren().addAll(banner, editorSlot);
@@ -132,8 +132,33 @@ public class SqlEditorTab extends Tab {
         banner.setManaged(visible);
     }
 
+    private Node customContent;
+    private String customKey;
+
+    /** Turns this tab into a view tab (no SQL editor): {@code key} identifies it so the same view is opened once. */
+    public void setCustomContent(String key, Node view) {
+        this.customKey = key;
+        this.customContent = view;
+        editorSlot.getChildren().setAll(view);
+    }
+
+    public boolean isCustomContent() {
+        return customContent != null;
+    }
+
+    public String getCustomKey() {
+        return customKey;
+    }
+
     /** Puts the editor (shared Monaco host or the fallback code area) under the banner; null detaches it. */
     public void setEditorNode(Node node) {
+        if (customContent != null) { // a view tab (e.g. Permissions): the editor never replaces it
+            if (editorSlot.getChildren().size() != 1 || editorSlot.getChildren().get(0) != customContent) {
+                editorSlot.getChildren().setAll(customContent);
+            }
+            return;
+        }
+        if (node == codeArea && codeAreaStale) syncCodeArea();
         if (node == null) {
             editorSlot.getChildren().clear();
         } else if (editorSlot.getChildren().size() != 1 || editorSlot.getChildren().get(0) != node) {
@@ -150,12 +175,48 @@ public class SqlEditorTab extends Tab {
      * (LLTool tabs.js banner). {@code connected == null}: the tab has no connection.
      */
     public void updateConnectionBanner(String connection, String database, Boolean connected) {
-        if (connected == null || connected || bannerDismissed) {
+        updateConnectionBanner(connection, database,
+                connected == null ? BannerState.HIDDEN : (connected ? BannerState.HIDDEN : BannerState.DISCONNECTED), null);
+    }
+
+    /** What the banner says (LLTool tabs.js: disconnected / reconnecting / lost). */
+    public enum BannerState { HIDDEN, DISCONNECTED, CONNECTING, LOST }
+
+    private static final javafx.css.PseudoClass PC_LOST = javafx.css.PseudoClass.getPseudoClass("lost");
+    private BannerState bannerState = BannerState.HIDDEN;
+
+    public void updateConnectionBanner(String connection, String database, BannerState state, String error) {
+        if (state != bannerState) {
+            bannerDismissed = false; // a new situation shows again even if the previous one was dismissed
+            bannerState = state;
+        }
+        if (state == BannerState.HIDDEN || bannerDismissed) {
             showBanner(false);
             return;
         }
         String target = connection + (database != null && !database.isBlank() ? " (" + database + ")" : "");
-        bannerText.setText("Chưa kết nối: tab này trỏ tới " + target + " nhưng chưa được kết nối.");
+        banner.pseudoClassStateChanged(PC_LOST, state == BannerState.LOST);
+        switch (state) {
+            case LOST -> {
+                bannerIcon.setIconLiteral("mdi2a-alert-outline");
+                bannerText.setText("Mất kết nối: tab này trỏ tới " + target + " nhưng kết nối đã bị ngắt."
+                        + (error != null && !error.isBlank() ? " (" + error + ")" : ""));
+                bannerConnect.setText("Kết nối lại");
+                bannerConnect.setDisable(false);
+            }
+            case CONNECTING -> {
+                bannerIcon.setIconLiteral("mdi2p-power-plug-outline");
+                bannerText.setText("Đang kết nối tới " + target + "…");
+                bannerConnect.setText("Kết nối");
+                bannerConnect.setDisable(true);
+            }
+            default -> {
+                bannerIcon.setIconLiteral("mdi2p-power-plug-off-outline");
+                bannerText.setText("Chưa kết nối: tab này trỏ tới " + target + " nhưng chưa được kết nối.");
+                bannerConnect.setText("Kết nối");
+                bannerConnect.setDisable(false);
+            }
+        }
         showBanner(true);
     }
 
@@ -319,6 +380,7 @@ public class SqlEditorTab extends Tab {
 
     private void setupDirtyTracking() {
         codeArea.textProperty().addListener((obs, oldText, newText) -> {
+            EDITS.incrementAndGet();
             this.currentContent = newText;
             isDirty.set(!newText.equals(originalContent));
         });
@@ -404,6 +466,7 @@ public class SqlEditorTab extends Tab {
     }
 
     public void setTabTitle(String title) {
+        EDITS.incrementAndGet();
         titleLabel.setText(title);
         if (getTooltip() != null) getTooltip().setText(title); else setTooltip(new Tooltip(title));
     }
@@ -429,15 +492,41 @@ public class SqlEditorTab extends Tab {
         return currentContent != null ? currentContent : codeArea.getText();
     }
 
+    /**
+     * Bumped on every change a tab snapshot holds (text, title, file, connection, pinned): the periodic
+     * auto-save skips building the snapshot when nothing changed (performance rules: no repeated work).
+     */
+    private static final java.util.concurrent.atomic.AtomicLong EDITS = new java.util.concurrent.atomic.AtomicLong();
+
+    public static long editCount() {
+        return EDITS.get();
+    }
+
     public void setCurrentContent(String content) {
+        EDITS.incrementAndGet();
         this.currentContent = content != null ? content : "";
-        if (!codeArea.getText().equals(this.currentContent)) {
-            codeArea.replaceText(this.currentContent);
+        // Monaco sends the whole text on every keystroke. The fallback CodeArea re-highlights the whole text on
+        // each change, so it is only updated while it is the visible editor; otherwise once, when it is needed.
+        if (editorSlot.getChildren().contains(codeArea)) {
+            syncCodeArea();
+        } else {
+            codeAreaStale = true;
         }
         isDirty.set(!this.currentContent.equals(originalContent));
     }
 
+    /** True when {@link #currentContent} changed while the CodeArea was not shown. */
+    private boolean codeAreaStale;
+
+    private void syncCodeArea() {
+        codeAreaStale = false;
+        if (!codeArea.getText().equals(this.currentContent)) {
+            codeArea.replaceText(this.currentContent);
+        }
+    }
+
     public SqlCodeArea getCodeArea() {
+        if (codeAreaStale) syncCodeArea();
         return codeArea;
     }
 
@@ -458,6 +547,7 @@ public class SqlEditorTab extends Tab {
     }
 
     public void setPinned(boolean pinned) {
+        EDITS.incrementAndGet();
         this.isPinned.set(pinned);
     }
 
@@ -470,6 +560,7 @@ public class SqlEditorTab extends Tab {
     }
 
     public void setFilePath(Path filePath) {
+        EDITS.incrementAndGet();
         this.filePath = filePath;
     }
 
@@ -478,6 +569,7 @@ public class SqlEditorTab extends Tab {
     }
 
     public void setConnectionName(String connectionName) {
+        EDITS.incrementAndGet();
         this.connectionName = connectionName;
     }
 
@@ -486,6 +578,7 @@ public class SqlEditorTab extends Tab {
     }
 
     public void setDatabaseName(String databaseName) {
+        EDITS.incrementAndGet();
         this.databaseName = databaseName;
     }
 
@@ -494,6 +587,7 @@ public class SqlEditorTab extends Tab {
     }
 
     public void setSchemaName(String schemaName) {
+        EDITS.incrementAndGet();
         this.schemaName = schemaName;
     }
 

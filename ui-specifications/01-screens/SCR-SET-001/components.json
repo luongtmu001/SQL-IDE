@@ -1,0 +1,2455 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-SET-001",
+  "components": [
+    {
+      "id": "CMP-SET-001",
+      "name": "Search settings",
+      "component_type": "text_field",
+      "region_id": "REG-SET-002",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Search settings",
+      "icon": {
+        "name": "fth-search",
+        "source": "ikonli"
+      },
+      "tooltip": "promptText: Tìm kiếm cài đặt (Search settings)...",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "settingsSearchField",
+        "handler": "SettingsDialogController"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Trong cửa sổ DialogChrome, thanh tiêu đề cũ chỉ còn ô tìm kiếm (SettingsDialog)"
+    },
+    {
+      "id": "BTN-SET-002",
+      "name": "Clear search",
+      "component_type": "icon_button",
+      "region_id": "REG-SET-002",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Clear search",
+      "icon": {
+        "name": "fth-x",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "có chuỗi tìm",
+      "visible_when": "khi ô tìm có chữ",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnClearSearch",
+        "handler": "handleClearSearch"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SET-003",
+      "name": "Tab: Cài đặt (Visual)",
+      "component_type": "toggle_button",
+      "region_id": "REG-SET-003",
+      "parent_component_id": null,
+      "visible_label": "Cài đặt (Visual)",
+      "accessible_name": "Cài đặt (Visual)",
+      "icon": {
+        "name": "fth-sliders",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnTabVisual",
+        "handler": "handleSwitchToVisualTab"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button (nhóm công tắc)",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SET-004",
+      "name": "Tab: Cấu hình JSON",
+      "component_type": "toggle_button",
+      "region_id": "REG-SET-003",
+      "parent_component_id": null,
+      "visible_label": "Cấu hình JSON (settings.json)",
+      "accessible_name": "Cấu hình JSON (settings.json)",
+      "icon": {
+        "name": "fth-code",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnTabJson",
+        "handler": "handleSwitchToJsonTab"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button (nhóm công tắc)",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SET-005",
+      "name": "Save",
+      "component_type": "button",
+      "region_id": "REG-SET-007",
+      "parent_component_id": null,
+      "visible_label": "Lưu",
+      "accessible_name": "Lưu",
+      "icon": {
+        "name": "fth-save",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "có thay đổi (kiểm chứng: chưa)",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+S",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnSave",
+        "handler": "handleSaveAndApply"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "FXML đặt trong thanh tab nhưng SettingsDialog chuyển xuống footer của DialogChrome"
+    },
+    {
+      "id": "CMP-SET-006",
+      "name": "Unsaved counter",
+      "component_type": "label",
+      "region_id": "REG-SET-007",
+      "parent_component_id": null,
+      "visible_label": "N thay đổi chưa lưu",
+      "accessible_name": "N thay đổi chưa lưu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "khi có thay đổi",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "dirtyLabel",
+        "handler": "SettingsDialogController"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Tạo bằng mã, cạnh nút Lưu"
+    },
+    {
+      "id": "BTN-SET-007",
+      "name": "Copy JSON",
+      "component_type": "button",
+      "region_id": "REG-SET-003",
+      "parent_component_id": null,
+      "visible_label": "Copy JSON",
+      "accessible_name": "Copy JSON",
+      "icon": {
+        "name": "fth-copy",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnCopyJson",
+        "handler": "handleCopyJson"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-SET-008",
+      "name": "Restore defaults",
+      "component_type": "button",
+      "region_id": "REG-SET-003",
+      "parent_component_id": null,
+      "visible_label": "Khôi phục mặc định",
+      "accessible_name": "Khôi phục mặc định",
+      "icon": {
+        "name": "fth-rotate-ccw",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "destructive",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnRestoreDefaults",
+        "handler": "handleRestoreDefaults"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chưa kiểm có hỏi xác nhận không"
+    },
+    {
+      "id": "BTN-SET-009",
+      "name": "Window close ×",
+      "component_type": "icon_button",
+      "region_id": "REG-SET-001",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Window close ×",
+      "icon": {
+        "name": "fth-x",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "trong FXML (bị gỡ khỏi title bar ở SettingsDialog; × của DialogChrome thay thế)",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Esc",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "handleClose",
+        "handler": "handleClose / canClose"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Khi có thay đổi chưa lưu: hỏi ConfirmDialog \"Đóng cài đặt\""
+    },
+    {
+      "id": "BTN-SET-010",
+      "name": "Nav: Editor",
+      "component_type": "button",
+      "region_id": "REG-SET-004",
+      "parent_component_id": null,
+      "visible_label": "Editor (Trình soạn thảo SQL)",
+      "accessible_name": "Editor (Trình soạn thảo SQL)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnNavEditor",
+        "handler": "handleNavEditor"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "styleClass settings-nav-item, active cho mục đang chọn"
+    },
+    {
+      "id": "BTN-SET-011",
+      "name": "Nav: Grid",
+      "component_type": "button",
+      "region_id": "REG-SET-004",
+      "parent_component_id": null,
+      "visible_label": "Grid (Bảng kết quả)",
+      "accessible_name": "Grid (Bảng kết quả)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnNavGrid",
+        "handler": "handleNavGrid"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "styleClass settings-nav-item, active cho mục đang chọn"
+    },
+    {
+      "id": "BTN-SET-012",
+      "name": "Nav: Messages",
+      "component_type": "button",
+      "region_id": "REG-SET-004",
+      "parent_component_id": null,
+      "visible_label": "Messages (Tab thông báo)",
+      "accessible_name": "Messages (Tab thông báo)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnNavMessages",
+        "handler": "handleNavMessages"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "styleClass settings-nav-item, active cho mục đang chọn"
+    },
+    {
+      "id": "BTN-SET-013",
+      "name": "Nav: Appearance",
+      "component_type": "button",
+      "region_id": "REG-SET-004",
+      "parent_component_id": null,
+      "visible_label": "Appearance (Giao diện & Chủ đề)",
+      "accessible_name": "Appearance (Giao diện & Chủ đề)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnNavAppearance",
+        "handler": "handleNavAppearance"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "styleClass settings-nav-item, active cho mục đang chọn"
+    },
+    {
+      "id": "BTN-SET-014",
+      "name": "Nav: SQL",
+      "component_type": "button",
+      "region_id": "REG-SET-004",
+      "parent_component_id": null,
+      "visible_label": "SQL (Truy vấn SQL)",
+      "accessible_name": "SQL (Truy vấn SQL)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnNavSql",
+        "handler": "handleNavSql"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "styleClass settings-nav-item, active cho mục đang chọn"
+    },
+    {
+      "id": "BTN-SET-015",
+      "name": "Nav: Session",
+      "component_type": "button",
+      "region_id": "REG-SET-004",
+      "parent_component_id": null,
+      "visible_label": "Session (Phiên làm việc)",
+      "accessible_name": "Session (Phiên làm việc)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnNavSession",
+        "handler": "handleNavSession"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "styleClass settings-nav-item, active cho mục đang chọn"
+    },
+    {
+      "id": "BTN-SET-016",
+      "name": "Nav: Addons",
+      "component_type": "button",
+      "region_id": "REG-SET-004",
+      "parent_component_id": null,
+      "visible_label": "Addons (Tiện ích mở rộng)",
+      "accessible_name": "Addons (Tiện ích mở rộng)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnNavAddons",
+        "handler": "handleNavAddons"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "styleClass settings-nav-item, active cho mục đang chọn"
+    },
+    {
+      "id": "BTN-SET-017",
+      "name": "Nav: History",
+      "component_type": "button",
+      "region_id": "REG-SET-004",
+      "parent_component_id": null,
+      "visible_label": "History (Lịch sử truy vấn)",
+      "accessible_name": "History (Lịch sử truy vấn)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnNavHistory",
+        "handler": "handleNavHistory"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "styleClass settings-nav-item, active cho mục đang chọn"
+    },
+    {
+      "id": "BTN-SET-018",
+      "name": "Nav: Logging",
+      "component_type": "button",
+      "region_id": "REG-SET-004",
+      "parent_component_id": null,
+      "visible_label": "Logging (Nhật ký hệ thống)",
+      "accessible_name": "Logging (Nhật ký hệ thống)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnNavLogging",
+        "handler": "handleNavLogging"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "styleClass settings-nav-item, active cho mục đang chọn"
+    },
+    {
+      "id": "BTN-SET-019",
+      "name": "Nav: Updates",
+      "component_type": "button",
+      "region_id": "REG-SET-004",
+      "parent_component_id": null,
+      "visible_label": "Updates (Thông tin & Cập nhật)",
+      "accessible_name": "Updates (Thông tin & Cập nhật)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "btnNavUpdates",
+        "handler": "handleNavUpdates"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "styleClass settings-nav-item, active cho mục đang chọn"
+    },
+    {
+      "id": "CMP-SET-020",
+      "name": "Phông chữ soạn thảo",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Phông chữ soạn thảo",
+      "accessible_name": "Phông chữ soạn thảo",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "cmbEditorFontFamily",
+        "handler": "key: editor.fontFamily"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.fontFamily`"
+    },
+    {
+      "id": "CMP-SET-021",
+      "name": "Cỡ chữ soạn thảo",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Cỡ chữ soạn thảo",
+      "accessible_name": "Cỡ chữ soạn thảo",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnEditorFontSize",
+        "handler": "key: editor.fontSize"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.fontSize`"
+    },
+    {
+      "id": "CMP-SET-022",
+      "name": "Chiều cao dòng",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Chiều cao dòng",
+      "accessible_name": "Chiều cao dòng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnLineHeight",
+        "handler": "key: editor.lineHeight"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.lineHeight`"
+    },
+    {
+      "id": "CMP-SET-023",
+      "name": "Khoảng cách ký tự",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Khoảng cách ký tự",
+      "accessible_name": "Khoảng cách ký tự",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnLetterSpacing",
+        "handler": "key: editor.letterSpacing"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.letterSpacing`"
+    },
+    {
+      "id": "CMP-SET-024",
+      "name": "Kích thước thụt dòng (Tab Size)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Kích thước thụt dòng (Tab Size)",
+      "accessible_name": "Kích thước thụt dòng (Tab Size)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnTabSize",
+        "handler": "key: editor.tabSize"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.tabSize`"
+    },
+    {
+      "id": "CMP-SET-025",
+      "name": "Chèn khoảng trắng thay vì Tab",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Chèn khoảng trắng thay vì Tab",
+      "accessible_name": "Chèn khoảng trắng thay vì Tab",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkInsertSpaces",
+        "handler": "key: editor.insertSpaces"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.insertSpaces`"
+    },
+    {
+      "id": "CMP-SET-026",
+      "name": "Tự động xuống dòng",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Tự động xuống dòng",
+      "accessible_name": "Tự động xuống dòng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkWordWrap",
+        "handler": "key: editor.wordWrap"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.wordWrap`"
+    },
+    {
+      "id": "CMP-SET-027",
+      "name": "Bản đồ mã nguồn thu nhỏ (Minimap)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Bản đồ mã nguồn thu nhỏ (Minimap)",
+      "accessible_name": "Bản đồ mã nguồn thu nhỏ (Minimap)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkMinimap",
+        "handler": "key: editor.minimap"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.minimap`"
+    },
+    {
+      "id": "CMP-SET-028",
+      "name": "Định dạng từ khóa SQL",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Định dạng từ khóa SQL",
+      "accessible_name": "Định dạng từ khóa SQL",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "cmbKeywordCase",
+        "handler": "key: editor.keywordCase"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.keywordCase`"
+    },
+    {
+      "id": "CMP-SET-029",
+      "name": "Kiểm tra cú pháp SQL",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Kiểm tra cú pháp SQL",
+      "accessible_name": "Kiểm tra cú pháp SQL",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkSyntaxCheck",
+        "handler": "key: editor.syntaxCheck"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.syntaxCheck`"
+    },
+    {
+      "id": "CMP-SET-030",
+      "name": "Gợi ý mã thông minh (IntelliSense)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Gợi ý mã thông minh (IntelliSense)",
+      "accessible_name": "Gợi ý mã thông minh (IntelliSense)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkIntellisense",
+        "handler": "key: editor.intellisense"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.intellisense`"
+    },
+    {
+      "id": "CMP-SET-031",
+      "name": "Ưu tiên gợi ý theo lịch sử dùng",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Ưu tiên gợi ý theo lịch sử dùng",
+      "accessible_name": "Ưu tiên gợi ý theo lịch sử dùng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Editor",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkIntellisenseMru",
+        "handler": "key: editor.intellisenseMru"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 1: Editor (Trình soạn thảo SQL); khóa `editor.intellisenseMru`"
+    },
+    {
+      "id": "CMP-SET-032",
+      "name": "Phông chữ bảng kết quả",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Phông chữ bảng kết quả",
+      "accessible_name": "Phông chữ bảng kết quả",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Grid",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "cmbGridFontFamily",
+        "handler": "key: grid.fontFamily"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 2: Grid (Bảng kết quả); khóa `grid.fontFamily`"
+    },
+    {
+      "id": "CMP-SET-033",
+      "name": "Cỡ chữ bảng kết quả",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Cỡ chữ bảng kết quả",
+      "accessible_name": "Cỡ chữ bảng kết quả",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Grid",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnGridFontSize",
+        "handler": "key: grid.fontSize"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 2: Grid (Bảng kết quả); khóa `grid.fontSize`"
+    },
+    {
+      "id": "CMP-SET-034",
+      "name": "Cách hiển thị nhiều bảng kết quả",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Cách hiển thị nhiều bảng kết quả",
+      "accessible_name": "Cách hiển thị nhiều bảng kết quả",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Grid",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "cmbResultLayout",
+        "handler": "key: grid.resultLayout"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 2: Grid (Bảng kết quả); khóa `grid.resultLayout`"
+    },
+    {
+      "id": "CMP-SET-035",
+      "name": "Hiển thị cột số thứ tự dòng",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Hiển thị cột số thứ tự dòng",
+      "accessible_name": "Hiển thị cột số thứ tự dòng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Grid",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkShowRowNumbers",
+        "handler": "key: grid.showRowNumbers"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 2: Grid (Bảng kết quả); khóa `grid.showRowNumbers`"
+    },
+    {
+      "id": "CMP-SET-036",
+      "name": "Chuỗi hiển thị giá trị NULL",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Chuỗi hiển thị giá trị NULL",
+      "accessible_name": "Chuỗi hiển thị giá trị NULL",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Grid",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "txtNullDisplay",
+        "handler": "key: grid.nullDisplayString"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 2: Grid (Bảng kết quả); khóa `grid.nullDisplayString`"
+    },
+    {
+      "id": "CMP-SET-037",
+      "name": "Phông chữ tab thông báo",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Phông chữ tab thông báo",
+      "accessible_name": "Phông chữ tab thông báo",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Messages",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "cmbMessagesFontFamily",
+        "handler": "key: messages.fontFamily"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 3: Messages (Tab thông báo); khóa `messages.fontFamily`"
+    },
+    {
+      "id": "CMP-SET-038",
+      "name": "Cỡ chữ tab thông báo",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Cỡ chữ tab thông báo",
+      "accessible_name": "Cỡ chữ tab thông báo",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Messages",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnMessagesFontSize",
+        "handler": "key: messages.fontSize"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 3: Messages (Tab thông báo); khóa `messages.fontSize`"
+    },
+    {
+      "id": "CMP-SET-039",
+      "name": "Chế độ giao diện (Color Theme)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Chế độ giao diện (Color Theme)",
+      "accessible_name": "Chế độ giao diện (Color Theme)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Appearance",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "cmbTheme",
+        "handler": "key: theme"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 4: Appearance (Giao diện & Chủ đề); khóa `theme`"
+    },
+    {
+      "id": "CMP-SET-040",
+      "name": "Kích thước biểu tượng",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Kích thước biểu tượng",
+      "accessible_name": "Kích thước biểu tượng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Appearance",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnIconSize",
+        "handler": "key: appearance.iconSize"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 4: Appearance (Giao diện & Chủ đề); khóa `appearance.iconSize`"
+    },
+    {
+      "id": "CMP-SET-041",
+      "name": "Phông chữ giao diện IDE",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Phông chữ giao diện IDE",
+      "accessible_name": "Phông chữ giao diện IDE",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Appearance",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "cmbUiFontFamily",
+        "handler": "key: appearance.uiFontFamily"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 4: Appearance (Giao diện & Chủ đề); khóa `appearance.uiFontFamily`"
+    },
+    {
+      "id": "CMP-SET-042",
+      "name": "Cỡ chữ giao diện IDE",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Cỡ chữ giao diện IDE",
+      "accessible_name": "Cỡ chữ giao diện IDE",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Appearance",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnUiFontSize",
+        "handler": "key: appearance.uiFontSize"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 4: Appearance (Giao diện & Chủ đề); khóa `appearance.uiFontSize`"
+    },
+    {
+      "id": "CMP-SET-043",
+      "name": "Tự động ẩn thanh Menu / Navbar",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Tự động ẩn thanh Menu / Navbar",
+      "accessible_name": "Tự động ẩn thanh Menu / Navbar",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Appearance",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkAutoHideNavbar",
+        "handler": "key: appearance.autoHideNavbar"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 4: Appearance (Giao diện & Chủ đề); khóa `appearance.autoHideNavbar`"
+    },
+    {
+      "id": "CMP-SET-044",
+      "name": "Kiểu khung giao diện (Panel Style)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Kiểu khung giao diện (Panel Style)",
+      "accessible_name": "Kiểu khung giao diện (Panel Style)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Appearance",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "cmbPanelStyle",
+        "handler": "key: appearance.panelStyle"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 4: Appearance (Giao diện & Chủ đề); khóa `appearance.panelStyle`"
+    },
+    {
+      "id": "CMP-SET-045",
+      "name": "Giới hạn số dòng kết quả (Max Rows)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Giới hạn số dòng kết quả (Max Rows)",
+      "accessible_name": "Giới hạn số dòng kết quả (Max Rows)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm SQL",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnMaxRows",
+        "handler": "key: sql.maxRows"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 5: SQL (Truy vấn SQL); khóa `sql.maxRows`"
+    },
+    {
+      "id": "CMP-SET-046",
+      "name": "Thời gian chờ truy vấn",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Thời gian chờ truy vấn",
+      "accessible_name": "Thời gian chờ truy vấn",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm SQL",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnQueryTimeout",
+        "handler": "key: sql.timeoutSeconds"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 5: SQL (Truy vấn SQL); khóa `sql.timeoutSeconds`"
+    },
+    {
+      "id": "CMP-SET-047",
+      "name": "Bảo vệ câu lệnh SQL nguy hiểm",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Bảo vệ câu lệnh SQL nguy hiểm",
+      "accessible_name": "Bảo vệ câu lệnh SQL nguy hiểm",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm SQL",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "cmbSqlProtection",
+        "handler": "key: sql.sqlprotection"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 5: SQL (Truy vấn SQL); khóa `sql.sqlprotection`"
+    },
+    {
+      "id": "CMP-SET-048",
+      "name": "Dừng khi gặp lỗi",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Dừng khi gặp lỗi",
+      "accessible_name": "Dừng khi gặp lỗi",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm SQL",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkStopOnError",
+        "handler": "key: sql.stopOnError"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 5: SQL (Truy vấn SQL); khóa `sql.stopOnError`"
+    },
+    {
+      "id": "CMP-SET-049",
+      "name": "Mỗi tab một phiên kết nối riêng",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Mỗi tab một phiên kết nối riêng",
+      "accessible_name": "Mỗi tab một phiên kết nối riêng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm SQL",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkPerTabSession",
+        "handler": "key: sql.perTabSession"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 5: SQL (Truy vấn SQL); khóa `sql.perTabSession`"
+    },
+    {
+      "id": "CMP-SET-050",
+      "name": "Tự động mở bảng kết quả",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Tự động mở bảng kết quả",
+      "accessible_name": "Tự động mở bảng kết quả",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm SQL",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkAutoShowResults",
+        "handler": "key: unknown (không có nhãn khóa trong FXML)"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 5: SQL (Truy vấn SQL); khóa `unknown (không có nhãn khóa trong FXML)`"
+    },
+    {
+      "id": "CMP-SET-051",
+      "name": "Khôi phục tab khi mở lại IDE",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Khôi phục tab khi mở lại IDE",
+      "accessible_name": "Khôi phục tab khi mở lại IDE",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Session",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkRestoreOnStartup",
+        "handler": "key: session.restoreOnStartup"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 6: Session (Phiên làm việc); khóa `session.restoreOnStartup`"
+    },
+    {
+      "id": "CMP-SET-052",
+      "name": "Tự động lưu nội dung SQL chưa đặt tên",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Tự động lưu nội dung SQL chưa đặt tên",
+      "accessible_name": "Tự động lưu nội dung SQL chưa đặt tên",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Session",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkSaveSqlContent",
+        "handler": "key: session.saveSqlContent"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 6: Session (Phiên làm việc); khóa `session.saveSqlContent`"
+    },
+    {
+      "id": "CMP-SET-053",
+      "name": "Chu kỳ tự động lưu (giây)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Chu kỳ tự động lưu (giây)",
+      "accessible_name": "Chu kỳ tự động lưu (giây)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Session",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnAutoSaveInterval",
+        "handler": "key: session.autoSaveIntervalSeconds"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 6: Session (Phiên làm việc); khóa `session.autoSaveIntervalSeconds`"
+    },
+    {
+      "id": "CMP-SET-054",
+      "name": "Dung lượng tối đa mỗi tab (bytes)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Dung lượng tối đa mỗi tab (bytes)",
+      "accessible_name": "Dung lượng tối đa mỗi tab (bytes)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Session",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnMaxTabSize",
+        "handler": "key: session.maxTabSizeBytes"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 6: Session (Phiên làm việc); khóa `session.maxTabSizeBytes`"
+    },
+    {
+      "id": "CMP-SET-055",
+      "name": "Kích hoạt BRAVO Tool Extension",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Kích hoạt BRAVO Tool Extension",
+      "accessible_name": "Kích hoạt BRAVO Tool Extension",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Addons",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkBravoToolEnabled",
+        "handler": "key: addons.bravo_tool.enabled"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 7: Addons (Tiện ích mở rộng); khóa `addons.bravo_tool.enabled`"
+    },
+    {
+      "id": "CMP-SET-056",
+      "name": "Ghi nhật ký lịch sử truy vấn",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Ghi nhật ký lịch sử truy vấn",
+      "accessible_name": "Ghi nhật ký lịch sử truy vấn",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm History",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkHistoryEnabled",
+        "handler": "key: history.enabled"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 8: History (Lịch sử truy vấn); khóa `history.enabled`"
+    },
+    {
+      "id": "CMP-SET-057",
+      "name": "Số bản ghi tối đa mỗi tài liệu",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Số bản ghi tối đa mỗi tài liệu",
+      "accessible_name": "Số bản ghi tối đa mỗi tài liệu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm History",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnMaxEntriesPerDoc",
+        "handler": "key: history.maxEntriesPerDoc"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 8: History (Lịch sử truy vấn); khóa `history.maxEntriesPerDoc`"
+    },
+    {
+      "id": "CMP-SET-058",
+      "name": "Thời gian lưu trữ tối đa (ngày)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Thời gian lưu trữ tối đa (ngày)",
+      "accessible_name": "Thời gian lưu trữ tối đa (ngày)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm History",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnMaxAgeDays",
+        "handler": "key: history.maxAgeDays"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 8: History (Lịch sử truy vấn); khóa `history.maxAgeDays`"
+    },
+    {
+      "id": "CMP-SET-059",
+      "name": "Dung lượng tối đa DB lịch sử (MB)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Dung lượng tối đa DB lịch sử (MB)",
+      "accessible_name": "Dung lượng tối đa DB lịch sử (MB)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm History",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnMaxDbSizeMb",
+        "handler": "key: history.maxDbSizeMb"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 8: History (Lịch sử truy vấn); khóa `history.maxDbSizeMb`"
+    },
+    {
+      "id": "CMP-SET-060",
+      "name": "Kích thước tối đa 1 câu truy vấn (KB)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Kích thước tối đa 1 câu truy vấn (KB)",
+      "accessible_name": "Kích thước tối đa 1 câu truy vấn (KB)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm History",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnMaxEntrySizeKb",
+        "handler": "key: history.maxEntrySizeKb"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 8: History (Lịch sử truy vấn); khóa `history.maxEntrySizeKb`"
+    },
+    {
+      "id": "CMP-SET-061",
+      "name": "Ghi nhật ký ra file",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Ghi nhật ký ra file",
+      "accessible_name": "Ghi nhật ký ra file",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Logging",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkLoggingEnabled",
+        "handler": "key: logging.enabled"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 9: Logging (Nhật ký hệ thống); khóa `logging.enabled`"
+    },
+    {
+      "id": "CMP-SET-062",
+      "name": "Mức độ chi tiết nhật ký",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Mức độ chi tiết nhật ký",
+      "accessible_name": "Mức độ chi tiết nhật ký",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Logging",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "cmbLogLevel",
+        "handler": "key: logging.level"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ComboBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 9: Logging (Nhật ký hệ thống); khóa `logging.level`"
+    },
+    {
+      "id": "CMP-SET-063",
+      "name": "Dung lượng tối đa mỗi file log (MB)",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Dung lượng tối đa mỗi file log (MB)",
+      "accessible_name": "Dung lượng tối đa mỗi file log (MB)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Logging",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnMaxLogFileSizeMb",
+        "handler": "key: logging.maxFileSizeMb"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 9: Logging (Nhật ký hệ thống); khóa `logging.maxFileSizeMb`"
+    },
+    {
+      "id": "CMP-SET-064",
+      "name": "Số file log xoay vòng tối đa",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Số file log xoay vòng tối đa",
+      "accessible_name": "Số file log xoay vòng tối đa",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Logging",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "spnMaxBackupFiles",
+        "handler": "key: logging.maxFiles"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Spinner",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 9: Logging (Nhật ký hệ thống); khóa `logging.maxFiles`"
+    },
+    {
+      "id": "CMP-SET-065",
+      "name": "Tự động kiểm tra cập nhật khi khởi động",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "Tự động kiểm tra cập nhật khi khởi động",
+      "accessible_name": "Tự động kiểm tra cập nhật khi khởi động",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Updates",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "chkCheckOnStartup",
+        "handler": "key: updates.checkOnStartup"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "CheckBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 10: Updates (Thông tin & Cập nhật); khóa `updates.checkOnStartup`"
+    },
+    {
+      "id": "CMP-SET-066",
+      "name": "URL máy chủ cập nhật tùy chỉnh",
+      "component_type": "setting_row",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "URL máy chủ cập nhật tùy chỉnh",
+      "accessible_name": "URL máy chủ cập nhật tùy chỉnh",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "khi mở nhóm Updates",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "txtUpdateUrl",
+        "handler": "key: updates.updateUrl"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhóm 10: Updates (Thông tin & Cập nhật); khóa `updates.updateUrl`"
+    },
+    {
+      "id": "CMP-SET-067",
+      "name": "Installed version",
+      "component_type": "label",
+      "region_id": "REG-SET-005",
+      "parent_component_id": null,
+      "visible_label": "1.2.6",
+      "accessible_name": "1.2.6",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "nhóm Updates",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "lblInstalledVersion",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Giá trị mẫu 1.2.6 trong FXML; AboutDialog dùng AppInfo.VERSION — có thể lệch"
+    },
+    {
+      "id": "CMP-SET-068",
+      "name": "Raw JSON editor",
+      "component_type": "text_area",
+      "region_id": "REG-SET-006",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Raw JSON editor",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "chế độ JSON",
+      "visible_when": "chế độ JSON",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+S (lưu)",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "txtRawJson",
+        "handler": "SettingsDialogController"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextArea",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Không tô màu cú pháp"
+    },
+    {
+      "id": "CMP-SET-069",
+      "name": "JSON status badge",
+      "component_type": "label",
+      "region_id": "REG-SET-006",
+      "parent_component_id": null,
+      "visible_label": "JSON Hợp lệ",
+      "accessible_name": "JSON Hợp lệ",
+      "icon": {
+        "name": "fth-info",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "chế độ JSON",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/settings-dialog.fxml + controllers/SettingsDialogController.java + ui/dialogs/SettingsDialog.java",
+        "selector_or_symbol": "lblJsonStatus",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    }
+  ]
+}

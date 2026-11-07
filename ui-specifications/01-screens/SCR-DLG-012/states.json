@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-012",
+  "states": [
+    {
+      "id": "STA-DLG12-001",
+      "component_id": "CMP-DLG12-002",
+      "state": "normal",
+      "visual_description": "Chữ \"Sao chép thông tin\" → \"Đã sao chép\"",
+      "entry_condition": "sau khi bấm",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}

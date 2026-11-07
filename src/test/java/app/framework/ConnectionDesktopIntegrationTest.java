@@ -266,6 +266,10 @@ class ConnectionDesktopIntegrationTest {
 
                 javafx.scene.control.ContextMenu menu = cell.getContextMenu();
                 assertNotNull(menu, "Cell should have a ContextMenu for CONNECTION node");
+                // the menu is built lazily when it is about to be shown
+                if (menu.getOnShowing() != null) {
+                    menu.getOnShowing().handle(new javafx.stage.WindowEvent(null, javafx.stage.WindowEvent.WINDOW_SHOWING));
+                }
                 boolean hasEdit = menu.getItems().stream()
                         .anyMatch(mi -> mi.getText() != null && mi.getText().contains("Edit Connection"));
                 foundEditMenu.set(hasEdit);

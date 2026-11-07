@@ -28,8 +28,7 @@ import java.util.ResourceBundle;
  */
 public class SettingsDialogController implements Initializable {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .enable(SerializationFeature.INDENT_OUTPUT);
+    private static final ObjectMapper MAPPER = IdeSettings.jsonMapper(); // fields only (see IdeSettings.jsonMapper)
 
     @FXML private VBox settingsRoot;
     @FXML private HBox titleBar;
@@ -102,13 +101,15 @@ public class SettingsDialogController implements Initializable {
 
     // SECTION 4: Appearance Controls
     @FXML private ComboBox<String> cmbTheme;
+    @FXML private VBox importedThemesBox;
+    @FXML private Button btnImportVsix;
     @FXML private Spinner<Integer> spnIconSize;
     @FXML private ComboBox<String> cmbUiFontFamily;
     @FXML private Spinner<Integer> spnUiFontSize;
     @FXML private CheckBox chkAutoHideNavbar;
     @FXML private ComboBox<String> cmbPanelStyle;
     private static final String PANEL_STYLE_ROUNDED = "Bo góc (card, có khoảng cách)";
-    private static final String PANEL_STYLE_FLAT = "Phẳng (giống VS Code)";
+    private static final String PANEL_STYLE_FLAT = "Phẳng (góc vuông)";
 
     // SECTION 5: SQL Controls
     @FXML private Spinner<Integer> spnMaxRows;
@@ -285,10 +286,8 @@ public class SettingsDialogController implements Initializable {
     }
 
     private void setupComboBoxes() {
-        List<String> themeNames = Arrays.stream(ThemeService.AppTheme.values())
-                .map(ThemeService.AppTheme::getDisplayName)
-                .toList();
-        cmbTheme.setItems(FXCollections.observableArrayList(themeNames));
+        setupThemeCombo();
+        renderImportedThemes();
 
         List<String> codeFonts = List.of("Cascadia Mono Light", "Consolas", "Cascadia Code", "Fira Code", "JetBrains Mono", "Courier New");
         cmbEditorFontFamily.setItems(FXCollections.observableArrayList(codeFonts));
@@ -298,12 +297,191 @@ public class SettingsDialogController implements Initializable {
         cmbUiFontFamily.setItems(FXCollections.observableArrayList(textFonts));
         cmbGridFontFamily.setItems(FXCollections.observableArrayList(textFonts));
 
+        // S4: then every font installed on this computer (read once in the background, cached)
+        app.ui.settings.SystemFonts.load(fonts -> {
+            setFontItems(cmbEditorFontFamily, app.ui.settings.SystemFonts.merge(codeFonts, fonts.monospaced()));
+            setFontItems(cmbMessagesFontFamily, app.ui.settings.SystemFonts.merge(codeFonts, fonts.monospaced()));
+            setFontItems(cmbUiFontFamily, app.ui.settings.SystemFonts.merge(textFonts, fonts.all()));
+            setFontItems(cmbGridFontFamily, app.ui.settings.SystemFonts.merge(textFonts, fonts.all()));
+        });
+
         cmbKeywordCase.setItems(FXCollections.observableArrayList("upper", "lower", "preserve"));
         cmbSqlProtection.setItems(FXCollections.observableArrayList(
                 "1 - Bật bảo vệ (Cảnh báo trước khi chạy)",
                 "0 - Tắt bảo vệ (Không cảnh báo)"
         ));
         cmbLogLevel.setItems(FXCollections.observableArrayList("DEBUG", "INFO", "WARNING", "ERROR"));
+    }
+
+    // ------------------------------------------------------------------ T4: themes grouped, import / remove
+
+    /** Group titles in the theme list ("Tối · Có sẵn", "Sáng · GitHub Theme"): shown, never chosen. */
+    private final java.util.Set<String> themeHeaders = new java.util.HashSet<>();
+    /** Label -> dark, from the last fill: a removed theme falls back to Primer of its own kind. */
+    private final java.util.Map<String, Boolean> themeDark = new java.util.HashMap<>();
+
+    private void setupThemeCombo() {
+        cmbTheme.setVisibleRowCount(16);
+        cmbTheme.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                boolean header = !empty && item != null && themeHeaders.contains(item);
+                setText(empty ? null : item);
+                setDisable(header);
+                getStyleClass().remove("theme-group-header");
+                if (header) getStyleClass().add("theme-group-header");
+            }
+        });
+        // keyboard can still land on a title: keep the previous theme
+        cmbTheme.valueProperty().addListener((obs, old, val) -> {
+            if (val != null && themeHeaders.contains(val)) {
+                javafx.application.Platform.runLater(() -> cmbTheme.setValue(old != null && !themeHeaders.contains(old) ? old : null));
+            }
+        });
+        fillThemeCombo();
+    }
+
+    /** T1/T4: dark groups then light; built-in themes, then one group per imported VS Code package. */
+    private void fillThemeCombo() {
+        String value = cmbTheme.getValue();
+        boolean wasDark = value == null || themeDark.getOrDefault(value, true);
+        themeHeaders.clear();
+        themeDark.clear();
+        List<String> items = new java.util.ArrayList<>();
+        for (var g : app.services.theme.ThemeRegistry.getInstance().grouped()) {
+            themeHeaders.add(g.title());
+            items.add(g.title());
+            for (var d : g.themes()) {
+                items.add(d.label());
+                themeDark.put(d.label(), d.isDark());
+            }
+        }
+        cmbTheme.setItems(FXCollections.observableArrayList(items));
+        if (value != null) {
+            var still = app.services.theme.ThemeRegistry.getInstance().findOrNull(value);
+            if (still != null) {
+                cmbTheme.setValue(still.label());
+            } else { // the chosen theme was removed: Primer of the same kind, like the main window
+                cmbTheme.setValue(app.services.theme.ThemeDefinition.builtIn(wasDark
+                        ? ThemeService.AppTheme.PRIMER_DARK : ThemeService.AppTheme.PRIMER_LIGHT).label());
+            }
+        }
+    }
+
+    /** One line per imported package: name, counts, its themes (× removes one), "Xóa gói". */
+    private void renderImportedThemes() {
+        if (importedThemesBox == null) return;
+        importedThemesBox.getChildren().clear();
+        var families = app.services.theme.ThemeRegistry.getInstance().importedFamilies();
+        if (families.isEmpty()) {
+            Label none = new Label("Chưa có theme nào được import.");
+            none.getStyleClass().add("imported-theme-empty");
+            importedThemesBox.getChildren().add(none);
+            return;
+        }
+        String currentId = ThemeService.getInstance().getCurrentDefinition().id();
+        families.forEach((family, themes) -> {
+            long dark = themes.stream().filter(app.services.theme.ThemeDefinition::isDark).count();
+            Label name = new Label(family);
+            name.getStyleClass().add("imported-theme-name");
+            Label count = new Label(themes.size() + " theme · " + dark + " tối · " + (themes.size() - dark) + " sáng");
+            count.getStyleClass().add("imported-theme-count");
+            javafx.scene.layout.Region gap = new javafx.scene.layout.Region();
+            HBox.setHgrow(gap, javafx.scene.layout.Priority.ALWAYS);
+            Button removeAll = new Button("Xóa gói");
+            removeAll.setGraphic(new org.kordamp.ikonli.javafx.FontIcon("fth-trash-2"));
+            removeAll.getStyleClass().addAll("settings-btn-secondary", "imported-theme-remove");
+            removeAll.setOnAction(e -> app.ui.theme.ThemeImportActions.remove(ownerWindow(),
+                    "gói " + family + " (" + themes.size() + " theme)", themes, this::refreshThemes));
+            HBox head = new HBox(8, name, count, gap, removeAll);
+            head.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+            javafx.scene.layout.FlowPane chips = new javafx.scene.layout.FlowPane(6, 6);
+            for (var d : themes) {
+                Label lbl = new Label(d.label() + (d.highContrast() ? " · HC" : ""));
+                lbl.setGraphic(new org.kordamp.ikonli.javafx.FontIcon(d.isDark() ? "fth-moon" : "fth-sun"));
+                Button x = new Button();
+                x.setGraphic(new org.kordamp.ikonli.javafx.FontIcon("fth-x"));
+                x.getStyleClass().add("imported-theme-chip-remove");
+                x.setTooltip(new Tooltip("Xóa theme này"));
+                x.setFocusTraversable(false);
+                x.setOnAction(e -> app.ui.theme.ThemeImportActions.remove(ownerWindow(),
+                        "theme " + d.label(), List.of(d), this::refreshThemes));
+                HBox chip = new HBox(4, lbl, x);
+                chip.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                chip.getStyleClass().add("imported-theme-chip");
+                if (d.id().equals(currentId)) chip.getStyleClass().add("current");
+                chips.getChildren().add(chip);
+            }
+            VBox pkg = new VBox(6, head, chips);
+            pkg.getStyleClass().add("imported-theme-package");
+            importedThemesBox.getChildren().add(pkg);
+        });
+    }
+
+    private void refreshThemes() {
+        fillThemeCombo();
+        renderImportedThemes();
+    }
+
+    @FXML
+    public void handleImportVsix() {
+        app.ui.theme.ThemeImportActions.importVsix(ownerWindow(), this::refreshThemes);
+    }
+
+    private javafx.stage.Window ownerWindow() {
+        return settingsRoot != null && settingsRoot.getScene() != null ? settingsRoot.getScene().getWindow() : null;
+    }
+
+    /** New list, same chosen value (a saved font that is not installed stays in the list). */
+    private static void setFontItems(ComboBox<String> combo, List<String> fonts) {
+        if (combo == null) return;
+        String value = combo.getValue();
+        java.util.List<String> items = new java.util.ArrayList<>(fonts);
+        if (value != null && !value.isBlank() && !items.contains(value)) items.add(0, value);
+        combo.setItems(FXCollections.observableArrayList(items));
+        combo.setValue(value);
+        combo.setVisibleRowCount(14);
+    }
+
+    // ------------------------------------------------------------------ S4: folders (LLTool open_log_folder / open_data_folder)
+
+    @FXML
+    public void handleOpenLogFolder() {
+        openFolder(app.services.LoggingService.logsDir(), "nhật ký");
+    }
+
+    @FXML
+    public void handleOpenDataFolder() {
+        java.nio.file.Path root = null;
+        try {
+            root = app.framework.bootstrap.DesktopBootstrap.getInstance().getDirectoryManager().getRootDir();
+        } catch (Exception ignored) {
+        }
+        openFolder(root, "dữ liệu");
+    }
+
+    /** Opens the folder in the system file manager (created first if needed), off the FX thread. */
+    private static void openFolder(java.nio.file.Path dir, String what) {
+        if (dir == null) {
+            NotificationService.getInstance().showWarning("Thư mục " + what, "Không xác định được thư mục.");
+            return;
+        }
+        Thread.ofVirtual().name("open-folder").start(() -> {
+            try {
+                java.nio.file.Files.createDirectories(dir);
+                if (System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win")) {
+                    new ProcessBuilder("explorer.exe", dir.toAbsolutePath().toString()).start();
+                } else {
+                    boolean mac = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("mac");
+                    new ProcessBuilder(mac ? "open" : "xdg-open", dir.toAbsolutePath().toString()).start();
+                }
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> NotificationService.getInstance()
+                        .showWarning("Thư mục " + what, "Không mở được " + dir + ": " + e.getMessage()));
+            }
+        });
     }
 
     private void setupSearchFilter() {
@@ -516,7 +694,7 @@ public class SettingsDialogController implements Initializable {
 
         // 4. Appearance
         IdeSettings.AppearanceSettings ap = s.getAppearance() != null ? s.getAppearance() : new IdeSettings.AppearanceSettings();
-        cmbTheme.setValue(s.getTheme());
+        cmbTheme.setValue(app.services.theme.ThemeRegistry.getInstance().find(s.getTheme()).label()); // stored: id
         spnIconSize.getValueFactory().setValue(ap.getIconSize());
         cmbUiFontFamily.setValue(ap.getUiFontFamily());
         spnUiFontSize.getValueFactory().setValue(ap.getUiFontSize());
@@ -610,7 +788,8 @@ public class SettingsDialogController implements Initializable {
         ms.setFontSize(spnMessagesFontSize.getValue());
 
         // 4. Appearance
-        String themeVal = cmbTheme.getValue() != null ? cmbTheme.getValue() : "Primer Dark";
+        // the combo shows labels; Settings keep the theme id (T1)
+        String themeVal = app.services.theme.ThemeRegistry.getInstance().find(cmbTheme.getValue()).id();
         s.setTheme(themeVal);
         IdeSettings.AppearanceSettings ap = s.getAppearance();
         ap.setTheme(themeVal);

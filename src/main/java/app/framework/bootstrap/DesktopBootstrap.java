@@ -27,6 +27,12 @@ public class DesktopBootstrap {
 
     private static final Logger log = LoggerFactory.getLogger(DesktopBootstrap.class);
     private static DesktopBootstrap instance;
+    private static volatile java.util.function.IntConsumer progressListener = step -> { };
+
+    /** Told the number of the step about to start (1 directories, 2 configuration, 3 vault, 4 providers). */
+    public static void setProgressListener(java.util.function.IntConsumer listener) {
+        progressListener = listener != null ? listener : step -> { };
+    }
 
     private final AppDirectoryManager directoryManager;
     private final ConfigurationService configurationService;
@@ -41,15 +47,19 @@ public class DesktopBootstrap {
         log.info("Starting Desktop Platform Bootstrap...");
 
         // 1. Filesystem Directory Manager
+        progressListener.accept(1);
         this.directoryManager = AppDirectoryManager.createDefault();
 
         // 2. Configuration Service
+        progressListener.accept(2);
         this.configurationService = new ConfigurationService(directoryManager);
 
         // 3. Security Credential Vault
+        progressListener.accept(3);
         this.credentialVault = new SecureCredentialVault(directoryManager);
 
         // 4. Database Provider Registry
+        progressListener.accept(4);
         this.providerRegistry = new DatabaseProviderRegistry();
         providerRegistry.register(new PostgreSqlDatabaseProvider());
         providerRegistry.register(new SqliteDatabaseProvider());

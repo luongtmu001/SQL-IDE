@@ -4,8 +4,13 @@
 
 /* .sidebar-panel / .mini-sidebar-strip: styled in layout.css (cards, SCR-MAIN-001) */
 
+/* T2: dark-mode defaults of the -ide-* variables (see ide-vars.css) */
+.root {
+    -ide-placeholder-bg: #2b2d30;
+}
+
 .editor-content-placeholder, .results-content-placeholder, .messages-placeholder {
-    -fx-background-color: #2b2d30;
+    -fx-background-color: -ide-placeholder-bg;
 }
 
 /* Results Loading Overlay in Dark Mode */

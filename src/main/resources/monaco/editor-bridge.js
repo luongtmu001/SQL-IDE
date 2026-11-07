@@ -2,8 +2,69 @@
 (function (window) {
     "use strict";
 
+    // ---- System clipboard bridge (JavaFX WebView has no usable navigator.clipboard) ----
+    function readClipboard() {
+        try {
+            if (window.javaBridge && window.javaBridge.getClipboardText) {
+                const t = window.javaBridge.getClipboardText();
+                return t == null ? "" : String(t);
+            }
+        } catch (e) { /* ignore */ }
+        return "";
+    }
+    function writeClipboard(text) {
+        try {
+            if (window.javaBridge && window.javaBridge.setClipboardText) {
+                window.javaBridge.setClipboardText(String(text));
+                return true;
+            }
+        } catch (e) { /* ignore */ }
+        return false;
+    }
+    // Monaco's context-menu Paste/Copy and its fallbacks call navigator.clipboard: route them to Java.
+    try {
+        Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: {
+                readText: function () { return Promise.resolve(readClipboard()); },
+                writeText: function (t) { writeClipboard(t); return Promise.resolve(); }
+            }
+        });
+    } catch (e) { /* ignore */ }
+
+    // Editor typography: Settings give the BASE size, zoom (Ctrl+Wheel / status bar) is a percentage of it.
+    let baseFontSize = 13;
+    let baseLineHeight = 1.5;   // <=4: multiplier of font size, >4: absolute px at 100 %
+    let zoomPct = 100;
+    const ZOOM_MIN = 20, ZOOM_MAX = 400;
+
+    function lineHeightFor(fontSize) {
+        const raw = Number(baseLineHeight);
+        if (!raw || raw <= 0) return Math.round(fontSize * 19 / 13);
+        if (raw <= 4) return Math.max(fontSize, Math.round(fontSize * raw));
+        return Math.max(fontSize, Math.round(raw * zoomPct / 100));
+    }
+    function effectiveFontSize() {
+        return Math.max(6, Math.min(100, Math.round(baseFontSize * zoomPct / 100)));
+    }
+    function applyTypography() {
+        if (!editor) return;
+        const fs = effectiveFontSize();
+        editor.updateOptions({ fontSize: fs, lineHeight: lineHeightFor(fs) });
+    }
+    function setZoomPct(pct, notify) {
+        pct = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, Math.round(pct)));
+        if (pct === zoomPct) return;
+        zoomPct = pct;
+        applyTypography();
+        if (notify && window.javaBridge && window.javaBridge.onZoomChanged) {
+            window.javaBridge.onZoomChanged(zoomPct);
+        }
+    }
+
     let editor = null;
     let activeModelId = null;
+    let lastLineCopy = null;   // text copied with an empty selection (whole line), pasted on its own line
     const models = new Map(); // id -> { model, viewState }
     let isReady = false;
 
@@ -65,6 +126,88 @@
         { token: "type.sql", foreground: "267f99" }
     ];
 
+    function installWheelZoom(container) {
+        let acc = 0;
+        container.addEventListener("wheel", function (e) {
+            if (!(e.ctrlKey || e.metaKey)) return;
+            e.preventDefault();
+            e.stopPropagation();
+            acc += e.deltaY;
+            let steps = 0;
+            while (acc <= -50) { steps++; acc += 50; }
+            while (acc >= 50) { steps--; acc -= 50; }
+            if (steps === 0) return;
+            const cur = effectiveFontSize();
+            const target = Math.max(6, Math.min(100, cur + steps));
+            if (target === cur) return;
+            setZoomPct(target / baseFontSize * 100, true);
+            if (effectiveFontSize() === cur) {      // rounding swallowed the step
+                setZoomPct(zoomPct + (steps > 0 ? 1 : -1), true);
+            }
+        }, { passive: false, capture: true });
+    }
+
+    function installClipboard() {
+        function isReadOnly() { return editor.getOption(monaco.editor.EditorOption.readOnly); }
+
+        function doCopy(cut) {
+            const model = editor.getModel();
+            const sels = editor.getSelections();
+            if (!model || !sels || !sels.length) return;
+            const nonEmpty = sels.filter(function (s) { return !s.isEmpty(); });
+            let text, lineMode = false;
+            if (nonEmpty.length === 0) {
+                const lines = Array.from(new Set(sels.map(function (s) { return s.positionLineNumber; })))
+                    .sort(function (a, b) { return a - b; });
+                text = lines.map(function (l) { return model.getLineContent(l); }).join("\n") + "\n";
+                lineMode = true;
+                if (cut && !isReadOnly()) {
+                    const edits = lines.map(function (l) {
+                        return l < model.getLineCount()
+                            ? { range: new monaco.Range(l, 1, l + 1, 1), text: "" }
+                            : (l > 1
+                                ? { range: new monaco.Range(l - 1, model.getLineMaxColumn(l - 1), l, model.getLineMaxColumn(l)), text: "" }
+                                : { range: new monaco.Range(l, 1, l, model.getLineMaxColumn(l)), text: "" });
+                    });
+                    editor.executeEdits("clipboard-cut", edits);
+                }
+            } else {
+                text = nonEmpty.map(function (s) { return model.getValueInRange(s); }).join("\n");
+                if (cut && !isReadOnly()) {
+                    editor.executeEdits("clipboard-cut", nonEmpty.map(function (s) { return { range: s, text: "" }; }));
+                }
+            }
+            if (!writeClipboard(text)) {
+                try { document.execCommand(cut ? "cut" : "copy"); } catch (e) { /* ignore */ }
+                return;
+            }
+            lastLineCopy = lineMode ? text : null;
+        }
+
+        function doPaste() {
+            if (isReadOnly()) return;
+            const text = readClipboard();
+            if (!text) return;
+            const norm = text.replace(/\r\n/g, "\n");
+            const onNewLine = lastLineCopy !== null && lastLineCopy === norm;
+            try {
+                editor.trigger("clipboard", "paste", { text: norm, pasteOnNewLine: onNewLine, multicursorText: null, mode: null });
+            } catch (e) {
+                const sels = editor.getSelections() || [];
+                editor.executeEdits("clipboard-paste", sels.map(function (s) { return { range: s, text: norm, forceMoveMarkers: true }; }));
+            }
+            editor.focus();
+        }
+
+        const K = monaco.KeyCode, M = monaco.KeyMod, ctx = "editorTextFocus";
+        editor.addCommand(M.CtrlCmd | K.KeyC, function () { doCopy(false); }, ctx);
+        editor.addCommand(M.CtrlCmd | K.Insert, function () { doCopy(false); }, ctx);
+        editor.addCommand(M.CtrlCmd | K.KeyX, function () { doCopy(true); }, ctx);
+        editor.addCommand(M.Shift | K.Delete, function () { doCopy(true); }, ctx);
+        editor.addCommand(M.CtrlCmd | K.KeyV, doPaste, ctx);
+        editor.addCommand(M.Shift | K.Insert, doPaste, ctx);
+    }
+
     function initMonaco() {
         window.require(["vs/editor/editor.main"], function () {
             // Define custom themes matching AtlantaFX IDE desktop theme
@@ -110,8 +253,19 @@
                 minimap: { enabled: false },
                 renderWhitespace: "selection",
                 tabSize: 4,
-                insertSpaces: true
+                insertSpaces: true,
+                detectIndentation: false,     // always follow Settings (tab size / spaces)
+                mouseWheelZoom: false,        // zoom is handled below so it can sync the status bar
+                emptySelectionClipboard: true,
+                contextmenu: true
             });
+
+            installClipboard();
+            installWheelZoom(container);
+            if (window.SqlIntellisense) {
+                window.SqlIntellisense.register(monaco);
+                window.editorBridge.applyIntellisenseOptions(window.SqlIntellisense.context());
+            }
 
             // Listen to cursor position
             editor.onDidChangeCursorPosition(function (e) {
@@ -129,6 +283,13 @@
             editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function () {
                 if (window.javaBridge && window.javaBridge.onExecuteRequested) {
                     window.javaBridge.onExecuteRequested();
+                }
+            });
+
+            // Phase 8 / D3: Ctrl+E runs only the statement under the caret
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE, function () {
+                if (window.javaBridge && window.javaBridge.onExecuteStatementRequested) {
+                    window.javaBridge.onExecuteStatementRequested();
                 }
             });
 
@@ -205,6 +366,43 @@
             return true;
         },
 
+        /** IntelliSense on/off and MRU ordering (the completion provider itself reads SqlIntellisense.context()). */
+        applyIntellisenseOptions: function (c) {
+            if (!editor || !c) return;
+            const on = c.enabled !== false;
+            editor.updateOptions({
+                quickSuggestions: on ? { other: true, comments: false, strings: false } : false,
+                suggestOnTriggerCharacters: on,
+                wordBasedSuggestions: "off",
+                suggestSelection: c.mru === false ? "first" : "recentlyUsed",
+                snippetSuggestions: "top",
+                tabCompletion: on ? "on" : "off"
+            });
+        },
+
+        /** Syntax-check markers (owner "sql-syntax"); an empty list clears them. */
+        setMarkers: function (id, markers, owner) {
+            if (!window.monaco || !models.has(id)) return false;
+            monaco.editor.setModelMarkers(models.get(id).model, owner || "sql-syntax", markers || []);
+            return true;
+        },
+
+        /** LF ⇄ CRLF of the active model; returns the new sequence name. */
+        toggleEol: function () {
+            if (!editor || !editor.getModel()) return "LF";
+            const m = editor.getModel();
+            const crlf = monaco.editor.EndOfLineSequence.CRLF;
+            const lf = monaco.editor.EndOfLineSequence.LF;
+            const to = m.getEndOfLineSequence() === crlf ? lf : crlf;
+            m.pushEOL(to);
+            return to === crlf ? "CRLF" : "LF";
+        },
+
+        getEol: function () {
+            if (!editor || !editor.getModel()) return "LF";
+            return editor.getModel().getEndOfLineSequence() === monaco.editor.EndOfLineSequence.CRLF ? "CRLF" : "LF";
+        },
+
         getContent: function (id) {
             const targetId = id || activeModelId;
             if (models.has(targetId)) {
@@ -243,24 +441,48 @@
             return false;
         },
 
+        // T1: the app theme's own Monaco theme (built-in palette or imported VS Code theme)
+        defineAndSetTheme: function (themeId, themeDef) {
+            if (!isReady || !window.monaco || !themeId || !themeDef) return false;
+            try {
+                monaco.editor.defineTheme(themeId, themeDef);
+                monaco.editor.setTheme(themeId);
+                return true;
+            } catch (e) {
+                console.error("defineAndSetTheme failed: " + e);
+                return false;
+            }
+        },
+
         setTheme: function (themeName) {
             if (!isReady || !window.monaco) return;
             const t = (themeName && themeName.toLowerCase().includes("light")) ? LIGHT_THEME : DARK_THEME;
             monaco.editor.setTheme(t);
         },
 
+        /** Base font size (Settings); the zoom percentage is applied on top. */
         setFontSize: function (size) {
-            if (editor) {
-                editor.updateOptions({ fontSize: Number(size) || 13 });
-            }
+            baseFontSize = Number(size) || 13;
+            applyTypography();
+        },
+
+        /** Zoom as a percentage of the base font size (status bar / Ctrl+= / Ctrl+-). */
+        setZoom: function (pct) {
+            setZoomPct(Number(pct) || 100, false);
+        },
+
+        getZoom: function () {
+            return zoomPct;
         },
 
         updateOptions: function (opts) {
             if (editor && opts) {
-                if (opts.lineHeight && opts.lineHeight > 0 && opts.lineHeight <= 4 && opts.fontSize) {
-                    opts.lineHeight = Math.max(opts.fontSize, Math.round(opts.fontSize * opts.lineHeight));
-                }
+                if (opts.fontSize) { baseFontSize = Number(opts.fontSize) || baseFontSize; }
+                if (opts.lineHeight !== undefined) { baseLineHeight = Number(opts.lineHeight); }
+                delete opts.fontSize;
+                delete opts.lineHeight;
                 editor.updateOptions(opts);
+                applyTypography();
             }
         },
 

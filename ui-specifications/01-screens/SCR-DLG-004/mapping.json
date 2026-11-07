@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-004",
+  "mappings": [
+    {
+      "source_id": "groupConfirmModal",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-004",
+      "target_type": "javafx",
+      "target_component": "ConfirmDialog",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Dùng chung ConfirmDialog cho Xóa nhóm / Xóa kết nối / Đóng cài đặt / Xóa style…"
+      ],
+      "approval_reference": "none"
+    }
+  ]
+}

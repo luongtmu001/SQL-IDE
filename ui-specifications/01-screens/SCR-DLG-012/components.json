@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-012",
+  "components": [
+    {
+      "id": "CMP-DLG12-001",
+      "name": "Info table",
+      "component_type": "table",
+      "region_id": "REG-DLG12-002",
+      "parent_component_id": null,
+      "visible_label": "Phiên bản · Thư mục dữ liệu · Nền tảng · Runtime · Giao diện",
+      "accessible_name": "Phiên bản · Thư mục dữ liệu · Nền tảng · Runtime · Giao diện",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/AboutDialog.java",
+        "selector_or_symbol": "m",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "GridPane",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Giao diện = \"AtlantaFX · Monaco Editor\""
+    },
+    {
+      "id": "CMP-DLG12-002",
+      "name": "Copy info",
+      "component_type": "hyperlink",
+      "region_id": "REG-DLG12-002",
+      "parent_component_id": null,
+      "visible_label": "Sao chép thông tin",
+      "accessible_name": "Sao chép thông tin",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/AboutDialog.java",
+        "selector_or_symbol": "copy",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Hyperlink",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Đổi thành \"Đã sao chép\""
+    },
+    {
+      "id": "BTN-DLG12-003",
+      "name": "Check for updates",
+      "component_type": "button",
+      "region_id": "REG-DLG12-003",
+      "parent_component_id": null,
+      "visible_label": "Kiểm tra cập nhật",
+      "accessible_name": "Kiểm tra cập nhật",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/AboutDialog.java",
+        "selector_or_symbol": "check",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Mở DLG-013"
+    }
+  ]
+}

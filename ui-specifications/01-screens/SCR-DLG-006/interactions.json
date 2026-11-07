@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-006",
+  "interactions": [
+    {
+      "id": "INT-DLG06-001",
+      "component_id": "BTN-DLG06-009",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "addConditionBtn",
+      "backend_method": "unknown",
+      "action_summary": "Thêm hàng điều kiện",
+      "expected_result": "Hàng mới Name CONTAINS \"\"",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG06-002",
+      "component_id": "BTN-DLG06-013",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "applyBtn",
+      "backend_method": "unknown",
+      "action_summary": "Áp bộ lọc",
+      "expected_result": "Lưu ObjectFilter theo kết nối/catalog/schema/loại và gọi onApplied",
+      "side_effects": [
+        "đổi cây Explorer"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

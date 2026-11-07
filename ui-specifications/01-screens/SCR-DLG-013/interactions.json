@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-013",
+  "interactions": [
+    {
+      "id": "INT-DLG13-001",
+      "component_id": "CMP-DLG13-001",
+      "trigger": "selection_changed",
+      "preconditions": [],
+      "source_handler": "SCENARIOS",
+      "backend_method": "unknown",
+      "action_summary": "Đổi kịch bản mô phỏng",
+      "expected_result": "Trạng thái chuyển CHECKING→AVAILABLE/LATEST/ERROR",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG13-002",
+      "component_id": "BTN-DLG13-007",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "MessageDialog.confirm(\"Hủy tải\")",
+      "backend_method": "unknown",
+      "action_summary": "Hủy tải",
+      "expected_result": "Xác nhận rồi dừng tiến trình giả",
+      "side_effects": [],
+      "confirmation_required": "có",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

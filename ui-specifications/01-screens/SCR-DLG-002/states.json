@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-002",
+  "states": [
+    {
+      "id": "STA-DLG02-001",
+      "component_id": "BTN-DLG02-008",
+      "state": "disabled",
+      "visual_description": "Nút mờ",
+      "entry_condition": "mật khẩu rỗng",
+      "exit_condition": "có chữ",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-DLG02-002",
+      "component_id": "CMP-DLG02-002",
+      "state": "error",
+      "visual_description": "Chữ đỏ \"Mật khẩu đã lưu quá 30 ngày…\"",
+      "entry_condition": "expired=true",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-DLG02-003",
+      "component_id": "CMP-DLG02-002",
+      "state": "normal",
+      "visual_description": "Chữ gợi ý \"Kết nối này chưa lưu mật khẩu.\"",
+      "entry_condition": "expired=false",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}

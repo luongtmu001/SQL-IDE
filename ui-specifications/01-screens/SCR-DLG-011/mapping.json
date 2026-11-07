@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-011",
+  "mappings": [
+    {
+      "source_id": "settingsPopupBackdrop",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-011",
+      "target_type": "javafx",
+      "target_component": "MessageDialog/ConfirmDialog/…",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đích gồm 5 lớp: MessageDialog, AppDialog (bao MessageDialog), ConfirmDialog, CloseTabDialog, TextPromptDialog"
+      ],
+      "approval_reference": "none"
+    }
+  ]
+}

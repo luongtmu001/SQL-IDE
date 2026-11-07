@@ -401,3 +401,103 @@
 .settings-window-root.flat .settings-json-editor {
     -fx-border-radius: 0;
 }
+
+/* S3: setting stored but not active yet ("Chưa hỗ trợ" / "Luôn bật") */
+.setting-badge {
+    -fx-font-size: 10px;
+    -fx-padding: 0 6 0 6;
+    -fx-background-color: -color-neutral-muted;
+    -fx-text-fill: -color-fg-muted;
+    -fx-background-radius: 8;
+}
+
+/* T4: theme list grouped "Tối · Có sẵn" / "Sáng · GitHub Theme" (titles are not choosable) */
+.combo-box-popup .list-cell.theme-group-header,
+.combo-box-popup .list-cell.theme-group-header:disabled {
+    -fx-opacity: 1;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-background-color: -color-bg-subtle;
+    -fx-padding: 6 8 4 8;
+}
+
+/* T4: imported VS Code packages */
+.imported-themes {
+    -fx-padding: 6 0 0 0;
+}
+
+.imported-theme-empty {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+.imported-theme-package {
+    -fx-padding: 8 10 8 10;
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.imported-theme-name {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.imported-theme-count {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.imported-theme-remove {
+    -fx-padding: 2 8 2 8;
+    -fx-font-size: 11px;
+}
+
+.imported-theme-chip {
+    -fx-padding: 1 2 1 8;
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.imported-theme-chip.current {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-background-color: -color-accent-subtle;
+}
+
+.imported-theme-chip > .label {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-default;
+    -fx-graphic-text-gap: 5;
+}
+
+.imported-theme-chip > .label > .ikonli-font-icon {
+    -fx-icon-size: 11px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.imported-theme-chip-remove {
+    -fx-background-color: transparent;
+    -fx-padding: 1 4 1 4;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.imported-theme-chip-remove .ikonli-font-icon {
+    -fx-icon-size: 10px;
+    -fx-icon-color: -color-fg-muted;
+}
+
+.imported-theme-chip-remove:hover {
+    -fx-background-color: -color-danger-muted;
+}
+
+.imported-theme-chip-remove:hover .ikonli-font-icon {
+    -fx-icon-color: -color-danger-fg;
+}

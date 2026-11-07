@@ -1,0 +1,1469 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-004",
+  "components": [
+    {
+      "id": "CMP-RES-001",
+      "name": "Results tab",
+      "component_type": "tab",
+      "region_id": "REG-RES-002",
+      "parent_component_id": null,
+      "visible_label": "Results (n)",
+      "accessible_name": "Results (n)",
+      "icon": {
+        "name": "fth-grid",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "resultsTab",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Tab",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Số dòng động"
+    },
+    {
+      "id": "CMP-RES-002",
+      "name": "Messages tab",
+      "component_type": "tab",
+      "region_id": "REG-RES-002",
+      "parent_component_id": null,
+      "visible_label": "Messages",
+      "accessible_name": "Messages",
+      "icon": {
+        "name": "fth-message-square",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "messagesTab",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Tab",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-003",
+      "name": "Timeline tab",
+      "component_type": "tab",
+      "region_id": "REG-RES-002",
+      "parent_component_id": null,
+      "visible_label": "Timeline (n)",
+      "accessible_name": "Timeline (n)",
+      "icon": {
+        "name": "fth-clock",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "timelineTab",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Tab",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Tên cũ \"Messages\"; nguồn có tab Errors/Logs thay vì tab này"
+    },
+    {
+      "id": "CMP-RES-004",
+      "name": "Execution Plan tab",
+      "component_type": "tab",
+      "region_id": "REG-RES-002",
+      "parent_component_id": null,
+      "visible_label": "Execution Plan",
+      "accessible_name": "Execution Plan",
+      "icon": {
+        "name": "fth-git-commit",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "executionPlanTab",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Tab",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-005",
+      "name": "Terminal tab",
+      "component_type": "tab",
+      "region_id": "REG-RES-002",
+      "parent_component_id": null,
+      "visible_label": "Terminal",
+      "accessible_name": "Terminal",
+      "icon": {
+        "name": "fth-terminal",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "navigation",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "terminalTab",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Tab",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chỉ có ở đích (không có trong inventory nguồn)"
+    },
+    {
+      "id": "CMP-RES-006",
+      "name": "Results filter",
+      "component_type": "text_field",
+      "region_id": "REG-RES-003",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Results filter",
+      "icon": {
+        "name": "fth-search",
+        "source": "ikonli"
+      },
+      "tooltip": "Filter in results...",
+      "classification": "secondary",
+      "enabled_when": "có kết quả",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+F (qua menu ngữ cảnh)",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "resultsFilterField",
+        "handler": "ResultsController#focusFilterField"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Lọc tức thì (GridFilterState)"
+    },
+    {
+      "id": "CMP-RES-007",
+      "name": "Results stats",
+      "component_type": "label",
+      "region_id": "REG-RES-003",
+      "parent_component_id": null,
+      "visible_label": "50 rows retrieved (42 ms)",
+      "accessible_name": "50 rows retrieved (42 ms)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "resultsStatsLabel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nhãn tiếng Anh, footer dùng tiếng Việt"
+    },
+    {
+      "id": "BTN-RES-008",
+      "name": "Compare results",
+      "component_type": "button",
+      "region_id": "REG-RES-003",
+      "parent_component_id": null,
+      "visible_label": "So sánh (chưa hỗ trợ)",
+      "accessible_name": "So sánh (chưa hỗ trợ)",
+      "icon": {
+        "name": "mdi2c-compare-horizontal",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "tắt (disable=true)",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "deferred-button",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Gate B 2026-11-05: hiển thị tắt"
+    },
+    {
+      "id": "BTN-RES-009",
+      "name": "Export menu",
+      "component_type": "menu_button",
+      "region_id": "REG-RES-003",
+      "parent_component_id": null,
+      "visible_label": "Export",
+      "accessible_name": "Export",
+      "icon": {
+        "name": "fth-download",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "có kết quả",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "MenuButton",
+        "handler": "handleExportCsv/Json/Markdown/OpenInExcel/SaveResultsAs"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "MenuButton",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "CSV · JSON · Markdown · Open in Excel · Save Results As…"
+    },
+    {
+      "id": "BTN-RES-010",
+      "name": "Maximize / Restore",
+      "component_type": "icon_button",
+      "region_id": "REG-RES-003",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Maximize / Restore",
+      "icon": {
+        "name": "fth-maximize-2",
+        "source": "ikonli"
+      },
+      "tooltip": "Maximize / Restore Results Panel (Ctrl+Alt+R)",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+Alt+R",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "maximizeIcon",
+        "handler": "handleToggleMaximize"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "LayoutService.toggleMaximizeResults"
+    },
+    {
+      "id": "BTN-RES-011",
+      "name": "Pop out",
+      "component_type": "icon_button",
+      "region_id": "REG-RES-003",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Pop out",
+      "icon": {
+        "name": "fth-external-link",
+        "source": "ikonli"
+      },
+      "tooltip": "Pop out into Floating Window (Multi-Monitor Mode)",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "handleUndock",
+        "handler": "handleUndock"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "PoC (chú thích trong FXML)"
+    },
+    {
+      "id": "CMP-RES-012",
+      "name": "Results grid",
+      "component_type": "table",
+      "region_id": "REG-RES-004",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Results grid",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "luôn",
+      "visible_when": "một result set",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "resultsTable",
+        "handler": "ResultsController"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TableView",
+        "custom_component_required": true,
+        "notes": ""
+      },
+      "notes": "Cột # cố định, kéo chọn ô, cố định cột (Freeze), lọc theo cột (ColumnFilterPopup)"
+    },
+    {
+      "id": "CMP-RES-013",
+      "name": "Multi-result stack",
+      "component_type": "scroll_pane",
+      "region_id": "REG-RES-004",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Multi-result stack",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "luôn",
+      "visible_when": "nhiều result set",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "multiGridScroll/multiGridBox",
+        "handler": "ResultsController"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ScrollPane + VBox",
+        "custom_component_required": true,
+        "notes": ""
+      },
+      "notes": "Mỗi bảng thu gọn được; chế độ Danh sách/Tab theo `grid.resultLayout`"
+    },
+    {
+      "id": "CMP-RES-014",
+      "name": "Grid context menu",
+      "component_type": "menu",
+      "region_id": "REG-RES-004",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Grid context menu",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "có kết quả",
+      "visible_when": "chuột phải lưới",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "populateContextMenu",
+        "handler": "ResultsController"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ContextMenu",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Freeze/Unfreeze cột · Copy ×6 · Visualize as (Text/Hex/JSON/XML/Image) · Find data / column · Aggregates · Script as INSERT · Excel · Save As · Page Setup · Print"
+    },
+    {
+      "id": "CMP-RES-015",
+      "name": "Empty state",
+      "component_type": "empty_state",
+      "region_id": "REG-RES-004",
+      "parent_component_id": null,
+      "visible_label": "No query executed yet",
+      "accessible_name": "No query executed yet",
+      "icon": {
+        "name": "fth-grid",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "chưa chạy",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "emptyStateBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "VBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Tiếng Anh"
+    },
+    {
+      "id": "CMP-RES-016",
+      "name": "Loading overlay",
+      "component_type": "overlay",
+      "region_id": "REG-RES-004",
+      "parent_component_id": null,
+      "visible_label": "Executing query and fetching rows...",
+      "accessible_name": "Executing query and fetching rows...",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "đang chạy",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "loadingOverlay + LoadingOverlay.attach",
+        "handler": "ResultsController#showLoading"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "VBox / LoadingOverlay",
+        "custom_component_required": true,
+        "notes": ""
+      },
+      "notes": "Liên quan DLG-014; có thời gian trôi và \"Hủy\" khi cung cấp hành động hủy"
+    },
+    {
+      "id": "CMP-RES-017",
+      "name": "Footer rows",
+      "component_type": "label",
+      "region_id": "REG-RES-005",
+      "parent_component_id": null,
+      "visible_label": "0 dòng",
+      "accessible_name": "0 dòng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "footerRowsLabel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-018",
+      "name": "Footer duration",
+      "component_type": "label",
+      "region_id": "REG-RES-005",
+      "parent_component_id": null,
+      "visible_label": "0 ms",
+      "accessible_name": "0 ms",
+      "icon": {
+        "name": "fth-clock",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "footerDurationBadge",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nguồn tô màu theo tốc độ; đích chưa kiểm"
+    },
+    {
+      "id": "CMP-RES-019",
+      "name": "Footer size",
+      "component_type": "label",
+      "region_id": "REG-RES-005",
+      "parent_component_id": null,
+      "visible_label": "0 B",
+      "accessible_name": "0 B",
+      "icon": {
+        "name": "fth-database",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "footerSizeBadge",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-020",
+      "name": "Footer connection",
+      "component_type": "label",
+      "region_id": "REG-RES-005",
+      "parent_component_id": null,
+      "visible_label": "#conn · default · (dbo)",
+      "accessible_name": "#conn · default · (dbo)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "footerConnLabel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Giá trị FXML là mẫu cố định"
+    },
+    {
+      "id": "CMP-RES-021",
+      "name": "Footer trend",
+      "component_type": "label",
+      "region_id": "REG-RES-005",
+      "parent_component_id": null,
+      "visible_label": "Trend:",
+      "accessible_name": "Trend:",
+      "icon": {
+        "name": "fth-activity",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "FXML",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label + FontIcon",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chỉ là biểu tượng tĩnh, chưa có sparkline 5 lần chạy như nguồn"
+    },
+    {
+      "id": "BTN-RES-022",
+      "name": "Copy execution metrics",
+      "component_type": "icon_button",
+      "region_id": "REG-RES-005",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Copy execution metrics",
+      "icon": {
+        "name": "fth-copy",
+        "source": "ikonli"
+      },
+      "tooltip": "Sao chép thông số thực thi (JSON metrics)",
+      "classification": "secondary",
+      "enabled_when": "có kết quả",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "handleCopyExecutionStats",
+        "handler": "handleCopyExecutionStats"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "JSON: rows, durationMs, columns, timestamp"
+    },
+    {
+      "id": "BTN-RES-023",
+      "name": "Clear SQL messages",
+      "component_type": "icon_button",
+      "region_id": "REG-RES-006",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Clear SQL messages",
+      "icon": {
+        "name": "fth-trash-2",
+        "source": "ikonli"
+      },
+      "tooltip": "Clear SQL Messages",
+      "classification": "destructive",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "handleClearSqlMessages",
+        "handler": "handleClearSqlMessages"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Không hỏi xác nhận"
+    },
+    {
+      "id": "BTN-RES-024",
+      "name": "Copy SQL messages",
+      "component_type": "icon_button",
+      "region_id": "REG-RES-006",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Copy SQL messages",
+      "icon": {
+        "name": "fth-copy",
+        "source": "ikonli"
+      },
+      "tooltip": "Copy All Messages to Clipboard",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "handleCopySqlMessages",
+        "handler": "handleCopySqlMessages"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-RES-025",
+      "name": "Word wrap toggle",
+      "component_type": "toggle_button",
+      "region_id": "REG-RES-006",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Word wrap toggle",
+      "icon": {
+        "name": "fth-align-left",
+        "source": "ikonli"
+      },
+      "tooltip": "Toggle Word Wrap",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "sqlMessagesWrapToggle",
+        "handler": "handleToggleSqlMessagesWrap"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ToggleButton",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-026",
+      "name": "SQL messages area",
+      "component_type": "text_area",
+      "region_id": "REG-RES-006",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "SQL messages area",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "chỉ đọc",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "sqlMessagesArea",
+        "handler": "appendSqlMessage"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextArea",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Dòng có tiền tố [HH:mm:ss]"
+    },
+    {
+      "id": "BTN-RES-027",
+      "name": "Clear timeline",
+      "component_type": "icon_button",
+      "region_id": "REG-RES-007",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Clear timeline",
+      "icon": {
+        "name": "fth-trash-2",
+        "source": "ikonli"
+      },
+      "tooltip": "Clear Timeline",
+      "classification": "destructive",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "handleClearMessages",
+        "handler": "handleClearMessages"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-RES-028",
+      "name": "Copy timeline",
+      "component_type": "icon_button",
+      "region_id": "REG-RES-007",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Copy timeline",
+      "icon": {
+        "name": "fth-copy",
+        "source": "ikonli"
+      },
+      "tooltip": "Copy Timeline to Clipboard",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "handleCopyAllMessages",
+        "handler": "handleCopyAllMessages"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-029",
+      "name": "Timeline table",
+      "component_type": "table",
+      "region_id": "REG-RES-007",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Timeline table",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "messagesTable",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TableView",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Cột Time (110) · Level (80) · Message (550) · Duration (90)"
+    },
+    {
+      "id": "BTN-RES-030",
+      "name": "Est Plan",
+      "component_type": "button",
+      "region_id": "REG-RES-008",
+      "parent_component_id": null,
+      "visible_label": "Est Plan",
+      "accessible_name": "Est Plan",
+      "icon": {
+        "name": "fth-file-text",
+        "source": "ikonli"
+      },
+      "tooltip": "Lấy Estimated Execution Plan (Ctrl+L - An toàn, không chạy query)",
+      "classification": "secondary",
+      "enabled_when": "có câu lệnh",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+L",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "btnFetchEstimatedPlan",
+        "handler": "handleFetchEstimatedPlan"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-RES-031",
+      "name": "Act Plan",
+      "component_type": "button",
+      "region_id": "REG-RES-008",
+      "parent_component_id": null,
+      "visible_label": "Act Plan",
+      "accessible_name": "Act Plan",
+      "icon": {
+        "name": "fth-play",
+        "source": "ikonli"
+      },
+      "tooltip": "Lấy Actual Execution Plan (Ctrl+M - Thực thi query đo thời gian thực tế)",
+      "classification": "secondary",
+      "enabled_when": "có câu lệnh; chỉ chạy khi câu lệnh chỉ đọc",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Ctrl+M",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "btnFetchActualPlan",
+        "handler": "handleFetchActualPlan"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Chạy câu lệnh thật; kế hoạch D5 cần xác nhận trên PROD"
+    },
+    {
+      "id": "BTN-RES-032",
+      "name": "Plan view mode",
+      "component_type": "toggle_button",
+      "region_id": "REG-RES-008",
+      "parent_component_id": null,
+      "visible_label": "Raw Text",
+      "accessible_name": "Raw Text",
+      "icon": {
+        "name": "fth-align-left",
+        "source": "ikonli"
+      },
+      "tooltip": "Chuyển đổi giữa Cây trực quan và Văn bản thô",
+      "classification": "secondary",
+      "enabled_when": "có plan",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "togglePlanViewMode",
+        "handler": "handleTogglePlanViewMode"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ToggleButton",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "BTN-RES-033",
+      "name": "Copy plan",
+      "component_type": "icon_button",
+      "region_id": "REG-RES-008",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Copy plan",
+      "icon": {
+        "name": "fth-copy",
+        "source": "ikonli"
+      },
+      "tooltip": "Sao chép Execution Plan vào Clipboard",
+      "classification": "secondary",
+      "enabled_when": "có plan",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "btnCopyPlan",
+        "handler": "handleCopyExecutionPlan"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-034",
+      "name": "Plan badges + metrics",
+      "component_type": "label",
+      "region_id": "REG-RES-008",
+      "parent_component_id": null,
+      "visible_label": "SQLSERVER / ESTIMATED / cost / operators / duration",
+      "accessible_name": "SQLSERVER / ESTIMATED / cost / operators / duration",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "có plan",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "planDialectBadge, planTypeBadge, planTotalCostLabel, planOperatorsCountLabel, planDurationLabel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label ×5",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-035",
+      "name": "Plan empty state",
+      "component_type": "empty_state",
+      "region_id": "REG-RES-009",
+      "parent_component_id": null,
+      "visible_label": "Chưa có Execution Plan",
+      "accessible_name": "Chưa có Execution Plan",
+      "icon": {
+        "name": "fth-activity",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "chưa có plan",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "planEmptyStateBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "VBox + 2 Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Hai nút phụ lặp lại Est/Act Plan"
+    },
+    {
+      "id": "CMP-RES-036",
+      "name": "Plan loading",
+      "component_type": "overlay",
+      "region_id": "REG-RES-009",
+      "parent_component_id": null,
+      "visible_label": "Đang tạo Execution Plan...",
+      "accessible_name": "Đang tạo Execution Plan...",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "đang tạo",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "planLoadingBox",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "VBox",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-037",
+      "name": "Plan operator tree",
+      "component_type": "tree",
+      "region_id": "REG-RES-009",
+      "parent_component_id": null,
+      "visible_label": "Operator Hierarchy & Cost Breakdown",
+      "accessible_name": "Operator Hierarchy & Cost Breakdown",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "unknown",
+      "visible_when": "chế độ cây",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "planTreeView",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TreeView",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-038",
+      "name": "Operator Inspector",
+      "component_type": "table",
+      "region_id": "REG-RES-009",
+      "parent_component_id": null,
+      "visible_label": "Operator Inspector",
+      "accessible_name": "Operator Inspector",
+      "icon": {
+        "name": "fth-info",
+        "source": "ikonli"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "chế độ cây",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "inspectorPropertiesTable",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TableView",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Cột Thuộc tính / Giá trị"
+    },
+    {
+      "id": "CMP-RES-039",
+      "name": "Plan raw text",
+      "component_type": "text_area",
+      "region_id": "REG-RES-009",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Plan raw text",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "chỉ đọc",
+      "visible_when": "chế độ Raw",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "planRawTextArea",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextArea",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-RES-040",
+      "name": "Terminal output",
+      "component_type": "text_area",
+      "region_id": "REG-RES-010",
+      "parent_component_id": null,
+      "visible_label": "unknown",
+      "accessible_name": "Terminal output",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "chỉ đọc",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "terminalOutput",
+        "handler": "ResultsController#setupTerminal"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextArea",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Mô phỏng (Mock)"
+    },
+    {
+      "id": "CMP-RES-041",
+      "name": "Terminal input",
+      "component_type": "text_field",
+      "region_id": "REG-RES-010",
+      "parent_component_id": null,
+      "visible_label": "postgres=#",
+      "accessible_name": "postgres=#",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "Enter SQL command or \\? for help...",
+      "classification": "secondary",
+      "enabled_when": "luôn",
+      "visible_when": "luôn",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "Enter",
+      "source_reference": {
+        "file": "fxml/results.fxml + controllers/ResultsController.java + ui/results/*",
+        "selector_or_symbol": "terminalInput",
+        "handler": "handleTerminalCommand"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "TextField",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Prompt cố định, không theo kết nối thật"
+    }
+  ]
+}

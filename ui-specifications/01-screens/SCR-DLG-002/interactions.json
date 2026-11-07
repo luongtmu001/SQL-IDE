@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-002",
+  "interactions": [
+    {
+      "id": "INT-DLG02-001",
+      "component_id": "BTN-DLG02-008",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "ok.setOnAction",
+      "backend_method": "unknown",
+      "action_summary": "Xác nhận mật khẩu",
+      "expected_result": "Trả Result(password, save) và đóng",
+      "side_effects": [
+        "có thể lưu mật khẩu mã hóa"
+      ],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG02-002",
+      "component_id": "BTN-DLG02-007",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "cancel.setOnAction",
+      "backend_method": "unknown",
+      "action_summary": "Hủy",
+      "expected_result": "Đóng, không kết nối",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    },
+    {
+      "id": "INT-DLG02-003",
+      "component_id": "BTN-DLG02-004",
+      "trigger": "click",
+      "preconditions": [],
+      "source_handler": "eye selected listener",
+      "backend_method": "unknown",
+      "action_summary": "Hiện/ẩn mật khẩu",
+      "expected_result": "Đổi giữa PasswordField và TextField liên kết hai chiều",
+      "side_effects": [],
+      "confirmation_required": "no",
+      "error_behavior": "unknown",
+      "confidence": "code_verified",
+      "safe_to_test": true,
+      "evidence": []
+    }
+  ]
+}

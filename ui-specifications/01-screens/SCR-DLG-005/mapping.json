@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-005",
+  "mappings": [
+    {
+      "source_id": "#ide-db-filter-modal",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-005",
+      "target_type": "javafx",
+      "target_component": "DialogChrome + ListView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    }
+  ]
+}

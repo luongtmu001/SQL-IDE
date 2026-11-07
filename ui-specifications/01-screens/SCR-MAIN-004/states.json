@@ -1,0 +1,138 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-004",
+  "states": [
+    {
+      "id": "STA-RES-001",
+      "component_id": "CMP-RES-015",
+      "state": "empty",
+      "visual_description": "Biểu tượng lưới + \"No query executed yet\"",
+      "entry_condition": "chưa chạy câu nào",
+      "exit_condition": "có kết quả",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-002",
+      "component_id": "CMP-RES-016",
+      "state": "loading",
+      "visual_description": "Spinner + \"Executing query and fetching rows...\"",
+      "entry_condition": "đang chạy",
+      "exit_condition": "xong/lỗi/hủy",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-003",
+      "component_id": "CMP-RES-012",
+      "state": "normal",
+      "visual_description": "Lưới một result set, cột # cố định",
+      "entry_condition": "một result set",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-004",
+      "component_id": "CMP-RES-013",
+      "state": "normal",
+      "visual_description": "Nhiều lưới xếp dọc, mỗi lưới có thanh tiêu đề thu gọn",
+      "entry_condition": "từ hai result set trở lên (chế độ Danh sách)",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-005",
+      "component_id": "CMP-RES-014",
+      "state": "selected",
+      "visual_description": "Mục Freeze đổi theo cột đã ghim",
+      "entry_condition": "chuột phải trên cột",
+      "exit_condition": "đóng menu",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-006",
+      "component_id": "BTN-RES-008",
+      "state": "disabled",
+      "visual_description": "Nút mờ \"(chưa hỗ trợ)\"",
+      "entry_condition": "luôn (hoãn)",
+      "exit_condition": "khi làm tính năng so sánh",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-007",
+      "component_id": "CMP-RES-035",
+      "state": "empty",
+      "visual_description": "\"Chưa có Execution Plan\" + 2 nút",
+      "entry_condition": "chưa lấy plan",
+      "exit_condition": "bấm Est/Act Plan",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-008",
+      "component_id": "CMP-RES-036",
+      "state": "loading",
+      "visual_description": "Spinner \"Đang tạo Execution Plan...\"",
+      "entry_condition": "đang lấy plan",
+      "exit_condition": "xong/lỗi",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-009",
+      "component_id": "CMP-RES-037",
+      "state": "normal",
+      "visual_description": "Cây + Inspector (62/38)",
+      "entry_condition": "có plan, chế độ cây",
+      "exit_condition": "chuyển Raw",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-010",
+      "component_id": "CMP-RES-039",
+      "state": "normal",
+      "visual_description": "TextArea chỉ đọc, xuống dòng",
+      "entry_condition": "chế độ Raw Text",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-011",
+      "component_id": "BTN-RES-010",
+      "state": "selected",
+      "visual_description": "Panel được phóng to (RESULTS_MAXIMIZED) hoặc thu về mặc định",
+      "entry_condition": "toggle Ctrl+Alt+R",
+      "exit_condition": "toggle lại",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-RES-012",
+      "component_id": null,
+      "state": "error",
+      "visual_description": "Chưa xác định cách hiện lỗi truy vấn (nguồn có tab Errors)",
+      "entry_condition": "unknown",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "unknown"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "screenId": "SCR-SPLASH-001",
+  "states": [
+    { "id": "loading", "description": "Step label, n/6 counter, bar at (n-1)/6" },
+    { "id": "ready", "description": "Label Sẵn sàng, 6/6, full bar; may wait for the 1.75 s minimum" },
+    { "id": "minimized", "description": "On the taskbar; loading continues" },
+    { "id": "error", "description": "Error block replaces status, bar turns red at the failed step" },
+    { "id": "closing", "description": "Fades out in 180 ms" }
+  ],
+  "themes": ["dark", "light"],
+  "buttonStates": ["default", "hover", "pressed"]
+}

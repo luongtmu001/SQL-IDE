@@ -169,11 +169,11 @@ public class DatabaseExplorerPhase63Test {
 
         DatabaseNode procNode = new DatabaseNode("sp_clean", DatabaseNodeType.PROCEDURE);
         LazyDatabaseTreeItem procItem = new LazyDatabaseTreeItem(procNode);
-        assertTrue(procItem.isLeaf(), "Procedure MUST be leaf");
+        assertFalse(procItem.isLeaf(), "Procedure must NOT be leaf (has PARAMETER children)");
 
         DatabaseNode funcNode = new DatabaseNode("fn_total", DatabaseNodeType.FUNCTION);
         LazyDatabaseTreeItem funcItem = new LazyDatabaseTreeItem(funcNode);
-        assertTrue(funcItem.isLeaf(), "Function MUST be leaf");
+        assertFalse(funcItem.isLeaf(), "Function must NOT be leaf (has PARAMETER children)");
     }
 
     @Test

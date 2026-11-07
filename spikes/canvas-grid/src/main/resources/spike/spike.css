@@ -1,0 +1,9 @@
+.results-table .column-header > .label { -fx-content-display: graphic-only; }
+.results-table .col-header-name { -fx-font-weight: bold; }
+.results-table .col-header-type { -fx-font-size: 0.8em; -fx-font-style: italic; -fx-text-fill: -color-fg-subtle; }
+.col-header-filter-btn { -fx-background-color: transparent; -fx-padding: 0 2 0 2; -fx-font-size: 10px; }
+.results-table .table-cell { -fx-padding: 2 6 2 6; -fx-font-size: 11.5px; }
+.results-table .table-cell:null-value { -fx-font-style: italic; -fx-text-fill: -color-fg-muted; }
+.results-table .table-cell:number { -fx-text-fill: #2563eb; }
+.spike-toolbar { -fx-padding: 6 8 6 8; -fx-spacing: 8; -fx-alignment: CENTER_LEFT; }
+.spike-status { -fx-text-fill: -color-fg-muted; }

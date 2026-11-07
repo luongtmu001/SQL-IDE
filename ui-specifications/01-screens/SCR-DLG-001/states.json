@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-001",
+  "states": [
+    {
+      "id": "STA-DLG01-001",
+      "component_id": "BTN-DLG01-023",
+      "state": "collapsed",
+      "visual_description": "Phần nâng cao ẩn, hiện tóm tắt",
+      "entry_condition": "mặc định",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-DLG01-002",
+      "component_id": "BTN-DLG01-023",
+      "state": "expanded",
+      "visual_description": "Hiện timeout/chỉ đọc/trust cert",
+      "entry_condition": "bấm NÂNG CAO",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-DLG01-003",
+      "component_id": "BTN-DLG01-027",
+      "state": "loading",
+      "visual_description": "ProgressIndicator hiện, nút tắt (chưa kiểm)",
+      "entry_condition": "đang kiểm tra",
+      "exit_condition": "xong",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "inferred"
+    },
+    {
+      "id": "STA-DLG01-004",
+      "component_id": "CMP-DLG01-018",
+      "state": "selected",
+      "visual_description": "Ẩn dòng username/mật khẩu (suy luận)",
+      "entry_condition": "bật",
+      "exit_condition": "tắt",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "inferred"
+    },
+    {
+      "id": "STA-DLG01-005",
+      "component_id": "CMP-DLG01-016",
+      "state": "normal",
+      "visual_description": "Hiện dòng SQLite thay cho host/port",
+      "entry_condition": "loại DB = SQLite",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}

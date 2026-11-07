@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-008",
+  "mappings": [
+    {
+      "source_id": "ide-modal-format-confirm",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-DLG-008",
+      "target_type": "javafx",
+      "target_component": "DialogChrome",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Có hàm resetSkip() để bật lại hỏi (chưa thấy UI gọi)"
+      ],
+      "approval_reference": "none"
+    }
+  ]
+}

@@ -1,0 +1,292 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-007",
+  "components": [
+    {
+      "id": "CMP-DLG07-001",
+      "name": "Issue list",
+      "component_type": "list",
+      "region_id": "REG-DLG07-002",
+      "parent_component_id": null,
+      "visible_label": "Vấn đề · Dòng",
+      "accessible_name": "Vấn đề · Dòng",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "primary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ActionsGuardDialog.java; ui/dialogs/ProductionSafetyDialog.java; framework/query/SqlProtectionService.java",
+        "selector_or_symbol": "list",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "ListView",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Mỗi dòng: thông báo + số dòng"
+    },
+    {
+      "id": "CMP-DLG07-002",
+      "name": "Hint",
+      "component_type": "label",
+      "region_id": "REG-DLG07-002",
+      "parent_component_id": null,
+      "visible_label": "Nhấp đúp một dòng để hủy chạy và nhảy tới dòng code đó.",
+      "accessible_name": "Nhấp đúp một dòng để hủy chạy và nhảy tới dòng code đó.",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ActionsGuardDialog.java; ui/dialogs/ProductionSafetyDialog.java; framework/query/SqlProtectionService.java",
+        "selector_or_symbol": "hint",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": ""
+    },
+    {
+      "id": "CMP-DLG07-003",
+      "name": "Question",
+      "component_type": "label",
+      "region_id": "REG-DLG07-002",
+      "parent_component_id": null,
+      "visible_label": "Vẫn tiếp tục thực thi?",
+      "accessible_name": "Vẫn tiếp tục thực thi?",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ActionsGuardDialog.java; ui/dialogs/ProductionSafetyDialog.java; framework/query/SqlProtectionService.java",
+        "selector_or_symbol": "q",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Nằm ở footer trái"
+    },
+    {
+      "id": "BTN-DLG07-004",
+      "name": "Cancel (Esc)",
+      "component_type": "button",
+      "region_id": "REG-DLG07-003",
+      "parent_component_id": null,
+      "visible_label": "Hủy (Esc)",
+      "accessible_name": "Hủy (Esc)",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ActionsGuardDialog.java; ui/dialogs/ProductionSafetyDialog.java; framework/query/SqlProtectionService.java",
+        "selector_or_symbol": "cancel",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Mặc định lấy focus (an toàn)"
+    },
+    {
+      "id": "BTN-DLG07-005",
+      "name": "Continue",
+      "component_type": "button",
+      "region_id": "REG-DLG07-002",
+      "parent_component_id": null,
+      "visible_label": "Tiếp tục thực thi",
+      "accessible_name": "Tiếp tục thực thi",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "destructive",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ActionsGuardDialog.java; ui/dialogs/ProductionSafetyDialog.java; framework/query/SqlProtectionService.java",
+        "selector_or_symbol": "go",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "Danger; không phải defaultButton"
+    },
+    {
+      "id": "CMP-DLG07-006",
+      "name": "PROD badge",
+      "component_type": "label",
+      "region_id": "REG-DLG07-002",
+      "parent_component_id": null,
+      "visible_label": "PRODUCTION",
+      "accessible_name": "PRODUCTION",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ActionsGuardDialog.java; ui/dialogs/ProductionSafetyDialog.java; framework/query/SqlProtectionService.java",
+        "selector_or_symbol": "prod",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "ProductionSafetyDialog"
+    },
+    {
+      "id": "CMP-DLG07-007",
+      "name": "Prod info",
+      "component_type": "label",
+      "region_id": "REG-DLG07-002",
+      "parent_component_id": null,
+      "visible_label": "Kết nối / Database",
+      "accessible_name": "Kết nối / Database",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "secondary",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ActionsGuardDialog.java; ui/dialogs/ProductionSafetyDialog.java; framework/query/SqlProtectionService.java",
+        "selector_or_symbol": "info",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Label",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "ProductionSafetyDialog"
+    },
+    {
+      "id": "BTN-DLG07-008",
+      "name": "Prod confirm",
+      "component_type": "button",
+      "region_id": "REG-DLG07-002",
+      "parent_component_id": null,
+      "visible_label": "Tôi hiểu rủi ro, thực thi",
+      "accessible_name": "Tôi hiểu rủi ro, thực thi",
+      "icon": {
+        "name": "unknown",
+        "source": "unknown"
+      },
+      "tooltip": "unknown",
+      "classification": "destructive",
+      "enabled_when": "unknown",
+      "visible_when": "unknown",
+      "states": [
+        "normal",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "shortcut": "unknown",
+      "source_reference": {
+        "file": "ui/dialogs/ActionsGuardDialog.java; ui/dialogs/ProductionSafetyDialog.java; framework/query/SqlProtectionService.java",
+        "selector_or_symbol": "go",
+        "handler": "unknown"
+      },
+      "behavior_confidence": "code_verified",
+      "target_mapping": {
+        "javafx_type": "Button",
+        "custom_component_required": false,
+        "notes": ""
+      },
+      "notes": "ProductionSafetyDialog; Hủy (Esc) lấy focus"
+    }
+  ]
+}

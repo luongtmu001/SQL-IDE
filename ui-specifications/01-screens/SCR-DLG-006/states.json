@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-006",
+  "states": [
+    {
+      "id": "STA-DLG06-001",
+      "component_id": "BTN-DLG06-009",
+      "state": "normal",
+      "visual_description": "Mỗi hàng có nút xóa",
+      "entry_condition": "nhiều điều kiện",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}

@@ -277,6 +277,10 @@ public class ConnectionSessionManager {
         if (profile.trustServerCertificate()) {
             properties.put("trustServerCertificate", "true");
         }
+        // Windows authentication (SQL Server): the driver must be told, otherwise it sends the (empty) user/password
+        if ("WINDOWS_AUTH".equalsIgnoreCase(profile.authType()) && type == DatabaseType.SQLSERVER) {
+            properties.put("integratedSecurity", "true");
+        }
         if (profile.timeoutSeconds() > 0) {
             properties.put("loginTimeout", String.valueOf(profile.timeoutSeconds()));
             properties.put("connectTimeout", String.valueOf(profile.timeoutSeconds()));

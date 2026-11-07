@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-014",
+  "states": [
+    {
+      "id": "STA-DLG14-001",
+      "component_id": "CMP-DLG14-002",
+      "state": "loading",
+      "visual_description": "Làm mờ vùng chủ, hiện thẻ nhỏ ở giữa",
+      "entry_condition": "show(text, cancelAction)",
+      "exit_condition": "hide()",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-DLG14-002",
+      "component_id": "CMP-DLG14-004",
+      "state": "disabled",
+      "visual_description": "Hủy bị tắt/đổi nhãn khi đang hủy",
+      "entry_condition": "bấm Hủy",
+      "exit_condition": "xong",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "inferred"
+    }
+  ]
+}

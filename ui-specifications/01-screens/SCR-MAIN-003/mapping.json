@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-MAIN-003",
+  "mappings": [
+    {
+      "source_id": "breadcrumb connection / database / schema (editor.js)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-CTX-001..003",
+      "target_type": "javafx",
+      "target_component": "ComboBox ×3",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Gộp thành thanh ngữ cảnh; env badge chuyển từ title bar về ô kết nối"
+      ],
+      "approval_reference": "toolbar-redesign.md (duyệt 2026-11-04 23:46, cập nhật 2026-11-05 00:05)"
+    },
+    {
+      "source_id": "#ide-btn-run",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-CTX-001",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "#ide-btn-stop",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-CTX-002",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "#ide-btn-plan / #ide-btn-format",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-CTX-003/004",
+      "target_type": "javafx",
+      "target_component": "Button",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Đưa thành icon-only"
+      ],
+      "approval_reference": "toolbar-redesign.md"
+    },
+    {
+      "source_id": "#ide-btn-action-overflow",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-CTX-006",
+      "target_type": "javafx",
+      "target_component": "MenuButton",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Chỉ New/Open/Save/Connection Manager/BRAVO; nhiều mục nguồn bị hoãn"
+      ],
+      "approval_reference": "toolbar-redesign.md"
+    },
+    {
+      "source_id": "tab strip (tabs.js)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-ED-006..009",
+      "target_type": "javafx",
+      "target_component": "EditorTabStrip (custom)",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Chấm màu kết nối, ghim, nhân bản, chia đôi, danh sách tab, chế độ nhiều hàng"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "connection-lost banner (tabs.js)",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-ED-010..013",
+      "target_type": "javafx",
+      "target_component": "HBox banner",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "Monaco editor + split",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-ED-014, CMP-ED-016",
+      "target_type": "javafx",
+      "target_component": "WebView",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "partial",
+      "differences": [
+        "Chế độ diff của nguồn chưa có"
+      ],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "empty-tabs placeholder",
+      "source_type": "python_web_ui",
+      "target_id": "CMP-ED-001",
+      "target_type": "javafx",
+      "target_component": "VBox",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "not_checked",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "editor status bar (zoom, issues, PID, Ln/Col, TABS, LF, UTF-8)",
+      "source_type": "python_web_ui",
+      "target_id": "SCR-MAIN-005",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "implemented_mock",
+      "behavior_parity": "changed_with_approval",
+      "differences": [
+        "Gộp vào status bar toàn cục"
+      ],
+      "approval_reference": "SCR-MAIN-005 screen-spec §3 (Gate B 2026-11-05)"
+    },
+    {
+      "source_id": "Debug · Transaction · Parse · Import/Export · Compare · Syntax reference · History · File history · Object search (action bar)",
+      "source_type": "python_web_ui",
+      "target_id": "deferred",
+      "target_type": "javafx",
+      "target_component": "",
+      "mapping_status": "deferred",
+      "behavior_parity": "not_checked",
+      "differences": [
+        "Ngoài phạm vi lần này"
+      ],
+      "approval_reference": "screen-inventory.md §2 (phạm vi đã duyệt 2026-11-04)"
+    }
+  ]
+}

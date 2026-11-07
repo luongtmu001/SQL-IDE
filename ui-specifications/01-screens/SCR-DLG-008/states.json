@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-DLG-008",
+  "states": [
+    {
+      "id": "STA-DLG08-001",
+      "component_id": "CMP-DLG08-002",
+      "state": "normal",
+      "visual_description": "Chưa chọn",
+      "entry_condition": "mặc định",
+      "exit_condition": "unknown",
+      "interaction_allowed": "unknown",
+      "evidence": [],
+      "confidence": "code_verified"
+    }
+  ]
+}
