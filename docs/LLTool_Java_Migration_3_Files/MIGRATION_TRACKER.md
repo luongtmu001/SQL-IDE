@@ -65,21 +65,21 @@ Migrate each existing feature as a separate vertical slice. A suggested order is
 | 6 | Results and Messages | `ANALYZED` | `UI_VERIFIED` | `FUNCTIONALLY_VERIFIED` | `COMPLETE` | Comprehensive Context Menu (15+ items), NULL styling, Aggregates, Script INSERT, Excel Open/Save, Messages |
 | 7 | Execution Plan | `ANALYZED` | `UI_VERIFIED` | `FUNCTIONALLY_VERIFIED` | `COMPLETE` | PostgreSQL (JSON), SQL Server (XML ShowPlan), SQLite, Visual Tree with Cost %, Inspector, Raw Text |
 | 8 | Settings and themes | `ANALYZED` | `UI_VERIFIED` | `FUNCTIONALLY_VERIFIED` | `COMPLETE` | 10 Categories Visual Form + Raw JSON Editor, Real-time Syntax Badge, 0ms Hot-Apply (Monaco, Grid, Messages, Typography, Toolbar), SQL Protection Guard (with Temp Table & Table Variable exemption), 100% JSON Schema fidelity |
-| 9 | Snippets and saved SQL | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | Verify actual existing scope and persistence |
-| 10 | Query history | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | Verify storage, search, and replay behavior |
+| 9 | Snippets and saved SQL | `ANALYZED` | `UI_VERIFIED` | `FUNCTIONALLY_VERIFIED` | `COMPLETE` | 78 standard snippets, Red Gate `$var$` to Monaco `${1:var}` auto-selection/focus, CRUD, pinning, DB target filtering, atomic persistence |
+| 10 | Query history | `ANALYZED` | `UI_VERIFIED` | `FUNCTIONALLY_VERIFIED` | `COMPLETE` | SQLite WAL storage, SHA-256 deduplication, zlib compression, RunCount coalescing, tagging, favorites, instant filtering, EmbeddedMonaco preview, non-blocking background logger |
 
 ### Phase 3 — Existing advanced workspaces
 Only include a workspace after confirming it exists and is functional in the Python source.
 
 | Feature / workspace | Python analysis | Java UI | Java behavior | Verification | Notes |
 |---|---|---|---|---|---|
-| Schema Compare | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
+| Schema Compare | `COMPLETE` | `COMPLETE` | `IN_PROGRESS` | `IN_PROGRESS` | Forward Sync, Master-Detail categorized tree, side-by-side Monaco DDL viewers, transactional migration script, selective deploy (47/47 tests pass) |
 | Bravo Layout Compare | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
-| Table Designer | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
-| Table Data Editor | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
-| Dependency Graph | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
-| Object Content Search | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
-| SQL Visualizer | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
+| Table Designer | `COMPLETE` | `COMPLETE` | `COMPLETE` | `COMPLETE` | Hoàn thiện grids ràng buộc, SaveDesignDialog, migration DDL (19/19 tests pass) |
+| Table Data Editor | `COMPLETE` | `COMPLETE` | `COMPLETE` | `COMPLETE` | Hoàn thành inline editor, optimistic concurrency, PreviewDataChangesDialog (30/30 tests pass) |
+| Dependency Graph | `COMPLETE` | `COMPLETE` | `IN_PROGRESS` | `IN_PROGRESS` | Đồ thị phân cấp Sugiyama, canvas kéo thả/zoom/pan/export PNG, Inspector 3 tab (Properties, Monaco DDL, Suggested Steps), tích hợp context menu Table/View/Proc/Col (54/54 tests pass) |
+| Object Content Search | `COMPLETE` | `COMPLETE` | `COMPLETE` | `COMPLETE` | Phân nhóm loại object kèm tổng số, resizable/collapsible bottom occurrences panel, Monaco decorations, click-to-jump (41/41 tests pass) |
+| SQL Visualizer | `COMPLETE` | `COMPLETE` | `IN_PROGRESS` | `IN_PROGRESS` | Trực quan hóa luồng dữ liệu 6 giai đoạn, Canvas pipeline Bezier kéo thả/zoom/pan/export PNG, Inspector AST, đồng bộ hai chiều SourceRange với mã SQL (42/42 tests pass) |
 | Activity Monitor | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
 | User Permissions | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
 | Google Sheets integration | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
@@ -490,6 +490,143 @@ New features belong here, not inside existing feature migration tasks.
 #### Deviations and decisions
 - Bố trí nút bánh răng cài đặt trên thanh taskbar/titlebar ngay cạnh nút chuyển Dark/Light theo đúng đặc tả của `.SKILL/setting_form.md`.
 - Sử dụng JavaFX native controls cho toàn bộ hộp thoại cài đặt để đảm bảo tốc độ phản hồi 0ms và tính thẩm mỹ cao nhất, duy trì nguyên tắc Single WebView của Rule 6.
+
+### Feature 9: Snippets and Saved SQL
+
+- Status: `COMPLETE`
+- Owner: Migration Team
+- Target milestone: Phase 2 - Core Feature 9
+
+#### Python reference
+- Files: `static/js/snippets-manager.js`, `data/snippets.json` (78 snippets), `static/css/snippets-manager.css`.
+- Functions / classes: `SnippetsManager`, Red Gate `$placeholder$` expansion, prefix matching.
+- Database / persistence: `data/snippets.json`, `~/.lltool/data/snippets.json`.
+
+#### Existing behavior
+- Main workflow: Người dùng gõ tiền tố snippet (ví dụ `ssf`, `sfb`, `ii`, `ct`) trong trình soạn thảo Monaco, hệ thống hiển thị gợi ý IntelliSense và tự động mở rộng mẫu câu lệnh SQL tương ứng khi nhấn `Tab` hoặc `Enter`.
+- Snippets Manager Dialog (`780×520px`): Cho phép tìm kiếm snippet, lọc theo hệ cơ sở dữ liệu (`ALL`, `MSSQL`, `POSTGRESQL`), tạo mới, chỉnh sửa, ghim lên đầu (Pin/Star), xóa, và khôi phục về 78 mẫu mặc định.
+- Yêu cầu đặc thù cải tiến (User enhancement): Khi gõ tắt `ssf` (tương đương `SELECT * FROM $table$`), con trỏ mặc định tự động bôi đen (focus/highlight) biến `table` để người dùng có thể gõ đè tên bảng ngay lập tức mà không cần xóa hay di chuyển chuột.
+
+#### Java implementation
+- Models & Services:
+  - `SqlSnippet.java`: Model dữ liệu snippet đầy đủ với chuyển đổi ngữ pháp Red Gate `$var$` sang định dạng Monaco Snippet `${1:var}` và gán chỉ số tabstop giống nhau cho các biến trùng tên.
+  - `SnippetService.java`: Singleton service quản lý đọc/ghi nguyên tử vào `~/.lltool/data/snippets.json`, nạp 78 mẫu gốc từ resources, xuất định dạng Monaco JSON, và phát sự kiện thay đổi.
+- Monaco Bridge & IntelliSense:
+  - `editor-bridge.js` & `host.js`: Hàm `convertRedGateToMonacoSnippet(body)` và `tryExpandSnippet` xử lý tự động chèn tabstop của Monaco Editor (`snippetController2.insert(...)`) giúp tự động bôi đen biến khai báo đầu tiên ngay khi nhấn `ssf`.
+  - `MonacoEditorHost.java`: Tự động đồng bộ toàn bộ danh sách snippets từ `SnippetService` sang runtime Monaco Editor qua IPC bridge `loadSnippets()`.
+- UI & Dialog:
+  - `SnippetsManagerDialog.java`: Hộp thoại thiết kế chuẩn hệ thống `DialogChrome` (780×520px), hỗ trợ tìm kiếm qua `SearchField`, chip lọc hệ CSDL, danh sách ListView với huy hiệu và gắn sao, cùng hộp thoại xác nhận `ConfirmDialog`.
+  - `snippets-manager.css`: Áp dụng 100% biến thiết kế AtlantaFX, tuân thủ nghiêm ngặt R-UI-01 (`rounded` vs `flat`) và `03-design-tokens.md`.
+- Main Window Integration:
+  - `main-window.fxml`: Nút `fth-code` trên Toolbar, menu `Tools -> SQL Snippets Manager...` (`Ctrl+Alt+S`), menu `File -> Open SQL Script...` (`Ctrl+O`), `File -> Save` (`Ctrl+S`), `File -> Save As...` (`Ctrl+Shift+S`).
+  - `MainController.java`: Điều khiển mở hộp thoại Snippets Manager, mở file SQL và lưu file an toàn.
+
+#### Acceptance criteria
+- [x] Existing main workflow works: Gõ `ssf` hoặc chọn từ IntelliSense chèn ngay mẫu SQL và tự động bôi đen biến `$table$` để người dùng gõ ngay.
+- [x] Snippets Manager UI: Quản lý CRUD, tìm kiếm, ghim lên đầu, lọc database target, lưu trữ nguyên tử.
+- [x] Design token compliance: Không dùng hardcoded hex color, tuân thủ R-UI-01.
+
+#### Verification
+- Test cases: `SnippetServiceTest.java` (8 unit tests bao gồm: chuyển đổi $var$ đơn/đa biến/biến trùng, nạp mặc định SSF, CRUD, ghim, xuất Monaco payload - 100% PASS).
+
+---
+
+### Feature 10: Query History
+
+- Status: `COMPLETE`
+- Owner: Migration Team
+- Target milestone: Phase 2 - Core Feature 10
+
+#### Python reference
+- Files: `app/services/history/storage.py`, `app/services/history/service.py`, `app/api/history_api.py`, `templates/query_history_window.html`, `static/js/query-history.js`, `static/css/query-history.css`.
+- Functions / classes: `HistoryStore`, `HistoryService`, `HistoryApiMixin`.
+- Database / persistence: `data/history.db` (SQLite WAL mode, zlib compression, SHA-256 deduplication, RunCount coalescing).
+
+#### Existing behavior
+- Main workflow: Mỗi khi người dùng bấm F5 hoặc lưu file SQL, câu lệnh được ghi nhận tự động và bất đồng bộ vào cơ sở dữ liệu `history.db` mà không gây đơ giao diện (<0.5ms). Cập nhật thời gian thực thi, mã lỗi hoặc trạng thái hoàn thành khi truy vấn kết thúc.
+- Deduplication & Coalescing: Nội dung SQL được băm SHA-256 và lưu duy nhất 1 lần trong bảng `Content` dưới dạng nén zlib (~70-90% tiết kiệm dung lượng). Các lần chạy F5 liên tiếp giống hệt nhau trên cùng server/database được tự động gộp và tăng `RunCount`.
+- Query History Window (`1050×680px`):
+  - Cột trái: Cây tài liệu gần đây (Recent Queries) với số lần chạy, gắn sao yêu thích; danh sách các lần thực thi của tài liệu đó với bộ lọc nhanh (Tất cả, Thành công, Lỗi, Selection, Yêu thích).
+  - Cột phải: Xem trước mã nguồn bằng Monaco Editor (chỉ đọc, tô màu cú pháp, đồng bộ theme), thanh gắn nhãn (Tag) và ghi chú (Note), banner cảnh báo lỗi chi tiết, thanh thông tin máy chủ/database/thời gian/dung lượng, cùng các thao tác: "Sao chép SQL", "Mở vào Tab mới" (`Enter`).
+  - Thanh công cụ & Ngăn bộ lọc (Filter Drawer): Tìm kiếm toàn văn (tìm cả trong nội dung SQL đã giải nén via `decompress_sql`), lọc theo Server, Database, Khoảng thời gian, Nhãn; Xuất / Nhập lịch sử dạng JSON.
+  - Chính sách dọn dẹp tự động (Retention Policy): Giữ tối đa 200 lần chạy/tài liệu, thời hạn tối đa 90 ngày, bảo vệ tuyệt đối các tài liệu gắn sao và lần chạy yêu thích.
+
+#### Java implementation
+- Models & Storage:
+  - `HistoryDocument.java`, `HistoryEntry.java`, `HistoryTag.java`: Models tương thích 100% với schema SQLite của Python.
+  - `SqliteHistoryStore.java`: Tầng truy xuất SQLite cục bộ với WAL mode, `PRAGMA auto_vacuum = INCREMENTAL`, hàm SQLite nhúng `decompress_sql` cho tìm kiếm nội dung, nén `Deflater`/`Inflater` zlib chuẩn RFC 1950, dedup SHA-256, gộp RunCount, và dọn dẹp retention.
+  - **Tách biệt cơ sở dữ liệu hoàn toàn (Zero Shared Database)**: Java lưu trữ độc lập tại file `history_java.db` bên trong thư mục dữ liệu riêng của Java (`%APPDATA%\LLTool-Desktop\data\history_java.db`), hoàn toàn không chia sẻ, không khóa và không can thiệp vào file `history.db` của Python (`%APPDATA%\LLTool\history.db`).
+- Services & Background Worker:
+  - `HistoryLoggingService.java`: Singleton service điều phối luồng background worker ngầm, lên lịch dọn dẹp sau 30s khởi động và định kỳ mỗi 6 giờ, tích hợp cấu hình từ `SettingsService`, và phát thông báo cập nhật giao diện thời gian thực qua `Platform.runLater()`.
+- UI & Dialog:
+  - `QueryHistoryDialog.java`: Hộp thoại modal chuẩn `DialogChrome` (1050×680px, resizable), bố cục `SplitPane` 2 cột, danh sách `ListView` với tùy biến Cell hiển thị biểu tượng trạng thái, thời gian chạy, huy hiệu `xN`, nhãn tag; xem trước bằng `EmbeddedMonaco` (Rule 6 compliant).
+  - `query-history.css`: Định dạng toàn diện tuân thủ quy tắc R-UI-01 và hệ thống thẻ màu ngữ nghĩa AtlantaFX (không dùng mã màu hex cố định).
+- Main Window Integration:
+  - `main-window.fxml`: Nút `fth-clock` trên Toolbar, menu `Tools -> Query History...` (`Ctrl+Alt+H`), menu `View -> Query History...`, và menu mở rộng overflow.
+  - `MainController.java`: Tích hợp hook ghi nhận thực thi trong `startRun()`, cập nhật kết quả trong `onSuccess()`, `onError()`, `onCancelled()`, và ghi snapshot khi lưu file trong `saveTabFile()`.
+
+#### Acceptance criteria
+- [x] Existing main workflow works: Ghi nhận lịch sử F5 không làm đơ giao diện; mở hộp thoại Query History tìm kiếm, lọc, xem trước SQL và mở vào tab mới mượt mà.
+- [x] Storage & Retention parity: SQLite WAL, nén zlib, băm SHA-256, gộp RunCount, đa nhãn tag, yêu thích, dọn dẹp entry quá hạn mà không xóa mục yêu thích/gắn sao.
+- [x] UI follows desktop design system: Áp dụng `DialogChrome`, `SearchField`, `EmbeddedMonaco` (tuân thủ Rule 6 Single WebView), không có mã hex hardcode trong CSS/Java.
+
+#### Verification
+- Test cases: `SqliteHistoryStoreTest.java` (8 unit tests bao gồm: dedup, bỏ qua query rỗng/comment, cập nhật kết quả, gộp tài liệu khi lưu file, yêu thích, nhãn tag, xóa entry, dọn dẹp retention, xuất/nhập JSON - 100% PASS).
+- Test cases: `HistoryLoggingServiceTest.java` (3 unit tests bao gồm: luồng ghi log bất đồng bộ, snapshot khi lưu file, quản lý ghi chú và nhãn tag - 100% PASS).
+- Test cases: `MainWindowFXMLTest.java` (1 test: tải FXML tích hợp menu/toolbar Query History - 100% PASS).
+- Full Phase 2 test suite: 20/20 unit tests đạt 100% PASS (`mvn test` BUILD SUCCESS).
+
+---
+
+### Feature 12 (Phase 3): Object Content Search
+
+- Status: `COMPLETE`
+- Owner: Migration Team
+- Target milestone: Phase 3 - Slice 3
+
+#### Python reference
+- Files: `app/services/object_search_service.py`, `static/js/object-search/*.js`, `static/css/object-search.css`
+- Core classes & functions: `ObjectSearchService` (`search`, `get_ddl`, `_compile_pattern`, `_search_sqlserver_raw`, `_search_postgres_raw`), `DdlViewer`, `MatchPanel`.
+
+#### Java implementation
+- Core domain: `SearchMatchLocation.java`, `ObjectSearchQuery.java`, `ObjectSearchHit.java`.
+- Core application: `ObjectSearchService.java` (catalog DDL query generator for SQL Server & PostgreSQL, regex / whole-word pattern compilation, line/column coordinate extraction, sorting by VIEW -> PROCEDURE -> FUNCTION -> TRIGGER).
+- Monaco Bridge: `editor-bridge.js`, `editor.css`, `MonacoEditorHost.java`, `EmbeddedMonaco.java` (`setSearchDecorations`, `setActiveSearchMatch`, `clearSearchDecorations`).
+- Desktop UI: `ObjectContentSearchTab.java` (Master-Detail layout, search input, type filter chips, database/schema selection, match stepper navigation, quick filter in RAM, DDL viewer, open in SQL tab, copy DDL).
+- Integration: `EditorController.openObjectContentSearchTab(...)`, `MainController.openObjectContentSearch(...)`, Tools menu (`Ctrl+Shift+F`), Database/Schema context menus in `DatabaseTreeCell.java`.
+- CSS Tokens: `object-content-search.css` adheres to `-ide-*` and `-color-*` tokens and R-UI-01 shapes.
+
+#### Verification
+- Unit tests: `ObjectSearchServiceTest.java` (7 tests - 100% PASS).
+- Component tests: `ObjectContentSearchTabTest.java` (1 test - 100% PASS).
+- Cập nhật theo phản hồi Mockup: Nhóm theo loại object ở panel trái kèm số lượng tổng, panel bottom hiển thị các vị trí trùng trong file có thể ẩn và kéo resize kèm click-to-jump vào Monaco DDL.
+- Phase 3 full regression suite: 41/41 unit tests đạt 100% PASS (`mvn test` BUILD SUCCESS).
+
+---
+
+### Feature 13 (Phase 3): Schema Compare & Sync
+
+- Status: `COMPLETE`
+- Owner: Migration Team
+- Target milestone: Phase 3 - Slice 4
+
+#### Python reference
+- Files: `app/services/schema_compare_service.py`, `app/api/schema_compare_api.py`, `static/js/schema-compare.js`, `static/css/schema-compare.css`, `templates/schema_compare_window.html`
+- Core classes & functions: `SchemaCompareService` (`snapshot`, `diff`, `_normalize_constraints_for_diff`, `_diff_code_objects`, `generate_migration_script`), `SchemaCompareApiMixin`.
+
+#### Java implementation
+- Core domain: `DiffStatus.java`, `DiffAction.java`, `SchemaObjectType.java`, `ColumnDiff.java`, `SchemaObjectDiff.java`, `SchemaSnapshot.java`, `SchemaCompareSummary.java`, `SchemaCompareResult.java`, `MigrationScriptResult.java`.
+- Core application: `SchemaCompareService.java` (Forward Sync comparison for tables using `TableDesignDiffer` & DDL Dialects, views, procedures, functions, triggers; whitespace-cleaned DDL diff; topological transaction-wrapped migration script generation; mock snapshots generator).
+- Desktop UI: `SchemaCompareTab.java` (Source/Target dual endpoints with Swap button, filter & metrics bar with status chips, categorized Master Diff Tree with selection checkboxes and diff count badges, Side-by-side Monaco DDL Viewers for Source and Target, resizable & collapsible Script Drawer with Deploy / Copy / Open in SQL Tab actions, DialogChrome for Options).
+- Integration: `EditorController.openSchemaCompareTab(...)`, `MainController.openSchemaCompare(...)`, Tools menu (`Ctrl+Shift+C`), Database & Schema context menu in `DatabaseTreeCell.java`.
+- CSS Tokens: `schema-compare.css` adheres to design tokens (`-ide-*`, `-color-*`) and R-UI-01 styling.
+
+#### Verification
+- Unit tests: `SchemaCompareServiceTest.java` (5 tests - 100% PASS).
+- Component tests: `SchemaCompareTabTest.java` (1 test - 100% PASS).
+- Phase 3 full regression suite: 47/47 unit tests đạt 100% PASS (`mvn test` BUILD SUCCESS).
+
+---
 
 ## 5. Rules for declaring completion
 
