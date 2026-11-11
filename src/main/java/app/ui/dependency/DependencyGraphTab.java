@@ -2,16 +2,22 @@ package app.ui.dependency;
 
 import app.application.AppContext;
 import app.controllers.MainController;
+import app.framework.backend.BackendFlags;
+import app.framework.metadata.MockMetadataProvider;
 import app.services.NotificationService;
 import app.ui.components.AppButton;
 import app.ui.components.EmptyState;
 import app.ui.components.IconButton;
 import app.ui.components.LoadingOverlay;
+import app.ui.components.SegmentedToggle;
+import app.ui.components.WorkspaceFooter;
+import app.ui.components.WorkspaceToolbar;
 import app.ui.editor.SqlEditorTab;
 import com.lltool.core.application.connection.dto.ConnectionProfileDto;
 import com.lltool.core.application.dependency.DependencyGraphService;
 import com.lltool.core.domain.dependency.*;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -54,13 +60,8 @@ public class DependencyGraphTab extends SqlEditorTab {
 
     // UI Controls - Header Toolbar
     private final ComboBox<String> cbRootObject = new ComboBox<>();
-    private final ToggleGroup directionGroup = new ToggleGroup();
-    private final ToggleButton btnDirBoth = new ToggleButton("Cả hai");
-    private final ToggleButton btnDirDepends = new ToggleButton("Phụ thuộc vào");
-    private final ToggleButton btnDirReferenced = new ToggleButton("Được dùng bởi");
-
+    private final SegmentedToggle<GraphDirection> dirToggle = new SegmentedToggle<>();
     private final ComboBox<String> cbDepth = new ComboBox<>();
-    private final ComboBox<String> cbLayout = new ComboBox<>();
 
     private final IconButton btnZoomIn = new IconButton("fth-plus", "Phóng to (Ctrl++)");
     private final IconButton btnZoomOut = new IconButton("fth-minus", "Thu nhỏ (Ctrl+-)");
@@ -74,6 +75,10 @@ public class DependencyGraphTab extends SqlEditorTab {
     private final DependencyGraphCanvas graphCanvas = new DependencyGraphCanvas();
     private final DependencyInspectorPanel inspectorPanel = new DependencyInspectorPanel();
     private final SplitPane splitPane = new SplitPane();
+
+    // UI Controls - Footer
+    private final WorkspaceFooter workspaceFooter = new WorkspaceFooter();
+    private final Label lblNodeEdgeStats = new Label("0 đối tượng · 0 liên kết");
 
     private LoadingOverlay loadingOverlay;
     private final EmptyState emptyState = new EmptyState("fth-share-2", "Không có liên kết phụ thuộc", "Đối tượng này không có quan hệ phụ thuộc nào trong phạm vi đã chọn.");
@@ -126,10 +131,14 @@ public class DependencyGraphTab extends SqlEditorTab {
         root.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/dependency-graph.css")).toExternalForm());
 
         // 1. Header Toolbar
-        HBox header = buildHeaderToolbar();
+        WorkspaceToolbar header = buildHeaderToolbar();
 
         // 2. Main Content SplitPane
-        canvasContainer.getChildren().addAll(graphCanvas, emptyState);
+        HBox legendBox = buildLegendBox();
+        StackPane.setAlignment(legendBox, Pos.BOTTOM_LEFT);
+        StackPane.setMargin(legendBox, new Insets(8));
+
+        canvasContainer.getChildren().addAll(graphCanvas, legendBox, emptyState);
         emptyState.setVisible(false);
 
         loadingOverlay = LoadingOverlay.over(canvasContainer);
@@ -139,18 +148,49 @@ public class DependencyGraphTab extends SqlEditorTab {
         splitPane.setDividerPositions(0.70);
         VBox.setVgrow(splitPane, Priority.ALWAYS);
 
-        root.getChildren().addAll(header, splitPane);
-        setContent(root);
+        // 3. Footer
+        workspaceFooter.addSection(lblNodeEdgeStats);
+        workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
+
+        root.getChildren().addAll(header, splitPane, workspaceFooter);
+        setCustomContent(customKey, root);
 
         // Wire Inspector
         graphCanvas.setOnNodeSelected(node -> inspectorPanel.inspectNode(node, activeModel));
         inspectorPanel.setOpenInSqlTabHandler(this::openSqlInConsole);
     }
 
-    private HBox buildHeaderToolbar() {
-        HBox toolbar = new HBox(8);
-        toolbar.getStyleClass().add("dep-header-bar");
-        toolbar.setAlignment(Pos.CENTER_LEFT);
+    private HBox buildLegendBox() {
+        HBox box = new HBox(10);
+        box.setAlignment(Pos.CENTER_LEFT);
+        box.getStyleClass().add("graph-legend-box");
+        box.setPadding(new Insets(4, 10, 4, 10));
+
+        box.getChildren().addAll(
+                createLegendItem("Bảng", "node-type-table"),
+                createLegendItem("View", "node-type-view"),
+                createLegendItem("Thủ tục", "node-type-proc"),
+                createLegendItem("Trigger", "node-type-trigger")
+        );
+        return box;
+    }
+
+    private HBox createLegendItem(String label, String styleClass) {
+        HBox item = new HBox(4);
+        item.setAlignment(Pos.CENTER_LEFT);
+        Region dot = new Region();
+        dot.setPrefSize(8, 8);
+        dot.setMinSize(8, 8);
+        dot.setMaxSize(8, 8);
+        dot.getStyleClass().addAll("legend-dot", styleClass);
+        Label lbl = new Label(label);
+        lbl.getStyleClass().add("legend-label");
+        item.getChildren().addAll(dot, lbl);
+        return item;
+    }
+
+    private WorkspaceToolbar buildHeaderToolbar() {
+        WorkspaceToolbar toolbar = new WorkspaceToolbar();
 
         // Object Picker
         HBox pickerBox = new HBox(6);
@@ -161,7 +201,7 @@ public class DependencyGraphTab extends SqlEditorTab {
         pickIcon.setIconSize(13);
         pickIcon.getStyleClass().add("icon-accent");
 
-        Label pickLbl = new Label("Đối tượng gốc:");
+        Label pickLbl = new Label("Gốc:");
         pickLbl.getStyleClass().add("dep-control-label");
 
         cbRootObject.getItems().addAll(
@@ -171,6 +211,7 @@ public class DependencyGraphTab extends SqlEditorTab {
                 "dbo.v_customer_orders",
                 "dbo.usp_close_period"
         );
+        cbRootObject.setMinWidth(200);
         cbRootObject.getSelectionModel().selectFirst();
         cbRootObject.setOnAction(e -> {
             String selected = cbRootObject.getValue();
@@ -187,20 +228,16 @@ public class DependencyGraphTab extends SqlEditorTab {
 
         pickerBox.getChildren().addAll(pickIcon, pickLbl, cbRootObject);
 
-        // Direction Toggle Group
-        HBox dirBox = new HBox(2);
-        dirBox.getStyleClass().add("dep-direction-group");
-
-        btnDirBoth.setToggleGroup(directionGroup);
-        btnDirDepends.setToggleGroup(directionGroup);
-        btnDirReferenced.setToggleGroup(directionGroup);
-
-        btnDirBoth.setSelected(true);
-        btnDirBoth.setOnAction(e -> setDirection(GraphDirection.BOTH));
-        btnDirDepends.setOnAction(e -> setDirection(GraphDirection.DEPENDENCIES));
-        btnDirReferenced.setOnAction(e -> setDirection(GraphDirection.DEPENDENTS));
-
-        dirBox.getChildren().addAll(btnDirBoth, btnDirDepends, btnDirReferenced);
+        // Direction SegmentedToggle
+        dirToggle.addItem(GraphDirection.BOTH, "Cả hai", "fth-git-commit");
+        dirToggle.addItem(GraphDirection.DEPENDENCIES, "Phụ thuộc vào", "fth-arrow-right");
+        dirToggle.addItem(GraphDirection.DEPENDENTS, "Được dùng bởi", "fth-arrow-left");
+        dirToggle.select(GraphDirection.BOTH);
+        dirToggle.selectedValueProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null) {
+                setDirection(newV);
+            }
+        });
 
         // Depth Selector
         HBox depthBox = new HBox(4);
@@ -209,6 +246,7 @@ public class DependencyGraphTab extends SqlEditorTab {
         depthLbl.getStyleClass().add("dep-control-label");
 
         cbDepth.getItems().addAll("Cấp 1", "Cấp 2", "Cấp 3", "Tất cả");
+        cbDepth.setMinWidth(80);
         cbDepth.getSelectionModel().select(1);
         cbDepth.setOnAction(e -> {
             int idx = cbDepth.getSelectionModel().getSelectedIndex();
@@ -218,19 +256,9 @@ public class DependencyGraphTab extends SqlEditorTab {
 
         depthBox.getChildren().addAll(depthLbl, cbDepth);
 
-        // Layout Selector
-        HBox layoutBox = new HBox(4);
-        layoutBox.setAlignment(Pos.CENTER_LEFT);
-        Label layoutLbl = new Label("Bố cục:");
-        layoutLbl.getStyleClass().add("dep-control-label");
-
-        cbLayout.getItems().addAll("Hierarchical (Trái sang Phải)", "Hierarchical (Trên xuống Dưới)");
-        cbLayout.getSelectionModel().selectFirst();
-
-        layoutBox.getChildren().addAll(layoutLbl, cbLayout);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        toolbar.addLeft(pickerBox);
+        toolbar.addLeft(dirToggle);
+        toolbar.addLeft(depthBox);
 
         // Canvas Navigation Buttons
         Label lblZoom = new Label("100%");
@@ -244,15 +272,13 @@ public class DependencyGraphTab extends SqlEditorTab {
         btnRefresh.setOnAction(e -> loadGraph());
         btnExportPng.setOnAction(e -> exportPng());
 
-        toolbar.getChildren().addAll(
-                pickerBox,
-                dirBox,
-                depthBox,
-                layoutBox,
-                spacer,
-                btnZoomIn, btnZoomOut, lblZoom, btnFitScreen, btnResetZoom, btnRefresh,
-                btnExportPng
-        );
+        toolbar.addRight(btnZoomIn);
+        toolbar.addRight(btnZoomOut);
+        toolbar.addRight(lblZoom);
+        toolbar.addRight(btnFitScreen);
+        toolbar.addRight(btnResetZoom, WorkspaceToolbar.Priority.LOW);
+        toolbar.addRight(btnRefresh);
+        toolbar.addRight(btnExportPng);
 
         return toolbar;
     }
@@ -292,6 +318,8 @@ public class DependencyGraphTab extends SqlEditorTab {
 
                 Platform.runLater(() -> {
                     this.activeModel = model;
+                    lblNodeEdgeStats.setText(model.getNodeCount() + " đối tượng · " + model.getEdgeCount() + " liên kết");
+                    workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
                     if (model.getNodeCount() == 0) {
                         emptyState.setVisible(true);
                         graphCanvas.setVisible(false);

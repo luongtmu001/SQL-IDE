@@ -1,57 +1,36 @@
 package app.ui.dataeditor;
 
-import com.lltool.core.domain.tabledesigner.model.*;
-import com.lltool.core.domain.tableeditor.model.TableEditorMetadata;
+import app.ui.components.PaneHeader;
+import com.lltool.core.domain.tabledesigner.model.CheckDesign;
+import com.lltool.core.domain.tabledesigner.model.ForeignKeyDesign;
+import com.lltool.core.domain.tabledesigner.model.TableDesign;
+import com.lltool.core.domain.tabledesigner.model.UniqueDesign;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
+import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 /**
- * Slide-out Inspector Drawer for Table Data Editor.
- * Displays comprehensive table metadata, Primary Key, Foreign Keys, Unique/Check constraints.
+ * Slide-out inspector drawer for displaying table schema metadata and constraints.
  */
 public class ConstraintInspectorPane extends VBox {
 
-    private final VBox contentBox = new VBox(10);
-    private Runnable onClose;
+    private final Runnable onClose;
+    private final VBox contentBox = new VBox(12);
 
     public ConstraintInspectorPane(Runnable onClose) {
         this.onClose = onClose;
-        setPrefWidth(320);
-        setMinWidth(260);
-        setMaxWidth(450);
+        setPrefWidth(300);
+        setMinWidth(300);
+        setMaxWidth(300);
         getStyleClass().add("tde-inspector-drawer");
-        setStyle("-fx-background-color: -color-bg-default; -fx-border-color: -color-border-subtle; -fx-border-width: 0 0 0 1;");
 
-        HBox header = buildHeader();
-        ScrollPane sp = new ScrollPane(contentBox);
-        sp.setFitToWidth(true);
-        sp.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
-        VBox.setVgrow(sp, Priority.ALWAYS);
-
-        contentBox.setPadding(new Insets(10));
-
-        getChildren().addAll(header, sp);
-    }
-
-    private HBox buildHeader() {
-        HBox header = new HBox(8);
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.setPadding(new Insets(4, 10, 4, 10));
-        header.getStyleClass().add("tde-pane-header");
-        header.setStyle("-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-subtle; -fx-border-width: 0 0 1 0;");
-
-        FontIcon infoIcon = new FontIcon("fth-info");
-        infoIcon.setIconSize(13);
-        infoIcon.setStyle("-fx-icon-color: -color-accent-fg;");
-
-        Label lblTitle = new Label("Schema & Constraints Inspector");
-        lblTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 0.85em; -fx-text-fill: -color-fg-default;");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        PaneHeader header = new PaneHeader("fth-info", "Thông tin bảng");
 
         Button btnClose = new Button();
         btnClose.getStyleClass().addAll("button", "small");
@@ -61,9 +40,16 @@ public class ConstraintInspectorPane extends VBox {
         btnClose.setOnAction(e -> {
             if (onClose != null) onClose.run();
         });
+        header.addAction(btnClose);
 
-        header.getChildren().addAll(infoIcon, lblTitle, spacer, btnClose);
-        return header;
+        ScrollPane sp = new ScrollPane(contentBox);
+        sp.setFitToWidth(true);
+        sp.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+        VBox.setVgrow(sp, Priority.ALWAYS);
+
+        contentBox.setPadding(new Insets(10));
+
+        getChildren().addAll(header, sp);
     }
 
     public void update(TableDesign design, TableEditorMetadata meta) {
@@ -78,25 +64,14 @@ public class ConstraintInspectorPane extends VBox {
 
         String table = design != null ? design.getTable() : (meta != null ? meta.getTable() : "");
         String schema = design != null ? design.getSchema() : (meta != null ? meta.getSchema() : "");
-        String engine = design != null ? design.getEngine() : (meta != null ? meta.getEngine() : "");
 
-        // 1. Table Summary Card
-        VBox summaryCard = new VBox(4);
-        summaryCard.setPadding(new Insets(8));
-        summaryCard.setStyle("-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-subtle; -fx-border-radius: 4; -fx-background-radius: 4;");
-
-        Label lblSumTitle = new Label("THÔNG TIN BẢNG");
-        lblSumTitle.setStyle("-fx-font-size: 0.75em; -fx-font-weight: bold; -fx-text-fill: -color-fg-muted;");
-
-        summaryCard.getChildren().addAll(
-                lblSumTitle,
-                rowLabel("Bảng:", "[" + schema + "].[" + table + "]"),
-                rowLabel("Hệ quản trị:", engine.toUpperCase()),
-                rowLabel("Khóa chính:", (meta != null && !meta.getPrimaryKeyNames().isEmpty()) ? String.join(", ", meta.getPrimaryKeyNames()) : "Không có PK")
+        // 1. General Overview Section
+        VBox generalCard = createSectionCard("Tổng quan", "fth-database", "-color-accent-fg");
+        generalCard.getChildren().addAll(
+                new Label("Bảng: " + schema + "." + table),
+                new Label("Số cột: " + (meta != null ? meta.getColumns().size() : 0))
         );
-        contentBox.getChildren().add(summaryCard);
-
-        if (design == null) return;
+        contentBox.getChildren().add(generalCard);
 
         // 2. Primary Key Section
         if (meta != null && !meta.getPrimaryKeyNames().isEmpty()) {
@@ -106,7 +81,7 @@ public class ConstraintInspectorPane extends VBox {
         }
 
         // 3. Foreign Keys Section
-        if (!design.getForeignKeys().isEmpty()) {
+        if (design != null && !design.getForeignKeys().isEmpty()) {
             VBox fkCard = createSectionCard("Khoá ngoại", "fth-link", "-color-accent-fg");
             for (ForeignKeyDesign fk : design.getForeignKeys()) {
                 VBox fkItem = new VBox(2);
@@ -122,7 +97,7 @@ public class ConstraintInspectorPane extends VBox {
         }
 
         // 4. Unique Constraints Section
-        if (!design.getUniques().isEmpty()) {
+        if (design != null && !design.getUniques().isEmpty()) {
             VBox uqCard = createSectionCard("Ràng buộc duy nhất", "fth-shield", "-color-purple-emphasis");
             for (UniqueDesign uq : design.getUniques()) {
                 Label lbl = new Label(uq.getName() + " (" + String.join(", ", uq.getColumns()) + ")");
@@ -133,7 +108,7 @@ public class ConstraintInspectorPane extends VBox {
         }
 
         // 5. Check Constraints Section
-        if (!design.getChecks().isEmpty()) {
+        if (design != null && !design.getChecks().isEmpty()) {
             VBox chkCard = createSectionCard("Ràng buộc kiểm tra", "fth-check-circle", "-color-success-emphasis");
             for (CheckDesign chk : design.getChecks()) {
                 VBox item = new VBox(2);
@@ -148,31 +123,23 @@ public class ConstraintInspectorPane extends VBox {
         }
     }
 
-    private HBox rowLabel(String label, String value) {
-        HBox box = new HBox(6);
-        Label l = new Label(label);
-        l.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 0.85em;");
-        Label v = new Label(value);
-        v.setStyle("-fx-font-weight: bold; -fx-font-size: 0.85em; -fx-font-family: monospace;");
-        box.getChildren().addAll(l, v);
-        return box;
-    }
-
-    private VBox createSectionCard(String title, String iconLit, String accentColor) {
+    private VBox createSectionCard(String title, String iconLiteral, String iconColorVar) {
         VBox card = new VBox(6);
-        card.setPadding(new Insets(8));
-        card.setStyle("-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-subtle; -fx-border-radius: 4; -fx-background-radius: 4;");
+        card.setStyle("-fx-background-color: -color-bg-subtle; -fx-padding: 8; -fx-border-color: -color-border-subtle; -fx-border-radius: 4; -fx-background-radius: 4;");
 
-        HBox titleBox = new HBox(6);
-        titleBox.setAlignment(Pos.CENTER_LEFT);
-        FontIcon icon = new FontIcon(iconLit);
+        HBox cardHeader = new HBox(6);
+        cardHeader.setAlignment(Pos.CENTER_LEFT);
+
+        FontIcon icon = new FontIcon(iconLiteral);
         icon.setIconSize(12);
-        icon.setStyle("-fx-icon-color: " + accentColor + ";");
-        Label lbl = new Label(title);
-        lbl.setStyle("-fx-font-weight: bold; -fx-font-size: 0.85em; -fx-text-fill: " + accentColor + ";");
-        titleBox.getChildren().addAll(icon, lbl);
+        icon.setStyle("-fx-icon-color: " + iconColorVar + ";");
 
-        card.getChildren().add(titleBox);
+        Label lbl = new Label(title);
+        lbl.setStyle("-fx-font-weight: bold; -fx-font-size: 0.85em; -fx-text-fill: -color-fg-default;");
+
+        cardHeader.getChildren().addAll(icon, lbl);
+        card.getChildren().add(cardHeader);
+
         return card;
     }
 }

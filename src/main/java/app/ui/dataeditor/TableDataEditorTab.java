@@ -6,8 +6,15 @@ import app.framework.connection.ConnectionSessionManager;
 import app.framework.designer.TableDesignerService;
 import app.framework.session.CredentialResolver;
 import app.services.NotificationService;
+import app.ui.components.Badge;
+import app.ui.components.EmptyState;
+import app.ui.components.PaneHeader;
+import app.ui.components.SearchField;
+import app.ui.components.WorkspaceFooter;
+import app.ui.components.WorkspaceToolbar;
 import app.ui.dialogs.PreviewDataChangesDialog;
 import app.ui.dialogs.ReadOnlyGuardDialog;
+import app.ui.editor.EmbeddedMonaco;
 import app.ui.editor.SqlEditorTab;
 import com.lltool.core.application.connection.dto.ConnectionProfileDto;
 import com.lltool.core.application.tableeditor.TableDataEditorService;
@@ -72,7 +79,7 @@ public class TableDataEditorTab extends SqlEditorTab {
     // Panes
     private final CriteriaGrid criteriaGrid = new CriteriaGrid();
     private final VBox sqlPane = new VBox();
-    private final TextArea txtSql = new TextArea();
+    private EmbeddedMonaco monacoSql;
     private final VBox gridContainer = new VBox();
     private final SplitPane vSplitPane = new SplitPane();
     private ConstraintInspectorPane inspectorPane;
@@ -82,11 +89,12 @@ public class TableDataEditorTab extends SqlEditorTab {
     private final ToggleButton toggleSql = new ToggleButton("SQL");
     private final ToggleButton toggleInspector = new ToggleButton("Thông tin bảng");
     private final ComboBox<String> cbLimit = new ComboBox<>();
-    private final TextField txtQuickSearch = new TextField();
+    private final SearchField txtQuickSearch = new SearchField("Tìm nhanh trong dữ liệu...");
     private final Button btnSave = new Button("Lưu (0)");
-    private final Label lblPkBadge = new Label("PK: —");
+    private final Badge lblPkBadge = Badge.neutral("PK: —");
 
-    // Status Bar Labels
+    // Status Bar & Footer
+    private final WorkspaceFooter workspaceFooter = new WorkspaceFooter();
     private final Label lblRowNav = new Label("Dòng 0 / 0");
     private final Label lblSummary = new Label("0 dòng");
     private final Label lblDirty = new Label("0 thay đổi");
@@ -132,9 +140,10 @@ public class TableDataEditorTab extends SqlEditorTab {
         }
 
         // 1. Top Toolbar
-        HBox toolbar = buildToolbar();
+        WorkspaceToolbar toolbar = buildToolbar();
 
         // 2. Build Panes
+        criteriaGrid.setMaxHeight(180);
         buildSqlPane();
         buildGridContainer();
 
@@ -155,7 +164,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         VBox.setVgrow(centerArea, Priority.ALWAYS);
 
         // 3. Footer Bar
-        HBox footer = buildFooter();
+        WorkspaceFooter footer = buildFooter();
 
         root.getChildren().addAll(toolbar, centerArea, footer);
 
@@ -186,13 +195,10 @@ public class TableDataEditorTab extends SqlEditorTab {
         });
     }
 
-    private HBox buildToolbar() {
-        HBox bar = new HBox(6);
-        bar.setAlignment(Pos.CENTER_LEFT);
-        bar.setPadding(new Insets(4, 8, 4, 8));
-        bar.getStyleClass().add("td-data-editor-toolbar");
+    private WorkspaceToolbar buildToolbar() {
+        WorkspaceToolbar bar = new WorkspaceToolbar();
 
-        // Execute / Run
+        // Left controls
         Button btnRun = new Button("Chạy");
         btnRun.getStyleClass().addAll("button", "accent", "small");
         FontIcon playIcon = new FontIcon("fth-play");
@@ -201,7 +207,6 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnRun.setTooltip(new Tooltip("Thực thi truy vấn nạp dữ liệu với các tiêu chí hiện tại (F5 / Alt+X)"));
         btnRun.setOnAction(e -> loadDataAsync());
 
-        // Save
         btnSave.getStyleClass().addAll("button", "success", "small");
         FontIcon saveIcon = new FontIcon("fth-save");
         saveIcon.setIconSize(12);
@@ -209,7 +214,6 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnSave.setTooltip(new Tooltip("Lưu các thay đổi xuống CSDL (Ctrl+S)"));
         btnSave.setOnAction(e -> handleSave());
 
-        // Discard
         Button btnDiscard = new Button("Hoàn tác");
         btnDiscard.getStyleClass().addAll("button", "small");
         FontIcon discardIcon = new FontIcon("fth-rotate-ccw");
@@ -218,7 +222,6 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnDiscard.setTooltip(new Tooltip("Hủy bỏ thay đổi chưa lưu và nạp lại từ CSDL"));
         btnDiscard.setOnAction(e -> handleDiscard());
 
-        // Row Operations
         Button btnAddRow = new Button("Thêm dòng");
         btnAddRow.getStyleClass().addAll("button", "small");
         FontIcon addIcon = new FontIcon("fth-plus");
@@ -243,13 +246,21 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnDuplicate.setTooltip(new Tooltip("Nhân bản dòng đang chọn"));
         btnDuplicate.setOnAction(e -> handleDuplicateRow());
 
-        // Pane Toggles: Only Criteria and SQL (Grid is ALWAYS VISIBLE!)
+        bar.addLeft(btnRun);
+        bar.addLeft(btnSave);
+        bar.addLeft(btnDiscard);
+        bar.addLeft(new Separator(Orientation.VERTICAL));
+        bar.addLeft(btnAddRow);
+        bar.addLeft(btnDeleteRow);
+        bar.addLeft(btnDuplicate, WorkspaceToolbar.Priority.LOW);
+
+        // Center controls
         toggleCriteria.setText("Bộ lọc");
         toggleCriteria.getStyleClass().addAll("button", "small");
         FontIcon critIcon = new FontIcon("fth-filter");
         critIcon.setIconSize(12);
         toggleCriteria.setGraphic(critIcon);
-        toggleCriteria.setSelected(true);
+        toggleCriteria.setSelected(false);
         toggleCriteria.setTooltip(new Tooltip("Ẩn/Hiện Criteria Pane (Điều kiện lọc & Sắp xếp)"));
         toggleCriteria.setOnAction(e -> rebuildSplitPaneItems());
 
@@ -262,10 +273,6 @@ public class TableDataEditorTab extends SqlEditorTab {
         toggleSql.setTooltip(new Tooltip("Ẩn/Hiện SQL Pane (Kịch bản truy vấn SELECT)"));
         toggleSql.setOnAction(e -> rebuildSplitPaneItems());
 
-        HBox paneToggleBox = new HBox(2, toggleCriteria, toggleSql);
-        paneToggleBox.setAlignment(Pos.CENTER_LEFT);
-
-        // Limit selector
         cbLimit.setItems(FXCollections.observableArrayList("50 dòng", "100 dòng", "200 dòng", "500 dòng", "1000 dòng", "Tất cả"));
         cbLimit.setValue("200 dòng");
         cbLimit.setPrefWidth(105);
@@ -275,19 +282,17 @@ public class TableDataEditorTab extends SqlEditorTab {
             loadDataAsync();
         });
 
-        // Quick Search
-        txtQuickSearch.setPromptText("Tìm nhanh trong dữ liệu...");
         txtQuickSearch.setPrefWidth(180);
-        txtQuickSearch.getStyleClass().add("small");
         txtQuickSearch.textProperty().addListener((obs, oldV, newV) -> filterGrid(newV));
 
-        // PK Badge
-        lblPkBadge.getStyleClass().add("tde-badge-pk");
+        bar.addCenter(toggleCriteria);
+        bar.addCenter(toggleSql);
+        bar.addCenter(new Separator(Orientation.VERTICAL));
+        bar.addCenter(new Label("Top:"));
+        bar.addCenter(cbLimit);
+        bar.addCenter(txtQuickSearch);
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        // Script / Preview DML
+        // Right controls
         Button btnScript = new Button("Xem DML");
         btnScript.getStyleClass().addAll("button", "small");
         FontIcon scriptIcon = new FontIcon("fth-file-text");
@@ -296,7 +301,6 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnScript.setTooltip(new Tooltip("Xem trước kịch bản DML chuẩn bị thực thi"));
         btnScript.setOnAction(e -> handlePreviewDml());
 
-        // Inspector Toggle
         toggleInspector.getStyleClass().addAll("button", "small");
         FontIcon infoIcon = new FontIcon("fth-info");
         infoIcon.setIconSize(12);
@@ -304,82 +308,36 @@ public class TableDataEditorTab extends SqlEditorTab {
         toggleInspector.setTooltip(new Tooltip("Mở ngăn kéo tra cứu cấu trúc bảng và ràng buộc"));
         toggleInspector.setOnAction(e -> updateDrawerVisibility());
 
-        bar.getChildren().addAll(
-                btnRun, btnSave, btnDiscard,
-                new Separator(Orientation.VERTICAL),
-                btnAddRow, btnDeleteRow, btnDuplicate,
-                new Separator(Orientation.VERTICAL),
-                paneToggleBox,
-                new Separator(Orientation.VERTICAL),
-                new Label("Top:"), cbLimit,
-                txtQuickSearch,
-                new Separator(Orientation.VERTICAL),
-                lblPkBadge,
-                spacer,
-                btnScript, toggleInspector
-        );
+        bar.addRight(lblPkBadge);
+        bar.addRight(btnScript, WorkspaceToolbar.Priority.LOW);
+        bar.addRight(toggleInspector);
 
         return bar;
     }
 
     private void buildSqlPane() {
         sqlPane.getStyleClass().add("tde-sql-pane");
-        sqlPane.setPrefHeight(90);
-        sqlPane.setMinHeight(60);
+        sqlPane.setPrefHeight(120);
+        sqlPane.setMinHeight(80);
 
-        HBox header = new HBox(8);
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.setPadding(new Insets(3, 10, 3, 10));
-        header.getStyleClass().add("tde-pane-header");
+        String dialect = engine.equalsIgnoreCase("postgresql") ? "PostgreSQL" : "Microsoft SQL Server";
+        PaneHeader header = new PaneHeader("Câu truy vấn", "fth-code", "Dialect: " + dialect);
 
-        FontIcon codeIcon = new FontIcon("fth-code");
-        codeIcon.setIconSize(12);
-        codeIcon.setStyle("-fx-icon-color: -color-warning-fg;");
+        String modelId = "tde_sql_" + schema + "_" + tableName;
+        monacoSql = new EmbeddedMonaco(modelId, "sql", "-- Đang tạo câu truy vấn...");
+        monacoSql.setReadOnly(true);
+        monacoSql.setShowStatusBar(false);
+        VBox.setVgrow(monacoSql, Priority.ALWAYS);
 
-        Label lblTitle = new Label("Câu truy vấn");
-        lblTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 0.85em; -fx-text-fill: -color-fg-default;");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Label lblDialect = new Label("Dialect: " + (engine.equalsIgnoreCase("postgresql") ? "PostgreSQL" : "Microsoft SQL Server"));
-        lblDialect.setStyle("-fx-font-size: 0.8em; -fx-text-fill: -color-fg-muted; -fx-font-family: monospace;");
-
-        header.getChildren().addAll(codeIcon, lblTitle, spacer, lblDialect);
-
-        txtSql.setEditable(false);
-        txtSql.setWrapText(true);
-        txtSql.getStyleClass().add("tde-sql-textarea");
-        VBox.setVgrow(txtSql, Priority.ALWAYS);
-
-        sqlPane.getChildren().addAll(header, txtSql);
+        sqlPane.getChildren().addAll(header, monacoSql);
     }
 
     private void buildGridContainer() {
         gridContainer.getStyleClass().add("tde-grid-pane");
         VBox.setVgrow(gridContainer, Priority.ALWAYS);
 
-        HBox miniHeader = new HBox(8);
-        miniHeader.setAlignment(Pos.CENTER_LEFT);
-        miniHeader.setPadding(new Insets(3, 10, 3, 10));
-        miniHeader.getStyleClass().add("tde-pane-header");
-
-        FontIcon tableIcon = new FontIcon("fth-grid");
-        tableIcon.setIconSize(12);
-        tableIcon.setStyle("-fx-icon-color: -color-success-fg;");
-
-        Label lblGridTitle = new Label("Dữ liệu");
-        lblGridTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 0.85em; -fx-text-fill: -color-fg-default;");
-
-        Label lblHint = new Label("(Nhấn đúp hoặc Enter để sửa ô, Ctrl+0 gán [NULL], Delete để đánh dấu xóa)");
-        lblHint.setStyle("-fx-font-size: 0.8em; -fx-text-fill: -color-fg-muted;");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        lblGridStats.setStyle("-fx-font-size: 0.85em; -fx-font-weight: bold;");
-
-        miniHeader.getChildren().addAll(tableIcon, lblGridTitle, lblHint, spacer, lblGridStats);
+        PaneHeader miniHeader = new PaneHeader("Dữ liệu", "fth-grid", "(Nhấn đúp hoặc Enter để sửa ô, Ctrl+0 gán [NULL], Delete để đánh dấu xóa)");
+        miniHeader.setRightNode(lblGridStats);
 
         setupTableView();
         VBox.setVgrow(tableView, Priority.ALWAYS);
@@ -390,8 +348,24 @@ public class TableDataEditorTab extends SqlEditorTab {
     private void setupTableView() {
         tableView.setEditable(true);
         tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        tableView.setPlaceholder(new Label("Đang tải dữ liệu..."));
+        tableView.setPlaceholder(new EmptyState("fth-inbox", "Chưa có dữ liệu", "Bấm 'Chạy' để nạp dữ liệu từ cơ sở dữ liệu."));
         tableView.setItems(filteredItems);
+
+        tableView.setRowFactory(tv -> new TableRow<>() {
+            @Override
+            protected void updateItem(ObservableDataRow item, boolean empty) {
+                super.updateItem(item, empty);
+                getStyleClass().removeAll("row-inserted", "row-modified", "row-deleted");
+                if (!empty && item != null) {
+                    switch (item.getState()) {
+                        case INSERTED -> getStyleClass().add("row-inserted");
+                        case MODIFIED -> getStyleClass().add("row-modified");
+                        case DELETED -> getStyleClass().add("row-deleted");
+                        default -> {}
+                    }
+                }
+            }
+        });
 
         // Row navigation and active cell listener
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldRow, newRow) -> {
@@ -429,12 +403,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         inspectorPane.setManaged(show);
     }
 
-    private HBox buildFooter() {
-        HBox bar = new HBox(12);
-        bar.setAlignment(Pos.CENTER_LEFT);
-        bar.setPadding(new Insets(3, 10, 3, 10));
-        bar.getStyleClass().add("td-data-editor-footer");
-
+    private WorkspaceFooter buildFooter() {
         // Row Navigator buttons
         Button btnFirst = new Button();
         btnFirst.getStyleClass().addAll("button", "small");
@@ -463,25 +432,18 @@ public class TableDataEditorTab extends SqlEditorTab {
         lblDirty.getStyleClass().add("td-data-status-label");
         lblActiveCell.getStyleClass().add("td-data-status-label");
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
         boolean isReadOnly = BackendFlags.readOnlyAll() || (profile != null && profile.readOnly());
         lblReadOnly.setText(isReadOnly ? "Chỉ đọc" : "Cho phép sửa");
-        lblReadOnly.setStyle(isReadOnly ? "-fx-text-fill: -color-warning-emphasis; -fx-font-weight: bold;" : "-fx-text-fill: -color-success-emphasis; -fx-font-weight: bold;");
+        lblReadOnly.getStyleClass().setAll("badge", isReadOnly ? "badge-warning" : "badge-success");
+        lblReadOnly.setVisible(false);
 
-        bar.getChildren().addAll(
-                navBox,
-                new Separator(Orientation.VERTICAL),
-                lblSummary,
-                new Separator(Orientation.VERTICAL),
-                lblDirty,
-                spacer,
-                lblActiveCell,
-                new Separator(Orientation.VERTICAL),
-                lblReadOnly
-        );
-        return bar;
+        workspaceFooter.addSection(navBox);
+        workspaceFooter.addSection(lblSummary);
+        workspaceFooter.addSection(lblDirty);
+        workspaceFooter.addSection(lblActiveCell);
+        workspaceFooter.setRightNode(lblReadOnly);
+
+        return workspaceFooter;
     }
 
     private void syncLiveSql() {
@@ -491,7 +453,9 @@ public class TableDataEditorTab extends SqlEditorTab {
         String orderBy = criteriaGrid.buildOrderByClause(isPg);
 
         String sql = dataEditorService.buildSelectQuery(engine, schema, tableName, null, where, orderBy, limit, 0);
-        txtSql.setText(sql);
+        if (monacoSql != null) {
+            monacoSql.setText(sql);
+        }
     }
 
     private void filterGrid(String filterText) {
@@ -571,6 +535,8 @@ public class TableDataEditorTab extends SqlEditorTab {
                         buildTableColumns(columnNames);
                         masterItems.setAll(loadedRows);
                         updateSummary();
+                        lblReadOnly.setVisible(true);
+                        workspaceFooter.setSampleDataVisible(true);
                     });
                     return;
                 }
@@ -634,6 +600,8 @@ public class TableDataEditorTab extends SqlEditorTab {
                     masterItems.setAll(loadedRows);
                     updateSummary();
                     dirtyProperty().set(false);
+                    lblReadOnly.setVisible(true);
+                    workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA));
                 });
 
             } catch (Exception ex) {
@@ -649,10 +617,16 @@ public class TableDataEditorTab extends SqlEditorTab {
     private void updatePkBadge() {
         if (metadata != null && !metadata.getPrimaryKeyNames().isEmpty()) {
             lblPkBadge.setText("PK: " + String.join(", ", metadata.getPrimaryKeyNames()));
-            lblPkBadge.getStyleClass().setAll("tde-badge-pk");
+            lblPkBadge.setVariant(Badge.Variant.ACCENT);
+            lblPkBadge.setTooltip(null);
+        } else if (metadata != null) {
+            lblPkBadge.setText("Không có PK");
+            lblPkBadge.setVariant(Badge.Variant.DANGER);
+            lblPkBadge.setTooltip(new Tooltip("Bảng không có khoá chính, thao tác Sửa/Xoá có thể ảnh hưởng nhiều dòng"));
         } else {
-            lblPkBadge.setText("No PK");
-            lblPkBadge.getStyleClass().setAll("tde-badge-nopk");
+            lblPkBadge.setText("PK: —");
+            lblPkBadge.setVariant(Badge.Variant.NEUTRAL);
+            lblPkBadge.setTooltip(null);
         }
     }
 
@@ -662,6 +636,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         // 1. Sticky Row index & status column
         TableColumn<ObservableDataRow, String> colRowNo = new TableColumn<>("#");
         colRowNo.setPrefWidth(48);
+        colRowNo.setMinWidth(48);
         colRowNo.setMaxWidth(65);
         colRowNo.setStyle("-fx-alignment: CENTER; -fx-font-family: monospace;");
         colRowNo.setCellValueFactory(data -> {
@@ -687,27 +662,53 @@ public class TableDataEditorTab extends SqlEditorTab {
             boolean isComputed = computedCols.contains(colName.toLowerCase());
 
             TableColumn<ObservableDataRow, Object> col = new TableColumn<>(colName);
-            col.setPrefWidth(140);
+
+            // Auto-calculate width based on column name and first 50 rows (min 80, max 360)
+            int maxChars = colName.length();
+            for (int i = 0; i < Math.min(50, masterItems.size()); i++) {
+                Object val = masterItems.get(i).getValue(colName);
+                if (val != null) {
+                    maxChars = Math.max(maxChars, String.valueOf(val).length());
+                }
+            }
+            double estimatedWidth = Math.max(80, Math.min(360, maxChars * 8.5 + 40));
+            col.setPrefWidth(estimatedWidth);
             col.setCellValueFactory(data -> data.getValue().getProperty(colName));
 
-            // Column Header Graphic
-            HBox headerBox = new HBox(4);
+            // Column Header Graphic: Name + small muted data type subtitle underneath
+            VBox headerBox = new VBox(1);
             headerBox.setAlignment(Pos.CENTER_LEFT);
+            HBox topRow = new HBox(4);
+            topRow.setAlignment(Pos.CENTER_LEFT);
             if (isPk) {
                 FontIcon keyIcon = new FontIcon("fth-key");
                 keyIcon.setIconSize(11);
-                keyIcon.setStyle("-fx-icon-color: -color-warning-emphasis;");
-                headerBox.getChildren().add(keyIcon);
+                keyIcon.getStyleClass().add("icon-accent");
+                topRow.getChildren().add(keyIcon);
             }
             if (isIdentity || isComputed) {
                 FontIcon lockIcon = new FontIcon("fth-lock");
                 lockIcon.setIconSize(10);
-                lockIcon.setStyle("-fx-icon-color: -color-fg-muted;");
-                headerBox.getChildren().add(lockIcon);
+                lockIcon.getStyleClass().add("icon-muted");
+                topRow.getChildren().add(lockIcon);
             }
             Label titleLbl = new Label(colName);
-            titleLbl.setStyle(isPk ? "-fx-font-weight: bold;" : "");
-            headerBox.getChildren().add(titleLbl);
+            if (isPk) {
+                titleLbl.getStyleClass().add("header-pk");
+            }
+            topRow.getChildren().add(titleLbl);
+
+            String dataTypeName = null;
+            if (metadata != null) {
+                dataTypeName = metadata.getColumns().stream()
+                        .filter(c -> c.name().equalsIgnoreCase(colName))
+                        .map(TableEditorMetadata.ColumnMeta::dataType)
+                        .findFirst().orElse(null);
+            }
+            Label typeLbl = new Label(dataTypeName != null ? dataTypeName : "");
+            typeLbl.getStyleClass().add("tde-col-type-subtitle");
+
+            headerBox.getChildren().addAll(topRow, typeLbl);
             col.setGraphic(headerBox);
 
             boolean readOnlyCol = isIdentity || isComputed;

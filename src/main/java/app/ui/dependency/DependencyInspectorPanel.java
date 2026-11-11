@@ -24,6 +24,7 @@ public class DependencyInspectorPanel extends VBox {
 
     private final TabPane tabPane = new TabPane();
     private final Label lblHeaderTitle = new Label("Chi tiết đối tượng");
+    private final Tooltip headerTooltip = new Tooltip();
     private final Label lblHeaderTypeBadge = new Label("TABLE");
 
     // Properties Tab Controls
@@ -51,7 +52,7 @@ public class DependencyInspectorPanel extends VBox {
     public DependencyInspectorPanel() {
         getStyleClass().add("dep-inspector");
         setPrefWidth(380);
-        setMinWidth(280);
+        setMinWidth(320);
 
         buildHeader();
         buildTabs();
@@ -65,6 +66,8 @@ public class DependencyInspectorPanel extends VBox {
         icon.setIconSize(13);
 
         lblHeaderTitle.getStyleClass().add("node-title");
+        lblHeaderTitle.setMaxWidth(200);
+        lblHeaderTitle.setTooltip(headerTooltip);
         lblHeaderTypeBadge.getStyleClass().addAll("node-badge", "node-badge-table");
 
         Region spacer = new Region();
@@ -82,12 +85,12 @@ public class DependencyInspectorPanel extends VBox {
         Tab tabProps = new Tab("Thuộc tính", buildPropertiesContent());
         tabProps.setGraphic(new FontIcon("fth-sliders"));
 
-        // Tab 2: Mã DDL
-        Tab tabDdl = new Tab("Mã DDL", buildDefinitionContent());
+        // Tab 2: DDL
+        Tab tabDdl = new Tab("DDL", buildDefinitionContent());
         tabDdl.setGraphic(new FontIcon("fth-code"));
 
-        // Tab 3: Bước đề xuất (Impact Analysis)
-        Tab tabSteps = new Tab("Bước đề xuất", buildStepsContent());
+        // Tab 3: Các bước
+        Tab tabSteps = new Tab("Các bước", buildStepsContent());
         tabSteps.setGraphic(new FontIcon("fth-check-circle"));
 
         tabPane.getTabs().addAll(tabProps, tabDdl, tabSteps);
@@ -204,6 +207,7 @@ public class DependencyInspectorPanel extends VBox {
 
         Platform.runLater(() -> {
             lblHeaderTitle.setText(node.getName());
+            headerTooltip.setText(node.getName() + " (" + node.getDisplayName() + ")");
             lblHeaderTypeBadge.setText(node.getType().name());
 
             lblPropFullName.setText(node.getDisplayName());

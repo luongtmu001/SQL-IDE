@@ -38,6 +38,10 @@ public final class EmbeddedMonaco {
         onUserEdit = c;
     }
 
+    public void setOnCursorPositionChanged(java.util.function.BiConsumer<Integer, Integer> c) {
+        host.setOnCursorPositionChanged(c);
+    }
+
     public void setText(String text) {
         String t = text != null ? text : "";
         if (t.equals(getText())) return;
@@ -53,7 +57,41 @@ public final class EmbeddedMonaco {
         host.setReadOnly(ro);
     }
 
+    public void setShowStatusBar(boolean show) {
+        host.getEditorBar().setVisible(show);
+        host.getEditorBar().setManaged(show);
+    }
+
     public void format() {
         host.formatDocument();
+    }
+
+    public void gotoLine(int line) {
+        host.gotoLine(line);
+    }
+
+    public void highlightSearchMatches(java.util.List<com.lltool.core.domain.objectsearch.model.SearchMatchLocation> matches) {
+        if (matches == null || matches.isEmpty()) {
+            host.clearSearchDecorations();
+            return;
+        }
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < matches.size(); i++) {
+            var m = matches.get(i);
+            if (i > 0) sb.append(",");
+            sb.append("{\"line\":").append(m.line())
+              .append(",\"column\":").append(m.column())
+              .append(",\"length\":").append(m.length()).append("}");
+        }
+        sb.append("]");
+        host.setSearchDecorations(sb.toString());
+    }
+
+    public void setActiveSearchMatch(int line, int column, int length) {
+        host.setActiveSearchMatch(line, column, length);
+    }
+
+    public void clearSearchHighlights() {
+        host.clearSearchDecorations();
     }
 }

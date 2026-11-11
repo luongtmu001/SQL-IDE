@@ -93,27 +93,47 @@ public class SqlVisualizerCanvas extends ZoomableGraphPane {
     }
 
     private void renderStageGuides(QueryFlowGraph graph) {
+        Map<Integer, List<QueryFlowNode>> stageMap = new TreeMap<>();
+        for (QueryFlowNode node : graph.getNodes().values()) {
+            stageMap.computeIfAbsent(node.getStageIndex(), k -> new ArrayList<>()).add(node);
+        }
+
         List<String> stages = graph.getStageTitles();
-        double stageWidth = 260.0;
+        int activeStagesCount = stageMap.size();
+        double availableWidth = Math.max(getWidth(), 800.0) - 160.0;
+        double stageWidth = Math.max(220.0, activeStagesCount > 1 ? availableWidth / (activeStagesCount - 1) : 260.0);
         double originX = 80.0;
 
-        for (int i = 0; i < stages.size(); i++) {
-            double stageX = originX + (i * stageWidth);
+        int colIdx = 0;
+        for (Map.Entry<Integer, List<QueryFlowNode>> entry : stageMap.entrySet()) {
+            int stageIdx = entry.getKey();
+            List<QueryFlowNode> nodes = entry.getValue();
+            if (nodes.isEmpty()) continue;
+
+            double stageX = originX + (colIdx * stageWidth);
+
+            // Re-align nodes in this stage to the dynamic stageX
+            for (QueryFlowNode node : nodes) {
+                node.setX(stageX);
+            }
 
             // Stage pill header
-            Label stageHeader = new Label(stages.get(i));
+            String title = stageIdx < stages.size() ? stages.get(stageIdx) : ("Giai đoạn " + (stageIdx + 1));
+            Label stageHeader = new Label(title);
             stageHeader.getStyleClass().add("qf-stage-pill");
             stageHeader.setLayoutX(stageX);
             stageHeader.setLayoutY(50.0);
             backgroundGroup.getChildren().add(stageHeader);
 
             // Vertical divider line between stages
-            if (i > 0) {
+            if (colIdx > 0) {
                 Line divider = new Line(stageX - 30, 40, stageX - 30, 520);
                 divider.getStyleClass().add("stage-divider");
                 divider.getStrokeDashArray().addAll(4.0, 4.0);
                 backgroundGroup.getChildren().add(divider);
             }
+
+            colIdx++;
         }
     }
 
@@ -162,12 +182,12 @@ public class SqlVisualizerCanvas extends ZoomableGraphPane {
 
         card.getChildren().addAll(topRow, subtitleLabel);
 
-        // Bottom Metrics Badge
-        if (node.getEstimatedCost() != null || node.getRowCount() != null) {
+        // Bottom Metrics Badge (G-SV-3: hide badge and row metrics when null)
+        if ((node.getEstimatedCost() != null && !node.getEstimatedCost().isBlank()) || node.getRowCount() != null) {
             HBox metaRow = new HBox(6);
             metaRow.setAlignment(Pos.CENTER_LEFT);
 
-            if (node.getEstimatedCost() != null) {
+            if (node.getEstimatedCost() != null && !node.getEstimatedCost().isBlank()) {
                 Label costBadge = new Label("Chi phí: " + node.getEstimatedCost());
                 costBadge.getStyleClass().add("qf-cost-badge");
                 metaRow.getChildren().add(costBadge);
@@ -179,7 +199,9 @@ public class SqlVisualizerCanvas extends ZoomableGraphPane {
                 metaRow.getChildren().add(rowLabel);
             }
 
-            card.getChildren().add(metaRow);
+            if (!metaRow.getChildren().isEmpty()) {
+                card.getChildren().add(metaRow);
+            }
         }
 
         card.setLayoutX(node.getX());

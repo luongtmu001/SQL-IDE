@@ -1,6 +1,7 @@
 package app.ui.visualizer;
 
 import app.ui.components.AppButton;
+import app.ui.components.PaneHeader;
 import com.lltool.core.domain.visualizer.QueryFlowNode;
 import com.lltool.core.domain.visualizer.SourceRange;
 import javafx.animation.PauseTransition;
@@ -11,16 +12,16 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 import javafx.util.Duration;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 /**
  * Inspector / Detail Drawer for selected Query Flow Operator (Phase 3 - Slice 6).
  * Shows operator properties, execution estimates, and the exact SQL fragment with copy action.
+ * Standardized with PaneHeader and fixed 140px 2-column GridPane (G-SV-6, G-SV-3).
  */
 public class SqlVisualizerInspector extends VBox {
 
-    private final Label titleLabel = new Label("Chưa chọn toán tử nào");
-    private final FontIcon headerIcon = new FontIcon("fth-info");
+    private final PaneHeader header = new PaneHeader("Chưa chọn toán tử nào", "fth-info");
+    private final GridPane grid = new GridPane();
 
     private final Label lblOpType = new Label("-");
     private final Label lblStage = new Label("-");
@@ -37,37 +38,19 @@ public class SqlVisualizerInspector extends VBox {
     public SqlVisualizerInspector() {
         getStyleClass().add("qf-inspector-root");
         setSpacing(10);
-        setPadding(new Insets(12, 16, 12, 16));
+        setPadding(new Insets(10, 14, 10, 14));
+        setMinWidth(0);
 
-        // Top Header
-        HBox headerRow = new HBox(8);
-        headerRow.setAlignment(Pos.CENTER_LEFT);
-        headerIcon.setIconSize(16);
-        titleLabel.getStyleClass().add("qf-inspector-header");
-        headerRow.getChildren().addAll(headerIcon, titleLabel);
-
-        // Grid of properties
-        GridPane grid = new GridPane();
+        // Grid of properties: 2 columns (label: 140px fixed, value: stretch)
         grid.setHgap(16);
         grid.setVgap(6);
-
-        grid.add(createFieldLabel("Loại thao tác:"), 0, 0);
-        grid.add(lblOpType, 1, 0);
-
-        grid.add(createFieldLabel("Giai đoạn:"), 0, 1);
-        grid.add(lblStage, 1, 1);
-
-        grid.add(createFieldLabel("Chi phí ước tính:"), 2, 0);
-        grid.add(lblCost, 3, 0);
-
-        grid.add(createFieldLabel("Dữ liệu ước tính:"), 2, 1);
-        grid.add(lblRows, 3, 1);
-
-        grid.add(createFieldLabel("Mô tả:"), 0, 2);
-        grid.add(lblDescription, 1, 2, 3, 1);
-
-        grid.add(createFieldLabel("Vị trí câu lệnh:"), 0, 3);
-        grid.add(lblRange, 1, 3, 3, 1);
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setMinWidth(140);
+        col1.setPrefWidth(140);
+        col1.setMaxWidth(140);
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setHgrow(Priority.ALWAYS);
+        grid.getColumnConstraints().addAll(col1, col2);
 
         // SQL Snippet Container
         VBox snippetBox = new VBox(6);
@@ -75,7 +58,7 @@ public class SqlVisualizerInspector extends VBox {
         snippetHeader.setAlignment(Pos.CENTER_LEFT);
 
         Label lblSnippetTitle = new Label("Đoạn mã SQL:");
-        lblSnippetTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 0.85em; -fx-text-fill: -color-fg-muted;");
+        lblSnippetTitle.getStyleClass().add("qf-inspector-field-label");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -92,7 +75,9 @@ public class SqlVisualizerInspector extends VBox {
 
         snippetBox.getChildren().addAll(snippetHeader, sqlSnippetArea);
 
-        getChildren().addAll(headerRow, grid, snippetBox);
+        getChildren().addAll(header, grid, snippetBox);
+
+        inspectNode(null);
     }
 
     private Label createFieldLabel(String text) {
@@ -103,27 +88,35 @@ public class SqlVisualizerInspector extends VBox {
 
     public void inspectNode(QueryFlowNode node) {
         this.currentNode = node;
+        grid.getChildren().clear();
+
         if (node == null) {
-            titleLabel.setText("Chưa chọn toán tử nào");
-            headerIcon.setIconLiteral("fth-info");
+            header.setTitle("Chưa chọn toán tử nào");
+            header.setIconLiteral("fth-info");
+            header.setSubtitle(null);
+
             lblOpType.setText("-");
             lblStage.setText("-");
-            lblCost.setText("-");
-            lblRows.setText("-");
             lblDescription.setText("-");
             lblRange.setText("-");
+
+            grid.add(createFieldLabel("Loại thao tác:"), 0, 0);
+            grid.add(lblOpType, 1, 0);
+
+            grid.add(createFieldLabel("Giai đoạn:"), 0, 1);
+            grid.add(lblStage, 1, 1);
+
             sqlSnippetArea.setText("-- Chọn một bước trên sơ đồ để xem đoạn SQL tương ứng");
             btnCopySql.setDisable(true);
             return;
         }
 
-        titleLabel.setText(String.format("Bước %d: %s (%s)", node.getStepIndex(), node.getTitle(), node.getType().name()));
-        headerIcon.setIconLiteral("fth-cpu");
+        header.setTitle(String.format("Bước %d: %s", node.getStepIndex(), node.getTitle()));
+        header.setIconLiteral("fth-cpu");
+        header.setSubtitle("Loại: " + node.getType().name());
 
         lblOpType.setText(node.getType().name());
         lblStage.setText("Giai đoạn " + (node.getStageIndex() + 1));
-        lblCost.setText(node.getEstimatedCost() != null ? node.getEstimatedCost() : "N/A");
-        lblRows.setText(node.getRowCount() != null ? String.format("%,d dòng", node.getRowCount()) : "N/A");
         lblDescription.setText(node.getDetails() != null ? node.getDetails() : node.getSubtitle());
 
         SourceRange r = node.getSourceRange();
@@ -133,6 +126,32 @@ public class SqlVisualizerInspector extends VBox {
         } else {
             lblRange.setText("Tự động phân giải từ AST");
         }
+
+        int row = 0;
+        grid.add(createFieldLabel("Loại thao tác:"), 0, row);
+        grid.add(lblOpType, 1, row++);
+
+        grid.add(createFieldLabel("Giai đoạn:"), 0, row);
+        grid.add(lblStage, 1, row++);
+
+        // G-SV-3: Omit cost and rows if null
+        if (node.getEstimatedCost() != null && !node.getEstimatedCost().isBlank()) {
+            lblCost.setText(node.getEstimatedCost());
+            grid.add(createFieldLabel("Chi phí ước tính:"), 0, row);
+            grid.add(lblCost, 1, row++);
+        }
+
+        if (node.getRowCount() != null) {
+            lblRows.setText(String.format("%,d dòng", node.getRowCount()));
+            grid.add(createFieldLabel("Dữ liệu ước tính:"), 0, row);
+            grid.add(lblRows, 1, row++);
+        }
+
+        grid.add(createFieldLabel("Mô tả:"), 0, row);
+        grid.add(lblDescription, 1, row++);
+
+        grid.add(createFieldLabel("Vị trí câu lệnh:"), 0, row);
+        grid.add(lblRange, 1, row++);
 
         String sqlFrag = node.getSqlFragment();
         if (sqlFrag != null && !sqlFrag.isBlank()) {

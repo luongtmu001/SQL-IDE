@@ -30,6 +30,8 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,10 +68,10 @@ public class ObjectContentSearchTab extends SqlEditorTab {
     private final ToggleButton btnWholeWord = new ToggleButton("\\b");
     private final ToggleButton btnRegex = new ToggleButton(".*");
 
-    private final ToggleButton chipViews = new ToggleButton("Views");
-    private final ToggleButton chipProcs = new ToggleButton("Procedures");
-    private final ToggleButton chipFuncs = new ToggleButton("Functions");
-    private final ToggleButton chipTriggers = new ToggleButton("Triggers");
+    private final FilterChip chipViews = new FilterChip("Views", "fth-eye", true);
+    private final FilterChip chipProcs = new FilterChip("Procedures", "fth-cpu", true);
+    private final FilterChip chipFuncs = new FilterChip("Functions", "fth-code", true);
+    private final FilterChip chipTriggers = new FilterChip("Triggers", "fth-zap", true);
 
     private final ComboBox<String> cbCatalog = new ComboBox<>();
     private final ComboBox<String> cbSchema = new ComboBox<>();
@@ -92,6 +94,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
     private final ToggleButton btnToggleOccurrences = new ToggleButton("Vị trí khớp");
     private final AppButton btnCopyDdl = new AppButton("Sao chép DDL", "fth-copy", AppButton.Variant.DEFAULT, AppButton.Size.SMALL);
     private final AppButton btnOpenInSql = new AppButton("Mở trong Tab SQL", "fth-external-link", AppButton.Variant.PRIMARY, AppButton.Size.SMALL);
+    private final EmptyState detailEmptyState = new EmptyState("fth-file-text", "Chưa chọn đối tượng", "Chọn một đối tượng bên trái để xem định nghĩa DDL.");
     private EmbeddedMonaco ddlEditor;
 
     // SplitPane for Monaco (Top) and Bottom Occurrences Table (Bottom)
@@ -101,6 +104,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
     private final Label lblOccurrencesBadge = new Label("0 vị trí");
 
     // UI Controls - Footer
+    private final WorkspaceFooter workspaceFooter = new WorkspaceFooter();
     private final Label lblFooterStatus = new Label("Sẵn sàng");
 
     public ObjectContentSearchTab(
@@ -183,16 +187,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         btnRegex.getStyleClass().add("search-toggle-btn");
         btnRegex.setTooltip(new Tooltip("Biểu thức chính quy"));
 
-        // Type Filter Chips
-        chipViews.setSelected(true);
-        chipProcs.setSelected(true);
-        chipFuncs.setSelected(true);
-        chipTriggers.setSelected(true);
-
-        chipViews.getStyleClass().add("filter-chip");
-        chipProcs.getStyleClass().add("filter-chip");
-        chipFuncs.getStyleClass().add("filter-chip");
-        chipTriggers.getStyleClass().add("filter-chip");
+        // Type Filter Chips are initialized selected with their icons
 
         // Scope Dropdowns
         cbCatalog.setPromptText("Database / Catalog");
@@ -310,7 +305,14 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         detailSplitPane.getItems().addAll(ddlEditor.node(), bottomOccurrencesPanel);
         detailSplitPane.setDividerPositions(0.70);
 
-        pane.getChildren().addAll(navBar, detailSplitPane);
+        StackPane detailStack = new StackPane();
+        VBox.setVgrow(detailStack, Priority.ALWAYS);
+        detailStack.getChildren().addAll(detailSplitPane, detailEmptyState);
+        detailEmptyState.setVisible(true);
+        detailEmptyState.setManaged(true);
+        detailSplitPane.setVisible(false);
+
+        pane.getChildren().addAll(navBar, detailStack);
         return pane;
     }
 
@@ -353,37 +355,67 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         occurrencesTable.setPlaceholder(new Label("Không có vị trí khớp trong đối tượng hiện tại"));
         VBox.setVgrow(occurrencesTable, Priority.ALWAYS);
 
-        // Column # (Row index)
+        // Column # (Row index) - Fixed 48px
         TableColumn<SearchMatchLocation, Integer> colIndex = new TableColumn<>("#");
-        colIndex.setPrefWidth(50);
+        colIndex.setPrefWidth(48);
+        colIndex.setMinWidth(48);
+        colIndex.setMaxWidth(48);
         colIndex.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(occurrencesTable.getItems().indexOf(data.getValue()) + 1));
         colIndex.setStyle("-fx-alignment: CENTER;");
 
-        // Column Line
+        // Column Line - Fixed 64px
         TableColumn<SearchMatchLocation, Integer> colLine = new TableColumn<>("Dòng");
-        colLine.setPrefWidth(90);
+        colLine.setPrefWidth(64);
+        colLine.setMinWidth(64);
+        colLine.setMaxWidth(64);
         colLine.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().line()));
         colLine.setStyle("-fx-alignment: CENTER-RIGHT; -fx-padding: 0 8 0 0;");
 
-        // Column Col
+        // Column Col - Fixed 64px
         TableColumn<SearchMatchLocation, Integer> colCol = new TableColumn<>("Cột");
-        colCol.setPrefWidth(80);
+        colCol.setPrefWidth(64);
+        colCol.setMinWidth(64);
+        colCol.setMaxWidth(64);
         colCol.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().column()));
         colCol.setStyle("-fx-alignment: CENTER-RIGHT; -fx-padding: 0 8 0 0;");
 
-        // Column Code Snippet
+        // Column Code Snippet - Remainder with keyword highlighting
         TableColumn<SearchMatchLocation, String> colSnippet = new TableColumn<>("Đoạn mã");
         colSnippet.setPrefWidth(450);
         colSnippet.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().snippet()));
         colSnippet.setCellFactory(tc -> new TableCell<>() {
             @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
+            protected void updateItem(String snippet, boolean empty) {
+                super.updateItem(snippet, empty);
+                if (empty || snippet == null) {
                     setText(null);
+                    setGraphic(null);
                 } else {
-                    setText(item);
-                    getStyleClass().add("occurrences-code-cell");
+                    String kw = searchField.getText();
+                    if (kw != null && !kw.isBlank()) {
+                        int idx = snippet.toLowerCase().indexOf(kw.toLowerCase());
+                        if (idx >= 0) {
+                            TextFlow flow = new TextFlow();
+                            flow.getStyleClass().add("occurrences-code-cell");
+                            String before = snippet.substring(0, idx);
+                            String match = snippet.substring(idx, Math.min(snippet.length(), idx + kw.length()));
+                            String after = snippet.substring(Math.min(snippet.length(), idx + kw.length()));
+
+                            Text tBefore = new Text(before);
+                            tBefore.getStyleClass().add("occurrences-code-text");
+                            Text tMatch = new Text(match);
+                            tMatch.getStyleClass().add("occurrences-highlight-match");
+                            Text tAfter = new Text(after);
+                            tAfter.getStyleClass().add("occurrences-code-text");
+
+                            flow.getChildren().addAll(tBefore, tMatch, tAfter);
+                            setText(null);
+                            setGraphic(flow);
+                            return;
+                        }
+                    }
+                    setText(snippet);
+                    setGraphic(null);
                 }
             }
         });
@@ -433,14 +465,11 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         }
     }
 
-    private HBox buildFooter() {
-        HBox footer = new HBox(12);
-        footer.getStyleClass().add("object-search-footer");
-        footer.setAlignment(Pos.CENTER_LEFT);
-
+    private WorkspaceFooter buildFooter() {
         lblFooterStatus.setText("Kết nối: " + (profile != null ? profile.name() : "Chưa kết nối"));
-        footer.getChildren().add(lblFooterStatus);
-        return footer;
+        workspaceFooter.addSection(lblFooterStatus);
+        workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
+        return workspaceFooter;
     }
 
     private void setupEvents(VBox root) {
@@ -613,10 +642,10 @@ public class ObjectContentSearchTab extends SqlEditorTab {
 
         // Categories definition: {Type, Display Title, Icon}
         String[][] categories = {
-                {"VIEW", "VIEWS", "fth-eye"},
-                {"PROCEDURE", "STORED PROCEDURES", "fth-cpu"},
-                {"FUNCTION", "FUNCTIONS", "fth-code"},
-                {"TRIGGER", "TRIGGERS", "fth-zap"}
+                {"VIEW", "Views", "fth-eye"},
+                {"PROCEDURE", "Procedures", "fth-cpu"},
+                {"FUNCTION", "Functions", "fth-code"},
+                {"TRIGGER", "Triggers", "fth-zap"}
         };
 
         int totalVisibleHits = 0;
@@ -687,6 +716,10 @@ public class ObjectContentSearchTab extends SqlEditorTab {
             return;
         }
 
+        detailEmptyState.setVisible(false);
+        detailEmptyState.setManaged(false);
+        detailSplitPane.setVisible(true);
+
         lblActiveObjectName.setText(hit.getQualifiedName() + " (" + hit.getType() + ")");
         ddlEditor.setText(hit.getDdl());
         ddlEditor.highlightSearchMatches(hit.getMatches());
@@ -723,6 +756,10 @@ public class ObjectContentSearchTab extends SqlEditorTab {
     }
 
     private void clearDetailView() {
+        detailEmptyState.setVisible(true);
+        detailEmptyState.setManaged(true);
+        detailSplitPane.setVisible(false);
+
         lblActiveObjectName.setText("Chưa chọn đối tượng");
         ddlEditor.setText("-- Chọn đối tượng bên trái để xem DDL");
         ddlEditor.clearSearchHighlights();
@@ -812,15 +849,14 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         private final HBox rootCat = new HBox(6);
         private final FontIcon iconCat = new FontIcon();
         private final Label lblCatTitle = new Label();
-        private final Label lblCatCount = new Label();
-        private final Label lblCatBadge = new Label();
+        private final Badge lblCatBadge = Badge.neutral("");
 
         private final HBox rootHit = new HBox(6);
         private final FontIcon iconHit = new FontIcon();
         private final VBox textContainer = new VBox(2);
         private final HBox topRow = new HBox(6);
         private final Label lblHitName = new Label();
-        private final Label lblHitBadge = new Label();
+        private final Badge lblHitBadge = Badge.neutral("");
         private final Label lblSnippet = new Label();
 
         public ObjectTreeCell() {
@@ -828,12 +864,10 @@ public class ObjectContentSearchTab extends SqlEditorTab {
             rootCat.setAlignment(Pos.CENTER_LEFT);
             iconCat.setIconSize(13);
             lblCatTitle.getStyleClass().add("category-title-label");
-            lblCatCount.getStyleClass().add("category-count-label");
-            lblCatBadge.getStyleClass().addAll("badge", "badge-subtle");
 
             Region catSpacer = new Region();
             HBox.setHgrow(catSpacer, Priority.ALWAYS);
-            rootCat.getChildren().addAll(iconCat, lblCatTitle, lblCatCount, catSpacer, lblCatBadge);
+            rootCat.getChildren().addAll(iconCat, lblCatTitle, catSpacer, lblCatBadge);
 
             // Hit item layout setup
             rootHit.setAlignment(Pos.CENTER_LEFT);
@@ -841,7 +875,6 @@ public class ObjectContentSearchTab extends SqlEditorTab {
             HBox.setHgrow(textContainer, Priority.ALWAYS);
 
             lblHitName.getStyleClass().add("object-hit-title");
-            lblHitBadge.getStyleClass().addAll("badge", "badge-warning");
 
             topRow.setAlignment(Pos.CENTER_LEFT);
             Region hitSpacer = new Region();
@@ -849,7 +882,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
             topRow.getChildren().addAll(lblHitName, hitSpacer, lblHitBadge);
 
             lblSnippet.getStyleClass().add("object-hit-snippet");
-            lblSnippet.setMaxWidth(260);
+            lblSnippet.maxWidthProperty().bind(widthProperty().subtract(60));
 
             textContainer.getChildren().addAll(topRow, lblSnippet);
             rootHit.getChildren().addAll(iconHit, textContainer);
@@ -861,12 +894,13 @@ public class ObjectContentSearchTab extends SqlEditorTab {
             if (empty || item == null) {
                 setGraphic(null);
                 setText(null);
-                getStyleClass().removeAll("category-tree-cell");
+                getStyleClass().remove("category-tree-cell");
             } else if (item.isCategory()) {
-                getStyleClass().add("category-tree-cell");
+                if (!getStyleClass().contains("category-tree-cell")) {
+                    getStyleClass().add("category-tree-cell");
+                }
                 iconCat.setIconLiteral(item.getIconLiteral());
-                lblCatTitle.setText(item.getTitle());
-                lblCatCount.setText("(" + item.getObjectCount() + ")");
+                lblCatTitle.setText(item.getTitle() + " (" + item.getObjectCount() + ")");
                 lblCatBadge.setVisible(false);
                 lblCatBadge.setManaged(false);
 
@@ -879,7 +913,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
                 setGraphic(rootCat);
                 setText(null);
             } else {
-                getStyleClass().removeAll("category-tree-cell");
+                getStyleClass().remove("category-tree-cell");
                 ObjectSearchHit hit = item.getHit();
                 String type = hit.getType();
                 if ("VIEW".equalsIgnoreCase(type)) {
@@ -896,6 +930,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
 
                 lblHitName.setText(hit.getQualifiedName());
                 lblHitBadge.setText(hit.getMatchCount() + " kết quả");
+                lblHitBadge.setVariant(Badge.Variant.NEUTRAL);
 
                 String snippet = hit.getFirstSnippet();
                 if (snippet != null && !snippet.isBlank()) {

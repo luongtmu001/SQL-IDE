@@ -1,0 +1,274 @@
+/* =====================================================================
+   Object Content Search Stylesheet (Phase 3 - Slice 3)
+   Adheres strictly to design tokens (-ide-*, -color-*), rounded/flat shapes.
+   ===================================================================== */
+
+.object-search-root {
+    -fx-background-color: -color-bg-default;
+}
+
+/* --- Top Toolbar --- */
+.object-search-toolbar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 12;
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.search-toggle-btn {
+    -fx-font-family: 'JetBrains Mono', Consolas, monospace;
+    -fx-font-size: 0.85em;
+    -fx-font-weight: bold;
+    -fx-padding: 3 7;
+    -fx-background-radius: 4;
+}
+
+.search-toggle-btn:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-radius: 4;
+}
+
+.filter-chip {
+    -fx-font-size: 0.85em;
+    -fx-padding: 3 8;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+}
+
+.filter-chip:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-border-color: -color-accent-emphasis;
+}
+
+/* --- SplitPane & Master / Detail --- */
+.object-search-split-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.object-search-master {
+    -fx-background-color: -ide-sidebar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 1 0 0;
+}
+
+.master-header-box {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 6 10;
+}
+
+.master-count-label {
+    -fx-font-size: 0.85em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* --- TreeView for Grouped Objects --- */
+.object-hit-tree {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.object-hit-tree .tree-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 4 6;
+    -fx-border-color: transparent;
+}
+
+.object-hit-tree .tree-cell:filled:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.object-hit-tree .tree-cell:filled:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-muted;
+    -fx-border-width: 0 0 0 2;
+}
+
+.category-tree-cell {
+    -fx-background-color: -color-bg-subtle;
+    -fx-font-weight: bold;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 6 8;
+}
+
+.category-title-label {
+    -fx-font-size: 0.85em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.category-count-label {
+    -fx-font-size: 0.8em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.object-hit-title {
+    -fx-font-size: 0.9em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.object-hit-schema {
+    -fx-font-size: 0.8em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.object-hit-snippet {
+    -fx-font-family: 'JetBrains Mono', Consolas, monospace;
+    -fx-font-size: 0.8em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* Legacy ListView support */
+.object-hit-list {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.object-hit-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 6 10;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.object-hit-list .list-cell:filled:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.object-hit-list .list-cell:filled:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-muted;
+}
+
+/* --- Detail Pane --- */
+.object-search-detail {
+    -fx-background-color: -color-bg-default;
+}
+
+.detail-nav-toolbar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 6 12;
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.detail-active-object-label {
+    -fx-font-size: 0.9em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.detail-stepper-label {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* --- Detail Vertical SplitPane --- */
+.detail-split-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.detail-split-pane > .split-pane-divider {
+    -fx-background-color: -color-border-subtle;
+    -fx-padding: 2;
+}
+
+.detail-split-pane > .split-pane-divider:hover {
+    -fx-background-color: -color-accent-emphasis;
+}
+
+/* --- Bottom Occurrences Panel --- */
+.occurrences-panel {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+
+.occurrences-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 4 10;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8;
+}
+
+.occurrences-title {
+    -fx-font-size: 0.85em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.occurrences-hint {
+    -fx-font-size: 0.8em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.occurrences-table {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.occurrences-table .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.occurrences-table .table-row-cell:filled:hover {
+    -fx-background-color: -color-bg-default;
+}
+
+.occurrences-table .table-row-cell:filled:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-muted;
+}
+
+.occurrences-code-cell {
+    -fx-font-family: 'JetBrains Mono', Consolas, monospace;
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-default;
+}
+
+.occurrences-highlight-match {
+    -fx-font-family: 'JetBrains Mono', Consolas, monospace;
+    -fx-font-size: 0.85em;
+    -fx-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+    -fx-underline: true;
+}
+
+.occurrences-code-text {
+    -fx-font-family: 'JetBrains Mono', Consolas, monospace;
+    -fx-font-size: 0.85em;
+    -fx-fill: -color-fg-default;
+}
+
+/* --- Status Bar Footer --- */
+.object-search-footer {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 4 12;
+    -fx-min-height: 24;
+    -fx-max-height: 24;
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 0.8em;
+    -fx-text-fill: -color-fg-muted;
+}
+

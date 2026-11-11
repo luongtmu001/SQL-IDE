@@ -79,12 +79,7 @@ public class SchemaCompareTab extends SqlEditorTab {
 
     // UI Controls - Filter & Metrics Bar
     private final Label lblDiffSummaryBadge = new Label("Chưa so sánh");
-    private final ToggleButton btnFilterAll = new ToggleButton("Tất cả (0)");
-    private final ToggleButton btnFilterDiff = new ToggleButton("Khác biệt (0)");
-    private final ToggleButton btnFilterNew = new ToggleButton("Chỉ có ở nguồn (0)");
-    private final ToggleButton btnFilterDel = new ToggleButton("Chỉ có ở đích (0)");
-    private final ToggleButton btnFilterMod = new ToggleButton("Khác nhau (0)");
-    private final ToggleGroup filterGroup = new ToggleGroup();
+    private final SegmentedToggle<String> filterToggle = new SegmentedToggle<>();
 
     private final Hyperlink linkSelectAll = new Hyperlink("Chọn tất cả");
     private final Hyperlink linkDeselectAll = new Hyperlink("Bỏ chọn");
@@ -99,10 +94,8 @@ public class SchemaCompareTab extends SqlEditorTab {
     private LoadingOverlay loadingOverlay;
 
     // UI Controls - Detail Side-by-side DDL Viewers
-    private final Label lblSourceDdlHeader = new Label("SOURCE: (Chưa chọn đối tượng)");
-    private final Label lblTargetDdlHeader = new Label("TARGET: (Chưa chọn đối tượng)");
-    private final Label lblSourceStats = new Label("");
-    private final Label lblTargetStats = new Label("");
+    private PaneHeader sourceHeader;
+    private PaneHeader targetHeader;
     private EmbeddedMonaco sourceEditor;
     private EmbeddedMonaco targetEditor;
 
@@ -115,6 +108,7 @@ public class SchemaCompareTab extends SqlEditorTab {
     private EmbeddedMonaco scriptEditor;
 
     // UI Controls - Footer
+    private final WorkspaceFooter workspaceFooter = new WorkspaceFooter();
     private final Label lblFooterStatus = new Label("Sẵn sàng");
 
     public SchemaCompareTab(
@@ -172,7 +166,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         VBox.setVgrow(mainSplitPane, Priority.ALWAYS);
 
         // 3. Build Footer Bar
-        HBox footer = buildFooter();
+        WorkspaceFooter footer = buildFooter();
 
         root.getChildren().addAll(headerBar, mainSplitPane, footer);
 
@@ -188,10 +182,6 @@ public class SchemaCompareTab extends SqlEditorTab {
         VBox header = new VBox(8);
         header.getStyleClass().add("schema-compare-header");
 
-        // Row 1: Source & Target Endpoints
-        HBox row1 = new HBox(8);
-        row1.setAlignment(Pos.CENTER_LEFT);
-
         // Source Box
         HBox srcBox = new HBox(6);
         srcBox.getStyleClass().add("endpoint-box");
@@ -201,9 +191,16 @@ public class SchemaCompareTab extends SqlEditorTab {
         lblSourceBadge.getStyleClass().add("endpoint-badge-source");
 
         cbSourceProfile.setPromptText("Kết nối Nguồn");
+        cbSourceProfile.setMinWidth(120);
         cbSourceCatalog.setPromptText("Database");
+        cbSourceCatalog.setMinWidth(120);
         cbSourceSchema.setPromptText("Schema");
+        cbSourceSchema.setMinWidth(100);
         cbSourceSchema.setEditable(true);
+
+        HBox.setHgrow(cbSourceProfile, Priority.ALWAYS);
+        HBox.setHgrow(cbSourceCatalog, Priority.ALWAYS);
+        HBox.setHgrow(cbSourceSchema, Priority.ALWAYS);
 
         srcBox.getChildren().addAll(lblSourceBadge, cbSourceProfile, new Label("/"), cbSourceCatalog, cbSourceSchema);
 
@@ -220,17 +217,49 @@ public class SchemaCompareTab extends SqlEditorTab {
         lblTargetBadge.getStyleClass().add("endpoint-badge-target");
 
         cbTargetProfile.setPromptText("Kết nối Đích");
+        cbTargetProfile.setMinWidth(120);
         cbTargetCatalog.setPromptText("Database");
+        cbTargetCatalog.setMinWidth(120);
         cbTargetSchema.setPromptText("Schema");
+        cbTargetSchema.setMinWidth(100);
         cbTargetSchema.setEditable(true);
+
+        HBox.setHgrow(cbTargetProfile, Priority.ALWAYS);
+        HBox.setHgrow(cbTargetCatalog, Priority.ALWAYS);
+        HBox.setHgrow(cbTargetSchema, Priority.ALWAYS);
 
         tgtBox.getChildren().addAll(lblTargetBadge, cbTargetProfile, new Label("/"), cbTargetCatalog, cbTargetSchema);
 
         // Action Buttons
         btnOptions.setOnAction(e -> showOptionsDialog());
         btnRunCompare.setOnAction(e -> executeCompareAsync());
+        HBox actionBox = new HBox(6, btnOptions, btnRunCompare);
+        actionBox.setAlignment(Pos.CENTER_LEFT);
 
-        row1.getChildren().addAll(srcBox, btnSwap, tgtBox, btnOptions, btnRunCompare);
+        // Responsive container for endpoints
+        VBox endpointsContainer = new VBox(6);
+        HBox row1Wide = new HBox(8);
+        row1Wide.setAlignment(Pos.CENTER_LEFT);
+        HBox row1NarrowTop = new HBox(8);
+        row1NarrowTop.setAlignment(Pos.CENTER_LEFT);
+        HBox row1NarrowBottom = new HBox(8);
+        row1NarrowBottom.setAlignment(Pos.CENTER_LEFT);
+
+        Runnable updateEndpointsLayout = () -> {
+            boolean narrow = header.getWidth() > 0 && header.getWidth() < 1400;
+            endpointsContainer.getChildren().clear();
+            if (narrow) {
+                row1NarrowTop.getChildren().setAll(srcBox, btnSwap);
+                row1NarrowBottom.getChildren().setAll(tgtBox, actionBox);
+                endpointsContainer.getChildren().setAll(row1NarrowTop, row1NarrowBottom);
+            } else {
+                row1Wide.getChildren().setAll(srcBox, btnSwap, tgtBox, actionBox);
+                endpointsContainer.getChildren().setAll(row1Wide);
+            }
+        };
+        header.widthProperty().addListener((obs, oldW, newW) -> updateEndpointsLayout.run());
+        row1Wide.getChildren().setAll(srcBox, btnSwap, tgtBox, actionBox);
+        endpointsContainer.getChildren().setAll(row1Wide);
 
         // Row 2: Filter & Metrics Bar
         HBox row2 = new HBox(8);
@@ -242,25 +271,18 @@ public class SchemaCompareTab extends SqlEditorTab {
 
         lblDiffSummaryBadge.getStyleClass().addAll("badge", "badge-warning");
 
-        // Filter Toggles
-        btnFilterAll.setToggleGroup(filterGroup);
-        btnFilterDiff.setToggleGroup(filterGroup);
-        btnFilterNew.setToggleGroup(filterGroup);
-        btnFilterDel.setToggleGroup(filterGroup);
-        btnFilterMod.setToggleGroup(filterGroup);
-        btnFilterAll.setSelected(true);
-
-        btnFilterAll.getStyleClass().add("filter-badge-btn");
-        btnFilterDiff.getStyleClass().add("filter-badge-btn");
-        btnFilterNew.getStyleClass().add("filter-badge-btn");
-        btnFilterDel.getStyleClass().add("filter-badge-btn");
-        btnFilterMod.getStyleClass().add("filter-badge-btn");
-
-        btnFilterAll.setOnAction(e -> applyFilterMode("ALL"));
-        btnFilterDiff.setOnAction(e -> applyFilterMode("DIFF"));
-        btnFilterNew.setOnAction(e -> applyFilterMode("NEW"));
-        btnFilterDel.setOnAction(e -> applyFilterMode("DEL"));
-        btnFilterMod.setOnAction(e -> applyFilterMode("MOD"));
+        // SegmentedToggle for filtering
+        filterToggle.addItem("ALL", "Tất cả (0)", "fth-layers");
+        filterToggle.addItem("DIFF", "Khác biệt (0)", "fth-alert-circle");
+        filterToggle.addItem("NEW", "Chỉ có ở nguồn (0)", "fth-plus-circle");
+        filterToggle.addItem("DEL", "Chỉ có ở đích (0)", "fth-minus-circle");
+        filterToggle.addItem("MOD", "Khác nhau (0)", "fth-edit-2");
+        filterToggle.select("ALL");
+        filterToggle.selectedValueProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null) {
+                applyFilterMode(newV);
+            }
+        });
 
         Region filterSpacer = new Region();
         HBox.setHgrow(filterSpacer, Priority.ALWAYS);
@@ -272,13 +294,13 @@ public class SchemaCompareTab extends SqlEditorTab {
         row2.getChildren().addAll(
                 lblMetricsTitle, lblDiffSummaryBadge,
                 new Separator(Orientation.VERTICAL),
-                btnFilterAll, btnFilterDiff, btnFilterNew, btnFilterDel, btnFilterMod,
+                filterToggle,
                 filterSpacer,
                 linkSelectAll, new Label("·"), linkDeselectAll,
                 btnDeployScript
         );
 
-        header.getChildren().addAll(row1, row2);
+        header.getChildren().addAll(endpointsContainer, row2);
         return header;
     }
 
@@ -341,43 +363,31 @@ public class SchemaCompareTab extends SqlEditorTab {
         box.getStyleClass().add("diff-viewer-container");
         VBox.setVgrow(box, Priority.ALWAYS);
 
-        // Subheader bar
-        HBox subHeader = new HBox();
-        subHeader.getStyleClass().add("diff-viewer-header");
-
-        HBox leftTitleBox = new HBox(8);
-        leftTitleBox.setAlignment(Pos.CENTER_LEFT);
-        HBox.setHgrow(leftTitleBox, Priority.ALWAYS);
-        lblSourceDdlHeader.getStyleClass().add("diff-header-source");
-        lblSourceStats.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 0.8em;");
-        leftTitleBox.getChildren().addAll(lblSourceDdlHeader, lblSourceStats);
-
-        Separator titleSep = new Separator(Orientation.VERTICAL);
-
-        HBox rightTitleBox = new HBox(8);
-        rightTitleBox.setAlignment(Pos.CENTER_LEFT);
-        HBox.setHgrow(rightTitleBox, Priority.ALWAYS);
-        lblTargetDdlHeader.getStyleClass().add("diff-header-target");
-        lblTargetStats.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 0.8em;");
-        rightTitleBox.getChildren().addAll(lblTargetDdlHeader, lblTargetStats);
-
-        subHeader.getChildren().addAll(leftTitleBox, titleSep, rightTitleBox);
-
-        // Side-by-side SplitPane
-        SplitPane ddlSplit = new SplitPane();
-        ddlSplit.setOrientation(Orientation.HORIZONTAL);
-        VBox.setVgrow(ddlSplit, Priority.ALWAYS);
+        sourceHeader = new PaneHeader("SOURCE: (Chưa chọn đối tượng)", "fth-database", "DEV");
+        targetHeader = new PaneHeader("TARGET: (Chưa chọn đối tượng)", "fth-database", "PROD");
 
         sourceEditor = new EmbeddedMonaco("compare_source_" + System.currentTimeMillis(), "sql", "-- SOURCE DDL");
         sourceEditor.setReadOnly(true);
+        sourceEditor.setShowStatusBar(false);
 
         targetEditor = new EmbeddedMonaco("compare_target_" + System.currentTimeMillis(), "sql", "-- TARGET DDL");
         targetEditor.setReadOnly(true);
+        targetEditor.setShowStatusBar(false);
 
-        ddlSplit.getItems().addAll(sourceEditor.node(), targetEditor.node());
+        VBox leftPane = new VBox(sourceHeader, sourceEditor.node());
+        VBox.setVgrow(sourceEditor.node(), Priority.ALWAYS);
+        HBox.setHgrow(leftPane, Priority.ALWAYS);
+
+        VBox rightPane = new VBox(targetHeader, targetEditor.node());
+        VBox.setVgrow(targetEditor.node(), Priority.ALWAYS);
+        HBox.setHgrow(rightPane, Priority.ALWAYS);
+
+        SplitPane ddlSplit = new SplitPane(leftPane, rightPane);
+        ddlSplit.setOrientation(Orientation.HORIZONTAL);
         ddlSplit.setDividerPositions(0.50);
+        VBox.setVgrow(ddlSplit, Priority.ALWAYS);
 
-        box.getChildren().addAll(subHeader, ddlSplit);
+        box.getChildren().add(ddlSplit);
         return box;
     }
 
@@ -387,35 +397,24 @@ public class SchemaCompareTab extends SqlEditorTab {
         drawer.setPrefHeight(180);
         drawer.setMinHeight(28);
 
-        // Header
-        HBox header = new HBox(8);
-        header.getStyleClass().add("script-drawer-header");
-        header.setAlignment(Pos.CENTER_LEFT);
-
-        FontIcon icon = new FontIcon("fth-file-text");
-        icon.setIconSize(13);
-        icon.getStyleClass().add("icon-success");
-
-        Label lblTitle = new Label("Script đồng bộ");
-        lblTitle.getStyleClass().add("script-drawer-title");
-
-        lblScriptBadge.getStyleClass().addAll("badge", "badge-subtle");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        btnCopyScript.setOnAction(e -> copyScriptToClipboard());
-        btnOpenScriptInSql.setOnAction(e -> openScriptInSqlTab());
-
-        IconButton btnClose = new IconButton("fth-x", "Thu gọn script drawer");
-        btnClose.setOnAction(e -> toggleScriptDrawer(false));
-
-        header.getChildren().addAll(icon, lblTitle, lblScriptBadge, spacer, btnCopyScript, btnOpenScriptInSql, btnClose);
+        // Header using PaneHeader
+        PaneHeader header = new PaneHeader("Script đồng bộ", "fth-file-text", "");
+        header.setRightNode(new HBox(6, lblScriptBadge, btnCopyScript, btnOpenScriptInSql));
 
         // Monaco Script Editor
         scriptEditor = new EmbeddedMonaco("migration_script_" + System.currentTimeMillis(), "sql", "-- Bấm 'Sinh script' để tạo script");
         scriptEditor.setReadOnly(false);
+        scriptEditor.setShowStatusBar(false);
         VBox.setVgrow(scriptEditor.node(), Priority.ALWAYS);
+
+        // Header click toggles collapse / expand
+        header.setOnMouseClicked(e -> {
+            boolean isVisible = scriptEditor.node().isVisible();
+            boolean expand = !isVisible;
+            scriptEditor.node().setVisible(expand);
+            scriptEditor.node().setManaged(expand);
+            drawer.setPrefHeight(expand ? 180 : 28);
+        });
 
         drawer.getChildren().addAll(header, scriptEditor.node());
         return drawer;
@@ -432,13 +431,10 @@ public class SchemaCompareTab extends SqlEditorTab {
         }
     }
 
-    private HBox buildFooter() {
-        HBox footer = new HBox(12);
-        footer.getStyleClass().add("schema-compare-footer");
-        footer.setAlignment(Pos.CENTER_LEFT);
-
-        footer.getChildren().add(lblFooterStatus);
-        return footer;
+    private WorkspaceFooter buildFooter() {
+        workspaceFooter.addSection(lblFooterStatus);
+        workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
+        return workspaceFooter;
     }
 
     private void setupEvents(VBox root) {
@@ -552,19 +548,27 @@ public class SchemaCompareTab extends SqlEditorTab {
     }
 
     private void showOptionsDialog() {
-        VBox content = new VBox(10);
+        VBox content = new VBox(12);
         content.setStyle("-fx-padding: 16;");
 
-        CheckBox chkTx = new CheckBox("Bọc trong giao dịch an toàn");
+        CheckBox chkTx = new CheckBox("Bọc trong giao dịch an toàn (BEGIN TRANSACTION / COMMIT)");
         chkTx.setSelected(wrapTransaction);
 
-        CheckBox chkDrop = new CheckBox("Cho phép tạo lệnh DROP đối tượng");
+        CheckBox chkDrop = new CheckBox("Cho phép tạo lệnh DROP đối tượng thừa ở Target");
         chkDrop.setSelected(includeDropTables);
 
-        Label lblWarn = new Label("Lưu ý: Thao tác DROP có thể làm mất dữ liệu trên CSDL đích.");
-        lblWarn.setStyle("-fx-text-fill: -color-danger-fg; -fx-font-size: 0.85em;");
+        HBox warnBanner = new HBox(8);
+        warnBanner.setAlignment(Pos.CENTER_LEFT);
+        warnBanner.getStyleClass().addAll("dialog-chrome-banner", "warning");
+        FontIcon warnIcon = new FontIcon("fth-alert-triangle");
+        warnIcon.setIconSize(16);
+        Label lblWarn = new Label("Cảnh báo: Thao tác DROP có thể làm mất dữ liệu vĩnh viễn trên CSDL Đích!");
+        lblWarn.setWrapText(true);
+        warnBanner.getChildren().addAll(warnIcon, lblWarn);
+        warnBanner.visibleProperty().bind(chkDrop.selectedProperty());
+        warnBanner.managedProperty().bind(chkDrop.selectedProperty());
 
-        content.getChildren().addAll(chkTx, chkDrop, lblWarn);
+        content.getChildren().addAll(chkTx, chkDrop, warnBanner);
 
         javafx.stage.Window owner = getTabPane() != null && getTabPane().getScene() != null ? getTabPane().getScene().getWindow() : null;
         DialogChrome chrome = DialogChrome.create(owner, "Tùy chọn So sánh & Di chuyển", "fth-sliders")
@@ -635,14 +639,15 @@ public class SchemaCompareTab extends SqlEditorTab {
             // Update Metrics Bar
             SchemaCompareSummary s = result.getSummary();
             lblDiffSummaryBadge.setText(s.getTotalDifferences() + " khác biệt");
-            btnFilterAll.setText("Tất cả (" + s.totalObjects() + ")");
-            btnFilterDiff.setText("Khác biệt (" + s.getTotalDifferences() + ")");
-            btnFilterNew.setText("Chỉ có ở nguồn (" + s.missingInTargetCount() + ")");
-            btnFilterDel.setText("Chỉ có ở đích (" + s.extraInTargetCount() + ")");
-            btnFilterMod.setText("Khác nhau (" + s.differentCount() + ")");
+            if (filterToggle.getButton("ALL") != null) filterToggle.getButton("ALL").setText("Tất cả (" + s.totalObjects() + ")");
+            if (filterToggle.getButton("DIFF") != null) filterToggle.getButton("DIFF").setText("Khác biệt (" + s.getTotalDifferences() + ")");
+            if (filterToggle.getButton("NEW") != null) filterToggle.getButton("NEW").setText("Chỉ có ở nguồn (" + s.missingInTargetCount() + ")");
+            if (filterToggle.getButton("DEL") != null) filterToggle.getButton("DEL").setText("Chỉ có ở đích (" + s.extraInTargetCount() + ")");
+            if (filterToggle.getButton("MOD") != null) filterToggle.getButton("MOD").setText("Khác nhau (" + s.differentCount() + ")");
 
             lblFooterStatus.setText(String.format("So sánh hoàn tất: %d khác biệt / %d đối tượng (%d ms)",
                     s.getTotalDifferences(), s.totalObjects(), elapsed));
+            workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
 
             emptyState.setVisible(false);
             emptyState.setManaged(false);
@@ -674,6 +679,8 @@ public class SchemaCompareTab extends SqlEditorTab {
         };
 
         TreeItem<SchemaTreeNode> firstSelectable = null;
+        TreeItem<SchemaTreeNode> itemToSelect = null;
+        SchemaObjectDiff prevDiff = selectedDiff;
 
         for (SchemaObjectType type : types) {
             List<SchemaObjectDiff> matching = new ArrayList<>();
@@ -710,7 +717,9 @@ public class SchemaCompareTab extends SqlEditorTab {
             for (SchemaObjectDiff d : matching) {
                 TreeItem<SchemaTreeNode> item = new TreeItem<>(SchemaTreeNode.createObject(d));
                 catItem.getChildren().add(item);
-                if (firstSelectable == null && d.getStatus() != DiffStatus.IDENTICAL) {
+                if (prevDiff != null && d.getQualifiedName().equals(prevDiff.getQualifiedName())) {
+                    itemToSelect = item;
+                } else if (firstSelectable == null && d.getStatus() != DiffStatus.IDENTICAL) {
                     firstSelectable = item;
                 }
             }
@@ -719,7 +728,9 @@ public class SchemaCompareTab extends SqlEditorTab {
             rootTreeItem.getChildren().add(catItem);
         }
 
-        if (firstSelectable != null) {
+        if (itemToSelect != null) {
+            diffTreeView.getSelectionModel().select(itemToSelect);
+        } else if (firstSelectable != null) {
             diffTreeView.getSelectionModel().select(firstSelectable);
         }
     }
@@ -728,15 +739,20 @@ public class SchemaCompareTab extends SqlEditorTab {
         this.selectedDiff = diff;
         if (diff == null) return;
 
-        lblSourceDdlHeader.setText("SOURCE: " + diff.getQualifiedName() + " (" + (sourceProfile != null ? sourceProfile.name() : "DEV") + ")");
-        lblTargetDdlHeader.setText("TARGET: " + diff.getQualifiedName() + " (" + (targetProfile != null ? targetProfile.name() : "PROD") + ")");
+        String srcName = (sourceProfile != null ? sourceProfile.name() : "DEV");
+        String tgtName = (targetProfile != null ? targetProfile.name() : "PROD");
 
-        if (diff.getObjectType() == SchemaObjectType.TABLE) {
-            lblSourceStats.setText(diff.getSourceColumnCount() + " cột");
-            lblTargetStats.setText(diff.getTargetColumnCount() + " cột");
-        } else {
-            lblSourceStats.setText(diff.getObjectType().getDisplayName());
-            lblTargetStats.setText(diff.getObjectType().getDisplayName());
+        String colStatsSrc = diff.getObjectType() == SchemaObjectType.TABLE ? (diff.getSourceColumnCount() + " cột") : diff.getObjectType().getDisplayName();
+        String colStatsTgt = diff.getObjectType() == SchemaObjectType.TABLE ? (diff.getTargetColumnCount() + " cột") : diff.getObjectType().getDisplayName();
+
+        if (sourceHeader != null) {
+            sourceHeader.setTitle("SOURCE: " + diff.getQualifiedName());
+            sourceHeader.setSubtitle(colStatsSrc + " · " + srcName);
+        }
+
+        if (targetHeader != null) {
+            targetHeader.setTitle("TARGET: " + diff.getQualifiedName());
+            targetHeader.setSubtitle(colStatsTgt + " · " + tgtName);
         }
 
         sourceEditor.setText(diff.getSourceDefinition().isEmpty() ? "-- Không tồn tại ở Source" : diff.getSourceDefinition());
@@ -844,14 +860,13 @@ public class SchemaCompareTab extends SqlEditorTab {
         private final CheckBox chkObj = new CheckBox();
         private final FontIcon iconObj = new FontIcon();
         private final Label lblObjName = new Label();
-        private final Label lblObjBadge = new Label();
+        private final Badge lblObjBadge = Badge.neutral("");
 
         public SchemaTreeCell() {
             // Category layout
             rootCat.setAlignment(Pos.CENTER_LEFT);
             iconCat.setIconSize(13);
             lblCatTitle.getStyleClass().add("diff-category-title");
-            lblCatBadge.getStyleClass().addAll("badge", "badge-warning");
 
             Region catSpacer = new Region();
             HBox.setHgrow(catSpacer, Priority.ALWAYS);
@@ -883,11 +898,15 @@ public class SchemaCompareTab extends SqlEditorTab {
                 setText(null);
                 getStyleClass().removeAll("diff-category-cell");
             } else if (item.isCategory()) {
-                getStyleClass().add("diff-category-cell");
+                if (!getStyleClass().contains("diff-category-cell")) {
+                    getStyleClass().add("diff-category-cell");
+                }
                 iconCat.setIconLiteral(item.getObjectType().getIconLiteral());
                 lblCatTitle.setText(item.getObjectType().getDisplayName().toUpperCase());
                 lblCatBadge.setText(item.getDiffCount() + " diffs");
+                lblCatBadge.setVariant(item.getDiffCount() > 0 ? Badge.Variant.WARNING : Badge.Variant.NEUTRAL);
                 lblCatBadge.setVisible(item.getDiffCount() > 0);
+                lblCatBadge.setManaged(item.getDiffCount() > 0);
                 setGraphic(rootCat);
                 setText(null);
             } else {
@@ -899,23 +918,22 @@ public class SchemaCompareTab extends SqlEditorTab {
                 iconObj.setIconLiteral(d.getObjectType().getIconLiteral());
                 lblObjName.setText(d.getQualifiedName());
 
-                lblObjBadge.getStyleClass().removeAll("diff-badge-new", "diff-badge-del", "diff-badge-mod", "diff-badge-same");
                 switch (d.getStatus()) {
                     case MISSING_IN_TARGET -> {
                         lblObjBadge.setText("Chỉ có ở nguồn");
-                        lblObjBadge.getStyleClass().add("diff-badge-new");
+                        lblObjBadge.setVariant(Badge.Variant.SUCCESS);
                     }
                     case EXTRA_IN_TARGET -> {
                         lblObjBadge.setText("Chỉ có ở đích");
-                        lblObjBadge.getStyleClass().add("diff-badge-del");
+                        lblObjBadge.setVariant(Badge.Variant.DANGER);
                     }
                     case DIFFERENT -> {
                         lblObjBadge.setText("Khác nhau");
-                        lblObjBadge.getStyleClass().add("diff-badge-mod");
+                        lblObjBadge.setVariant(Badge.Variant.WARNING);
                     }
                     case IDENTICAL -> {
                         lblObjBadge.setText("Giống nhau");
-                        lblObjBadge.getStyleClass().add("diff-badge-same");
+                        lblObjBadge.setVariant(Badge.Variant.NEUTRAL);
                     }
                 }
 

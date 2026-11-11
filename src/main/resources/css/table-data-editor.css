@@ -1,0 +1,120 @@
+/* =====================================================================
+   Table Data Editor Stylesheet
+   Adheres strictly to design tokens (-ide-*, -color-*), rounded/flat shapes.
+   ===================================================================== */
+
+.td-data-editor-root {
+    -fx-background-color: -color-bg-default;
+}
+
+.td-data-editor-toolbar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tde-pane-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tde-criteria-pane {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tde-sql-pane {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tde-sql-textarea {
+    -fx-font-family: 'JetBrains Mono', Consolas, 'Fira Code', monospace;
+    -fx-font-size: 0.9em;
+    -fx-text-fill: -color-accent-fg;
+    -fx-background-color: -color-bg-default;
+    -fx-border-width: 0;
+}
+
+.tde-inspector-drawer {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 0 1;
+}
+
+.tde-badge-pk {
+    -fx-background-color: -color-warning-subtle;
+    -fx-border-color: -color-warning-emphasis;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 2 6 2 6;
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-warning-fg;
+    -fx-font-weight: bold;
+}
+
+.tde-badge-nopk {
+    -fx-background-color: -color-danger-subtle;
+    -fx-border-color: -color-danger-emphasis;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 2 6 2 6;
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-danger-fg;
+}
+
+.td-data-editor-footer {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+
+.td-data-status-label {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.cell-null {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-style: italic;
+}
+
+.cell-numeric {
+    -fx-alignment: CENTER-RIGHT;
+    -fx-font-family: monospace;
+}
+
+.cell-dirty {
+    -fx-background-color: -ide-diff-modified-bg;
+    -fx-text-fill: -ide-diff-modified-fg;
+}
+
+.row-deleted {
+    -fx-background-color: -ide-diff-removed-bg;
+}
+
+.row-deleted .text {
+    -fx-strikethrough: true;
+}
+
+.row-inserted {
+    -fx-background-color: -ide-diff-added-bg;
+}
+
+.row-inserted .column-row-no,
+.table-row-cell.row-inserted .table-cell:first-child {
+    -fx-border-color: -ide-diff-added-fg;
+    -fx-border-width: 0 0 0 3;
+}
+
+.tde-col-type-subtitle {
+    -fx-font-size: 0.75em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.header-pk {
+    -fx-font-weight: bold;
+}

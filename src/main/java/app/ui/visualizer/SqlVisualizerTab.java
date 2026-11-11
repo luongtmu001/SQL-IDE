@@ -1,11 +1,8 @@
 package app.ui.visualizer;
 
-import app.application.AppContext;
 import app.services.NotificationService;
-import app.ui.components.AppButton;
-import app.ui.components.EmptyState;
-import app.ui.components.IconButton;
-import app.ui.components.LoadingOverlay;
+import app.ui.components.*;
+import app.ui.editor.EmbeddedMonaco;
 import app.ui.editor.SqlEditorTab;
 import com.lltool.core.application.connection.dto.ConnectionProfileDto;
 import com.lltool.core.application.visualizer.QueryFlowAnalyzer;
@@ -33,6 +30,7 @@ import java.util.function.Consumer;
  * Interactive SQL Visualizer & Query Flow Tab (Phase 3 - Slice 6).
  * Analyzes complex SQL queries into intuitive multi-stage data pipelines,
  * supports two-way editor AST sync, zoom/pan canvas, and execution metrics inspector.
+ * Fully refactored to conform to Phase 3 design tokens and component standards (G-SV-1..8).
  */
 public class SqlVisualizerTab extends SqlEditorTab {
 
@@ -49,13 +47,9 @@ public class SqlVisualizerTab extends SqlEditorTab {
     private QueryFlowGraph activeGraph;
 
     // UI Controls - Header Toolbar
-    private final ComboBox<String> cbPresets = new ComboBox<>();
     private final AppButton btnAnalyze = new AppButton("Phân tích", "fth-play", AppButton.Variant.PRIMARY);
     private final ToggleButton btnToggleSqlBox = new ToggleButton("Hiện SQL");
-
-    private final ToggleGroup viewToggleGroup = new ToggleGroup();
-    private final ToggleButton btnViewPipeline = new ToggleButton("Luồng dữ liệu");
-    private final ToggleButton btnViewTree = new ToggleButton("Cây cú pháp");
+    private final MenuButton btnPresets = new MenuButton("Mẫu");
 
     private final IconButton btnZoomIn = new IconButton("fth-plus", "Phóng to (Ctrl++)");
     private final IconButton btnZoomOut = new IconButton("fth-minus", "Thu nhỏ (Ctrl+-)");
@@ -63,9 +57,9 @@ public class SqlVisualizerTab extends SqlEditorTab {
     private final IconButton btnResetZoom = new IconButton("fth-rotate-ccw", "Reset Zoom 100%");
     private final AppButton btnExportPng = new AppButton("Xuất PNG", "fth-download", AppButton.Variant.DEFAULT);
 
-    // Collapsible SQL Input Box
-    private final VBox sqlDrawer = new VBox(6);
-    private final TextArea txtSqlInput = new TextArea();
+    // Collapsible SQL Input Box (EmbeddedMonaco)
+    private final VBox sqlDrawer = new VBox();
+    private EmbeddedMonaco monacoSql;
 
     // Main Canvas & Inspector
     private final StackPane canvasContainer = new StackPane();
@@ -73,8 +67,12 @@ public class SqlVisualizerTab extends SqlEditorTab {
     private final SqlVisualizerInspector inspector = new SqlVisualizerInspector();
     private final SplitPane splitPane = new SplitPane();
 
+    // Footer
+    private final WorkspaceFooter footer = new WorkspaceFooter();
+    private final Label lblStepStats = new Label("0 bước xử lý");
+
     private LoadingOverlay loadingOverlay;
-    private final EmptyState emptyState = new EmptyState("fth-cpu", "Chưa có luồng dữ liệu", "Nhập câu lệnh SQL và bấm 'Phân tích SQL' để trực quan hóa luồng dữ liệu.");
+    private final EmptyState emptyState = new EmptyState("fth-cpu", "Chưa có luồng dữ liệu", "Nhập câu lệnh SQL và bấm 'Phân tích' để trực quan hóa luồng dữ liệu.");
 
     public SqlVisualizerTab(ConnectionProfileDto profile, String catalog, String schema,
                             String queryName, String initialSql,
@@ -99,11 +97,10 @@ public class SqlVisualizerTab extends SqlEditorTab {
         initShortcuts();
 
         // Populate initial SQL or default preset 1
-        if (initialSql != null && !initialSql.isBlank()) {
-            txtSqlInput.setText(initialSql);
-        } else {
-            txtSqlInput.setText(QueryFlowAnalyzer.getPresetSql(1));
-        }
+        String initText = (initialSql != null && !initialSql.isBlank())
+                ? initialSql
+                : QueryFlowAnalyzer.getPresetSql(1);
+        monacoSql.setText(initText);
 
         Platform.runLater(this::runAnalysis);
     }
@@ -125,46 +122,46 @@ public class SqlVisualizerTab extends SqlEditorTab {
         VBox root = new VBox();
         root.getStyleClass().add("sql-visualizer-root");
         root.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/sql-visualizer.css")).toExternalForm());
+        root.setMinWidth(0);
 
-        // 1. Header Toolbar
-        HBox header = buildHeaderToolbar();
+        // 1. Header Toolbar (WorkspaceToolbar - G-SV-1, G-SV-2, G-SV-7)
+        WorkspaceToolbar toolbar = buildHeaderToolbar();
+        toolbar.setMinWidth(0);
 
-        // 2. Collapsible SQL Input Drawer
+        // 2. Collapsible SQL Input Drawer (G-SV-4)
         buildSqlDrawer();
+        sqlDrawer.setMinWidth(0);
 
         // 3. Canvas & Inspector SplitPane
         canvasContainer.getChildren().addAll(visualizerCanvas, emptyState);
+        canvasContainer.setMinWidth(0);
         emptyState.setVisible(false);
 
         loadingOverlay = LoadingOverlay.over(canvasContainer);
 
+        inspector.setMinWidth(0);
+
         splitPane.setOrientation(Orientation.VERTICAL);
-        splitPane.getItems().addAll(canvasContainer, inspector);
-        splitPane.setDividerPositions(0.72);
+        splitPane.getItems().addAll(sqlDrawer, canvasContainer, inspector);
+        splitPane.setDividerPositions(0.25, 0.75);
+        splitPane.setMinWidth(0);
         VBox.setVgrow(splitPane, Priority.ALWAYS);
 
-        root.getChildren().addAll(header, sqlDrawer, splitPane);
-        setContent(root);
+        // 4. Footer (G-SV-8)
+        buildFooter();
+        footer.setMinWidth(0);
+
+        root.getChildren().addAll(toolbar, splitPane, footer);
+
+        // G-SV-1: Use setCustomContent instead of setContent
+        setCustomContent(customKey, root);
 
         // Wire Interactions
         visualizerCanvas.setOnNodeSelectedListener(this::handleNodeSelectedOnCanvas);
 
-        // Editor caret listener for reverse sync (Editor -> Canvas)
-        txtSqlInput.caretPositionProperty().addListener((obs, oldVal, newVal) -> {
-            if (activeGraph != null && newVal != null) {
-                int pos = newVal.intValue();
-                String text = txtSqlInput.getText();
-                int line = 1, col = 1, cur = 0;
-                String[] lines = text.split("\\R", -1);
-                for (int i = 0; i < lines.length; i++) {
-                    int len = lines[i].length() + 1;
-                    if (cur <= pos && pos < cur + len) {
-                        line = i + 1;
-                        col = (pos - cur) + 1;
-                        break;
-                    }
-                    cur += len;
-                }
+        // Monaco cursor sync to Canvas (G-SV-4)
+        monacoSql.setOnCursorPositionChanged((line, col) -> {
+            if (activeGraph != null && line != null && col != null) {
                 QueryFlowNode matchedNode = activeGraph.findNodeAtPosition(line, col).orElse(null);
                 if (matchedNode != null && matchedNode != visualizerCanvas.getSelectedNode()) {
                     visualizerCanvas.selectNode(matchedNode);
@@ -173,73 +170,63 @@ public class SqlVisualizerTab extends SqlEditorTab {
         });
     }
 
-    private HBox buildHeaderToolbar() {
-        HBox toolbar = new HBox(10);
-        toolbar.getStyleClass().add("qf-header-bar");
-        toolbar.setAlignment(Pos.CENTER_LEFT);
+    private WorkspaceToolbar buildHeaderToolbar() {
+        WorkspaceToolbar toolbar = new WorkspaceToolbar();
 
-        // Preset Selector
-        HBox presetBox = new HBox(6);
-        presetBox.getStyleClass().add("qf-picker-box");
-        presetBox.setAlignment(Pos.CENTER_LEFT);
-
+        // G-SV-7: Compact MenuButton "Mẫu"
+        btnPresets.getStyleClass().addAll("btn-default", "btn-sm");
         FontIcon presetIcon = new FontIcon("fth-layers");
         presetIcon.setIconSize(13);
-        presetIcon.getStyleClass().add("icon-accent");
+        btnPresets.setGraphic(presetIcon);
 
-        Label lblPreset = new Label("Mẫu truy vấn:");
-        lblPreset.getStyleClass().add("qf-control-label");
-
-        cbPresets.getItems().addAll(
-                "Mẫu 1: Doanh thu theo khách hàng",
-                "Mẫu 2: Tồn kho & Đơn hàng",
-                "Mẫu 3: Đơn hàng chưa thanh toán",
-                "Tùy biến câu lệnh..."
-        );
-        cbPresets.getSelectionModel().selectFirst();
-        cbPresets.setOnAction(e -> {
-            int idx = cbPresets.getSelectionModel().getSelectedIndex();
-            if (idx >= 0 && idx < 3) {
-                txtSqlInput.setText(QueryFlowAnalyzer.getPresetSql(idx + 1));
-                runAnalysis();
-            }
+        MenuItem m1 = new MenuItem("Mẫu 1: Doanh thu theo khách hàng");
+        MenuItem m2 = new MenuItem("Mẫu 2: Tồn kho & Đơn hàng");
+        MenuItem m3 = new MenuItem("Mẫu 3: Đơn hàng chưa thanh toán");
+        m1.setOnAction(e -> {
+            monacoSql.setText(QueryFlowAnalyzer.getPresetSql(1));
+            runAnalysis();
         });
-
-        presetBox.getChildren().addAll(presetIcon, lblPreset, cbPresets);
+        m2.setOnAction(e -> {
+            monacoSql.setText(QueryFlowAnalyzer.getPresetSql(2));
+            runAnalysis();
+        });
+        m3.setOnAction(e -> {
+            monacoSql.setText(QueryFlowAnalyzer.getPresetSql(3));
+            runAnalysis();
+        });
+        btnPresets.getItems().addAll(m1, m2, m3);
 
         // Analyze Button
         btnAnalyze.setOnAction(e -> runAnalysis());
 
         // Toggle SQL Box
+        FontIcon codeIcon = new FontIcon("fth-code");
+        codeIcon.setIconSize(13);
+        btnToggleSqlBox.setGraphic(codeIcon);
         btnToggleSqlBox.setSelected(true);
+        btnToggleSqlBox.getStyleClass().add("btn-toggle");
         btnToggleSqlBox.setOnAction(e -> {
-            boolean visible = btnToggleSqlBox.isSelected();
-            sqlDrawer.setVisible(visible);
-            sqlDrawer.setManaged(visible);
-        });
-
-        // View Mode Toggle Group
-        HBox viewGroup = new HBox(2);
-        viewGroup.getStyleClass().add("qf-view-toggle-group");
-        btnViewPipeline.setToggleGroup(viewToggleGroup);
-        btnViewTree.setToggleGroup(viewToggleGroup);
-        btnViewPipeline.setSelected(true);
-        viewGroup.getChildren().addAll(btnViewPipeline, btnViewTree);
-
-        viewToggleGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            if (activeGraph != null) {
-                // Rerender layout
-                visualizerCanvas.setGraph(activeGraph);
+            boolean show = btnToggleSqlBox.isSelected();
+            if (show) {
+                if (!splitPane.getItems().contains(sqlDrawer)) {
+                    splitPane.getItems().add(0, sqlDrawer);
+                    splitPane.setDividerPositions(0.25, 0.75);
+                }
+            } else {
+                splitPane.getItems().remove(sqlDrawer);
             }
         });
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        // Left Controls
+        toolbar.addLeft(btnAnalyze);
+        toolbar.addLeft(btnToggleSqlBox);
+        toolbar.addLeft(btnPresets);
 
         // Canvas Navigation Buttons
         Label lblZoom = new Label("100%");
         lblZoom.textProperty().bind(visualizerCanvas.zoomPercentProperty());
-        lblZoom.setStyle("-fx-font-size: 0.8em; -fx-text-fill: -color-fg-muted; -fx-min-width: 38px; -fx-alignment: center;");
+        lblZoom.getStyleClass().add("qf-control-label");
+        lblZoom.setStyle("-fx-min-width: 38px; -fx-alignment: center;");
 
         btnZoomIn.setOnAction(e -> visualizerCanvas.zoomIn());
         btnZoomOut.setOnAction(e -> visualizerCanvas.zoomOut());
@@ -248,48 +235,42 @@ public class SqlVisualizerTab extends SqlEditorTab {
 
         btnExportPng.setOnAction(e -> exportDiagramPng());
 
-        toolbar.getChildren().addAll(
-                presetBox,
-                btnAnalyze,
-                btnToggleSqlBox,
-                new Separator(Orientation.VERTICAL),
-                viewGroup,
-                spacer,
-                btnZoomIn,
-                btnZoomOut,
-                lblZoom,
-                btnFitScreen,
-                btnResetZoom,
-                new Separator(Orientation.VERTICAL),
-                btnExportPng
-        );
+        toolbar.addRight(btnZoomIn);
+        toolbar.addRight(btnZoomOut);
+        toolbar.addRight(lblZoom);
+        toolbar.addRight(btnFitScreen);
+        toolbar.addRight(btnResetZoom);
+        toolbar.addRight(new Separator(Orientation.VERTICAL));
+        toolbar.addRight(btnExportPng);
 
         return toolbar;
     }
 
     private void buildSqlDrawer() {
         sqlDrawer.getStyleClass().add("qf-sql-drawer");
-        sqlDrawer.setPrefHeight(110);
+        sqlDrawer.setMinHeight(120);
+        sqlDrawer.setPrefHeight(150);
 
-        HBox topBox = new HBox(8);
-        topBox.setAlignment(Pos.CENTER_LEFT);
-        Label title = new Label("Câu lệnh SQL");
-        title.setStyle("-fx-font-size: 0.82em; -fx-text-fill: -color-fg-muted; -fx-font-weight: bold;");
+        PaneHeader header = new PaneHeader("Câu lệnh SQL", "fth-code", "Phím tắt: F5 hoặc Ctrl+Enter để phân tích");
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        String modelId = "sql_vis_" + UUID.randomUUID();
+        monacoSql = new EmbeddedMonaco(modelId, "sql", "-- Nhập câu lệnh SQL tại đây");
+        monacoSql.setShowStatusBar(false);
+        VBox.setVgrow(monacoSql.node(), Priority.ALWAYS);
 
-        Label shortcutTip = new Label("Phím tắt: F5 hoặc Ctrl+Enter để phân tích");
-        shortcutTip.setStyle("-fx-font-size: 0.78em; -fx-text-fill: -color-fg-muted;");
+        sqlDrawer.getChildren().addAll(header, monacoSql.node());
+    }
 
-        topBox.getChildren().addAll(title, spacer, shortcutTip);
+    private void buildFooter() {
+        FontIcon stepIcon = new FontIcon("fth-layers");
+        stepIcon.setIconSize(13);
+        stepIcon.getStyleClass().add("icon-accent");
 
-        txtSqlInput.getStyleClass().add("qf-sql-area");
-        txtSqlInput.setPrefRowCount(4);
-        txtSqlInput.setWrapText(true);
-        VBox.setVgrow(txtSqlInput, Priority.ALWAYS);
+        HBox statsBox = new HBox(6, stepIcon, lblStepStats);
+        statsBox.setAlignment(Pos.CENTER_LEFT);
+        footer.addSection(statsBox);
 
-        sqlDrawer.getChildren().addAll(topBox, txtSqlInput);
+        footer.setSampleDataVisible(true);
     }
 
     private void initShortcuts() {
@@ -311,11 +292,12 @@ public class SqlVisualizerTab extends SqlEditorTab {
     }
 
     public void runAnalysis() {
-        String sql = txtSqlInput.getText();
+        String sql = monacoSql.getText();
         if (sql == null || sql.isBlank()) {
             emptyState.setVisible(true);
             visualizerCanvas.clearCanvas();
             inspector.inspectNode(null);
+            lblStepStats.setText("0 bước xử lý");
             return;
         }
 
@@ -330,6 +312,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
                     this.activeGraph = graph;
                     emptyState.setVisible(graph.getNodeCount() == 0);
                     visualizerCanvas.setGraph(graph);
+                    lblStepStats.setText(graph.getNodeCount() + " bước xử lý");
 
                     // Fit to screen on initial render
                     Platform.runLater(visualizerCanvas::fitToScreen);
@@ -353,8 +336,9 @@ public class SqlVisualizerTab extends SqlEditorTab {
 
         if (node != null && node.getSourceRange() != null) {
             SourceRange r = node.getSourceRange();
-            if (r.getStartOffset() >= 0 && r.getEndOffset() <= txtSqlInput.getText().length()) {
-                txtSqlInput.selectRange(r.getStartOffset(), r.getEndOffset());
+            if (r.getStartLine() > 0) {
+                monacoSql.setActiveSearchMatch(r.getStartLine(), r.getStartCol(), Math.max(1, r.getEndOffset() - r.getStartOffset()));
+                monacoSql.gotoLine(r.getStartLine());
             }
         }
     }
@@ -383,7 +367,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
 
     public void setSqlAndAnalyze(String sql) {
         if (sql != null) {
-            txtSqlInput.setText(sql);
+            monacoSql.setText(sql);
             runAnalysis();
         }
     }

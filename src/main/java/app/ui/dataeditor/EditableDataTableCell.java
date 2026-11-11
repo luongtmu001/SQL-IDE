@@ -111,8 +111,16 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
         if (empty) {
             setText(null);
             setGraphic(null);
-            getStyleClass().removeAll("cell-dirty", "cell-null", "row-deleted");
+            getStyleClass().removeAll("cell-dirty", "cell-null", "row-deleted", "cell-numeric");
         } else {
+            if (item instanceof Number) {
+                if (!getStyleClass().contains("cell-numeric")) {
+                    getStyleClass().add("cell-numeric");
+                }
+            } else {
+                getStyleClass().remove("cell-numeric");
+            }
+
             if (isEditing()) {
                 if (textField != null) {
                     textField.setText(item != null ? String.valueOf(item) : "");
@@ -184,7 +192,7 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
 
     private String formatText(Object item) {
         if (item == null) {
-            return "[NULL]";
+            return "NULL";
         }
         return String.valueOf(item);
     }
