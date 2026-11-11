@@ -854,7 +854,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         private final HBox rootCat = new HBox(6);
         private final FontIcon iconCat = new FontIcon();
         private final Label lblCatTitle = new Label();
-        private final Label lblCatBadge = new Label();
+        private final Badge lblCatBadge = Badge.neutral("");
 
         private final HBox rootObj = new HBox(6);
         private final CheckBox chkObj = new CheckBox();

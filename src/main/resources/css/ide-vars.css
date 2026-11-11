@@ -12,6 +12,7 @@
     -ide-explorer-bg: -color-bg-default;                /* Explorer card          [sideBar.background] */
     -ide-explorer-header-bg: -color-bg-subtle;          /* "Database Explorer"    [sideBarSectionHeader.background] */
     -ide-rail-bg: -color-bg-subtle;                     /* collapsed Explorer     [activityBar.background] */
+    -ide-sidebar-bg: -color-bg-subtle;                  /* sidebar panes / panels */
     -ide-toolbar-bg: -color-bg-default;                 /* connection / Run bar   [editorGroupHeader.tabsBackground] */
     -ide-titlebar-bg: -color-bg-subtle;                 /*                        [titleBar.activeBackground] */
     -ide-titlebar-fg: -color-fg-default;                /*                        [titleBar.activeForeground] */

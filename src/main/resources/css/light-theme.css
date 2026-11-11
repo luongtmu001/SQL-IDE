@@ -24,6 +24,7 @@
     -ide-icon-col-text: #1c71d8;
     -ide-icon-col-num: #26a269;
     -ide-icon-col-date: #813d9c;
+    -ide-sidebar-bg: -color-bg-subtle;
 
     /* ---- Phase 3: Graph canvas & nodes */
     -ide-graph-bg: -ide-editor-bg;

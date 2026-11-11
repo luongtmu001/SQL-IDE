@@ -5,6 +5,7 @@ import com.lltool.core.domain.tabledesigner.model.CheckDesign;
 import com.lltool.core.domain.tabledesigner.model.ForeignKeyDesign;
 import com.lltool.core.domain.tabledesigner.model.TableDesign;
 import com.lltool.core.domain.tabledesigner.model.UniqueDesign;
+import com.lltool.core.domain.tableeditor.model.TableEditorMetadata;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -30,7 +31,7 @@ public class ConstraintInspectorPane extends VBox {
         setMaxWidth(300);
         getStyleClass().add("tde-inspector-drawer");
 
-        PaneHeader header = new PaneHeader("fth-info", "Thông tin bảng");
+        PaneHeader header = new PaneHeader("Thông tin bảng", "fth-info");
 
         Button btnClose = new Button();
         btnClose.getStyleClass().addAll("button", "small");

@@ -327,9 +327,9 @@ public class TableDataEditorTab extends SqlEditorTab {
         monacoSql = new EmbeddedMonaco(modelId, "sql", "-- Đang tạo câu truy vấn...");
         monacoSql.setReadOnly(true);
         monacoSql.setShowStatusBar(false);
-        VBox.setVgrow(monacoSql, Priority.ALWAYS);
+        VBox.setVgrow(monacoSql.node(), Priority.ALWAYS);
 
-        sqlPane.getChildren().addAll(header, monacoSql);
+        sqlPane.getChildren().addAll(header, monacoSql.node());
     }
 
     private void buildGridContainer() {

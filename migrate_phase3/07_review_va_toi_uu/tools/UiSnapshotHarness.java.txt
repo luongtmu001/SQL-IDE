@@ -1,0 +1,132 @@
+package app;
+
+import app.services.ThemeService;
+import app.ui.compare.SchemaCompareTab;
+import app.ui.dataeditor.TableDataEditorTab;
+import app.ui.dependency.DependencyGraphTab;
+import app.ui.designer.TableDesignerTab;
+import app.ui.search.ObjectContentSearchTab;
+import app.ui.visualizer.SqlVisualizerTab;
+import com.lltool.core.application.connection.dto.ConnectionProfileDto;
+import com.lltool.core.domain.dependency.DependencyNodeType;
+import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Tab;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.StackPane;
+import org.junit.jupiter.api.Test;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+/** TEMPORARY review harness (Claude): renders each Phase 3 tab offscreen to PNG. Delete after review. */
+class ZzTmpUiSnapshotTest {
+
+    @Test
+    void snapshotAll() throws Exception {
+        String outDir = System.getProperty("snap.out");
+        if (outDir == null) return;
+        System.setProperty("sqlide.backend", "mock");
+
+        CountDownLatch started = new CountDownLatch(1);
+        try {
+            Platform.startup(started::countDown);
+        } catch (IllegalStateException e) {
+            started.countDown();
+        }
+        started.await(20, TimeUnit.SECONDS);
+        Platform.setImplicitExit(false);
+
+        ConnectionProfileDto p = new ConnectionProfileDto(
+                "snap-1", "MSSQL-DEV", "Default", "Dev", false, "sqlserver", "localhost", 1433,
+                "DemoDb", null, "sa", "SQL_PASSWORD", null, false, 30, true, Collections.emptyMap(), null, null);
+
+        Map<String, Tab> tabs = new LinkedHashMap<>();
+        Map<String, Scene> scenes = new LinkedHashMap<>();
+        CountDownLatch built = new CountDownLatch(1);
+        Platform.runLater(() -> {
+            try {
+                build(tabs, "01_table_designer", () -> new TableDesignerTab(p, "DemoDb", "dbo", "Customers", false, a -> {}));
+                build(tabs, "02_table_data_editor", () -> new TableDataEditorTab(p, "DemoDb", "dbo", "Customers", a -> {}));
+                build(tabs, "03_object_search", () -> new ObjectContentSearchTab(p, "DemoDb", "dbo", a -> {}));
+                build(tabs, "04_schema_compare", () -> new SchemaCompareTab(p, "DemoDb", "dbo", p, "DemoDb", "dbo", a -> {}));
+                build(tabs, "05_dependency_graph", () -> new DependencyGraphTab(p, "DemoDb", "dbo", "orders", null, DependencyNodeType.TABLE, a -> {}));
+                build(tabs, "06_sql_visualizer", () -> new SqlVisualizerTab(p, "DemoDb", "dbo", a -> {}));
+                for (var e : tabs.entrySet()) {
+                    Node n = e.getValue().getContent();
+                    e.getValue().setContent(null);
+                    Scene sc = new Scene(new StackPane(n), 1500, 880);
+                    try {
+                        ThemeService.getInstance().applyThemeToScene(sc);
+                    } catch (Throwable t) {
+                        System.out.println("SNAP theme failed: " + t);
+                    }
+                    scenes.put(e.getKey(), sc);
+                }
+            } finally {
+                built.countDown();
+            }
+        });
+        built.await(60, TimeUnit.SECONDS);
+
+        // trigger actions that need user input
+        Platform.runLater(() -> {
+            try {
+                if (tabs.get("03_object_search") instanceof ObjectContentSearchTab t) {
+                    t.getSearchField().getInputField().setText("orders");
+                    t.executeSearchAsync();
+                }
+                if (tabs.get("04_schema_compare") instanceof SchemaCompareTab t) t.executeCompareAsync();
+            } catch (Throwable t) {
+                System.out.println("SNAP action failed: " + t);
+            }
+        });
+        Thread.sleep(5000);
+
+        CountDownLatch done = new CountDownLatch(1);
+        Platform.runLater(() -> {
+            try {
+                for (var e : scenes.entrySet()) {
+                    try {
+                        Scene sc = e.getValue();
+                        sc.getRoot().applyCss();
+                        sc.getRoot().layout();
+                        WritableImage img = sc.snapshot(null);
+                        // second pass so late layout (fitToScreen etc.) settles
+                        img = sc.snapshot(null);
+                        int w = (int) img.getWidth(), h = (int) img.getHeight();
+                        BufferedImage b = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                        PixelReader r = img.getPixelReader();
+                        for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) b.setRGB(x, y, r.getArgb(x, y));
+                        ImageIO.write(b, "png", new File(outDir, e.getKey() + ".png"));
+                        System.out.println("SNAP ok " + e.getKey());
+                    } catch (Throwable t) {
+                        System.out.println("SNAP failed " + e.getKey() + ": " + t);
+                    }
+                }
+            } finally {
+                done.countDown();
+            }
+        });
+        done.await(60, TimeUnit.SECONDS);
+    }
+
+    private interface TabMaker { Tab make(); }
+
+    private static void build(Map<String, Tab> tabs, String key, TabMaker m) {
+        try {
+            tabs.put(key, m.make());
+        } catch (Throwable t) {
+            System.out.println("SNAP build failed " + key + ": " + t);
+            t.printStackTrace(System.out);
+        }
+    }
+}
