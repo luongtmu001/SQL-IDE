@@ -823,7 +823,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         var stage = app.application.AppContext.getInstance().getPrimaryStage();
         Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
 
-        PreviewDataChangesDialog.show(owner, schema, tableName, ins, upd, del, fullScript);
+        PreviewDataChangesDialog.show(owner, schema, tableName, ins, upd, del, fullScript, false);
     }
 
     private void handleSave() {

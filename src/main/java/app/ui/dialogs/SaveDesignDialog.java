@@ -1,19 +1,25 @@
 package app.ui.dialogs;
 
+import app.ui.editor.EmbeddedMonaco;
 import com.lltool.core.application.tabledesigner.model.MigrationPlan;
 import com.lltool.core.application.tabledesigner.model.MigrationStatement;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Save / Migration Confirmation Dialog for Table Designer (SCR-TD-001 / TD4).
- * Built with DialogChrome, adhering to 02-design-principles and 04-component-rules.
+ * Built with DialogChrome, adhering to design tokens and component standards (G-DL-1).
  */
 public final class SaveDesignDialog {
 
@@ -60,8 +66,8 @@ public final class SaveDesignDialog {
 
         VBox content = new VBox(10);
         content.setPadding(new Insets(12, 16, 12, 16));
-        content.setPrefWidth(680);
-        content.setPrefHeight(460);
+        content.setPrefWidth(700);
+        content.setPrefHeight(480);
 
         // 1. Summary Header
         int statementCount = (plan != null && plan.statements() != null) ? plan.statements().size() : 1;
@@ -75,44 +81,38 @@ public final class SaveDesignDialog {
 
         summaryBox.getChildren().add(lblStats);
 
-        // 2. Destructive changes warning banner
+        // 2. Destructive changes warning banner (G-DL-1)
         if (hasDestructiveChanges) {
             HBox warnBanner = new HBox(8);
             warnBanner.setAlignment(Pos.CENTER_LEFT);
-            warnBanner.setPadding(new Insets(8, 12, 8, 12));
-            warnBanner.setStyle("-fx-background-color: -color-warning-subtle; -fx-background-radius: 6px; -fx-border-color: -color-warning-emphasis; -fx-border-radius: 6px;");
+            warnBanner.getStyleClass().addAll("dialog-chrome-banner", "danger");
 
             FontIcon warnIcon = new FontIcon("fth-alert-triangle");
             warnIcon.setIconSize(16);
-            warnIcon.setStyle("-fx-icon-color: -color-warning-fg;");
 
             Label lblWarn = new Label("Cảnh báo: Kịch bản có chứa thao tác xóa hoặc thay đổi có nguy cơ làm mất dữ liệu!");
-            lblWarn.setStyle("-fx-text-fill: -color-warning-fg; -fx-font-weight: bold;");
+            lblWarn.setWrapText(true);
 
             warnBanner.getChildren().addAll(warnIcon, lblWarn);
             content.getChildren().add(warnBanner);
         }
 
-        // 3. SQL Preview Area
+        // 3. SQL Preview Area with EmbeddedMonaco (G-DL-1)
         Label lblSqlTitle = new Label("Xem trước kịch bản DDL sẽ thực thi:");
         lblSqlTitle.getStyleClass().add("dialog-header");
 
-        TextArea txtSql = new TextArea(fullMigrationSql != null ? fullMigrationSql : "-- Không có câu lệnh DDL");
-        txtSql.setEditable(false);
-        txtSql.setWrapText(false);
-        txtSql.setStyle("-fx-font-family: 'JetBrains Mono', 'Cascadia Code', monospace; -fx-font-size: 12px;");
-        VBox.setVgrow(txtSql, Priority.ALWAYS);
+        String modelId = "save_design_" + UUID.randomUUID();
+        EmbeddedMonaco monaco = new EmbeddedMonaco(modelId, "sql", fullMigrationSql != null ? fullMigrationSql : "-- Không có câu lệnh DDL");
+        monaco.setReadOnly(true);
+        monaco.setShowStatusBar(false);
+        VBox.setVgrow(monaco.node(), Priority.ALWAYS);
 
-        content.getChildren().addAll(summaryBox, lblSqlTitle, txtSql);
+        content.getChildren().addAll(summaryBox, lblSqlTitle, monaco.node());
 
-        // 4. Action Buttons
-        Button btnExecute = hasDestructiveChanges ? DialogChrome.danger("Thực thi ngay") : DialogChrome.primary("Thực thi ngay");
-        FontIcon runIcon = new FontIcon("fth-play");
-        runIcon.setIconSize(13);
-        btnExecute.setGraphic(runIcon);
-        btnExecute.setTooltip(new Tooltip("Thực thi kịch bản migration trực tiếp trong một transaction"));
-        btnExecute.setOnAction(e -> {
-            if (resultConsumer != null) resultConsumer.accept(new SaveDesignResult(Action.EXECUTE, txtSql.getText()));
+        // 4. Action Buttons (G-DL-1: Huỷ │ Mở trong tab SQL │ Thực thi)
+        Button btnCancel = DialogChrome.cancel("Hủy");
+        btnCancel.setOnAction(e -> {
+            if (resultConsumer != null) resultConsumer.accept(new SaveDesignResult(Action.CANCEL, null));
             chrome.close();
         });
 
@@ -122,18 +122,25 @@ public final class SaveDesignDialog {
         btnOpenSql.setGraphic(sqlIcon);
         btnOpenSql.setTooltip(new Tooltip("Mở kịch bản trong tab SQL mới để xem và chỉnh sửa trước"));
         btnOpenSql.setOnAction(e -> {
-            if (resultConsumer != null) resultConsumer.accept(new SaveDesignResult(Action.OPEN_IN_SQL_TAB, txtSql.getText()));
+            String sql = monaco.getText() != null ? monaco.getText() : fullMigrationSql;
+            if (resultConsumer != null) resultConsumer.accept(new SaveDesignResult(Action.OPEN_IN_SQL_TAB, sql));
             chrome.close();
         });
 
-        Button btnCancel = DialogChrome.cancel("Hủy");
-        btnCancel.setOnAction(e -> {
-            if (resultConsumer != null) resultConsumer.accept(new SaveDesignResult(Action.CANCEL, null));
+        Button btnExecute = hasDestructiveChanges ? DialogChrome.danger("Thực thi") : DialogChrome.primary("Thực thi");
+        FontIcon runIcon = new FontIcon("fth-play");
+        runIcon.setIconSize(13);
+        btnExecute.setGraphic(runIcon);
+        btnExecute.setTooltip(new Tooltip("Thực thi kịch bản migration trực tiếp trong một transaction"));
+        btnExecute.setOnAction(e -> {
+            String sql = monaco.getText() != null ? monaco.getText() : fullMigrationSql;
+            if (resultConsumer != null) resultConsumer.accept(new SaveDesignResult(Action.EXECUTE, sql));
             chrome.close();
         });
 
         chrome.content(content);
-        chrome.footer(new javafx.scene.Node[]{btnOpenSql}, btnCancel, btnExecute);
+        // Order: Huỷ | Mở trong tab SQL | Thực thi
+        chrome.footer(null, btnCancel, btnOpenSql, btnExecute);
 
         // By default, if destructive, focus cancel; otherwise focus execute
         if (hasDestructiveChanges) {
@@ -145,4 +152,3 @@ public final class SaveDesignDialog {
         return chrome;
     }
 }
-

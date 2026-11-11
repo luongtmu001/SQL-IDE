@@ -2,11 +2,24 @@
    Dialog chrome (Phase 2B, Gate B 2026-11-05): DialogChrome.java
    Rounded 8px + shadow, or square when Settings > Kiểu khung = Phẳng.
    ===================================================================== */
+.dialog-root {
+    -color-bg-default: #21262d;
+    -color-bg-subtle: #161b22;
+    -color-border-default: #30363d;
+    -color-border-subtle: #21262d;
+    -color-fg-default: #e6edf3;
+    -color-fg-muted: #8b949e;
+}
+
 .dialog-clip-host {
+    -fx-background-color: -color-border-default, -color-bg-default;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 8, 7;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 18, 0, 0, 6);
 }
 
 .dialog-root.flat .dialog-clip-host {
+    -fx-background-radius: 0, 0;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 10, 0, 0, 2);
 }
 
@@ -87,6 +100,11 @@
 .dialog-body {
     -fx-padding: 14 16 14 16;
     -fx-spacing: 10;
+    -fx-background-color: -color-bg-default;
+}
+
+.message-body {
+    -fx-background-color: -color-bg-default;
 }
 
 .dialog-footer {
@@ -377,4 +395,42 @@
 .dialog-shell.flat .update-notes {
     -fx-background-radius: 0;
     -fx-border-radius: 0;
+}
+
+/* Dialog Chrome Alert Banner */
+.dialog-chrome-banner {
+    -fx-padding: 8 12 8 12;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.dialog-chrome-banner.warning {
+    -fx-background-color: -color-warning-subtle;
+    -fx-border-color: -color-warning-emphasis;
+}
+
+.dialog-chrome-banner.warning .ikonli-font-icon {
+    -fx-icon-color: -color-warning-fg;
+}
+
+.dialog-chrome-banner.warning .label {
+    -fx-text-fill: -color-warning-fg;
+    -fx-font-weight: bold;
+}
+
+.dialog-chrome-banner.danger {
+    -fx-background-color: -color-danger-subtle;
+    -fx-border-color: -color-danger-emphasis;
+}
+
+.dialog-chrome-banner.danger .ikonli-font-icon {
+    -fx-icon-color: -color-danger-fg;
+}
+
+.dialog-chrome-banner.danger .label {
+    -fx-text-fill: -color-danger-fg;
+    -fx-font-weight: bold;
 }
