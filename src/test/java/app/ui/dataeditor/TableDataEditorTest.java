@@ -33,6 +33,21 @@ class TableDataEditorTest {
     }
 
     @Test
+    @DisplayName("DE-11: Should append catalog and fallback to primary key ORDER BY when no sort is specified")
+    void testSelectQueryWithCatalogAndPkFallback() {
+        String sql = service.buildSelectQuery(
+                "sqlserver", "B10_App", "dbo", "Customers",
+                List.of("Id", "Name"),
+                null,
+                null,
+                List.of("Id"),
+                100, 0
+        );
+
+        assertEquals("SELECT TOP 100 [Id], [Name] FROM [B10_App].[dbo].[Customers] ORDER BY [Id] ASC", sql);
+    }
+
+    @Test
     @DisplayName("Should generate SELECT query for PostgreSQL with LIMIT and OFFSET")
     void testSelectQueryPostgreSql() {
         String sql = service.buildSelectQuery(

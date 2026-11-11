@@ -21,9 +21,28 @@ public class TableDataEditorService {
             String orderBy,
             int limit,
             int offset) {
+        return buildSelectQuery(engine, null, schema, table, selectCols, whereClause, orderBy, null, limit, offset);
+    }
+
+    public String buildSelectQuery(
+            String engine,
+            String catalog,
+            String schema,
+            String table,
+            List<String> selectCols,
+            String whereClause,
+            String orderBy,
+            List<String> pkCols,
+            int limit,
+            int offset) {
 
         boolean isPg = "postgresql".equalsIgnoreCase(engine) || "postgres".equalsIgnoreCase(engine);
-        String qualifiedTable = quoteQualified(schema, table, isPg);
+        String qualifiedTable;
+        if (!isPg && catalog != null && !catalog.isBlank()) {
+            qualifiedTable = quoteIdent(catalog, false) + "." + quoteIdent(schema != null && !schema.isBlank() ? schema : "dbo", false) + "." + quoteIdent(table, false);
+        } else {
+            qualifiedTable = quoteQualified(schema, table, isPg);
+        }
 
         String cols = (selectCols == null || selectCols.isEmpty())
                 ? "*"
@@ -49,8 +68,13 @@ public class TableDataEditorService {
             sb.append(trimmed);
         }
 
-        if (orderBy != null && !orderBy.isBlank()) {
-            String trimmed = orderBy.trim();
+        String effectiveOrderBy = orderBy;
+        if ((effectiveOrderBy == null || effectiveOrderBy.isBlank()) && pkCols != null && !pkCols.isEmpty()) {
+            effectiveOrderBy = String.join(", ", pkCols.stream().map(pk -> quoteIdent(pk, isPg) + " ASC").toList());
+        }
+
+        if (effectiveOrderBy != null && !effectiveOrderBy.isBlank()) {
+            String trimmed = effectiveOrderBy.trim();
             if (!trimmed.toUpperCase().startsWith("ORDER BY")) {
                 sb.append(" ORDER BY ");
             } else {
@@ -67,7 +91,7 @@ public class TableDataEditorService {
                 sb.append(" OFFSET ").append(offset);
             }
         } else if (offset > 0) {
-            if (orderBy == null || orderBy.isBlank()) {
+            if (effectiveOrderBy == null || effectiveOrderBy.isBlank()) {
                 sb.append(" ORDER BY (SELECT NULL)");
             }
             sb.append(" OFFSET ").append(offset).append(" ROWS");

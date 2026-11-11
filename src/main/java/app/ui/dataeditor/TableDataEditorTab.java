@@ -459,8 +459,9 @@ public class TableDataEditorTab extends SqlEditorTab {
         boolean isPg = engine.equalsIgnoreCase("postgresql");
         String where = criteriaGrid.buildWhereClause(isPg);
         String orderBy = criteriaGrid.buildOrderByClause(isPg);
+        List<String> pks = metadata != null ? metadata.getPrimaryKeyNames() : Collections.emptyList();
 
-        String sql = dataEditorService.buildSelectQuery(engine, schema, tableName, null, where, orderBy, limit, 0);
+        String sql = dataEditorService.buildSelectQuery(engine, catalog, schema, tableName, null, where, orderBy, pks, limit, 0);
         if (monacoSql != null) {
             monacoSql.setText(sql);
         }
@@ -561,7 +562,8 @@ public class TableDataEditorTab extends SqlEditorTab {
                 }
 
                 // 2. Fetch data via JDBC
-                String query = dataEditorService.buildSelectQuery(engine, schema, tableName, null, where, orderBy, limit, 0);
+                List<String> pks = metadata != null ? metadata.getPrimaryKeyNames() : Collections.emptyList();
+                String query = dataEditorService.buildSelectQuery(engine, catalog, schema, tableName, null, where, orderBy, pks, limit, 0);
 
                 String targetDb = catalog != null && !catalog.isBlank() ? catalog : profile.databaseName();
                 String pwd = CredentialResolver.resolve(profile, null);
