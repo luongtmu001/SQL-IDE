@@ -22,6 +22,7 @@ import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -76,6 +77,16 @@ public class ObjectContentSearchTab extends SqlEditorTab {
     private final ComboBox<String> cbCatalog = new ComboBox<>();
     private final ComboBox<String> cbSchema = new ComboBox<>();
     private final AppButton btnSearch = new AppButton("Tìm kiếm", "fth-search", AppButton.Variant.PRIMARY);
+    private final Label lblRegexError = new Label();
+    private final HBox warnBanner = new HBox(8);
+    private final Label lblWarnMessage = new Label();
+    private final app.framework.async.LoadTask<ObjectSearchService.SearchResultWithWarnings> searchTask = new app.framework.async.LoadTask<>();
+    private final java.util.concurrent.ScheduledExecutorService searchDebounce = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "SearchDebounceThread");
+        t.setDaemon(true);
+        return t;
+    });
+    private java.util.concurrent.ScheduledFuture<?> pendingFilterTask;
 
     // UI Controls - Master Panel (Grouped Tree)
     private final SearchField quickFilterField = new SearchField("Lọc danh sách đối tượng...");
@@ -143,6 +154,10 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         // 1. Build Top Toolbar
         HBox toolbar = buildToolbar();
 
+        lblRegexError.setStyle("-fx-text-fill: -color-danger-fg; -fx-font-size: 11px; -fx-padding: 0 0 2 10;");
+        lblRegexError.setVisible(false);
+        lblRegexError.setManaged(false);
+
         // 2. Build SplitPane (Master - Detail)
         SplitPane mainSplitPane = new SplitPane();
         mainSplitPane.getStyleClass().add("object-search-split-pane");
@@ -158,7 +173,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         // 3. Build Footer
         HBox footer = buildFooter();
 
-        root.getChildren().addAll(toolbar, mainSplitPane, footer);
+        root.getChildren().addAll(toolbar, lblRegexError, mainSplitPane, footer);
 
         String tabKey = "object_search_" + (profile != null ? profile.id() : "default");
         setCustomContent(tabKey, root);
@@ -242,10 +257,23 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         masterContentStack.getChildren().addAll(hitTreeView, emptyState);
         VBox.setVgrow(masterContentStack, Priority.ALWAYS);
 
+        // Warning banner for partial query failures or limits
+        warnBanner.setAlignment(Pos.CENTER_LEFT);
+        warnBanner.getStyleClass().addAll("dialog-chrome-banner", "warning");
+        warnBanner.setPadding(new Insets(4, 8, 4, 8));
+        FontIcon warnIcon = new FontIcon("fth-alert-triangle");
+        warnIcon.setIconSize(13);
+        warnIcon.getStyleClass().add("warning-icon");
+        lblWarnMessage.setStyle("-fx-font-size: 11px;");
+        lblWarnMessage.setWrapText(true);
+        warnBanner.getChildren().addAll(warnIcon, lblWarnMessage);
+        warnBanner.setVisible(false);
+        warnBanner.setManaged(false);
+
         // Attach LoadingOverlay to masterContentStack
         loadingOverlay = LoadingOverlay.over(masterContentStack);
 
-        pane.getChildren().addAll(headerBox, masterContentStack);
+        pane.getChildren().addAll(headerBox, warnBanner, masterContentStack);
         return pane;
     }
 
@@ -477,8 +505,15 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         btnSearch.setOnAction(e -> executeSearchAsync());
         searchField.getInputField().setOnAction(e -> executeSearchAsync());
 
-        // Quick filter in list
-        quickFilterField.setOnTextChange(filterText -> rebuildGroupedTree(filterText));
+        // Quick filter in list with 150ms debounce (OS-7)
+        quickFilterField.setOnTextChange(filterText -> {
+            if (pendingFilterTask != null && !pendingFilterTask.isDone()) {
+                pendingFilterTask.cancel(false);
+            }
+            pendingFilterTask = searchDebounce.schedule(() -> {
+                Platform.runLater(() -> rebuildGroupedTree(filterText));
+            }, 150, java.util.concurrent.TimeUnit.MILLISECONDS);
+        });
 
         // Global keyboard navigation within this tab
         root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
@@ -536,6 +571,25 @@ public class ObjectContentSearchTab extends SqlEditorTab {
             return;
         }
 
+        // Validate regex upfront (OS-3)
+        if (btnRegex.isSelected()) {
+            try {
+                int flags = btnMatchCase.isSelected() ? 0 : java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.UNICODE_CASE;
+                java.util.regex.Pattern.compile(keyword.trim(), flags);
+                lblRegexError.setVisible(false);
+                lblRegexError.setManaged(false);
+            } catch (java.util.regex.PatternSyntaxException pse) {
+                lblRegexError.setText("Lỗi cú pháp Regex tại vị trí " + pse.getIndex() + ": " + pse.getDescription());
+                lblRegexError.setVisible(true);
+                lblRegexError.setManaged(true);
+                searchField.getInputField().requestFocus();
+                return;
+            }
+        } else {
+            lblRegexError.setVisible(false);
+            lblRegexError.setManaged(false);
+        }
+
         Set<String> requestedTypes = new LinkedHashSet<>();
         if (chipViews.isSelected()) requestedTypes.add("VIEW");
         if (chipProcs.isSelected()) requestedTypes.add("PROCEDURE");
@@ -559,73 +613,93 @@ public class ObjectContentSearchTab extends SqlEditorTab {
 
         loadingOverlay.show("Đang tìm kiếm đối tượng trong CSDL...", this::cancelSearch);
         btnSearch.setDisable(true);
+        warnBanner.setVisible(false);
+        warnBanner.setManaged(false);
         long startTime = System.currentTimeMillis();
 
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                if (MockMetadataProvider.isEnabled() || BackendFlags.mock(BackendFlags.Area.METADATA) || profile == null) {
-                    Thread.sleep(200);
-                    return searchService.search(null, "sqlserver", query);
+        searchTask.execute(
+                ctx -> {
+                    if (MockMetadataProvider.isEnabled() || BackendFlags.mock(BackendFlags.Area.METADATA) || profile == null) {
+                        Thread.sleep(150);
+                        return searchService.searchWithWarnings(null, "sqlserver", query);
+                    }
+
+                    String engine = profile.databaseType() != null && profile.databaseType().toLowerCase().contains("postgre")
+                            ? "postgresql" : "sqlserver";
+                    String targetDb = query.getCatalog() != null ? query.getCatalog() : profile.databaseName();
+                    String pwd = CredentialResolver.resolve(profile, null);
+
+                    Result<DatabaseConnection> connRes = ConnectionSessionManager.getInstance().openSession(profile, targetDb, pwd);
+                    if (connRes.isFailure()) {
+                        throw new RuntimeException(connRes.getError().get().message());
+                    }
+
+                    try (DatabaseConnection dbConn = connRes.getDataOrThrow()) {
+                        Connection raw = dbConn.getRawJdbcConnection();
+                        return searchService.searchWithWarnings(raw, engine, query);
+                    }
+                },
+                result -> {
+                    loadingOverlay.hide();
+                    btnSearch.setDisable(false);
+                    long elapsedMs = System.currentTimeMillis() - startTime;
+
+                    List<ObjectSearchHit> hits = result != null ? result.hits() : Collections.emptyList();
+                    List<String> warnings = result != null ? result.warnings() : Collections.emptyList();
+                    int encryptedCount = result != null ? result.encryptedObjectsSkipped() : 0;
+
+                    searchResults.setAll(hits);
+                    rebuildGroupedTree(quickFilterField.getText());
+
+                    int totalMatches = 0;
+                    for (ObjectSearchHit h : hits) {
+                        totalMatches += h.getMatchCount();
+                    }
+
+                    StringBuilder statusText = new StringBuilder();
+                    statusText.append(String.format("Tìm thấy %d đối tượng (%d matches) trong %d ms",
+                            searchResults.size(), totalMatches, elapsedMs));
+                    if (encryptedCount > 0) {
+                        statusText.append(String.format(" · %d đối tượng mã hóa bị bỏ qua", encryptedCount));
+                    }
+                    lblFooterStatus.setText(statusText.toString());
+
+                    // Display warning banner if partial failures or truncated (OS-1, OS-4, OS-6)
+                    if (warnings != null && !warnings.isEmpty()) {
+                        lblWarnMessage.setText("Kết quả có thể thiếu hoặc bị cắt bớt: " + String.join("; ", warnings));
+                        warnBanner.setVisible(true);
+                        warnBanner.setManaged(true);
+                    } else {
+                        warnBanner.setVisible(false);
+                        warnBanner.setManaged(false);
+                    }
+
+                    if (searchResults.isEmpty()) {
+                        emptyState.setTitle("Không tìm thấy kết quả");
+                        emptyState.setMessage("Không có đối tượng nào chứa từ khóa \"" + keyword + "\".");
+                        emptyState.setVisible(true);
+                        emptyState.setManaged(true);
+                        hitTreeView.setVisible(false);
+                        clearDetailView();
+                    } else {
+                        emptyState.setVisible(false);
+                        emptyState.setManaged(false);
+                        hitTreeView.setVisible(true);
+                    }
+                },
+                error -> {
+                    loadingOverlay.hide();
+                    btnSearch.setDisable(false);
+                    String msg = error != null && error.getMessage() != null ? error.getMessage() : "Lỗi tìm kiếm";
+                    log.error("Object content search error: {}", msg, error);
+                    NotificationService.getInstance().showError("Lỗi tìm kiếm", msg);
+                    lblFooterStatus.setText("Lỗi tìm kiếm: " + msg);
                 }
-
-                String engine = profile.databaseType() != null && profile.databaseType().toLowerCase().contains("postgre")
-                        ? "postgresql" : "sqlserver";
-                String targetDb = query.getCatalog() != null ? query.getCatalog() : profile.databaseName();
-                String pwd = CredentialResolver.resolve(profile, null);
-
-                Result<DatabaseConnection> connRes = ConnectionSessionManager.getInstance().openSession(profile, targetDb, pwd);
-                if (connRes.isFailure()) {
-                    throw new RuntimeException(connRes.getError().get().message());
-                }
-
-                try (DatabaseConnection dbConn = connRes.getDataOrThrow()) {
-                    Connection raw = dbConn.getRawJdbcConnection();
-                    return searchService.search(raw, engine, query);
-                }
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        }).whenComplete((results, throwable) -> Platform.runLater(() -> {
-            loadingOverlay.hide();
-            btnSearch.setDisable(false);
-            long elapsedMs = System.currentTimeMillis() - startTime;
-
-            if (throwable != null) {
-                log.error("Object content search error: {}", throwable.getMessage(), throwable);
-                NotificationService.getInstance().showError("Lỗi tìm kiếm", throwable.getMessage());
-                lblFooterStatus.setText("Lỗi tìm kiếm: " + throwable.getMessage());
-                return;
-            }
-
-            searchResults.setAll(results != null ? results : Collections.emptyList());
-            rebuildGroupedTree(quickFilterField.getText());
-
-            int totalMatches = 0;
-            if (results != null) {
-                for (ObjectSearchHit h : results) {
-                    totalMatches += h.getMatchCount();
-                }
-            }
-
-            lblFooterStatus.setText(String.format("Tìm thấy %d đối tượng (%d matches) trong %d ms",
-                    searchResults.size(), totalMatches, elapsedMs));
-
-            if (searchResults.isEmpty()) {
-                emptyState.setTitle("Không tìm thấy kết quả");
-                emptyState.setMessage("Không có đối tượng nào chứa từ khóa \"" + keyword + "\".");
-                emptyState.setVisible(true);
-                emptyState.setManaged(true);
-                hitTreeView.setVisible(false);
-                clearDetailView();
-            } else {
-                emptyState.setVisible(false);
-                emptyState.setManaged(false);
-                hitTreeView.setVisible(true);
-            }
-        }));
+        );
     }
 
     private void cancelSearch() {
+        searchTask.cancel();
         loadingOverlay.hide();
         btnSearch.setDisable(false);
         lblFooterStatus.setText("Đã hủy tìm kiếm");
@@ -651,6 +725,10 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         int totalVisibleHits = 0;
         int totalVisibleMatches = 0;
         TreeItem<ObjectSearchNode> firstHitItem = null;
+
+        // Preserve active selection across filter rebuilds (OS-7)
+        String activeKey = currentHit != null ? (currentHit.getType() + "|" + currentHit.getSchema() + "|" + currentHit.getName()).toLowerCase() : null;
+        TreeItem<ObjectSearchNode> preservedItem = null;
 
         for (String[] catDef : categories) {
             String type = catDef[0];
@@ -685,6 +763,12 @@ public class ObjectContentSearchTab extends SqlEditorTab {
                 if (firstHitItem == null) {
                     firstHitItem = hitItem;
                 }
+                if (activeKey != null) {
+                    String hitKey = (hit.getType() + "|" + hit.getSchema() + "|" + hit.getName()).toLowerCase();
+                    if (activeKey.equals(hitKey)) {
+                        preservedItem = hitItem;
+                    }
+                }
             }
 
             // Expand category if it has matches
@@ -701,8 +785,10 @@ public class ObjectContentSearchTab extends SqlEditorTab {
                     totalVisibleHits, totalHits, totalVisibleMatches));
         }
 
-        // Select first hit if none selected
-        if (firstHitItem != null && (currentHit == null || !searchResults.contains(currentHit))) {
+        // Select preserved item or first hit
+        if (preservedItem != null) {
+            hitTreeView.getSelectionModel().select(preservedItem);
+        } else if (firstHitItem != null && (currentHit == null || !searchResults.contains(currentHit))) {
             hitTreeView.getSelectionModel().select(firstHitItem);
         }
     }
