@@ -31,6 +31,30 @@ public class SqlEditorTab extends Tab {
     private String connectionName;
     private String databaseName;
     private String schemaName;
+    private TabContentType tabContentType = TabContentType.SQL_EDITOR;
+
+    public enum TabContentType {
+        SQL_EDITOR,
+        TABLE_DATA_EDITOR,
+        TABLE_DESIGNER,
+        SCHEMA_COMPARE,
+        DEPENDENCY_GRAPH,
+        OBJECT_SEARCH,
+        SQL_VISUALIZER,
+        VIEW_PANEL
+    }
+
+    public TabContentType getTabContentType() {
+        return tabContentType;
+    }
+
+    public void setTabContentType(TabContentType tabContentType) {
+        this.tabContentType = tabContentType;
+    }
+
+    public boolean isSqlTextTab() {
+        return tabContentType == TabContentType.SQL_EDITOR && !isCustomContent();
+    }
 
     // ---- header (Phase 3, Gate B 2026-11-05: VS Code style)
     private final HBox headerLayout = new HBox(5);
@@ -333,6 +357,12 @@ public class SqlEditorTab extends Tab {
         } else {
             connectionLogo.setImage(logo);
             iconSlot.getChildren().setAll(connectionLogo);
+        }
+    }
+
+    public void setFileIconLiteral(String iconLiteral) {
+        if (iconLiteral != null) {
+            fileIcon.setIconLiteral(iconLiteral);
         }
     }
 

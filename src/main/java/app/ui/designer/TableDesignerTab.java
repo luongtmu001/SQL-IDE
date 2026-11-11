@@ -7,6 +7,8 @@ import app.framework.metadata.DesktopMetadataService;
 import app.services.NotificationService;
 import app.ui.components.Badge;
 import app.ui.components.EmptyState;
+import app.ui.components.Icons;
+import app.ui.components.IconScale;
 import app.ui.components.SegmentedToggle;
 import app.ui.components.WorkspaceFooter;
 import app.ui.dialogs.SaveDesignDialog;
@@ -141,6 +143,7 @@ public class TableDesignerTab extends SqlEditorTab {
         } else {
             setFileIconLiteral(isNewTable ? "mdi2t-table-plus" : "mdi2t-table-edit");
         }
+        setTabContentType(TabContentType.TABLE_DESIGNER);
 
         initializeDesigner();
     }
@@ -265,9 +268,7 @@ public class TableDesignerTab extends SqlEditorTab {
 
         // Save Button
         btnSave.getStyleClass().addAll("button", "accent");
-        FontIcon saveIcon = new FontIcon("fth-save");
-        saveIcon.setIconSize(13);
-        btnSave.setGraphic(saveIcon);
+        btnSave.setGraphic(Icons.of("fth-save"));
         btnSave.setOnAction(e -> handleSave());
 
         // Guardrail: if Read-Only, prompt user to switch to writable when saving
@@ -280,27 +281,21 @@ public class TableDesignerTab extends SqlEditorTab {
 
         // Open in SQL Tab Button
         btnOpenSql.getStyleClass().addAll("button");
-        FontIcon extIcon = new FontIcon("fth-external-link");
-        extIcon.setIconSize(13);
-        btnOpenSql.setGraphic(extIcon);
+        btnOpenSql.setGraphic(Icons.of("fth-external-link"));
         btnOpenSql.setTooltip(new Tooltip("Mở DDL / Migration script trong tab SQL"));
         btnOpenSql.setOnAction(e -> handleOpenInSqlTab());
 
         // Undo & Redo Buttons
-        btnUndo.getStyleClass().addAll("button", "small");
-        FontIcon undoIcon = new FontIcon("fth-rotate-ccw");
-        undoIcon.setIconSize(13);
-        btnUndo.setGraphic(undoIcon);
+        btnUndo.getStyleClass().addAll("button");
+        btnUndo.setGraphic(Icons.of("fth-rotate-ccw"));
         btnUndo.setTooltip(new Tooltip("Hoàn tác (Ctrl+Z)"));
         btnUndo.setOnAction(e -> {
             if (undoManager.canUndo()) undoManager.undo();
             onDesignChanged();
         });
 
-        btnRedo.getStyleClass().addAll("button", "small");
-        FontIcon redoIcon = new FontIcon("fth-rotate-cw");
-        redoIcon.setIconSize(13);
-        btnRedo.setGraphic(redoIcon);
+        btnRedo.getStyleClass().addAll("button");
+        btnRedo.setGraphic(Icons.of("fth-rotate-cw"));
         btnRedo.setTooltip(new Tooltip("Làm lại (Ctrl+Y)"));
         btnRedo.setOnAction(e -> {
             if (undoManager.canRedo()) undoManager.redo();
@@ -308,10 +303,8 @@ public class TableDesignerTab extends SqlEditorTab {
         });
 
         // Refresh Button
-        btnRefresh.getStyleClass().addAll("button", "small");
-        FontIcon refIcon = new FontIcon("fth-refresh-cw");
-        refIcon.setIconSize(13);
-        btnRefresh.setGraphic(refIcon);
+        btnRefresh.getStyleClass().addAll("button");
+        btnRefresh.setGraphic(Icons.of("fth-refresh-cw"));
         btnRefresh.setTooltip(new Tooltip("Tải lại từ CSDL (F5)"));
         btnRefresh.setOnAction(e -> {
             if (dirtyProperty().get()) {
@@ -335,20 +328,16 @@ public class TableDesignerTab extends SqlEditorTab {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         // Toggle Inspector Button
-        btnToggleInspector.getStyleClass().addAll("toggle-button", "small");
+        btnToggleInspector.getStyleClass().addAll("toggle-button");
         btnToggleInspector.setSelected(true);
-        FontIcon sideIcon = new FontIcon("fth-sidebar");
-        sideIcon.setIconSize(13);
-        btnToggleInspector.setGraphic(sideIcon);
+        btnToggleInspector.setGraphic(Icons.of("fth-sidebar"));
         btnToggleInspector.setTooltip(new Tooltip("Ẩn/Hiện Inspector thuộc tính"));
         btnToggleInspector.setOnAction(e -> toggleInspector(btnToggleInspector.isSelected()));
 
         // Toggle DDL Preview Button
-        btnToggleDdl.getStyleClass().addAll("toggle-button", "small");
+        btnToggleDdl.getStyleClass().addAll("toggle-button");
         btnToggleDdl.setSelected(true);
-        FontIcon ddlIcon = new FontIcon("fth-code");
-        ddlIcon.setIconSize(13);
-        btnToggleDdl.setGraphic(ddlIcon);
+        btnToggleDdl.setGraphic(Icons.of("fth-code"));
         btnToggleDdl.setTooltip(new Tooltip("Ẩn/Hiện xem trước DDL"));
         btnToggleDdl.setOnAction(e -> toggleDdlPreview(btnToggleDdl.isSelected()));
 
@@ -454,10 +443,8 @@ public class TableDesignerTab extends SqlEditorTab {
 
         HBox actions = new HBox(10);
         actions.setAlignment(Pos.CENTER_LEFT);
-        btnOpenTriggerSql.getStyleClass().addAll("button", "small");
-        FontIcon extIcon = new FontIcon("fth-external-link");
-        extIcon.setIconSize(13);
-        btnOpenTriggerSql.setGraphic(extIcon);
+        btnOpenTriggerSql.getStyleClass().add("button");
+        btnOpenTriggerSql.setGraphic(Icons.of("fth-external-link"));
         btnOpenTriggerSql.setDisable(true);
 
         triggerTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
@@ -472,7 +459,7 @@ public class TableDesignerTab extends SqlEditorTab {
         });
 
         Label note = new Label("Danh sách trigger chỉ đọc. Chỉnh sửa trigger được thực hiện qua kịch bản SQL.");
-        note.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 11px;");
+        note.getStyleClass().add("text-secondary");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 

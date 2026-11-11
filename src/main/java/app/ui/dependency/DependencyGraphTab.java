@@ -114,6 +114,7 @@ public class DependencyGraphTab extends SqlEditorTab {
         this.customKey = "dep_graph|" + (profile != null ? profile.id() : "default") + "|" +
                 this.schema + "." + this.objectName + (this.columnName != null ? "." + this.columnName : "");
 
+        setTabContentType(TabContentType.DEPENDENCY_GRAPH);
         buildLayout();
         initShortcuts();
 

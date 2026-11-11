@@ -101,6 +101,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
         this.queryName = queryName != null && !queryName.isBlank() ? queryName : "Query1";
         this.customKey = "sql-visualizer-" + UUID.randomUUID();
 
+        setTabContentType(TabContentType.SQL_VISUALIZER);
         buildLayout();
         initShortcuts();
 

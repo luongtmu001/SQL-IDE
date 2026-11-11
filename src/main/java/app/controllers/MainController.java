@@ -112,6 +112,14 @@ public class MainController implements Initializable {
         applyUiTypography(app.services.SettingsService.getInstance().getCurrentSettings());
         applyAutoHideToolbar(app.services.SettingsService.getInstance().getCurrentSettings());
         Platform.runLater(this::bindWindowStateToRoot);
+        // Pre-warm Settings Dialog during idle so the first open has zero lag (< 20ms)
+        Platform.runLater(() -> {
+            Stage stage = AppContext.getInstance().getPrimaryStage();
+            if (stage == null && mainWindowRoot != null && mainWindowRoot.getScene() != null) {
+                stage = (Stage) mainWindowRoot.getScene().getWindow();
+            }
+            app.ui.dialogs.SettingsDialog.preload(stage);
+        });
     }
 
     // ------------------------------------------------------------------ appearance.autoHideNavbar (S3)
@@ -177,7 +185,7 @@ public class MainController implements Initializable {
     /** SCR-MAIN-001: rounded cards whose outline is never covered by the content. */
     private void setupCardClipping() {
         app.ui.components.RoundedCard.install(sidebar, 8);
-        app.ui.components.RoundedCard.install(editor, 8);
+        app.ui.components.RoundedCard.clip(editor, 8);
         app.ui.components.RoundedCard.install(results, 8);
         // Toolbar and status bar are cards too (user request 2026-11-05), separated by 6px gaps.
         if (contextToolBar != null) {
@@ -292,6 +300,14 @@ public class MainController implements Initializable {
     private void refreshActiveTabSession() {
         if (statusBarController == null) return;
         var tab = editorController != null ? editorController.getCurrentEditorTab() : null;
+        if (tab != null && (tab.getConnectionName() == null || tab.getConnectionName().isBlank())) {
+            String activeConn = GlobalDesktopState.getInstance().getActiveConnection();
+            if (activeConn != null && !activeConn.isBlank()) {
+                tab.setConnectionName(activeConn);
+                syncConnectionToToolbar(activeConn);
+                autoConnectNewTab(tab);
+            }
+        }
         var session = tab != null ? app.framework.session.TabSessionManager.getInstance().get(tab.getDocumentId()) : null;
         boolean connected = session != null && session.state() == app.framework.session.TabSession.State.CONNECTED;
         if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.CONNECTIONS)) {
@@ -374,11 +390,16 @@ public class MainController implements Initializable {
                         long t2 = System.nanoTime();
                         // connection hierarchy: an open connection reaches the tab when it is shown; its own
                         // session is checked (a dead one turns into "Mất kết nối")
-                        if (b instanceof app.ui.editor.SqlEditorTab shown) {
+                        if (b instanceof app.ui.editor.SqlEditorTab shown && !shown.isCustomContent()) {
                             Platform.runLater(() -> {
                                 autoConnectNewTab(shown);
                                 app.framework.session.TabSessionManager.getInstance().probeAsync(shown.getDocumentId());
                             });
+                        }
+                        // Non-SQL tabs (Table Designer, Data Editor, Compare, Dependency, Visualizer, View panels)
+                        // must hide Results panel by default and disallow results view
+                        if (b instanceof app.ui.editor.SqlEditorTab tab && !tab.isSqlTextTab()) {
+                            app.services.LayoutService.getInstance().setResultsVisible(false);
                         }
                         // the rest of the switch (other listeners, CSS + layout of the panel) shows in the next pulse
                         Platform.runLater(() -> log.info("[tab-switch] results {} ms, run state {} ms, until next pulse {} ms",
@@ -499,6 +520,7 @@ public class MainController implements Initializable {
         if (editorController != null) {
             editorController.setOnExecuteRequestListener(this::handleExecute);
             editorController.setOnExecuteStatementRequestListener(this::handleExecuteStatement);
+            editorController.setOnReloadRequested(this::handleRefreshObjects);
             // Phase 3: tabs without their own connection follow the toolbar; banner actions
             editorController.setActiveConnectionSupplier(() -> connectionComboBox != null ? connectionComboBox.getValue() : null);
             app.ui.editor.SqlEditorTab.setBannerActions(new app.ui.editor.SqlEditorTab.BannerActions() {
@@ -584,7 +606,28 @@ public class MainController implements Initializable {
             String err = policy.applyPrompt(profile, answer.get().password(), answer.get().save());
             if (err != null) app.services.NotificationService.getInstance().showWarning("Mật khẩu", err);
         }
-        String db = tab.getDatabaseName() != null ? tab.getDatabaseName() : profile.databaseName();
+        String db = tab.getDatabaseName() != null && !tab.getDatabaseName().isBlank()
+                ? tab.getDatabaseName() : profile.databaseName();
+        if (db != null && !db.isBlank()) {
+            tab.setDatabaseName(db);
+            if (editorController != null && tab == editorController.getCurrentEditorTab()) {
+                syncDatabaseToToolbar(db);
+                GlobalDesktopState.getInstance().setActiveCatalog(db);
+            }
+        }
+        String schema = tab.getSchemaName() != null && !tab.getSchemaName().isBlank()
+                ? tab.getSchemaName() : app.services.DefaultSchemaService.get(profile.id());
+        if (schema == null && profile.properties() != null) {
+            schema = profile.properties().get("defaultSchema");
+            if (schema == null) schema = profile.properties().get("schema");
+        }
+        if (schema != null && !schema.isBlank()) {
+            tab.setSchemaName(schema);
+            if (editorController != null && tab == editorController.getCurrentEditorTab()) {
+                syncSchemaToToolbar(schema);
+                GlobalDesktopState.getInstance().setActiveSchema(schema);
+            }
+        }
         app.framework.session.TabSessionManager.getInstance().connectAsync(tab.getDocumentId(), profile, db, res -> {
             if (res.isFailure()) {
                 app.services.NotificationService.getInstance().showError("Không kết nối được " + profile.name(),
@@ -606,11 +649,19 @@ public class MainController implements Initializable {
         var sessions = app.framework.session.TabSessionManager.getInstance();
         if (sessions.state(tab.getDocumentId()) != app.framework.session.TabSession.State.NONE) return;
         String name = tab.getConnectionName() != null && !tab.getConnectionName().isBlank() ? tab.getConnectionName()
-                : (connectionComboBox != null ? connectionComboBox.getValue() : null);
+                : (connectionComboBox != null && connectionComboBox.getValue() != null && !connectionComboBox.getValue().isBlank()
+                    ? connectionComboBox.getValue()
+                    : GlobalDesktopState.getInstance().getActiveConnection());
         var profile = app.framework.session.TabSessionManager.profileByName(name);
         if (profile == null) return;
         boolean open = app.services.ExplorerConnectionState.getInstance().get(profile.id())
                 == app.services.ExplorerConnectionState.Status.CONNECTED;
+        if (!open) {
+            String activeConn = GlobalDesktopState.getInstance().getActiveConnection();
+            if (activeConn != null && (activeConn.equalsIgnoreCase(profile.name()) || activeConn.equalsIgnoreCase(profile.id()))) {
+                open = true;
+            }
+        }
         if (!open) {
             for (var other : editorController.getOpenTabs()) {
                 var s = sessions.get(other.getDocumentId());
@@ -623,7 +674,33 @@ public class MainController implements Initializable {
         }
         if (!open || app.services.PasswordPolicyService.getInstance().needsPrompt(profile)) return;
         if (tab.getConnectionName() == null || tab.getConnectionName().isBlank()) tab.setConnectionName(profile.name());
-        String db = tab.getDatabaseName() != null ? tab.getDatabaseName() : profile.databaseName();
+        String db = tab.getDatabaseName() != null && !tab.getDatabaseName().isBlank()
+                ? tab.getDatabaseName() : profile.databaseName();
+        if (db != null && !db.isBlank()) {
+            tab.setDatabaseName(db);
+            if (editorController != null && tab == editorController.getCurrentEditorTab()) {
+                syncDatabaseToToolbar(db);
+                GlobalDesktopState.getInstance().setActiveCatalog(db);
+            }
+        }
+        String schema = tab.getSchemaName() != null && !tab.getSchemaName().isBlank()
+                ? tab.getSchemaName() : app.services.DefaultSchemaService.get(profile.id());
+        if (schema == null) {
+            schema = app.services.DefaultSchemaService.get(profile.name());
+        }
+        if (schema == null && profile.properties() != null) {
+            schema = profile.properties().get("schema");
+            if (schema == null) {
+                schema = profile.properties().get("defaultSchema");
+            }
+        }
+        if (schema != null && !schema.isBlank()) {
+            tab.setSchemaName(schema);
+            if (editorController != null && tab == editorController.getCurrentEditorTab()) {
+                syncSchemaToToolbar(schema);
+                GlobalDesktopState.getInstance().setActiveSchema(schema);
+            }
+        }
         sessions.connectAsync(tab.getDocumentId(), profile, db, res -> {
             if (res.isFailure()) {
                 log.info("Auto-connect of new tab to {} failed: {}", profile.name(), res.getError().map(e -> e.message()).orElse("?"));
@@ -723,6 +800,76 @@ public class MainController implements Initializable {
         if (statusBarController != null) {
             statusBarController.setConnection(connectionName);
         }
+        var profile = app.framework.session.TabSessionManager.profileByName(connectionName);
+        if (profile != null) {
+            var activeTab = editorController != null ? editorController.getCurrentEditorTab() : null;
+            String defaultDb = profile.databaseName();
+            if (activeTab != null) {
+                activeTab.setConnectionName(connectionName);
+                String targetDb = activeTab.getDatabaseName() != null && !activeTab.getDatabaseName().isBlank()
+                        ? activeTab.getDatabaseName() : defaultDb;
+                if (targetDb != null && !targetDb.isBlank()) {
+                    activeTab.setDatabaseName(targetDb);
+                    syncDatabaseToToolbar(targetDb);
+                    GlobalDesktopState.getInstance().setActiveCatalog(targetDb);
+                } else {
+                    if (databaseComboBox != null) {
+                        databaseComboBox.getSelectionModel().clearSelection();
+                        databaseComboBox.setValue(null);
+                    }
+                    GlobalDesktopState.getInstance().setActiveCatalog("");
+                }
+            } else if (defaultDb != null && !defaultDb.isBlank()) {
+                syncDatabaseToToolbar(defaultDb);
+                GlobalDesktopState.getInstance().setActiveCatalog(defaultDb);
+            } else {
+                if (databaseComboBox != null) {
+                    databaseComboBox.getSelectionModel().clearSelection();
+                    databaseComboBox.setValue(null);
+                }
+                GlobalDesktopState.getInstance().setActiveCatalog("");
+            }
+            String defaultSchema = app.services.DefaultSchemaService.get(profile.id());
+            if (defaultSchema == null) {
+                defaultSchema = app.services.DefaultSchemaService.get(profile.name());
+            }
+            if (defaultSchema == null && profile.properties() != null) {
+                defaultSchema = profile.properties().get("schema");
+                if (defaultSchema == null) {
+                    defaultSchema = profile.properties().get("defaultSchema");
+                }
+            }
+            if (defaultSchema != null && !defaultSchema.isBlank()) {
+                syncSchemaToToolbar(defaultSchema);
+                GlobalDesktopState.getInstance().setActiveSchema(defaultSchema);
+                if (activeTab != null) {
+                    activeTab.setSchemaName(defaultSchema);
+                }
+            }
+        }
+    }
+
+    public void setConnectionReadOnly(String connectionName, boolean readOnly) {
+        if (connectionName == null) return;
+        connectionReadOnly.put(connectionName, readOnly);
+        if (!readOnly) {
+            app.framework.backend.BackendFlags.setReadOnlyAll(false);
+        }
+        app.framework.session.TabSessionManager.getInstance().setProfileReadOnly(connectionName, readOnly);
+        if (editorController != null) {
+            for (var t : editorController.getOpenTabs()) {
+                if (connectionName.equalsIgnoreCase(t.getConnectionName())) {
+                    var session = app.framework.session.TabSessionManager.getInstance().get(t.getDocumentId());
+                    if (session != null) {
+                        session.setReadOnly(readOnly);
+                    }
+                }
+            }
+            editorController.refreshTabDecorations();
+        }
+        if (statusBarController != null) {
+            statusBarController.setConnection(connectionName);
+        }
     }
 
     public void syncSchemaToToolbar(String schemaName) {
@@ -740,14 +887,47 @@ public class MainController implements Initializable {
                 String selected = connectionComboBox.getSelectionModel().getSelectedItem();
                 if (selected != null) {
                     GlobalDesktopState.getInstance().setActiveConnection(selected);
-                    if (editorController != null) {
-                        var tab = editorController.getCurrentEditorTab();
-                        if (tab != null && !selected.equals(tab.getConnectionName())) {
-                            tab.setConnectionName(selected);
-                            // Phase 8 / D1: the tab switched server: its old session is closed,
-                            // the new one opens on "Kết nối" or on the next run
-                            app.framework.session.TabSessionManager.getInstance().disconnect(tab.getDocumentId());
+                    var tab = editorController != null ? editorController.getCurrentEditorTab() : null;
+                    if (tab != null && !selected.equals(tab.getConnectionName())) {
+                        tab.setConnectionName(selected);
+                        // Phase 8 / D1: the tab switched server: its old session is closed,
+                        // the new one opens on "Kết nối" or on the next run
+                        app.framework.session.TabSessionManager.getInstance().disconnect(tab.getDocumentId());
+                    }
+                    var profile = app.framework.session.TabSessionManager.profileByName(selected);
+                    if (profile != null) {
+                        String defaultDb = profile.databaseName();
+                        if (defaultDb != null && !defaultDb.isBlank()) {
+                            if (tab != null) tab.setDatabaseName(defaultDb);
+                            syncDatabaseToToolbar(defaultDb);
+                            GlobalDesktopState.getInstance().setActiveCatalog(defaultDb);
+                        } else if (tab != null && tab.getDatabaseName() != null && !tab.getDatabaseName().isBlank()) {
+                            syncDatabaseToToolbar(tab.getDatabaseName());
+                            GlobalDesktopState.getInstance().setActiveCatalog(tab.getDatabaseName());
+                        } else {
+                            if (databaseComboBox != null) {
+                                databaseComboBox.getSelectionModel().clearSelection();
+                                databaseComboBox.setValue(null);
+                            }
+                            GlobalDesktopState.getInstance().setActiveCatalog("");
                         }
+                        String defSchema = app.services.DefaultSchemaService.get(profile.id());
+                        if (defSchema == null) {
+                            defSchema = app.services.DefaultSchemaService.get(profile.name());
+                        }
+                        if (defSchema == null && profile.properties() != null) {
+                            defSchema = profile.properties().get("schema");
+                            if (defSchema == null) {
+                                defSchema = profile.properties().get("defaultSchema");
+                            }
+                        }
+                        if (defSchema != null && !defSchema.isBlank()) {
+                            if (tab != null) tab.setSchemaName(defSchema);
+                            syncSchemaToToolbar(defSchema);
+                            GlobalDesktopState.getInstance().setActiveSchema(defSchema);
+                        }
+                    }
+                    if (editorController != null) {
                         editorController.refreshTabDecorations();
                     }
                     if (statusBarController != null) {
@@ -758,14 +938,8 @@ public class MainController implements Initializable {
 
             // Reactively sync with GlobalDesktopState activeConnection
             GlobalDesktopState.getInstance().activeConnectionProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null && !newVal.isBlank() && !newVal.equals(connectionComboBox.getValue())) {
-                    if (!connectionComboBox.getItems().contains(newVal)) {
-                        connectionComboBox.getItems().add(newVal);
-                    }
-                    connectionComboBox.getSelectionModel().select(newVal);
-                    if (statusBarController != null) {
-                        statusBarController.setConnection(newVal);
-                    }
+                if (newVal != null && !newVal.isBlank()) {
+                    syncConnectionToToolbar(newVal);
                 }
             });
         }
@@ -783,6 +957,18 @@ public class MainController implements Initializable {
                 String selected = schemaComboBox.getValue();
                 var tab = editorController != null ? editorController.getCurrentEditorTab() : null;
                 if (tab != null && selected != null) tab.setSchemaName(selected);
+                if (selected != null && !selected.isBlank() && !selected.equals(GlobalDesktopState.getInstance().getActiveSchema())) {
+                    GlobalDesktopState.getInstance().setActiveSchema(selected);
+                }
+            });
+            GlobalDesktopState.getInstance().activeSchemaProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null && !newVal.isBlank()) {
+                    syncSchemaToToolbar(newVal);
+                    var tab = editorController != null ? editorController.getCurrentEditorTab() : null;
+                    if (tab != null && !newVal.equals(tab.getSchemaName())) {
+                        tab.setSchemaName(newVal);
+                    }
+                }
             });
         }
     }
@@ -1066,18 +1252,19 @@ public class MainController implements Initializable {
             String t = type == null ? "" : type.toUpperCase();
             connectionTypeIcon.setIconLiteral(t.contains("SQLITE") ? "fth-database" : "fth-server");
         }
-        // Context bar: show the profile's default database when the tab does not specify one.
         if (databaseComboBox != null && connectionName != null) {
-            String defaultDb = connectionDefaultDatabases.get(connectionName);
             String tabDb = null;
             if (editorController != null && editorController.getCurrentEditorTab() != null) {
                 tabDb = editorController.getCurrentEditorTab().getDatabaseName();
             }
-            String db = (tabDb != null && !tabDb.isBlank()) ? tabDb : defaultDb;
-            if (db != null && !db.isBlank()) {
-                syncDatabaseToToolbar(db);
+            if (tabDb == null || tabDb.isBlank()) {
+                tabDb = connectionDefaultDatabases.get(connectionName);
+            }
+            if (tabDb != null && !tabDb.isBlank()) {
+                syncDatabaseToToolbar(tabDb);
             } else {
                 databaseComboBox.getSelectionModel().clearSelection();
+                databaseComboBox.setValue(null);
             }
         }
     }
@@ -1112,7 +1299,16 @@ public class MainController implements Initializable {
                 state.setActiveCatalog(selected);
             }
         });
-        state.activeCatalogProperty().addListener((obs, o, n) -> syncDatabaseToToolbar(n));
+        state.activeCatalogProperty().addListener((obs, o, n) -> {
+            if (n != null && !n.isBlank()) {
+                syncDatabaseToToolbar(n);
+                var tab = editorController != null ? editorController.getCurrentEditorTab() : null;
+                if (tab != null && !n.equals(tab.getDatabaseName())) {
+                    tab.setDatabaseName(n);
+                    if (editorController != null) editorController.refreshTabDecorations();
+                }
+            }
+        });
     }
 
     public void syncDatabaseToToolbar(String databaseName) {
@@ -1178,6 +1374,167 @@ public class MainController implements Initializable {
             stage = (Stage) mainWindowRoot.getScene().getWindow();
         }
         app.ui.dialogs.SettingsDialog.show(stage);
+    }
+
+    @FXML
+    public void handleOpenSnippetsManager() {
+        app.ui.dialogs.SnippetsManagerDialog.show(ownerWindow());
+    }
+
+    @FXML
+    public void handleOpenQueryHistory() {
+        app.ui.dialogs.QueryHistoryDialog.show(ownerWindow(), sql -> {
+            if (editorController != null) {
+                String conn = connectionComboBox != null ? connectionComboBox.getValue() : null;
+                String db = schemaComboBox != null ? schemaComboBox.getValue() : null;
+                editorController.openNewTab("history_query.sql", sql, conn, db, null);
+            }
+        });
+    }
+
+    @FXML
+    public void handleOpenObjectSearch() {
+        if (editorController != null) {
+            String connName = connectionComboBox != null ? connectionComboBox.getValue() : null;
+            var profile = app.framework.connection.ProfileLookup.byName(connName);
+            String db = schemaComboBox != null ? schemaComboBox.getValue() : null;
+            editorController.openObjectContentSearchTab(profile, db, null);
+        }
+    }
+
+    @FXML
+    public void handleOpenSchemaCompare() {
+        if (editorController != null) {
+            String connName = connectionComboBox != null ? connectionComboBox.getValue() : null;
+            var profile = app.framework.connection.ProfileLookup.byName(connName);
+            String db = schemaComboBox != null ? schemaComboBox.getValue() : null;
+            editorController.openSchemaCompareTab(profile, db, null, null, null, null);
+        }
+    }
+
+    @FXML
+    public void handleOpenDependencyGraph() {
+        if (editorController != null) {
+            String connName = connectionComboBox != null ? connectionComboBox.getValue() : null;
+            var profile = app.framework.connection.ProfileLookup.byName(connName);
+            String db = schemaComboBox != null ? schemaComboBox.getValue() : null;
+            editorController.openDependencyGraphTab(profile, db, "dbo", "orders", null, com.lltool.core.domain.dependency.DependencyNodeType.TABLE);
+        }
+    }
+
+    public void openDependencyGraph(com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+                                    String catalog, String schema, String objectName, String columnName,
+                                    com.lltool.core.domain.dependency.DependencyNodeType objectType) {
+        if (editorController != null) {
+            editorController.openDependencyGraphTab(profile, catalog, schema, objectName, columnName, objectType);
+        }
+    }
+
+    @FXML
+    public void handleOpenSqlVisualizer() {
+        if (editorController != null) {
+            String connName = connectionComboBox != null ? connectionComboBox.getValue() : null;
+            var profile = app.framework.connection.ProfileLookup.byName(connName);
+            String db = schemaComboBox != null ? schemaComboBox.getValue() : null;
+            editorController.openSqlVisualizerTab(profile, db, "dbo", "Query1", null);
+        }
+    }
+
+    public void openSqlVisualizer(com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+                                  String catalog, String schema, String queryName, String initialSql) {
+        if (editorController != null) {
+            editorController.openSqlVisualizerTab(profile, catalog, schema, queryName, initialSql);
+        }
+    }
+
+    public EditorController getEditorController() {
+        return editorController;
+    }
+
+    public SidebarController getSidebarController() {
+        return sidebarController;
+    }
+
+    @FXML
+    public void handleOpenFile() {
+        javafx.stage.FileChooser chooser = new javafx.stage.FileChooser();
+        chooser.setTitle("Mở file SQL");
+        chooser.getExtensionFilters().addAll(
+                new javafx.stage.FileChooser.ExtensionFilter("SQL Files (*.sql)", "*.sql"),
+                new javafx.stage.FileChooser.ExtensionFilter("All Files (*.*)", "*.*")
+        );
+        java.io.File file = chooser.showOpenDialog(ownerWindow());
+        if (file != null && editorController != null) {
+            try {
+                String content = java.nio.file.Files.readString(file.toPath(), java.nio.charset.StandardCharsets.UTF_8);
+                editorController.openTabWithFile(file.getName(), content, file.toPath(), true);
+            } catch (Exception e) {
+                app.services.NotificationService.getInstance().showError("Lỗi mở file", e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    public void handleSaveFile() {
+        saveTabFile(false);
+    }
+
+    @FXML
+    public void handleSaveFileAs() {
+        saveTabFile(true);
+    }
+
+    private void saveTabFile(boolean saveAs) {
+        if (editorController == null) return;
+        var activeTab = editorController.getActiveTab();
+        if (activeTab == null) return;
+
+        java.nio.file.Path path = activeTab.getFilePath();
+
+        if (path == null || saveAs) {
+            javafx.stage.FileChooser chooser = new javafx.stage.FileChooser();
+            chooser.setTitle(saveAs ? "Lưu file SQL thành..." : "Lưu file SQL");
+            chooser.getExtensionFilters().addAll(
+                    new javafx.stage.FileChooser.ExtensionFilter("SQL Files (*.sql)", "*.sql"),
+                    new javafx.stage.FileChooser.ExtensionFilter("All Files (*.*)", "*.*")
+            );
+            if (path != null && path.getParent() != null) {
+                chooser.setInitialDirectory(path.getParent().toFile());
+                chooser.setInitialFileName(path.getFileName().toString());
+            } else {
+                String tabName = activeTab.getTabTitle();
+                chooser.setInitialFileName(tabName != null && tabName.endsWith(".sql") ? tabName : (tabName != null ? tabName + ".sql" : "query.sql"));
+            }
+            java.io.File file = chooser.showSaveDialog(ownerWindow());
+            if (file == null) return;
+            path = file.toPath();
+            activeTab.setFilePath(path);
+            activeTab.setTabTitle(path.getFileName().toString());
+        }
+
+        try {
+            String content = editorController.getActiveText();
+            java.nio.file.Files.writeString(path, content != null ? content : "", java.nio.charset.StandardCharsets.UTF_8);
+            activeTab.markSaved();
+            String connName = activeTab.getConnectionName() != null ? activeTab.getConnectionName() : (connectionComboBox != null ? connectionComboBox.getValue() : null);
+            String dbName = activeTab.getDatabaseName() != null ? activeTab.getDatabaseName() : (schemaComboBox != null ? schemaComboBox.getValue() : null);
+            app.services.HistoryLoggingService.getInstance().recordSnapshot(
+                    activeTab.getDocumentId(),
+                    activeTab.getTabTitle(),
+                    path.toString(),
+                    content,
+                    connName,
+                    dbName
+            );
+            app.services.HistoryLoggingService.getInstance().updateDocument(
+                    activeTab.getDocumentId(),
+                    activeTab.getTabTitle(),
+                    path.toString()
+            );
+            app.services.NotificationService.getInstance().showSuccess("Đã lưu", "Đã lưu " + activeTab.getTabTitle());
+        } catch (Exception e) {
+            app.services.NotificationService.getInstance().showError("Lỗi lưu file", e.getMessage());
+        }
     }
 
     private void setupLayoutIntegration() {
@@ -1404,6 +1761,13 @@ public class MainController implements Initializable {
 
     @FXML
     public void handleToggleResults() {
+        app.ui.editor.SqlEditorTab active = editorController != null ? editorController.getCurrentEditorTab() : null;
+        if (active != null && !active.isSqlTextTab()) {
+            if (statusBarController != null) {
+                statusBarController.setStatus("Results Panel chỉ khả dụng cho tab soạn thảo SQL", "info");
+            }
+            return;
+        }
         app.services.LayoutService.getInstance().toggleResults();
     }
 
@@ -1529,6 +1893,31 @@ public class MainController implements Initializable {
                 profile.name(), database);
     }
 
+    /** Feature 10 / SCR-TD-001: Opens the Table Designer tab. */
+    public void openTableDesigner(com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+                                  String catalog, String schema, String table, boolean isNewTable) {
+        if (editorController != null) {
+            editorController.openTableDesignerTab(profile, catalog, schema, table, isNewTable);
+        }
+    }
+
+    /** Feature 10 / TD5: Opens the Table Designer tab with a duplicated TableDesign. */
+    public void openTableDesignerForCopy(com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+                                         String catalog, String schema, String table,
+                                         com.lltool.core.domain.tabledesigner.model.TableDesign clonedDesign) {
+        if (editorController != null) {
+            editorController.openTableDesignerTabForCopy(profile, catalog, schema, table, clonedDesign);
+        }
+    }
+
+    /** Feature 2 / Table Data Editor: Opens the Table Data Editor tab. */
+    public void openTableDataEditor(com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+                                    String catalog, String schema, String table) {
+        if (editorController != null) {
+            editorController.openTableDataEditorTab(profile, catalog, schema, table);
+        }
+    }
+
     public void executeQueryDirectly(String title, String sql) {
         executeQueryDirectly(title, sql, null, null, null);
     }
@@ -1613,22 +2002,37 @@ public class MainController implements Initializable {
 
         app.ui.editor.SqlEditorTab activeTab = editorController != null ? editorController.getCurrentEditorTab() : null;
         String tabConn = activeTab != null && activeTab.getConnectionName() != null ? activeTab.getConnectionName() : activeConn;
-        String tabDb = activeTab != null && activeTab.getDatabaseName() != null ? activeTab.getDatabaseName() : null;
+        String tabDb = activeTab != null && activeTab.getDatabaseName() != null ? activeTab.getDatabaseName()
+                : (databaseComboBox != null && databaseComboBox.getValue() != null ? databaseComboBox.getValue() : connectionDefaultDatabases.get(tabConn));
         String tabSchema = activeTab != null && activeTab.getSchemaName() != null ? activeTab.getSchemaName() : activeSchema;
 
         // Phase 8: read-only first (no point confirming PROD for a statement that is blocked anyway),
         // then SCR-DLG-007b for writes on PRODUCTION. The execution service checks again.
         String env = connectionEnvironments.get(tabConn);
-        boolean readOnly = app.framework.backend.BackendFlags.readOnlyAll() || Boolean.TRUE.equals(connectionReadOnly.get(tabConn));
+        var prof = app.framework.connection.ProfileLookup.byName(tabConn);
+        boolean profReadOnly = prof != null ? prof.readOnly() : Boolean.TRUE.equals(connectionReadOnly.get(tabConn));
+        boolean readOnly = app.framework.backend.BackendFlags.readOnlyAll() || profReadOnly;
         var decision = app.framework.query.SqlStatementClassifier.check(sql, readOnly, env, false);
         boolean prodConfirmed = false;
         if (!decision.allowed() && "ERR_READ_ONLY".equals(decision.errorCode())) {
-            app.services.NotificationService.getInstance().showWarning("Chỉ đọc", decision.message());
-            if (resultsController != null) {
-                resultsController.addMessage(app.models.ConsoleMessage.Level.WARNING, decision.message(), "-");
-                resultsController.selectMessagesTab();
+            boolean unlocked = app.ui.dialogs.ReadOnlyGuardDialog.show(ownerWindow(), tabConn);
+            if (unlocked) {
+                setConnectionReadOnly(tabConn, false);
+                if (statusBarController != null) {
+                    statusBarController.setStatus("Đã chuyển kết nối sang cho phép ghi", "success");
+                }
+                if (editorController != null) {
+                    editorController.refreshTabDecorations();
+                }
+                final String sqlToRetry = sql;
+                Platform.runLater(() -> runSql(sqlToRetry));
+            } else {
+                if (resultsController != null) {
+                    resultsController.addMessage(app.models.ConsoleMessage.Level.WARNING, decision.message(), "-");
+                    resultsController.selectMessagesTab();
+                }
+                if (statusBarController != null) statusBarController.setStatus("Đã chặn: kết nối chỉ đọc", "warning");
             }
-            if (statusBarController != null) statusBarController.setStatus("Đã chặn: kết nối chỉ đọc", "warning");
             return;
         }
         if (decision.needsConfirmation()) {
@@ -1663,6 +2067,13 @@ public class MainController implements Initializable {
 
     private void startRun(String tabId, String tabTitle, String sql, String tabConn, String tabDb, String tabSchema,
                           boolean prodConfirmed, app.framework.query.QueryOptions queryOptions) {
+        final app.ui.editor.SqlEditorTab activeEditorTab = editorController != null ? editorController.getCurrentEditorTab() : null;
+        final String filePathStr = activeEditorTab != null && activeEditorTab.getFilePath() != null ? activeEditorTab.getFilePath().toString() : null;
+        final boolean isSelection = editorController != null && editorController.hasSelection();
+        final Long historyEntryId = app.services.HistoryLoggingService.getInstance().recordExecution(
+                tabId, tabTitle, sql, tabConn, tabDb, filePathStr, null, isSelection
+        );
+
         app.framework.query.DesktopQueryExecutionService.getInstance().execute(tabId, sql, tabConn, tabDb, tabSchema, prodConfirmed, queryOptions, new app.framework.query.DesktopQueryExecutionService.QueryCallback() {
             @Override
             public void onMessage(String message, app.framework.query.DesktopQueryExecutionService.QueryCallback.MessageKind kind) {
@@ -1714,6 +2125,9 @@ public class MainController implements Initializable {
 
             @Override
             public void onSuccess(app.models.QueryResult result, List<app.models.QueryResult> allResults, int rowsAffected, String summaryMessage, long durationMs) {
+                app.services.HistoryLoggingService.getInstance().updateExecutionResult(
+                        historyEntryId, durationMs, app.models.HistoryEntry.STATUS_OK, null
+                );
                 refreshRunState();
                 if (editorController != null) editorController.reloadIntellisenseAfterRun(tabId, sql);
                 notifyBackgroundDone(tabId, tabTitle, summaryMessage, false);
@@ -1746,32 +2160,79 @@ public class MainController implements Initializable {
 
             @Override
             public void onError(String errorMessage, Throwable cause) {
+                app.services.HistoryLoggingService.getInstance().updateExecutionResult(
+                        historyEntryId, -1L, app.models.HistoryEntry.STATUS_ERROR, errorMessage
+                );
                 refreshRunState();
                 // a script can fail after its first statements already changed objects
                 if (editorController != null) editorController.reloadIntellisenseAfterRun(tabId, sql);
                 notifyBackgroundDone(tabId, tabTitle, errorMessage, true);
-                deliverToTab(tabId, () -> {
-                    if (resultsController != null) {
-                        resultsController.resetStreaming();
-                        resultsController.showLoading(false);
-                        resultsController.addMessage(app.models.ConsoleMessage.Level.ERROR, errorMessage, "-");
-                        resultsController.selectMessagesTab();
-                    }
-                    if (statusBarController != null) {
-                        statusBarController.setLastRun("Lỗi: " + errorMessage, "offline");
-                    }
-                });
-                if (cause instanceof app.framework.session.ConnectionLostException) {
+                boolean isReadOnlyError = (cause instanceof java.sql.SQLException sqle && ("ERR_READ_ONLY".equals(sqle.getSQLState()) || "25006".equals(sqle.getSQLState())))
+                        || (errorMessage != null && (
+                            errorMessage.contains("ERR_READ_ONLY")
+                            || errorMessage.toLowerCase().contains("chỉ đọc")
+                            || errorMessage.toLowerCase().contains("read-only")
+                            || errorMessage.toLowerCase().contains("readonly")
+                            || errorMessage.toLowerCase().contains("read only")
+                            || errorMessage.contains("25006")
+                        ));
+                if (isReadOnlyError && isActiveTab(tabId)) {
+                    deliverToTab(tabId, () -> {
+                        if (resultsController != null) {
+                            resultsController.resetStreaming();
+                            resultsController.showLoading(false);
+                        }
+                    });
+                    Platform.runLater(() -> {
+                        boolean unlocked = app.ui.dialogs.ReadOnlyGuardDialog.show(ownerWindow(), tabConn);
+                        if (unlocked) {
+                            setConnectionReadOnly(tabConn, false);
+                            if (statusBarController != null) {
+                                statusBarController.setStatus("Đã chuyển kết nối sang cho phép ghi", "success");
+                            }
+                            if (editorController != null) {
+                                editorController.refreshTabDecorations();
+                            }
+                            runSql(sql);
+                        } else {
+                            deliverToTab(tabId, () -> {
+                                if (resultsController != null) {
+                                    resultsController.addMessage(app.models.ConsoleMessage.Level.WARNING, errorMessage, "-");
+                                    resultsController.selectMessagesTab();
+                                }
+                                if (statusBarController != null) {
+                                    statusBarController.setLastRun("Đã chặn: kết nối chỉ đọc", "warning");
+                                }
+                            });
+                        }
+                    });
+                } else if (cause instanceof app.framework.session.ConnectionLostException) {
                     // the tab's session was dead: ask, reconnect and run again (no silent reconnect)
                     Platform.runLater(() -> retryAfterLostConnection(tabId, tabTitle, sql, tabConn, tabDb, tabSchema,
                             prodConfirmed, queryOptions));
-                } else if (isActiveTab(tabId)) {
-                    app.services.NotificationService.getInstance().showWarning("Query Failed", errorMessage);
+                } else {
+                    deliverToTab(tabId, () -> {
+                        if (resultsController != null) {
+                            resultsController.resetStreaming();
+                            resultsController.showLoading(false);
+                            resultsController.addMessage(app.models.ConsoleMessage.Level.ERROR, errorMessage, "-");
+                            resultsController.selectMessagesTab();
+                        }
+                        if (statusBarController != null) {
+                            statusBarController.setLastRun("Lỗi: " + errorMessage, "offline");
+                        }
+                    });
+                    if (isActiveTab(tabId)) {
+                        app.services.NotificationService.getInstance().showWarning("Query Failed", errorMessage);
+                    }
                 }
             }
 
             @Override
             public void onCancelled() {
+                app.services.HistoryLoggingService.getInstance().updateExecutionResult(
+                        historyEntryId, -1L, app.models.HistoryEntry.STATUS_CANCELLED, "Query execution cancelled by user."
+                );
                 refreshRunState();
                 deliverToTab(tabId, () -> {
                     if (resultsController != null) {
@@ -1886,7 +2347,8 @@ public class MainController implements Initializable {
 
         app.ui.editor.SqlEditorTab activeTab = editorController != null ? editorController.getCurrentEditorTab() : null;
         String tabConn = activeTab != null && activeTab.getConnectionName() != null ? activeTab.getConnectionName() : activeConn;
-        String tabDb = activeTab != null && activeTab.getDatabaseName() != null ? activeTab.getDatabaseName() : null;
+        String tabDb = activeTab != null && activeTab.getDatabaseName() != null ? activeTab.getDatabaseName()
+                : (databaseComboBox != null && databaseComboBox.getValue() != null ? databaseComboBox.getValue() : connectionDefaultDatabases.get(tabConn));
         String tabSchema = activeTab != null && activeTab.getSchemaName() != null ? activeTab.getSchemaName() : activeSchema;
         if (tabConn == null || tabConn.isBlank()) {
             app.services.NotificationService.getInstance().showWarning("Execution Plan",

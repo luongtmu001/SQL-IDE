@@ -134,6 +134,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         this.engine = (profile != null && profile.databaseType() != null && profile.databaseType().toLowerCase().contains("postgre")) ? "postgresql" : "sqlserver";
 
         setFileIconLiteral("mdi2d-database-edit");
+        setTabContentType(TabContentType.TABLE_DATA_EDITOR);
         initializeView();
     }
 
@@ -264,49 +265,37 @@ public class TableDataEditorTab extends SqlEditorTab {
 
         // Left controls
         Button btnRun = new Button("Chạy");
-        btnRun.getStyleClass().addAll("button", "accent", "small");
-        FontIcon playIcon = new FontIcon("fth-play");
-        playIcon.setIconSize(12);
-        btnRun.setGraphic(playIcon);
+        btnRun.getStyleClass().addAll("button", "accent");
+        btnRun.setGraphic(app.ui.components.Icons.of("fth-play"));
         btnRun.setTooltip(new Tooltip("Thực thi truy vấn nạp dữ liệu với các tiêu chí hiện tại (F5 / Alt+X)"));
         btnRun.setOnAction(e -> requestReloadData());
 
-        btnSave.getStyleClass().addAll("button", "success", "small");
-        FontIcon saveIcon = new FontIcon("fth-save");
-        saveIcon.setIconSize(12);
-        btnSave.setGraphic(saveIcon);
+        btnSave.getStyleClass().addAll("button", "success");
+        btnSave.setGraphic(app.ui.components.Icons.of("fth-save"));
         btnSave.setTooltip(new Tooltip("Lưu các thay đổi xuống CSDL (Ctrl+S)"));
         btnSave.setOnAction(e -> handleSave());
 
         Button btnDiscard = new Button("Hoàn tác");
-        btnDiscard.getStyleClass().addAll("button", "small");
-        FontIcon discardIcon = new FontIcon("fth-rotate-ccw");
-        discardIcon.setIconSize(12);
-        btnDiscard.setGraphic(discardIcon);
+        btnDiscard.getStyleClass().add("button");
+        btnDiscard.setGraphic(app.ui.components.Icons.of("fth-rotate-ccw"));
         btnDiscard.setTooltip(new Tooltip("Hủy bỏ thay đổi chưa lưu và nạp lại từ CSDL"));
         btnDiscard.setOnAction(e -> handleDiscard());
 
         Button btnAddRow = new Button("Thêm dòng");
-        btnAddRow.getStyleClass().addAll("button", "small");
-        FontIcon addIcon = new FontIcon("fth-plus");
-        addIcon.setIconSize(12);
-        btnAddRow.setGraphic(addIcon);
+        btnAddRow.getStyleClass().add("button");
+        btnAddRow.setGraphic(app.ui.components.Icons.of("fth-plus"));
         btnAddRow.setTooltip(new Tooltip("Thêm một dòng mới ở cuối (Ctrl+N)"));
         btnAddRow.setOnAction(e -> handleAddRow());
 
         Button btnDeleteRow = new Button("Xoá dòng");
-        btnDeleteRow.getStyleClass().addAll("button", "small");
-        FontIcon delIcon = new FontIcon("fth-trash-2");
-        delIcon.setIconSize(12);
-        btnDeleteRow.setGraphic(delIcon);
+        btnDeleteRow.getStyleClass().add("button");
+        btnDeleteRow.setGraphic(app.ui.components.Icons.of("fth-trash-2"));
         btnDeleteRow.setTooltip(new Tooltip("Đánh dấu xoá dòng đang chọn"));
         btnDeleteRow.setOnAction(e -> handleDeleteRow());
 
         Button btnDuplicate = new Button("Nhân bản");
-        btnDuplicate.getStyleClass().addAll("button", "small");
-        FontIcon dupIcon = new FontIcon("fth-copy");
-        dupIcon.setIconSize(12);
-        btnDuplicate.setGraphic(dupIcon);
+        btnDuplicate.getStyleClass().add("button");
+        btnDuplicate.setGraphic(app.ui.components.Icons.of("fth-copy"));
         btnDuplicate.setTooltip(new Tooltip("Nhân bản dòng đang chọn"));
         btnDuplicate.setOnAction(e -> handleDuplicateRow());
 
@@ -320,19 +309,15 @@ public class TableDataEditorTab extends SqlEditorTab {
 
         // Center controls
         toggleCriteria.setText("Bộ lọc");
-        toggleCriteria.getStyleClass().addAll("button", "small");
-        FontIcon critIcon = new FontIcon("fth-filter");
-        critIcon.setIconSize(12);
-        toggleCriteria.setGraphic(critIcon);
+        toggleCriteria.getStyleClass().add("button");
+        toggleCriteria.setGraphic(app.ui.components.Icons.of("fth-filter"));
         toggleCriteria.setSelected(false);
         toggleCriteria.setTooltip(new Tooltip("Ẩn/Hiện Criteria Pane (Điều kiện lọc & Sắp xếp)"));
         toggleCriteria.setOnAction(e -> rebuildSplitPaneItems());
 
         toggleSql.setText("SQL");
-        toggleSql.getStyleClass().addAll("button", "small");
-        FontIcon sqlIcon = new FontIcon("fth-code");
-        sqlIcon.setIconSize(12);
-        toggleSql.setGraphic(sqlIcon);
+        toggleSql.getStyleClass().add("button");
+        toggleSql.setGraphic(app.ui.components.Icons.of("fth-code"));
         toggleSql.setSelected(false);
         toggleSql.setTooltip(new Tooltip("Ẩn/Hiện SQL Pane (Kịch bản truy vấn SELECT)"));
         toggleSql.setOnAction(e -> rebuildSplitPaneItems());
@@ -381,17 +366,13 @@ public class TableDataEditorTab extends SqlEditorTab {
 
         // Right controls
         Button btnScript = new Button("Xem DML");
-        btnScript.getStyleClass().addAll("button", "small");
-        FontIcon scriptIcon = new FontIcon("fth-file-text");
-        scriptIcon.setIconSize(12);
-        btnScript.setGraphic(scriptIcon);
+        btnScript.getStyleClass().add("button");
+        btnScript.setGraphic(app.ui.components.Icons.of("fth-file-text"));
         btnScript.setTooltip(new Tooltip("Xem trước kịch bản DML chuẩn bị thực thi"));
         btnScript.setOnAction(e -> handlePreviewDml());
 
-        toggleInspector.getStyleClass().addAll("button", "small");
-        FontIcon infoIcon = new FontIcon("fth-info");
-        infoIcon.setIconSize(12);
-        toggleInspector.setGraphic(infoIcon);
+        toggleInspector.getStyleClass().add("button");
+        toggleInspector.setGraphic(app.ui.components.Icons.of("fth-info"));
         toggleInspector.setTooltip(new Tooltip("Mở ngăn kéo tra cứu cấu trúc bảng và ràng buộc"));
         toggleInspector.setOnAction(e -> updateDrawerVisibility());
 
@@ -787,7 +768,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         colRowNo.setPrefWidth(48);
         colRowNo.setMinWidth(48);
         colRowNo.setMaxWidth(65);
-        colRowNo.setStyle("-fx-alignment: CENTER; -fx-font-family: monospace;");
+        colRowNo.getStyleClass().add("col-row-no");
         colRowNo.setCellValueFactory(data -> {
             ObservableDataRow row = data.getValue();
             if (row == null) return new SimpleStringProperty("");
@@ -833,14 +814,12 @@ public class TableDataEditorTab extends SqlEditorTab {
             HBox topRow = new HBox(4);
             topRow.setAlignment(Pos.CENTER_LEFT);
             if (isPk) {
-                FontIcon keyIcon = new FontIcon("fth-key");
-                keyIcon.setIconSize(11);
+                FontIcon keyIcon = app.ui.components.Icons.of("fth-key", app.ui.components.IconScale.SM);
                 keyIcon.getStyleClass().add("icon-accent");
                 topRow.getChildren().add(keyIcon);
             }
             if (isIdentity || isComputed) {
-                FontIcon lockIcon = new FontIcon("fth-lock");
-                lockIcon.setIconSize(10);
+                FontIcon lockIcon = app.ui.components.Icons.of("fth-lock", app.ui.components.IconScale.SM);
                 lockIcon.getStyleClass().add("icon-muted");
                 topRow.getChildren().add(lockIcon);
             }
@@ -990,7 +969,7 @@ public class TableDataEditorTab extends SqlEditorTab {
             if (currentProf == null && profile != null) currentProf = app.framework.connection.ProfileLookup.byName(profile.name());
             if (currentProf != null) this.profile = currentProf;
             lblReadOnly.setText("Cho phép sửa");
-            lblReadOnly.setStyle("-fx-text-fill: -color-success-emphasis; -fx-font-weight: bold;");
+            lblReadOnly.getStyleClass().add("tde-editable-status");
             return true;
         } else if (currentProf != null) {
             this.profile = currentProf;

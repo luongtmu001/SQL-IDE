@@ -139,6 +139,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         this.initialSchema = initialSchema;
 
         setFileIconLiteral("fth-search");
+        setTabContentType(TabContentType.OBJECT_SEARCH);
         initializeView();
     }
 
@@ -154,7 +155,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         // 1. Build Top Toolbar
         HBox toolbar = buildToolbar();
 
-        lblRegexError.setStyle("-fx-text-fill: -color-danger-fg; -fx-font-size: 11px; -fx-padding: 0 0 2 10;");
+        lblRegexError.getStyleClass().add("search-regex-error");
         lblRegexError.setVisible(false);
         lblRegexError.setManaged(false);
 
@@ -261,10 +262,9 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         warnBanner.setAlignment(Pos.CENTER_LEFT);
         warnBanner.getStyleClass().addAll("dialog-chrome-banner", "warning");
         warnBanner.setPadding(new Insets(4, 8, 4, 8));
-        FontIcon warnIcon = new FontIcon("fth-alert-triangle");
-        warnIcon.setIconSize(13);
+        FontIcon warnIcon = app.ui.components.Icons.of("fth-alert-triangle");
         warnIcon.getStyleClass().add("warning-icon");
-        lblWarnMessage.setStyle("-fx-font-size: 11px;");
+        lblWarnMessage.getStyleClass().add("search-warn-message");
         lblWarnMessage.setWrapText(true);
         warnBanner.getChildren().addAll(warnIcon, lblWarnMessage);
         warnBanner.setVisible(false);
@@ -294,8 +294,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
 
         btnToggleOccurrences.getStyleClass().add("search-toggle-btn");
         btnToggleOccurrences.setSelected(true);
-        FontIcon listIcon = new FontIcon("fth-list");
-        listIcon.setIconSize(13);
+        FontIcon listIcon = app.ui.components.Icons.of("fth-list");
         btnToggleOccurrences.setGraphic(listIcon);
         btnToggleOccurrences.setOnAction(e -> toggleOccurrencesPanel(btnToggleOccurrences.isSelected()));
 
@@ -355,8 +354,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         header.getStyleClass().add("occurrences-header");
         header.setAlignment(Pos.CENTER_LEFT);
 
-        FontIcon icon = new FontIcon("fth-list");
-        icon.setIconSize(13);
+        FontIcon icon = app.ui.components.Icons.of("fth-list");
 
         Label lblTitle = new Label("Vị trí khớp");
         lblTitle.getStyleClass().add("occurrences-title");
@@ -389,7 +387,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         colIndex.setMinWidth(48);
         colIndex.setMaxWidth(48);
         colIndex.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(occurrencesTable.getItems().indexOf(data.getValue()) + 1));
-        colIndex.setStyle("-fx-alignment: CENTER;");
+        colIndex.getStyleClass().add("col-index-center");
 
         // Column Line - Fixed 64px
         TableColumn<SearchMatchLocation, Integer> colLine = new TableColumn<>("Dòng");
@@ -397,7 +395,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         colLine.setMinWidth(64);
         colLine.setMaxWidth(64);
         colLine.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().line()));
-        colLine.setStyle("-fx-alignment: CENTER-RIGHT; -fx-padding: 0 8 0 0;");
+        colLine.getStyleClass().add("col-num-right");
 
         // Column Col - Fixed 64px
         TableColumn<SearchMatchLocation, Integer> colCol = new TableColumn<>("Cột");
@@ -405,7 +403,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         colCol.setMinWidth(64);
         colCol.setMaxWidth(64);
         colCol.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().column()));
-        colCol.setStyle("-fx-alignment: CENTER-RIGHT; -fx-padding: 0 8 0 0;");
+        colCol.getStyleClass().add("col-num-right");
 
         // Column Code Snippet - Remainder with keyword highlighting
         TableColumn<SearchMatchLocation, String> colSnippet = new TableColumn<>("Đoạn mã");
@@ -948,7 +946,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         public ObjectTreeCell() {
             // Category layout setup
             rootCat.setAlignment(Pos.CENTER_LEFT);
-            iconCat.setIconSize(13);
+            app.ui.components.Icons.bind(iconCat, app.ui.components.IconScale.MD);
             lblCatTitle.getStyleClass().add("category-title-label");
 
             Region catSpacer = new Region();
@@ -957,7 +955,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
 
             // Hit item layout setup
             rootHit.setAlignment(Pos.CENTER_LEFT);
-            iconHit.setIconSize(14);
+            app.ui.components.Icons.bind(iconHit, app.ui.components.IconScale.MD);
             HBox.setHgrow(textContainer, Priority.ALWAYS);
 
             lblHitName.getStyleClass().add("object-hit-title");

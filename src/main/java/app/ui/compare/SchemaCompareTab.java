@@ -149,6 +149,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         this.targetSchema = targetSchema;
 
         setFileIconLiteral("fth-git-commit");
+        setTabContentType(TabContentType.SCHEMA_COMPARE);
         initializeView();
     }
 
@@ -279,7 +280,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         row2.setAlignment(Pos.CENTER_LEFT);
 
         Label lblMetricsTitle = new Label("Tổng khác biệt:");
-        lblMetricsTitle.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-weight: bold;");
+        lblMetricsTitle.getStyleClass().add("compare-metrics-title");
 
         lblDiffSummaryBadge.getStyleClass().addAll("badge", "badge-warning");
 
@@ -606,7 +607,7 @@ public class SchemaCompareTab extends SqlEditorTab {
 
     private void showOptionsDialog() {
         VBox content = new VBox(12);
-        content.setStyle("-fx-padding: 16;");
+        content.getStyleClass().add("options-dialog-content");
 
         CheckBox chkTx = new CheckBox("Bọc trong giao dịch an toàn (BEGIN TRANSACTION / COMMIT)");
         chkTx.setSelected(wrapTransaction);
@@ -617,8 +618,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         HBox warnBanner = new HBox(8);
         warnBanner.setAlignment(Pos.CENTER_LEFT);
         warnBanner.getStyleClass().addAll("dialog-chrome-banner", "warning");
-        FontIcon warnIcon = new FontIcon("fth-alert-triangle");
-        warnIcon.setIconSize(16);
+        FontIcon warnIcon = app.ui.components.Icons.of("fth-alert-triangle", app.ui.components.IconScale.LG);
         Label lblWarn = new Label("Cảnh báo: Thao tác DROP có thể làm mất dữ liệu vĩnh viễn trên CSDL Đích!");
         lblWarn.setWrapText(true);
         warnBanner.getChildren().addAll(warnIcon, lblWarn);
@@ -990,7 +990,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         public SchemaTreeCell() {
             // Category layout
             rootCat.setAlignment(Pos.CENTER_LEFT);
-            iconCat.setIconSize(13);
+            app.ui.components.Icons.bind(iconCat, app.ui.components.IconScale.MD);
             lblCatTitle.getStyleClass().add("diff-category-title");
 
             Region catSpacer = new Region();
@@ -999,7 +999,7 @@ public class SchemaCompareTab extends SqlEditorTab {
 
             // Object layout
             rootObj.setAlignment(Pos.CENTER_LEFT);
-            iconObj.setIconSize(13);
+            app.ui.components.Icons.bind(iconObj, app.ui.components.IconScale.MD);
             lblObjName.getStyleClass().add("diff-object-title");
 
             Region objSpacer = new Region();

@@ -385,6 +385,7 @@ public class EditorController implements Initializable {
             }
         }
         SqlEditorTab tab = new SqlEditorTab(title, "", null, connectionName, databaseName, null, this::handleTabAction);
+        tab.setTabContentType(SqlEditorTab.TabContentType.VIEW_PANEL);
         tab.setCustomContent(key, viewFactory.get());
         tab.setOnClosed(e -> updateEmptyState());
         primaryTabPane.getTabs().add(tab);
@@ -997,5 +998,181 @@ public class EditorController implements Initializable {
             monacoHost.updateEditorSettings(s);
             pushIntellisense();
         }
+    }
+
+    private Runnable onReloadRequestedListener;
+    public void setOnReloadRequested(Runnable r) {
+        this.onReloadRequestedListener = r;
+    }
+
+    public boolean hasSelection() {
+        SqlEditorTab tab = getCurrentEditorTab();
+        if (tab == null || tab.isCustomContent()) return false;
+        if (monacoHost != null && monacoHost.isEditorReady()) {
+            String sel = monacoHost.getSelectedText();
+            return sel != null && !sel.isBlank();
+        }
+        SqlCodeArea area = getActiveCodeArea();
+        return area != null && area.getSelectedText() != null && !area.getSelectedText().isBlank();
+    }
+
+    public app.ui.designer.TableDesignerTab openTableDesignerTab(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String schema, String tableName, boolean isNewTable) {
+        String key = "table_designer|" + (profile != null ? profile.id() : "default") + "|" +
+                (schema != null ? schema : "dbo") + "." + (tableName != null ? tableName : "new_table");
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.designer.TableDesignerTab dt && key.equals(dt.getCustomKey())) {
+                primaryTabPane.getSelectionModel().select(dt);
+                return dt;
+            }
+        }
+        app.ui.designer.TableDesignerTab tab = new app.ui.designer.TableDesignerTab(
+                profile, catalog, schema, tableName, isNewTable, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        primaryTabPane.getTabs().add(tab);
+        tab.pinnedProperty().addListener((o, was, pinned) -> movePinned(tab, pinned));
+        updateEmptyState();
+        refreshTabDecorations();
+        primaryTabPane.getSelectionModel().select(tab);
+        return tab;
+    }
+
+    public app.ui.designer.TableDesignerTab openTableDesignerTabForCopy(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String schema, String newTableName,
+            com.lltool.core.domain.tabledesigner.model.TableDesign clonedDesign) {
+        app.ui.designer.TableDesignerTab tab = new app.ui.designer.TableDesignerTab(
+                profile, catalog, schema, newTableName, clonedDesign, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        primaryTabPane.getTabs().add(tab);
+        tab.pinnedProperty().addListener((o, was, pinned) -> movePinned(tab, pinned));
+        updateEmptyState();
+        refreshTabDecorations();
+        primaryTabPane.getSelectionModel().select(tab);
+        return tab;
+    }
+
+    public app.ui.dataeditor.TableDataEditorTab openTableDataEditorTab(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String schema, String tableName) {
+        return openTableDataEditorTabWithFilter(profile, catalog, schema, tableName, null);
+    }
+
+    public app.ui.dataeditor.TableDataEditorTab openTableDataEditorTabWithFilter(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String schema, String tableName, String whereClause) {
+        String key = "data_editor|" + (profile != null ? profile.id() : "default") + "|" +
+                (schema != null ? schema : "dbo") + "." + (tableName != null ? tableName : "table");
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.dataeditor.TableDataEditorTab dt && key.equals(dt.getCustomKey())) {
+                primaryTabPane.getSelectionModel().select(dt);
+                return dt;
+            }
+        }
+        app.ui.dataeditor.TableDataEditorTab tab = new app.ui.dataeditor.TableDataEditorTab(
+                profile, catalog, schema, tableName, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        primaryTabPane.getTabs().add(tab);
+        tab.pinnedProperty().addListener((o, was, pinned) -> movePinned(tab, pinned));
+        updateEmptyState();
+        refreshTabDecorations();
+        primaryTabPane.getSelectionModel().select(tab);
+        return tab;
+    }
+
+    public app.ui.search.ObjectContentSearchTab openObjectContentSearchTab(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String initialSearch) {
+        String key = "obj_search|" + (profile != null ? profile.id() : "default") + "|" + (catalog != null ? catalog : "");
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.search.ObjectContentSearchTab st && key.equals(st.getCustomKey())) {
+                primaryTabPane.getSelectionModel().select(st);
+                return st;
+            }
+        }
+        app.ui.search.ObjectContentSearchTab tab = new app.ui.search.ObjectContentSearchTab(
+                profile, catalog, initialSearch, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        primaryTabPane.getTabs().add(tab);
+        tab.pinnedProperty().addListener((o, was, pinned) -> movePinned(tab, pinned));
+        updateEmptyState();
+        refreshTabDecorations();
+        primaryTabPane.getSelectionModel().select(tab);
+        return tab;
+    }
+
+    public app.ui.compare.SchemaCompareTab openSchemaCompareTab(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto sourceProfile,
+            String sourceDatabase,
+            String initialSourceSchema,
+            com.lltool.core.application.connection.dto.ConnectionProfileDto targetProfile,
+            String targetDatabase,
+            String initialTargetSchema) {
+        String key = "schema_compare|" + (sourceProfile != null ? sourceProfile.id() : "src") + "|" +
+                (targetProfile != null ? targetProfile.id() : "tgt");
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.compare.SchemaCompareTab ct && key.equals(ct.getCustomKey())) {
+                primaryTabPane.getSelectionModel().select(ct);
+                return ct;
+            }
+        }
+        app.ui.compare.SchemaCompareTab tab = new app.ui.compare.SchemaCompareTab(
+                sourceProfile, sourceDatabase, initialSourceSchema,
+                targetProfile, targetDatabase, initialTargetSchema, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        primaryTabPane.getTabs().add(tab);
+        tab.pinnedProperty().addListener((o, was, pinned) -> movePinned(tab, pinned));
+        updateEmptyState();
+        refreshTabDecorations();
+        primaryTabPane.getSelectionModel().select(tab);
+        return tab;
+    }
+
+    public app.ui.dependency.DependencyGraphTab openDependencyGraphTab(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String schema, String objectName, String columnName,
+            com.lltool.core.domain.dependency.DependencyNodeType objectType) {
+        String key = "dep_graph|" + (profile != null ? profile.id() : "default") + "|" +
+                (schema != null ? schema : "dbo") + "." + (objectName != null ? objectName : "orders") +
+                (columnName != null ? "." + columnName : "");
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.dependency.DependencyGraphTab dt && key.equals(dt.getCustomKey())) {
+                primaryTabPane.getSelectionModel().select(dt);
+                return dt;
+            }
+        }
+        app.ui.dependency.DependencyGraphTab tab = new app.ui.dependency.DependencyGraphTab(
+                profile, catalog, schema, objectName, columnName, objectType,
+                this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        primaryTabPane.getTabs().add(tab);
+        tab.pinnedProperty().addListener((o, was, pinned) -> movePinned(tab, pinned));
+        updateEmptyState();
+        refreshTabDecorations();
+        primaryTabPane.getSelectionModel().select(tab);
+        return tab;
+    }
+
+    public app.ui.visualizer.SqlVisualizerTab openSqlVisualizerTab(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String schema, String queryName, String initialSql) {
+        String key = "sql_visualizer|" + (profile != null ? profile.id() : "default") + "|" +
+                (queryName != null ? queryName : "Query1");
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.visualizer.SqlVisualizerTab vt && key.equals(vt.getCustomKey())) {
+                primaryTabPane.getSelectionModel().select(vt);
+                return vt;
+            }
+        }
+        app.ui.visualizer.SqlVisualizerTab tab = new app.ui.visualizer.SqlVisualizerTab(
+                profile, catalog, schema, queryName, initialSql, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        primaryTabPane.getTabs().add(tab);
+        tab.pinnedProperty().addListener((o, was, pinned) -> movePinned(tab, pinned));
+        updateEmptyState();
+        refreshTabDecorations();
+        primaryTabPane.getSelectionModel().select(tab);
+        return tab;
     }
 }
