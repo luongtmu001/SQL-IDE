@@ -73,13 +73,13 @@ Only include a workspace after confirming it exists and is functional in the Pyt
 
 | Feature / workspace | Python analysis | Java UI | Java behavior | Verification | Notes |
 |---|---|---|---|---|---|
-| Schema Compare | `COMPLETE` | `COMPLETE` | `IN_PROGRESS` | `IN_PROGRESS` | Forward Sync, Master-Detail categorized tree, side-by-side Monaco DDL viewers, transactional migration script, selective deploy (47/47 tests pass) |
+| Schema Compare | `COMPLETE` | `COMPLETE` | `COMPLETE` | `COMPLETE` | Forward Sync, Master-Detail categorized tree, side-by-side Monaco DDL viewers, live catalog snapshot loader, transactional migration script, selective deploy (51/51 tests pass) |
 | Bravo Layout Compare | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
 | Table Designer | `COMPLETE` | `COMPLETE` | `COMPLETE` | `COMPLETE` | Hoàn thiện grids ràng buộc, SaveDesignDialog, migration DDL (19/19 tests pass) |
 | Table Data Editor | `COMPLETE` | `COMPLETE` | `COMPLETE` | `COMPLETE` | Hoàn thành inline editor, optimistic concurrency, PreviewDataChangesDialog (30/30 tests pass) |
-| Dependency Graph | `COMPLETE` | `COMPLETE` | `IN_PROGRESS` | `IN_PROGRESS` | Đồ thị phân cấp Sugiyama, canvas kéo thả/zoom/pan/export PNG, Inspector 3 tab (Properties, Monaco DDL, Suggested Steps), tích hợp context menu Table/View/Proc/Col (54/54 tests pass) |
+| Dependency Graph | `COMPLETE` | `COMPLETE` | `COMPLETE` | `COMPLETE` | Đồ thị phân cấp Sugiyama/barycenter, canvas kéo thả/zoom/pan/export PNG, live catalog dependency loader, Inspector 3 tab (Properties, Monaco DDL, Suggested Steps), tích hợp context menu Table/View/Proc/Col (54/54 tests pass) |
 | Object Content Search | `COMPLETE` | `COMPLETE` | `COMPLETE` | `COMPLETE` | Phân nhóm loại object kèm tổng số, resizable/collapsible bottom occurrences panel, Monaco decorations, click-to-jump (41/41 tests pass) |
-| SQL Visualizer | `COMPLETE` | `COMPLETE` | `IN_PROGRESS` | `IN_PROGRESS` | Trực quan hóa luồng dữ liệu 6 giai đoạn, Canvas pipeline Bezier kéo thả/zoom/pan/export PNG, Inspector AST, đồng bộ hai chiều SourceRange với mã SQL (42/42 tests pass) |
+| SQL Visualizer | `COMPLETE` | `COMPLETE` | `COMPLETE` | `COMPLETE` | Trực quan hóa luồng dữ liệu 6 giai đoạn, AST pipeline analyzer, sequential join chaining, view header stripping, debouncing, estimated plan metrics (44/44 tests pass) |
 | Activity Monitor | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
 | User Permissions | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
 | Google Sheets integration | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | `NOT_ANALYZED` | |
