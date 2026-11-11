@@ -24,6 +24,48 @@
     -ide-icon-col-text: #1c71d8;
     -ide-icon-col-num: #26a269;
     -ide-icon-col-date: #813d9c;
+
+    /* ---- Phase 3: Graph canvas & nodes */
+    -ide-graph-bg: -ide-editor-bg;
+    -ide-graph-edge: -color-border-default;
+    -ide-graph-edge-active: -color-accent-emphasis;
+    -ide-graph-stage-line: -color-border-muted;
+
+    -ide-node-table-fg: -color-accent-fg;
+    -ide-node-table-bg: -color-accent-subtle;
+    -ide-node-table-border: -color-accent-emphasis;
+
+    -ide-node-view-fg: #7e22ce;
+    -ide-node-view-bg: rgba(126, 34, 206, 0.12);
+    -ide-node-view-border: #9333ea;
+
+    -ide-node-proc-fg: -color-warning-fg;
+    -ide-node-proc-bg: -color-warning-subtle;
+    -ide-node-proc-border: -color-warning-emphasis;
+
+    -ide-node-trigger-fg: -color-danger-fg;
+    -ide-node-trigger-bg: -color-danger-subtle;
+    -ide-node-trigger-border: -color-danger-emphasis;
+
+    /* ---- Phase 3: SQL Visualizer operators */
+    -ide-op-source: -color-accent-fg;
+    -ide-op-join: #0284c7;
+    -ide-op-filter: -color-warning-fg;
+    -ide-op-aggregate: #7e22ce;
+    -ide-op-sort: #db2777;
+    -ide-op-output: -color-success-fg;
+
+    /* ---- Phase 3: Schema Compare diffs */
+    -ide-diff-added-fg: -color-success-fg;
+    -ide-diff-added-bg: -color-success-subtle;
+    -ide-diff-removed-fg: -color-danger-fg;
+    -ide-diff-removed-bg: -color-danger-subtle;
+    -ide-diff-changed-fg: -color-warning-fg;
+    -ide-diff-changed-bg: -color-warning-subtle;
+
+    /* ---- Phase 3: Inline code & shadows */
+    -ide-code-inline-fg: -color-accent-fg;
+    -ide-shadow: rgba(0, 0, 0, 0.12);
 }
 
 .editor-content-placeholder, .results-content-placeholder, .messages-placeholder {
