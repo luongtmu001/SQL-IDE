@@ -1727,3 +1727,10 @@
 .editor-bar-error { -fx-text-fill: -color-danger-fg; }
 .editor-bar-icon-ok { -fx-icon-size: 13px; -fx-icon-color: -color-success-fg; }
 .editor-bar-icon-error { -fx-icon-size: 13px; -fx-icon-color: -color-danger-fg; }
+
+/* ---- Semantic icon color helper classes */
+.icon-accent { -fx-icon-color: -color-accent-fg; }
+.icon-success { -fx-icon-color: -color-success-fg; }
+.icon-warning { -fx-icon-color: -color-warning-fg; }
+.icon-danger { -fx-icon-color: -color-danger-fg; }
+.icon-muted { -fx-icon-color: -color-fg-muted; }

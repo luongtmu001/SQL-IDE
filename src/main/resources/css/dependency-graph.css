@@ -1,0 +1,264 @@
+/* =====================================================================
+   Dependency Graph Stylesheet (Phase 3 - Slice 5)
+   Adheres strictly to design tokens (-ide-*, -color-*), rounded/flat shapes.
+   ===================================================================== */
+
+.dependency-graph-root {
+    -fx-background-color: -color-bg-default;
+}
+
+/* --- Top Header & Controls Toolbar --- */
+.dep-header-bar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 14;
+    -fx-spacing: 12;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.dep-picker-box {
+    -fx-background-color: -ide-sidebar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 3 8;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 6;
+}
+
+.dep-direction-group {
+    -fx-background-color: -ide-sidebar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 2;
+    -fx-spacing: 2;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.dep-direction-group .toggle-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.85em;
+    -fx-padding: 3 8;
+    -fx-background-radius: 3;
+    -fx-cursor: hand;
+}
+
+.dep-direction-group .toggle-button:selected {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-fg-emphasis;
+    -fx-font-weight: bold;
+}
+
+.dep-control-label {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.85em;
+}
+
+/* --- Graph Canvas Container --- */
+.graph-canvas-container {
+    -fx-background-color: -ide-editor-bg;
+}
+
+.graph-canvas-viewport {
+    -fx-background-color: -ide-editor-bg;
+}
+
+/* --- Node Cards --- */
+.graph-node-card {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12;
+    -fx-min-width: 180;
+    -fx-max-width: 220;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, -ide-shadow, 6, 0, 0, 2);
+}
+
+.graph-node-card:hover {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-effect: dropshadow(gaussian, -ide-shadow, 10, 0, 0, 3);
+}
+
+.graph-node-card.selected {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, -ide-shadow, 14, 0, 0, 4);
+}
+
+/* Root Target Node */
+.graph-node-card.root-node {
+    -fx-background-color: derive(-color-accent-subtle, -30%);
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, -ide-shadow, 16, 0, 0, 4);
+}
+
+/* Type Badges */
+.node-badge {
+    -fx-font-size: 0.72em;
+    -fx-font-weight: bold;
+    -fx-padding: 2 6;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.node-badge-table {
+    -fx-background-color: -ide-node-table-bg;
+    -fx-text-fill: -ide-node-table-fg;
+    -fx-border-color: -ide-node-table-border;
+}
+
+.node-badge-view {
+    -fx-background-color: -ide-node-view-bg;
+    -fx-text-fill: -ide-node-view-fg;
+    -fx-border-color: -ide-node-view-border;
+}
+
+.node-badge-proc {
+    -fx-background-color: -ide-node-proc-bg;
+    -fx-text-fill: -ide-node-proc-fg;
+    -fx-border-color: -ide-node-proc-border;
+}
+
+.node-badge-trigger {
+    -fx-background-color: -ide-node-trigger-bg;
+    -fx-text-fill: -ide-node-trigger-fg;
+    -fx-border-color: -ide-node-trigger-border;
+}
+
+.node-badge-root {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-fg-emphasis;
+    -fx-font-weight: 800;
+}
+
+.node-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 0.95em;
+    -fx-text-fill: -color-fg-default;
+}
+
+.node-subtitle {
+    -fx-font-size: 0.78em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* Edges & Arrows */
+.graph-edge {
+    -fx-stroke: -ide-graph-edge;
+    -fx-stroke-width: 2.0;
+    -fx-fill: transparent;
+}
+
+.graph-edge:highlighted {
+    -fx-stroke: -ide-graph-edge-active;
+    -fx-stroke-width: 3.0;
+}
+
+.graph-edge-arrow {
+    -fx-fill: -ide-graph-edge;
+    -fx-stroke: transparent;
+}
+
+.graph-edge-arrow:highlighted {
+    -fx-fill: -ide-graph-edge-active;
+}
+
+/* Edge Labels */
+.edge-label {
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-family: monospace;
+    -fx-font-size: 0.75em;
+    -fx-padding: 1 4;
+    -fx-background-radius: 2;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 2;
+}
+
+/* --- Right Inspector Panel --- */
+.dep-inspector {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 0 1;
+}
+
+.dep-inspector-header {
+    -fx-padding: 8 12;
+    -fx-spacing: 6;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.property-group-card {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 8 10;
+    -fx-spacing: 4;
+}
+
+.property-row {
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.property-key {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.85em;
+    -fx-min-width: 90;
+}
+
+.property-val {
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 0.85em;
+    -fx-font-weight: bold;
+}
+
+/* Suggested Steps List */
+.step-card {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12;
+    -fx-spacing: 4;
+}
+
+.step-number-badge {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-fg-emphasis;
+    -fx-font-weight: bold;
+    -fx-font-size: 0.8em;
+    -fx-padding: 1 6;
+    -fx-background-radius: 10;
+}
+
+.step-action-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 0.88em;
+}
+
+.step-sql-snippet {
+    -fx-background-color: -ide-editor-bg;
+    -fx-text-fill: -ide-code-inline-fg;
+    -fx-font-family: monospace;
+    -fx-font-size: 0.82em;
+    -fx-padding: 4 8;
+    -fx-background-radius: 3;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 3;
+}

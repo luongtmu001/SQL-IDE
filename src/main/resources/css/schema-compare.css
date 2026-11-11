@@ -1,0 +1,241 @@
+/* =====================================================================
+   Schema Compare Stylesheet (Phase 3 - Slice 4)
+   Adheres strictly to design tokens (-ide-*, -color-*), rounded/flat shapes.
+   ===================================================================== */
+
+.schema-compare-root {
+    -fx-background-color: -color-bg-default;
+}
+
+/* --- Top Header & Endpoints Selection --- */
+.schema-compare-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 10 14;
+    -fx-spacing: 8;
+}
+
+.endpoint-box {
+    -fx-background-color: -ide-sidebar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 4 8;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 6;
+}
+
+.endpoint-badge-source {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-font-size: 0.75em;
+    -fx-font-weight: bold;
+    -fx-padding: 2 6;
+}
+
+.endpoint-badge-target {
+    -fx-background-color: -color-warning-subtle;
+    -fx-text-fill: -color-warning-fg;
+    -fx-border-color: -color-warning-emphasis;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-font-size: 0.75em;
+    -fx-font-weight: bold;
+    -fx-padding: 2 6;
+}
+
+.swap-btn {
+    -fx-background-radius: 16;
+    -fx-min-width: 30;
+    -fx-min-height: 30;
+    -fx-max-width: 30;
+    -fx-max-height: 30;
+    -fx-padding: 0;
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 16;
+}
+
+.swap-btn:hover {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-emphasis;
+}
+
+/* --- Filter & Metrics Bar --- */
+.compare-filter-bar {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8;
+    -fx-padding: 4 0 0 0;
+}
+
+.filter-badge-btn {
+    -fx-font-size: 0.8em;
+    -fx-padding: 2 7;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+}
+
+.filter-badge-btn:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-border-color: -color-accent-emphasis;
+}
+
+/* --- Master-Detail SplitPane --- */
+.compare-split-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.diff-tree-view {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.diff-tree-view .tree-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 4 6;
+    -fx-border-color: transparent;
+}
+
+.diff-tree-view .tree-cell:filled:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.diff-tree-view .tree-cell:filled:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-muted;
+    -fx-border-width: 0 0 0 2;
+}
+
+.diff-category-cell {
+    -fx-background-color: -color-bg-subtle;
+    -fx-font-weight: bold;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 6 8;
+}
+
+.diff-category-title {
+    -fx-font-size: 0.85em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.diff-object-title {
+    -fx-font-size: 0.9em;
+    -fx-font-weight: 500;
+    -fx-text-fill: -color-fg-default;
+}
+
+/* Badges for status */
+.diff-badge-new {
+    -fx-background-color: -ide-diff-added-bg;
+    -fx-text-fill: -ide-diff-added-fg;
+    -fx-border-color: -color-success-emphasis;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-font-size: 0.75em;
+    -fx-font-weight: bold;
+    -fx-padding: 1 5;
+}
+
+.diff-badge-mod {
+    -fx-background-color: -ide-diff-changed-bg;
+    -fx-text-fill: -ide-diff-changed-fg;
+    -fx-border-color: -color-warning-emphasis;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-font-size: 0.75em;
+    -fx-font-weight: bold;
+    -fx-padding: 1 5;
+}
+
+.diff-badge-del {
+    -fx-background-color: -ide-diff-removed-bg;
+    -fx-text-fill: -ide-diff-removed-fg;
+    -fx-border-color: -color-danger-emphasis;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-font-size: 0.75em;
+    -fx-font-weight: bold;
+    -fx-padding: 1 5;
+}
+
+.diff-badge-same {
+    -fx-background-color: -color-bg-muted;
+    -fx-text-fill: -color-fg-muted;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-font-size: 0.75em;
+    -fx-padding: 1 5;
+}
+
+/* --- Side-by-side DDL Viewers --- */
+.diff-viewer-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 5 10;
+    -fx-font-size: 0.85em;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.diff-header-source {
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+}
+
+.diff-header-target {
+    -fx-text-fill: -color-warning-fg;
+    -fx-font-weight: bold;
+}
+
+.diff-viewer-container {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* --- Slide-up Script Drawer --- */
+.script-drawer {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+
+.script-drawer-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 4 10;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8;
+}
+
+.script-drawer-title {
+    -fx-font-size: 0.85em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-success-fg;
+}
+
+/* --- Status Bar Footer --- */
+.schema-compare-footer {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 4 12;
+    -fx-min-height: 24;
+    -fx-max-height: 24;
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 0.8em;
+    -fx-text-fill: -color-fg-muted;
+}
+

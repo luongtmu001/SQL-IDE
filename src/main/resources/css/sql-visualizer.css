@@ -1,0 +1,267 @@
+/* =====================================================================
+   SQL Visualizer & Query Flow Stylesheet (Phase 3 - Slice 6)
+   Adheres strictly to design tokens (-ide-*, -color-*), rounded/flat shapes.
+   ===================================================================== */
+
+.sql-visualizer-root {
+    -fx-background-color: -color-bg-default;
+}
+
+/* --- Top Header & Controls Toolbar --- */
+.qf-header-bar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 14;
+    -fx-spacing: 12;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.qf-picker-box {
+    -fx-background-color: -ide-sidebar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 3 8;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 6;
+}
+
+.qf-view-toggle-group {
+    -fx-background-color: -ide-sidebar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 2;
+    -fx-spacing: 2;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.qf-view-toggle-group .toggle-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.85em;
+    -fx-padding: 3 8;
+    -fx-background-radius: 3;
+    -fx-cursor: hand;
+}
+
+.qf-view-toggle-group .toggle-button:selected {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-fg-emphasis;
+    -fx-font-weight: bold;
+}
+
+.qf-control-label {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.85em;
+}
+
+/* --- Collapsible SQL Editor Drawer --- */
+.qf-sql-drawer {
+    -fx-background-color: -ide-sidebar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 14;
+    -fx-spacing: 8;
+}
+
+.qf-sql-area {
+    -fx-font-family: "JetBrains Mono", "Cascadia Code", "Consolas", monospace;
+    -fx-font-size: 12px;
+    -fx-background-color: -ide-editor-bg;
+    -fx-text-fill: -color-fg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+/* --- Visualizer Canvas Container --- */
+.qf-canvas-container {
+    -fx-background-color: -ide-editor-bg;
+}
+
+.qf-canvas-viewport {
+    -fx-background-color: -ide-editor-bg;
+}
+
+/* Stage Header Pills */
+.qf-stage-pill {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 4 12;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.82em;
+    -fx-font-weight: bold;
+}
+
+/* --- Node Cards --- */
+.qf-node-card {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 10;
+    -fx-min-width: 190;
+    -fx-max-width: 220;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, -ide-shadow, 6, 0, 0, 2);
+}
+
+.qf-node-card:hover {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-effect: dropshadow(gaussian, -ide-shadow, 10, 0, 0, 3);
+}
+
+.qf-node-card.selected {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, -ide-shadow, 14, 0, 0, 4);
+}
+
+/* Node Type Color Accents */
+.qf-node-card.node-source {
+    -fx-border-left-color: -ide-op-source;
+    -fx-border-left-width: 3;
+}
+
+.qf-node-card.node-join {
+    -fx-border-left-color: -ide-op-join;
+    -fx-border-left-width: 3;
+}
+
+.qf-node-card.node-filter {
+    -fx-border-left-color: -ide-op-filter;
+    -fx-border-left-width: 3;
+}
+
+.qf-node-card.node-aggregate {
+    -fx-border-left-color: -ide-op-aggregate;
+    -fx-border-left-width: 3;
+}
+
+.qf-node-card.node-sort {
+    -fx-border-left-color: -ide-op-sort;
+    -fx-border-left-width: 3;
+}
+
+.qf-node-card.node-output {
+    -fx-border-left-color: -ide-op-output;
+    -fx-border-left-width: 3;
+}
+
+/* Stage Dividers */
+.stage-divider {
+    -fx-stroke: -ide-graph-stage-line;
+    -fx-stroke-width: 1.0;
+}
+
+/* Edges & Arrows */
+.graph-edge {
+    -fx-stroke: -ide-graph-edge;
+    -fx-stroke-width: 2.0;
+    -fx-fill: transparent;
+}
+
+.graph-edge:highlighted {
+    -fx-stroke: -ide-graph-edge-active;
+    -fx-stroke-width: 3.0;
+}
+
+.graph-edge-arrow {
+    -fx-fill: -ide-graph-edge;
+    -fx-stroke: transparent;
+}
+
+.graph-edge-arrow:highlighted {
+    -fx-fill: -ide-graph-edge-active;
+}
+
+.qf-node-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+.node-source .qf-node-icon { -fx-icon-color: -ide-op-source; }
+.node-join .qf-node-icon { -fx-icon-color: -ide-op-join; }
+.node-filter .qf-node-icon { -fx-icon-color: -ide-op-filter; }
+.node-aggregate .qf-node-icon { -fx-icon-color: -ide-op-aggregate; }
+.node-sort .qf-node-icon { -fx-icon-color: -ide-op-sort; }
+.node-output .qf-node-icon { -fx-icon-color: -ide-op-output; }
+
+/* Step Badge inside card */
+.qf-step-badge {
+    -fx-background-color: -ide-sidebar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 1 5;
+    -fx-font-size: 0.75em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.qf-node-title {
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 0.88em;
+    -fx-font-weight: bold;
+}
+
+.qf-node-subtitle {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.78em;
+    -fx-wrap-text: true;
+}
+
+.qf-cost-badge {
+    -fx-background-color: derive(-color-accent-subtle, -20%);
+    -fx-text-fill: -color-accent-emphasis;
+    -fx-font-size: 0.72em;
+    -fx-font-weight: bold;
+    -fx-padding: 1 5;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+
+/* --- Inspector / Details Panel --- */
+.qf-inspector-root {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 10 14;
+    -fx-spacing: 8;
+}
+
+.qf-inspector-header {
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 0.95em;
+    -fx-font-weight: bold;
+}
+
+.qf-inspector-field-label {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.82em;
+    -fx-min-width: 90;
+}
+
+.qf-inspector-field-val {
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 0.82em;
+}
+
+.qf-sql-snippet-box {
+    -fx-background-color: -ide-editor-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 8;
+    -fx-font-family: "JetBrains Mono", "Cascadia Code", "Consolas", monospace;
+    -fx-font-size: 0.82em;
+    -fx-text-fill: -ide-code-inline-fg;
+}

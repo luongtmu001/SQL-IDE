@@ -1,0 +1,180 @@
+/* =====================================================================
+   SCR-TD-001 / TD3 — Table Designer Stylesheet
+   Adheres strictly to design tokens (-ide-*, -color-*), rounded/flat shapes,
+   and dynamic font inheritance (em units, no hardcoded px).
+   ===================================================================== */
+
+.table-designer-root {
+    -fx-background-color: -ide-editor-bg;
+}
+
+/* 1. Header Toolbar */
+.td-header-toolbar {
+    -fx-background-color: -ide-toolbar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* 2. Sub-tab Strip */
+.td-subtab-strip {
+    -fx-background-color: -ide-tab-strip-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.td-subtab-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 4;
+}
+
+.td-subtab-button:hover {
+    -fx-background-color: -ide-tab-hover-bg;
+    -fx-text-fill: -color-fg-default;
+}
+
+.td-subtab-button:selected {
+    -fx-background-color: -ide-tab-active-bg;
+    -fx-text-fill: -color-accent-emphasis;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 0 0 2 0;
+}
+
+/* 3. Row Toolbar */
+.td-row-toolbar {
+    -fx-background-color: -ide-toolbar-bg;
+    -fx-padding: 3 6 3 6;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* 4. Column Grid Status Markers */
+.td-status-added {
+    -fx-text-fill: -color-success-emphasis;
+    -fx-font-weight: bold;
+}
+
+.td-status-modified {
+    -fx-text-fill: -color-warning-emphasis;
+    -fx-font-weight: bold;
+}
+
+.td-status-renamed {
+    -fx-text-fill: -color-accent-emphasis;
+    -fx-font-weight: bold;
+}
+
+.td-status-deleted {
+    -fx-text-fill: -color-danger-emphasis;
+    -fx-font-weight: bold;
+}
+
+/* Deleted row strikethrough */
+.table-row-cell:deleted {
+    -fx-opacity: 0.6;
+}
+
+.table-row-cell:deleted .text {
+    -fx-strikethrough: true;
+}
+
+/* Primary Key Active Icon */
+.td-pk-icon-active {
+    -fx-icon-color: -ide-icon-pk;
+}
+
+/* 5. Column Inspector */
+.td-inspector-pane {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 0 1;
+}
+
+.td-inspector-header {
+    -fx-padding: 4 0 6 0;
+}
+
+.td-inspector-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 1.05em;
+    -fx-text-fill: -color-fg-default;
+}
+
+.td-inspector-placeholder {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-style: italic;
+    -fx-padding: 20 10 20 10;
+}
+
+.td-inspector-section {
+    -fx-background-color: -ide-editor-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.td-inspector-section-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 0.9em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.td-inspector-field-label {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.td-inspector-hint {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+/* 6. DDL Preview Pane */
+.td-ddl-preview-pane {
+    -fx-background-color: -ide-editor-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+
+.td-ddl-preview-header {
+    -fx-background-color: -ide-toolbar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.td-ddl-preview-title {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* 7. Footer Status Bar */
+.td-footer-bar {
+    -fx-background-color: -ide-toolbar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+
+.td-footer-summary {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.td-validation-valid {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-success-emphasis;
+}
+
+.td-validation-error {
+    -fx-font-size: 0.85em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-danger-emphasis;
+}
+
+/* 8. Constraint Grid Panes */
+.td-constraint-grid-pane {
+    -fx-background-color: -ide-editor-bg;
+}
+
+
