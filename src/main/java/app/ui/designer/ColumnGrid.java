@@ -13,6 +13,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.converter.IntegerStringConverter;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -107,43 +108,90 @@ public class ColumnGrid extends VBox {
     // Toolbar
     // -------------------------------------------------------------------------
     private HBox buildRowToolbar() {
-        HBox bar = new HBox(4);
+        HBox bar = new HBox(6);
         bar.setAlignment(Pos.CENTER_LEFT);
         bar.getStyleClass().add("td-row-toolbar");
 
-        Button btnAdd = toolButton("Thêm dòng (Ctrl+N)", "mdi2t-table-row-plus-after", this::addNewRowAtEnd);
-        Button btnInsertAbove = toolButton("Chèn trên (Ctrl+Insert)", "mdi2t-table-row-plus-before", this::insertRowAbove);
-        Button btnInsertBelow = toolButton("Chèn dưới (Ctrl+Shift+Insert)", "mdi2t-table-row-plus-after", this::insertRowBelow);
+        // + Thêm cột ▾
+        MenuButton btnAddMenu = new MenuButton("+ Thêm cột");
+        btnAddMenu.getStyleClass().addAll("button", "small");
+        FontIcon plusIcon = new FontIcon("fth-plus");
+        plusIcon.setIconSize(13);
+        btnAddMenu.setGraphic(plusIcon);
 
-        Spinner<Integer> countSpinner = new Spinner<>(1, 100, 1);
-        countSpinner.setPrefWidth(60);
-        countSpinner.setEditable(true);
-        Button btnAddN = toolButton("Thêm dòng", null, () -> addMultipleRows(countSpinner.getValue()));
-        HBox nGroup = new HBox(2, countSpinner, btnAddN);
-        nGroup.setAlignment(Pos.CENTER_LEFT);
+        MenuItem itemAddEnd = new MenuItem("Thêm ở cuối (Ctrl+N)");
+        itemAddEnd.setOnAction(e -> addNewRowAtEnd());
 
-        Button btnDup = toolButton("Nhân bản", "mdi2c-content-duplicate", this::duplicateSelectedRows);
-        Button btnDel = toolButton("Xoá", "mdi2t-table-row-remove", this::deleteSelectedRows);
-        Button btnUp = toolButton("Lên", "fth-arrow-up", this::moveSelectedRowsUp);
-        Button btnDown = toolButton("Xuống", "fth-arrow-down", this::moveSelectedRowsDown);
-        Button btnPk = toolButton("Khoá chính", "mdi2k-key", this::togglePrimaryKeyOnSelected);
-        Button btnNn = toolButton("Bật/tắt Not Null", "mdi2c-checkbox-marked-outline", this::toggleNotNullOnSelected);
+        MenuItem itemInsAbove = new MenuItem("Chèn phía trên (Ctrl+Insert)");
+        itemInsAbove.setOnAction(e -> insertRowAbove());
 
-        Separator sep1 = new Separator(javafx.geometry.Orientation.VERTICAL);
-        Separator sep2 = new Separator(javafx.geometry.Orientation.VERTICAL);
-        Separator sep3 = new Separator(javafx.geometry.Orientation.VERTICAL);
+        MenuItem itemInsBelow = new MenuItem("Chèn phía dưới (Ctrl+Shift+Insert)");
+        itemInsBelow.setOnAction(e -> insertRowBelow());
+
+        MenuItem itemAdd5 = new MenuItem("Thêm 5 dòng");
+        itemAdd5.setOnAction(e -> addMultipleRows(5));
+
+        MenuItem itemAdd10 = new MenuItem("Thêm 10 dòng");
+        itemAdd10.setOnAction(e -> addMultipleRows(10));
+
+        btnAddMenu.getItems().addAll(itemAddEnd, itemInsAbove, itemInsBelow, new SeparatorMenuItem(), itemAdd5, itemAdd10);
+
+        Button btnDup = new Button("Nhân bản");
+        btnDup.getStyleClass().addAll("button", "small");
+        FontIcon dupIcon = new FontIcon("mdi2c-content-duplicate");
+        dupIcon.setIconSize(14);
+        btnDup.setGraphic(dupIcon);
+        btnDup.setTooltip(new Tooltip("Nhân bản cột đang chọn"));
+        btnDup.setOnAction(e -> duplicateSelectedRows());
+
+        Button btnDel = new Button("Xoá");
+        btnDel.getStyleClass().addAll("button", "small");
+        FontIcon delIcon = new FontIcon("mdi2t-table-row-remove");
+        delIcon.setIconSize(14);
+        btnDel.setGraphic(delIcon);
+        btnDel.setTooltip(new Tooltip("Xoá các cột đang chọn (Delete)"));
+        btnDel.setOnAction(e -> deleteSelectedRows());
+
+        Button btnUp = new Button();
+        btnUp.getStyleClass().addAll("button", "small");
+        FontIcon upIcon = new FontIcon("fth-arrow-up");
+        upIcon.setIconSize(14);
+        btnUp.setGraphic(upIcon);
+        btnUp.setTooltip(new Tooltip("Di chuyển lên (Alt+↑)"));
+        btnUp.setOnAction(e -> moveSelectedRowsUp());
+
+        Button btnDown = new Button();
+        btnDown.getStyleClass().addAll("button", "small");
+        FontIcon downIcon = new FontIcon("fth-arrow-down");
+        downIcon.setIconSize(14);
+        btnDown.setGraphic(downIcon);
+        btnDown.setTooltip(new Tooltip("Di chuyển xuống (Alt+↓)"));
+        btnDown.setOnAction(e -> moveSelectedRowsDown());
+
+        Button btnPk = new Button("Khoá chính");
+        btnPk.getStyleClass().addAll("button", "small");
+        FontIcon pkIcon = new FontIcon("mdi2k-key");
+        pkIcon.setIconSize(14);
+        btnPk.setGraphic(pkIcon);
+        btnPk.setTooltip(new Tooltip("Đặt/bỏ khoá chính cho cột đang chọn"));
+        btnPk.setOnAction(e -> togglePrimaryKeyOnSelected());
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
         bar.getChildren().addAll(
-                btnAdd, btnInsertAbove, btnInsertBelow, nGroup, sep1,
-                btnDup, btnDel, sep2,
-                btnUp, btnDown, sep3,
-                btnPk, btnNn
+                btnAddMenu,
+                btnDup, btnDel,
+                new Separator(javafx.geometry.Orientation.VERTICAL),
+                btnUp, btnDown,
+                new Separator(javafx.geometry.Orientation.VERTICAL),
+                btnPk,
+                spacer
         );
 
         if (!isNewTable) {
-            Separator sep4 = new Separator(javafx.geometry.Orientation.VERTICAL);
             filterChangedOnly.setOnAction(e -> applyFilterChangedOnly(filterChangedOnly.isSelected()));
-            bar.getChildren().addAll(sep4, filterChangedOnly);
+            bar.getChildren().add(filterChangedOnly);
         }
 
         return bar;
@@ -235,10 +283,10 @@ public class ColumnGrid extends VBox {
             }
         });
 
-        // 3. Name Column
+        // 3. Name Column (22%)
         TableColumn<ColumnDesignViewModel, String> colName = new TableColumn<>("Tên cột");
-        colName.setMinWidth(140);
-        colName.setPrefWidth(180);
+        colName.setMinWidth(110);
+        colName.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.22));
         colName.setCellValueFactory(cell -> cell.getValue().nameProperty());
         colName.setCellFactory(TextFieldTableCell.forTableColumn());
         colName.setOnEditCommit(e -> {
@@ -250,10 +298,10 @@ public class ColumnGrid extends VBox {
             }
         });
 
-        // 4. Data Type Column
+        // 4. Data Type Column (16%)
         TableColumn<ColumnDesignViewModel, String> colType = new TableColumn<>("Kiểu dữ liệu");
-        colType.setMinWidth(120);
-        colType.setPrefWidth(140);
+        colType.setMinWidth(90);
+        colType.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.16));
         colType.setCellValueFactory(cell -> cell.getValue().dataTypeProperty());
         List<String> types = getSupportedDataTypes();
         colType.setCellFactory(col -> new ComboBoxTableCell(types));
@@ -271,10 +319,10 @@ public class ColumnGrid extends VBox {
             }
         });
 
-        // 5. Length Column
-        TableColumn<ColumnDesignViewModel, String> colLen = new TableColumn<>("Độ dài");
-        colLen.setMinWidth(60);
-        colLen.setPrefWidth(75);
+        // 5. Length Column (9%)
+        TableColumn<ColumnDesignViewModel, String> colLen = new TableColumn<>("Độ dài / Precision");
+        colLen.setMinWidth(70);
+        colLen.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.09));
         colLen.setCellValueFactory(cell -> {
             Integer l = cell.getValue().getLength();
             return Bindings.createStringBinding(() -> l == null ? "" : (l == -1 ? "max" : String.valueOf(l)));
@@ -298,10 +346,10 @@ public class ColumnGrid extends VBox {
             }
         });
 
-        // 6. Scale Column
+        // 6. Scale Column (7%)
         TableColumn<ColumnDesignViewModel, String> colScale = new TableColumn<>("Scale");
-        colScale.setMinWidth(50);
-        colScale.setPrefWidth(65);
+        colScale.setMinWidth(45);
+        colScale.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.07));
         colScale.setCellValueFactory(cell -> {
             Integer s = cell.getValue().getScale();
             return Bindings.createStringBinding(() -> s == null ? "" : String.valueOf(s));
@@ -323,20 +371,20 @@ public class ColumnGrid extends VBox {
             }
         });
 
-        // 7. Not Null Column
+        // 7. Not Null Column (8%)
         TableColumn<ColumnDesignViewModel, Boolean> colNn = new TableColumn<>("Not Null");
-        colNn.setMinWidth(60);
-        colNn.setPrefWidth(70);
+        colNn.setMinWidth(55);
+        colNn.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.08));
         colNn.setCellValueFactory(cell -> cell.getValue().notNullProperty());
         colNn.setCellFactory(col -> new CheckBoxTableCell<>(idx -> {
             ColumnDesignViewModel row = items.get(idx);
             return row.notNullProperty();
         }));
 
-        // 8. Default Column
+        // 8. Default Column (16%)
         TableColumn<ColumnDesignViewModel, String> colDef = new TableColumn<>("Mặc định");
-        colDef.setMinWidth(110);
-        colDef.setPrefWidth(140);
+        colDef.setMinWidth(90);
+        colDef.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.16));
         colDef.setCellValueFactory(cell -> cell.getValue().defaultValueProperty());
         colDef.setCellFactory(TextFieldTableCell.forTableColumn());
         colDef.setOnEditCommit(e -> {
@@ -348,10 +396,10 @@ public class ColumnGrid extends VBox {
             }
         });
 
-        // 9. Comment Column
+        // 9. Comment Column (remainder / 22%)
         TableColumn<ColumnDesignViewModel, String> colComment = new TableColumn<>("Mô tả");
-        colComment.setMinWidth(120);
-        colComment.setPrefWidth(180);
+        colComment.setMinWidth(90);
+        colComment.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.22));
         colComment.setCellValueFactory(cell -> cell.getValue().commentProperty());
         colComment.setCellFactory(TextFieldTableCell.forTableColumn());
         colComment.setOnEditCommit(e -> {

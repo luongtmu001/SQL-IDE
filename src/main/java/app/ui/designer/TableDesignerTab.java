@@ -5,6 +5,10 @@ import app.framework.backend.BackendFlags;
 import app.framework.designer.TableDesignerService;
 import app.framework.metadata.DesktopMetadataService;
 import app.services.NotificationService;
+import app.ui.components.Badge;
+import app.ui.components.EmptyState;
+import app.ui.components.SegmentedToggle;
+import app.ui.components.WorkspaceFooter;
 import app.ui.dialogs.SaveDesignDialog;
 import app.ui.editor.SqlEditorTab;
 import com.lltool.core.application.connection.dto.ConnectionProfileDto;
@@ -16,11 +20,14 @@ import com.lltool.core.common.result.Result;
 import com.lltool.core.common.validation.ValidationResult;
 import com.lltool.core.domain.tabledesigner.model.ColumnDesign;
 import com.lltool.core.domain.tabledesigner.model.TableDesign;
+import com.lltool.core.domain.tabledesigner.model.TriggerDesign;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Window;
@@ -42,11 +49,12 @@ public class TableDesignerTab extends SqlEditorTab {
 
     private ConnectionProfileDto profile;
     private final String catalog;
-    private final String initialSchema;
-    private final String initialTableName;
-    private final boolean isNewTable;
+    private String initialSchema;
+    private String initialTableName;
+    private boolean isNewTable;
     private final String engine;
-    private final TableDesign initialClonedDesign;
+    private TableDesign initialClonedDesign;
+    private final app.framework.async.LoadTask<Void> applyMigrationTask = new app.framework.async.LoadTask<>();
 
     private final TableDesignerUndoManager undoManager = new TableDesignerUndoManager();
     private final TableDesignValidator validator = new TableDesignValidator();
@@ -81,7 +89,9 @@ public class TableDesignerTab extends SqlEditorTab {
     private SplitPane leftSplit;
 
     private final Label lblSummary = new Label();
-    private final Label lblValidation = new Label("Hợp lệ");
+    private final Badge badgeValidation = new Badge("Hợp lệ", Badge.Variant.SUCCESS);
+    private SegmentedToggle<String> subTabToggle;
+    private final WorkspaceFooter workspaceFooter = new WorkspaceFooter();
 
     // Debounce executor for Live DDL generation
     private final ScheduledExecutorService debounceExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -207,10 +217,25 @@ public class TableDesignerTab extends SqlEditorTab {
         btnUndo.disableProperty().bind(undoManager.canUndoProperty().not());
         btnRedo.disableProperty().bind(undoManager.canRedoProperty().not());
 
-        // Keyboard handler for Save (Ctrl+S)
+        // Keyboard handler for Save (Ctrl+S), Undo (Ctrl+Z), Redo (Ctrl+Y)
         rootContainer.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
+            if (e.getTarget() instanceof TextInputControl) {
+                return;
+            }
             if (e.isControlDown() && e.getCode() == javafx.scene.input.KeyCode.S) {
                 handleSave();
+                e.consume();
+            } else if (e.isControlDown() && e.getCode() == javafx.scene.input.KeyCode.Z) {
+                if (undoManager.canUndo()) {
+                    undoManager.undo();
+                    onDesignChanged();
+                }
+                e.consume();
+            } else if (e.isControlDown() && e.getCode() == javafx.scene.input.KeyCode.Y) {
+                if (undoManager.canRedo()) {
+                    undoManager.redo();
+                    onDesignChanged();
+                }
                 e.consume();
             }
         });
@@ -288,7 +313,23 @@ public class TableDesignerTab extends SqlEditorTab {
         refIcon.setIconSize(13);
         btnRefresh.setGraphic(refIcon);
         btnRefresh.setTooltip(new Tooltip("Tải lại từ CSDL (F5)"));
-        btnRefresh.setOnAction(e -> loadInitialData());
+        btnRefresh.setOnAction(e -> {
+            if (dirtyProperty().get()) {
+                var stage = app.application.AppContext.getInstance().getPrimaryStage();
+                Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
+                boolean discard = app.ui.dialogs.ConfirmDialog.show(
+                        owner,
+                        "Bỏ thay đổi chưa lưu?",
+                        "Bảng đang có thay đổi chưa lưu.",
+                        "Bạn có chắc chắn muốn tải lại từ CSDL và hủy mọi thay đổi hiện tại không?",
+                        "Bỏ thay đổi",
+                        true
+                );
+                if (!discard) return;
+            }
+            undoManager.clear();
+            loadInitialData();
+        });
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -329,22 +370,29 @@ public class TableDesignerTab extends SqlEditorTab {
         bar.setPadding(new Insets(2, 10, 2, 10));
         bar.getStyleClass().add("td-subtab-strip");
 
-        ToggleGroup group = new ToggleGroup();
-        ToggleButton tCol = subTabButton("Cột", "mdi2t-table-column", group, true);
-        ToggleButton tIdx = subTabButton("Chỉ mục", "mdi2b-bookmark-outline", group, false);
-        ToggleButton tFk = subTabButton("Khoá ngoại", "mdi2k-key-link", group, false);
-        ToggleButton tUq = subTabButton("Ràng buộc duy nhất", "mdi2f-fingerprint", group, false);
-        ToggleButton tChk = subTabButton("Ràng buộc kiểm tra", "mdi2c-check-circle-outline", group, false);
-        ToggleButton tTrig = subTabButton("Trigger", "mdi2f-flash-outline", group, false);
+        subTabToggle = new SegmentedToggle<>();
+        subTabToggle.addItem("col", "Cột", "mdi2t-table-column");
+        subTabToggle.addItem("idx", "Chỉ mục", "mdi2b-bookmark-outline");
+        subTabToggle.addItem("fk", "Khoá ngoại", "mdi2k-key-link");
+        subTabToggle.addItem("uq", "Ràng buộc duy nhất", "mdi2f-fingerprint");
+        subTabToggle.addItem("chk", "Ràng buộc kiểm tra", "mdi2c-check-circle-outline");
+        subTabToggle.addItem("trig", "Trigger", "mdi2f-flash-outline");
 
-        tCol.setOnAction(e -> switchSubTab(0));
-        tIdx.setOnAction(e -> switchSubTab(1));
-        tFk.setOnAction(e -> switchSubTab(2));
-        tUq.setOnAction(e -> switchSubTab(3));
-        tChk.setOnAction(e -> switchSubTab(4));
-        tTrig.setOnAction(e -> switchSubTab(5));
+        subTabToggle.select("col");
+        subTabToggle.selectedValueProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null) {
+                switch (newV) {
+                    case "idx" -> switchSubTab(1);
+                    case "fk" -> switchSubTab(2);
+                    case "uq" -> switchSubTab(3);
+                    case "chk" -> switchSubTab(4);
+                    case "trig" -> switchSubTab(5);
+                    default -> switchSubTab(0);
+                }
+            }
+        });
 
-        bar.getChildren().addAll(tCol, tIdx, tFk, tUq, tChk, tTrig);
+        bar.getChildren().add(subTabToggle);
         return bar;
     }
 
@@ -368,57 +416,76 @@ public class TableDesignerTab extends SqlEditorTab {
         toggleInspector(showInspector);
     }
 
+    private final TableView<TriggerDesign> triggerTableView = new TableView<>();
+    private final Button btnOpenTriggerSql = new Button("Mở định nghĩa trong tab SQL");
+
     private VBox buildTriggerPane() {
-        VBox box = new VBox(12);
-        box.setPadding(new Insets(24));
-        box.setAlignment(Pos.CENTER);
+        VBox box = new VBox(10);
+        box.setPadding(new Insets(10));
         box.getStyleClass().add("td-constraint-grid-pane");
         VBox.setVgrow(box, Priority.ALWAYS);
 
-        FontIcon trigIcon = new FontIcon("mdi2f-flash-outline");
-        trigIcon.setIconSize(40);
-        trigIcon.setStyle("-fx-icon-color: -color-fg-muted;");
+        TableColumn<TriggerDesign, String> nameCol = new TableColumn<>("Tên Trigger");
+        nameCol.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getName()));
+        nameCol.setPrefWidth(200);
 
-        Label title = new Label("Quản lý Triggers");
-        title.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-fg-default;");
+        TableColumn<TriggerDesign, String> timingCol = new TableColumn<>("Thời điểm");
+        timingCol.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getTiming() != null ? cd.getValue().getTiming() : "AFTER"));
+        timingCol.setPrefWidth(120);
 
-        Label desc = new Label("Triggers được quản lý độc lập qua các tệp kịch bản SQL chuyên biệt hoặc Object Explorer.");
-        desc.setStyle("-fx-text-fill: -color-fg-muted;");
+        TableColumn<TriggerDesign, String> eventsCol = new TableColumn<>("Sự kiện");
+        eventsCol.setCellValueFactory(cd -> new SimpleStringProperty(
+                cd.getValue().getEvents() != null && !cd.getValue().getEvents().isEmpty()
+                        ? String.join(", ", cd.getValue().getEvents())
+                        : ""));
+        eventsCol.setPrefWidth(180);
 
-        box.getChildren().addAll(trigIcon, title, desc);
-        return box;
-    }
+        TableColumn<TriggerDesign, String> statusCol = new TableColumn<>("Trạng thái");
+        statusCol.setCellValueFactory(cd -> new SimpleStringProperty("Bật"));
+        statusCol.setPrefWidth(100);
 
-    private ToggleButton subTabButton(String text, String iconLit, ToggleGroup group, boolean selected) {
-        ToggleButton btn = new ToggleButton(text);
-        btn.getStyleClass().add("td-subtab-button");
-        btn.setToggleGroup(group);
-        btn.setSelected(selected);
-        if (iconLit != null) {
-            FontIcon icon = new FontIcon(iconLit);
-            icon.setIconSize(13);
-            btn.setGraphic(icon);
-        }
-        btn.setOnAction(e -> {
-            if (!btn.isSelected()) btn.setSelected(true); // Don't allow unselecting all
+        triggerTableView.getColumns().setAll(nameCol, timingCol, eventsCol, statusCol);
+        triggerTableView.setPlaceholder(new EmptyState(
+                "mdi2f-flash-outline",
+                "Chưa có Trigger nào",
+                "Bảng này hiện chưa có trigger nào được định nghĩa."
+        ));
+        VBox.setVgrow(triggerTableView, Priority.ALWAYS);
+
+        HBox actions = new HBox(10);
+        actions.setAlignment(Pos.CENTER_LEFT);
+        btnOpenTriggerSql.getStyleClass().addAll("button", "small");
+        FontIcon extIcon = new FontIcon("fth-external-link");
+        extIcon.setIconSize(13);
+        btnOpenTriggerSql.setGraphic(extIcon);
+        btnOpenTriggerSql.setDisable(true);
+
+        triggerTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+            btnOpenTriggerSql.setDisable(newV == null || newV.getDefinition() == null || newV.getDefinition().isBlank());
         });
-        return btn;
-    }
 
-    private HBox buildFooter() {
-        HBox bar = new HBox(12);
-        bar.setAlignment(Pos.CENTER_LEFT);
-        bar.setPadding(new Insets(3, 10, 3, 10));
-        bar.getStyleClass().add("td-footer-bar");
+        btnOpenTriggerSql.setOnAction(e -> {
+            TriggerDesign selected = triggerTableView.getSelectionModel().getSelectedItem();
+            if (selected != null && selected.getDefinition() != null && !selected.getDefinition().isBlank()) {
+                openSqlInNewTab("Trigger_" + selected.getName() + ".sql", selected.getDefinition());
+            }
+        });
 
-        lblSummary.getStyleClass().add("td-footer-summary");
+        Label note = new Label("Danh sách trigger chỉ đọc. Chỉnh sửa trigger được thực hiện qua kịch bản SQL.");
+        note.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 11px;");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        lblValidation.getStyleClass().add("td-footer-validation");
+        actions.getChildren().addAll(btnOpenTriggerSql, spacer, note);
+        box.getChildren().addAll(triggerTableView, actions);
+        return box;
+    }
 
-        bar.getChildren().addAll(lblSummary, spacer, lblValidation);
-        return bar;
+    private WorkspaceFooter buildFooter() {
+        lblSummary.getStyleClass().add("td-footer-summary");
+        workspaceFooter.addSection(lblSummary);
+        workspaceFooter.setRightNode(badgeValidation);
+        return workspaceFooter;
     }
 
     private void toggleInspector(boolean visible) {
@@ -466,6 +533,7 @@ public class TableDesignerTab extends SqlEditorTab {
             foreignKeyGrid.setItems(currentDesign.getForeignKeys());
             uniqueGrid.setItems(currentDesign.getUniques());
             checkGrid.setItems(currentDesign.getChecks());
+            triggerTableView.setItems(FXCollections.observableArrayList(currentDesign.getTriggers()));
             onDesignChanged();
         } else if (isNewTable) {
             // New table: instantiate initial TableDesign
@@ -476,6 +544,7 @@ public class TableDesignerTab extends SqlEditorTab {
             foreignKeyGrid.setItems(currentDesign.getForeignKeys());
             uniqueGrid.setItems(currentDesign.getUniques());
             checkGrid.setItems(currentDesign.getChecks());
+            triggerTableView.setItems(FXCollections.observableArrayList(currentDesign.getTriggers()));
             onDesignChanged();
         } else {
             // Edit table: load existing design via service
@@ -492,19 +561,30 @@ public class TableDesignerTab extends SqlEditorTab {
                                 foreignKeyGrid.setItems(currentDesign.getForeignKeys());
                                 uniqueGrid.setItems(currentDesign.getUniques());
                                 checkGrid.setItems(currentDesign.getChecks());
+                                triggerTableView.setItems(FXCollections.observableArrayList(currentDesign.getTriggers()));
                                 onDesignChanged();
                             } else {
                                 NotificationService.getInstance().showError("Lỗi tải bảng",
                                         res.getError().map(e -> e.message()).orElse("Không tải được metadata bảng."));
                             }
                         }));
+            } else if (originalDesign != null) {
+                currentDesign = originalDesign.deepCopy();
+                txtTableName.setText(currentDesign.getTable());
+                cbSchema.setValue(currentDesign.getSchema());
+                columnGrid.setItems(currentDesign.getColumns());
+                indexGrid.setItems(currentDesign.getIndexes());
+                foreignKeyGrid.setItems(currentDesign.getForeignKeys());
+                uniqueGrid.setItems(currentDesign.getUniques());
+                checkGrid.setItems(currentDesign.getChecks());
+                triggerTableView.setItems(FXCollections.observableArrayList(currentDesign.getTriggers()));
+                onDesignChanged();
             }
         }
     }
 
     private void onDesignChanged() {
         updateCurrentModel();
-        updateSummary();
         scheduleDdlPreviewUpdate();
     }
 
@@ -519,35 +599,37 @@ public class TableDesignerTab extends SqlEditorTab {
         currentDesign.setForeignKeys(foreignKeyGrid.toDomainForeignKeys());
         currentDesign.setUniques(uniqueGrid.toDomainUniques());
         currentDesign.setChecks(checkGrid.toDomainChecks());
-
-        // Check dirty status
-        boolean dirty = isNewTable || (originalDesign != null && columnGrid.getItems().stream().anyMatch(ColumnDesignViewModel::isDirty));
-        // Mark tab dirty (asterisk on title)
-        dirtyProperty().set(dirty);
     }
 
-    private void updateSummary() {
+    private void updateSummary(MigrationPlan plan) {
         int totalCols = columnGrid.getItems().size();
         long pkCount = columnGrid.getItems().stream().filter(ColumnDesignViewModel::isPrimaryKey).count();
-        long changedCount = columnGrid.getItems().stream().filter(ColumnDesignViewModel::isDirty).count();
 
         if (isNewTable) {
-            lblSummary.setText(totalCols + " cột | " + pkCount + " khóa chính");
+            lblSummary.setText(totalCols + " cột | " + pkCount + " khóa chính | Bảng mới");
         } else {
-            lblSummary.setText(totalCols + " cột | " + pkCount + " khóa chính | " + changedCount + " thay đổi chưa lưu");
+            int changeCount = plan != null ? plan.statements().size() : (int) columnGrid.getItems().stream().filter(ColumnDesignViewModel::isDirty).count();
+            lblSummary.setText(totalCols + " cột | " + pkCount + " khóa chính | " + changeCount + " thay đổi chưa lưu");
         }
 
         // Validate
         ValidationResult vr = validator.validate(currentDesign);
         if (vr.isValid()) {
-            lblValidation.setText("Hợp lệ");
-            lblValidation.getStyleClass().removeAll("td-validation-error");
-            lblValidation.getStyleClass().add("td-validation-valid");
+            badgeValidation.setText("Hợp lệ");
+            badgeValidation.setVariant(Badge.Variant.SUCCESS);
+            badgeValidation.setOnMouseClicked(null);
+            badgeValidation.setCursor(Cursor.DEFAULT);
         } else {
             int errCount = vr.errors().size();
-            lblValidation.setText(errCount + " lỗi cấu trúc: " + vr.errors().get(0).message());
-            lblValidation.getStyleClass().removeAll("td-validation-valid");
-            lblValidation.getStyleClass().add("td-validation-error");
+            badgeValidation.setText(errCount + " lỗi cấu trúc");
+            badgeValidation.setVariant(Badge.Variant.DANGER);
+            badgeValidation.setCursor(Cursor.HAND);
+            badgeValidation.setOnMouseClicked(e -> {
+                if (subTabToggle != null) {
+                    subTabToggle.select("col");
+                }
+                NotificationService.getInstance().showWarning("Lỗi cấu trúc", vr.errors().get(0).message());
+            });
         }
     }
 
@@ -556,17 +638,23 @@ public class TableDesignerTab extends SqlEditorTab {
             pendingDdlTask.cancel(false);
         }
 
+        final TableDesign clonedCurrent = currentDesign != null ? currentDesign.deepCopy() : null;
+        final TableDesign clonedOriginal = originalDesign != null ? originalDesign.deepCopy() : null;
+        final boolean newTableSnapshot = isNewTable;
+
         pendingDdlTask = debounceExecutor.schedule(() -> {
             try {
                 DdlDialect dialect = designerService.getDialect(engine);
                 String previewSql;
+                MigrationPlan plan = null;
 
-                if (isNewTable || originalDesign == null) {
-                    previewSql = dialect.generateCreateTable(currentDesign);
+                if (newTableSnapshot || clonedOriginal == null) {
+                    previewSql = clonedCurrent != null ? dialect.generateCreateTable(clonedCurrent) : "";
                 } else {
-                    Result<MigrationPlan> planRes = designerService.generateMigrationPlan(originalDesign, currentDesign);
+                    Result<MigrationPlan> planRes = designerService.generateMigrationPlan(clonedOriginal, clonedCurrent);
                     if (planRes.isSuccess()) {
-                        previewSql = planRes.getDataOrThrow().generateFullMigrationSql(engine);
+                        plan = planRes.getDataOrThrow();
+                        previewSql = plan.generateFullMigrationSql(engine);
                         if (previewSql == null || previewSql.isBlank()) {
                             previewSql = "-- Không có thay đổi nào so với CSDL";
                         }
@@ -575,33 +663,35 @@ public class TableDesignerTab extends SqlEditorTab {
                     }
                 }
 
-                ddlPreviewPane.setSql(previewSql);
+                final MigrationPlan finalPlan = plan;
+                final String finalPreview = previewSql;
+                Platform.runLater(() -> {
+                    ddlPreviewPane.setSql(finalPreview);
+                    boolean dirty = newTableSnapshot || (finalPlan != null && finalPlan.hasChanges());
+                    dirtyProperty().set(dirty);
+                    updateSummary(finalPlan);
+                });
             } catch (Exception ex) {
                 log.debug("DDL preview generation error: {}", ex.getMessage());
-                ddlPreviewPane.setSql("-- Lỗi sinh DDL: " + ex.getMessage());
+                Platform.runLater(() -> {
+                    ddlPreviewPane.setSql("-- Lỗi sinh DDL: " + ex.getMessage());
+                });
             }
         }, 200, TimeUnit.MILLISECONDS);
     }
 
     private void handleSave() {
+        var stage = app.application.AppContext.getInstance().getPrimaryStage();
+        Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
+
+        if (!app.framework.connection.WriteGuard.ensureWritable(profile, owner)) {
+            return;
+        }
+
         ConnectionProfileDto currentProf = profile != null ? app.framework.connection.ProfileLookup.byId(profile.id()) : null;
         if (currentProf == null && profile != null) currentProf = app.framework.connection.ProfileLookup.byName(profile.name());
-        if (currentProf == null) currentProf = profile;
-        if (BackendFlags.readOnlyAll() || (currentProf != null && currentProf.readOnly())) {
-            var stage = app.application.AppContext.getInstance().getPrimaryStage();
-            javafx.stage.Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
-            boolean unlocked = app.ui.dialogs.ReadOnlyGuardDialog.show(owner, currentProf != null ? currentProf.name() : "");
-            if (unlocked) {
-                currentProf = app.framework.connection.ProfileLookup.byId(currentProf.id());
-                if (currentProf == null && profile != null) currentProf = app.framework.connection.ProfileLookup.byName(profile.name());
-                if (currentProf != null) this.profile = currentProf;
-                btnSave.setTooltip(new Tooltip("Lưu thay đổi vào CSDL (Ctrl+S)"));
-            } else {
-                return;
-            }
-        } else if (currentProf != null) {
-            this.profile = currentProf;
-        }
+        if (currentProf != null) this.profile = currentProf;
+        btnSave.setTooltip(new Tooltip("Lưu thay đổi vào CSDL (Ctrl+S)"));
 
         updateCurrentModel();
         ValidationResult vr = validator.validate(currentDesign);
@@ -630,9 +720,6 @@ public class TableDesignerTab extends SqlEditorTab {
             }
         }
 
-        var stage = app.application.AppContext.getInstance().getPrimaryStage();
-        Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
-
         Optional<SaveDesignDialog.SaveDesignResult> result = SaveDesignDialog.show(
                 owner, currentDesign.getSchema(), currentDesign.getTable(), plan, migrationSql
         );
@@ -640,31 +727,54 @@ public class TableDesignerTab extends SqlEditorTab {
         if (result.isPresent()) {
             var res = result.get();
             if (res.action() == SaveDesignDialog.Action.EXECUTE) {
-                ConnectionProfileDto execProfile = this.profile != null ? app.framework.connection.ProfileLookup.byId(this.profile.id()) : null;
-                if (execProfile == null) execProfile = this.profile;
-                Result<Void> applyRes = designerService.applyMigration(execProfile, catalog, plan, res.finalSql());
-                if (applyRes.isSuccess()) {
-                    NotificationService.getInstance().showSuccess("Lưu thành công", "Đã cập nhật cấu trúc bảng " + currentDesign.getTable());
-                    dirtyProperty().set(false);
-                    loadInitialData();
-                } else {
-                    String err = applyRes.getError().map(AppError::message).orElse("Không thể áp dụng thay đổi DDL.");
-                    if (err.contains("READ_ONLY") || err.toLowerCase().contains("chỉ đọc") || err.toLowerCase().contains("read-only")) {
-                        boolean unlocked = app.ui.dialogs.ReadOnlyGuardDialog.show(owner, execProfile != null ? execProfile.name() : "");
-                        if (unlocked) {
-                            ConnectionProfileDto fresh = app.framework.connection.ProfileLookup.byId(execProfile.id());
-                            if (fresh != null) this.profile = fresh;
-                            Result<Void> retryRes = designerService.applyMigration(this.profile, catalog, plan, res.finalSql());
-                            if (retryRes.isSuccess()) {
-                                NotificationService.getInstance().showSuccess("Lưu thành công", "Đã cập nhật cấu trúc bảng " + currentDesign.getTable());
-                                dirtyProperty().set(false);
-                                loadInitialData();
-                                return;
+                final MigrationPlan finalPlan = plan;
+                btnSave.setDisable(true);
+
+                applyMigrationTask.execute(
+                        ctx -> {
+                            ConnectionProfileDto execProfile = this.profile != null ? app.framework.connection.ProfileLookup.byId(this.profile.id()) : null;
+                            if (execProfile == null) execProfile = this.profile;
+                            Result<Void> applyRes = designerService.applyMigration(execProfile, catalog, finalPlan, res.finalSql());
+                            if (applyRes.isFailure()) {
+                                String code = applyRes.getError().map(AppError::code).orElse("DDL_ERROR");
+                                if ("READ_ONLY_GUARDRAIL".equals(code) || "READ_ONLY_PROFILE".equals(code)) {
+                                    throw new RuntimeException("READ_ONLY:" + applyRes.getError().get().message());
+                                }
+                                throw new RuntimeException(applyRes.getError().map(AppError::message).orElse("Không thể áp dụng thay đổi DDL."));
                             }
+                            return null;
+                        },
+                        success -> {
+                            btnSave.setDisable(false);
+                            NotificationService.getInstance().showSuccess("Lưu thành công", "Đã cập nhật cấu trúc bảng " + currentDesign.getTable());
+                            // TD-1: transition new/copy table to edit mode
+                            isNewTable = false;
+                            initialClonedDesign = null;
+                            initialSchema = currentDesign.getSchema();
+                            initialTableName = currentDesign.getTable();
+                            if (BackendFlags.mock(BackendFlags.Area.METADATA) || profile == null) {
+                                originalDesign = currentDesign.deepCopy();
+                            }
+                            setTabTitle(initialTableName);
+                            dirtyProperty().set(false);
+                            loadInitialData();
+                        },
+                        error -> {
+                            btnSave.setDisable(false);
+                            String msg = error != null && error.getMessage() != null ? error.getMessage() : "Lỗi thực thi DDL";
+                            if (msg.startsWith("READ_ONLY:")) {
+                                boolean unlocked = app.framework.connection.WriteGuard.ensureWritable(profile, owner);
+                                if (unlocked) {
+                                    ConnectionProfileDto fresh = app.framework.connection.ProfileLookup.byId(profile.id());
+                                    if (fresh != null) this.profile = fresh;
+                                    handleSave();
+                                    return;
+                                }
+                                msg = msg.substring("READ_ONLY:".length());
+                            }
+                            NotificationService.getInstance().showError("Lỗi thực thi DDL", msg);
                         }
-                    }
-                    NotificationService.getInstance().showError("Lỗi thực thi DDL", err);
-                }
+                );
             } else if (res.action() == SaveDesignDialog.Action.OPEN_IN_SQL_TAB) {
                 handleOpenInSqlTab();
             }
@@ -682,7 +792,11 @@ public class TableDesignerTab extends SqlEditorTab {
             sql = planRes.isSuccess() ? planRes.getDataOrThrow().generateFullMigrationSql(engine) : dialect.generateCreateTable(currentDesign);
         }
 
-        // Find EditorController and open a new SQL tab
+        String title = "Script_" + currentDesign.getTable() + ".sql";
+        openSqlInNewTab(title, sql);
+    }
+
+    private void openSqlInNewTab(String title, String sql) {
         try {
             EditorController editorController = null;
             var stage = app.application.AppContext.getInstance().getPrimaryStage();
@@ -693,10 +807,9 @@ public class TableDesignerTab extends SqlEditorTab {
                 }
             }
             if (editorController != null) {
-                String title = "Script_" + currentDesign.getTable() + ".sql";
-                editorController.openNewTab(title, sql, profile != null ? profile.name() : "", catalog, currentDesign.getSchema());
+                editorController.openNewTab(title, sql, profile != null ? profile.name() : "", catalog, currentDesign != null ? currentDesign.getSchema() : initialSchema);
             } else {
-                NotificationService.getInstance().showSuccess("DDL Script", "Đã sinh script cho bảng " + currentDesign.getTable());
+                NotificationService.getInstance().showSuccess("SQL Script", "Đã sinh kịch bản cho: " + title);
             }
         } catch (Exception ex) {
             log.warn("Error opening in SQL tab: {}", ex.getMessage());

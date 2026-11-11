@@ -27,7 +27,7 @@ public class ColumnInspector extends VBox {
     private final Label titleLabel = new Label("Thuộc tính cột");
     private final Label placeholderLabel = new Label("Chọn một cột trên lưới để xem thuộc tính");
 
-    private final VBox contentBox = new VBox(10);
+    private final VBox contentBox = new VBox(12);
 
     // Group 1: Default & Computed
     private final TextField txtDefaultValue = new TextField();
@@ -54,9 +54,9 @@ public class ColumnInspector extends VBox {
         this.onChangeCallback = onChangeCallback;
 
         getStyleClass().add("td-inspector-pane");
-        setMinWidth(240);
-        setPrefWidth(290);
-        setMaxWidth(450);
+        setMinWidth(300);
+        setPrefWidth(320);
+        setMaxWidth(420);
         setPadding(new Insets(10));
 
         setupUI();

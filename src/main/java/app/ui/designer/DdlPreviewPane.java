@@ -34,6 +34,7 @@ public class DdlPreviewPane extends VBox {
         HBox header = buildHeader();
         monaco = new EmbeddedMonaco(modelId, "sql", "-- Đang tải DDL...");
         monaco.setReadOnly(true);
+        monaco.setShowStatusBar(false);
 
         VBox.setVgrow(monaco.node(), Priority.ALWAYS);
         getChildren().addAll(header, monaco.node());
