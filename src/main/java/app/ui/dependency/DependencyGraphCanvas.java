@@ -1,52 +1,30 @@
 package app.ui.dependency;
 
+import app.ui.components.ZoomableGraphPane;
 import com.lltool.core.domain.dependency.*;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
-import javafx.scene.image.PixelReader;
-import javafx.scene.image.WritableImage;
+import javafx.scene.control.OverrunStyle;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import javafx.scene.shape.*;
-import javafx.scene.transform.Scale;
-import javafx.scene.transform.Translate;
+import javafx.scene.shape.CubicCurve;
+import javafx.scene.shape.Polygon;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 
 /**
  * Interactive JavaFX Canvas for Dependency Graphs.
- * Supports zoom, pan, dragging nodes, bezier edge routing, arrow markers, and PNG export.
+ * Inherits zoom, pan, dragging, fit, and export from ZoomableGraphPane.
  */
-public class DependencyGraphCanvas extends StackPane {
+public class DependencyGraphCanvas extends ZoomableGraphPane {
 
     private static final PseudoClass HIGHLIGHTED_PSEUDO = PseudoClass.getPseudoClass("highlighted");
-
-    private final Group contentGroup = new Group();
-    private final Group edgesGroup = new Group();
-    private final Pane nodesPane = new Pane();
-
-    private final Translate translate = new Translate(0, 0);
-    private final Scale scale = new Scale(1.0, 1.0, 0, 0);
-
-    private double dragStartX;
-    private double dragStartY;
 
     private DependencyGraphModel currentModel;
     private final ObjectProperty<DependencyNode> selectedNode = new SimpleObjectProperty<>();
@@ -57,59 +35,13 @@ public class DependencyGraphCanvas extends StackPane {
 
     public DependencyGraphCanvas() {
         getStyleClass().add("graph-canvas-container");
-        setAlignment(Pos.CENTER);
+        setOnBackgroundClicked(() -> selectNode(null));
 
-        // Transform chain
-        contentGroup.getTransforms().addAll(translate, scale);
-        contentGroup.getChildren().addAll(edgesGroup, nodesPane);
-        getChildren().add(contentGroup);
-
-        initCanvasInteractions();
-    }
-
-    private void initCanvasInteractions() {
-        // Pan on background drag
-        setOnMousePressed(e -> {
-            if (e.getButton() == MouseButton.PRIMARY || e.getButton() == MouseButton.MIDDLE) {
-                if (e.getTarget() == this || e.getTarget() == contentGroup || e.getTarget() == nodesPane) {
-                    dragStartX = e.getX() - translate.getX();
-                    dragStartY = e.getY() - translate.getY();
-                }
+        scale.xProperty().addListener((obs, oldV, newV) -> {
+            boolean showLabels = newV.doubleValue() >= 0.7;
+            for (EdgeVisual ev : edgeVisualMap.values()) {
+                ev.labelNode.setVisible(showLabels && ev.edge.getLabel() != null && !ev.edge.getLabel().isBlank());
             }
-        });
-
-        setOnMouseDragged(e -> {
-            if (e.getButton() == MouseButton.PRIMARY || e.getButton() == MouseButton.MIDDLE) {
-                if (e.getTarget() == this || e.getTarget() == contentGroup || e.getTarget() == nodesPane) {
-                    translate.setX(e.getX() - dragStartX);
-                    translate.setY(e.getY() - dragStartY);
-                }
-            }
-        });
-
-        // Zoom with mouse wheel centered at cursor
-        setOnScroll((ScrollEvent e) -> {
-            double delta = e.getDeltaY();
-            if (delta == 0) return;
-
-            double factor = (delta > 0) ? 1.12 : (1.0 / 1.12);
-            double newScale = scale.getX() * factor;
-
-            if (newScale >= 0.25 && newScale <= 3.0) {
-                double mouseX = e.getX();
-                double mouseY = e.getY();
-
-                // Adjust translate so mouse point stays fixed
-                double dx = (mouseX - translate.getX()) * (1 - factor);
-                double dy = (mouseY - translate.getY()) * (1 - factor);
-
-                translate.setX(translate.getX() + dx);
-                translate.setY(translate.getY() + dy);
-
-                scale.setX(newScale);
-                scale.setY(newScale);
-            }
-            e.consume();
         });
     }
 
@@ -127,28 +59,39 @@ public class DependencyGraphCanvas extends StackPane {
             nodeCardMap.put(node.getId(), card);
             nodesPane.getChildren().add(card);
 
-            // Set initial position
             card.setLayoutX(node.getX());
             card.setLayoutY(node.getY());
         }
 
-        // 2. Build edge visuals
+        // 2. Build edge visuals with distributed anchor indexing
+        Map<String, List<DependencyEdge>> outgoing = new HashMap<>();
+        Map<String, List<DependencyEdge>> incoming = new HashMap<>();
+        for (DependencyEdge edge : model.getEdges()) {
+            outgoing.computeIfAbsent(edge.getSourceId(), k -> new ArrayList<>()).add(edge);
+            incoming.computeIfAbsent(edge.getTargetId(), k -> new ArrayList<>()).add(edge);
+        }
+
         for (DependencyEdge edge : model.getEdges()) {
             VBox srcCard = nodeCardMap.get(edge.getSourceId());
             VBox tgtCard = nodeCardMap.get(edge.getTargetId());
             if (srcCard != null && tgtCard != null) {
-                EdgeVisual visual = new EdgeVisual(edge, srcCard, tgtCard);
+                int outIndex = outgoing.get(edge.getSourceId()).indexOf(edge);
+                int outTotal = outgoing.get(edge.getSourceId()).size();
+                int inIndex = incoming.get(edge.getTargetId()).indexOf(edge);
+                int inTotal = incoming.get(edge.getTargetId()).size();
+
+                EdgeVisual visual = new EdgeVisual(edge, srcCard, tgtCard, outIndex, outTotal, inIndex, inTotal);
                 edgeVisualMap.put(edge, visual);
                 edgesGroup.getChildren().addAll(visual.path, visual.arrowHead, visual.labelNode);
                 visual.update();
             }
         }
 
-        // Select root by default
+        // Auto select root and fit
         if (model.getRootNode() != null) {
             selectNode(model.getRootNode());
-            fitToScreen();
         }
+        fitToScreen();
     }
 
     private void clearCanvas() {
@@ -162,6 +105,9 @@ public class DependencyGraphCanvas extends StackPane {
     private VBox createNodeCard(DependencyNode node) {
         VBox card = new VBox(4);
         card.getStyleClass().add("graph-node-card");
+        card.setMinWidth(200);
+        card.setMaxWidth(280);
+
         if (node.isRoot()) {
             card.getStyleClass().add("root-node");
         }
@@ -197,7 +143,7 @@ public class DependencyGraphCanvas extends StackPane {
         }
         header.getChildren().addAll(badge, spacer, tag);
 
-        // Body: Icon + Title
+        // Body: Icon + Title (with ellipsis and tooltip)
         HBox body = new HBox(6);
         body.setAlignment(Pos.CENTER_LEFT);
 
@@ -207,60 +153,81 @@ public class DependencyGraphCanvas extends StackPane {
 
         Label title = new Label(node.getName());
         title.getStyleClass().add("node-title");
+        title.setTextOverrun(OverrunStyle.ELLIPSIS);
+        title.setMaxWidth(220);
+        title.setTooltip(new Tooltip(node.getName()));
         body.getChildren().addAll(icon, title);
 
         // Subtitle / Schema
         Label schemaLbl = new Label(node.isColumn() ? "Cột: " + node.getColumnName() : "Schema: " + node.getSchema());
         schemaLbl.getStyleClass().add("node-subtitle");
+        schemaLbl.setTextOverrun(OverrunStyle.ELLIPSIS);
+        schemaLbl.setMaxWidth(240);
 
         card.getChildren().addAll(header, body, schemaLbl);
 
-        // Drag node behavior
-        final Delta dragDelta = new Delta();
-        card.setOnMousePressed(e -> {
-            dragDelta.x = card.getLayoutX() - e.getSceneX();
-            dragDelta.y = card.getLayoutY() - e.getSceneY();
-            selectNode(node);
-            card.toFront();
-            e.consume();
+        // Drag node behavior via ZoomableGraphPane
+        makeNodeDraggable(card, () -> {
+            node.setX(card.getLayoutX());
+            node.setY(card.getLayoutY());
+            updateConnectedEdges(node.getId());
         });
 
-        card.setOnMouseDragged(e -> {
-            double newX = e.getSceneX() + dragDelta.x;
-            double newY = e.getSceneY() + dragDelta.y;
-            card.setLayoutX(newX);
-            card.setLayoutY(newY);
-            node.setX(newX);
-            node.setY(newY);
-            updateConnectedEdges(node.getId());
-            e.consume();
+        // Click to select
+        card.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                selectNode(node);
+                e.consume();
+            }
         });
 
         return card;
     }
 
     public void selectNode(DependencyNode node) {
-        if (node == null) return;
         selectedNode.set(node);
 
-        // Highlight card
-        for (Map.Entry<String, VBox> entry : nodeCardMap.entrySet()) {
-            VBox card = entry.getValue();
-            if (entry.getKey().equals(node.getId())) {
-                if (!card.getStyleClass().contains("selected")) {
-                    card.getStyleClass().add("selected");
-                }
-            } else {
-                card.getStyleClass().remove("selected");
-            }
+        // Reset highlight states
+        for (VBox c : nodeCardMap.values()) {
+            c.pseudoClassStateChanged(HIGHLIGHTED_PSEUDO, false);
+        }
+        for (EdgeVisual ev : edgeVisualMap.values()) {
+            ev.setHighlighted(false);
         }
 
-        // Highlight connected edges
-        for (Map.Entry<DependencyEdge, EdgeVisual> entry : edgeVisualMap.entrySet()) {
-            DependencyEdge edge = entry.getKey();
-            EdgeVisual visual = entry.getValue();
-            boolean connected = edge.getSourceId().equals(node.getId()) || edge.getTargetId().equals(node.getId());
-            visual.setHighlighted(connected);
+        if (node == null) {
+            if (onNodeSelectedListener != null) {
+                onNodeSelectedListener.accept(null);
+            }
+            return;
+        }
+
+        // Highlight selected node card
+        VBox selectedCard = nodeCardMap.get(node.getId());
+        if (selectedCard != null) {
+            selectedCard.pseudoClassStateChanged(HIGHLIGHTED_PSEUDO, true);
+        }
+
+        // Highlight incident edges and neighbor nodes
+        if (currentModel != null) {
+            Set<String> connectedNodeIds = new HashSet<>();
+            connectedNodeIds.add(node.getId());
+
+            for (Map.Entry<DependencyEdge, EdgeVisual> entry : edgeVisualMap.entrySet()) {
+                DependencyEdge edge = entry.getKey();
+                if (edge.getSourceId().equals(node.getId()) || edge.getTargetId().equals(node.getId())) {
+                    entry.getValue().setHighlighted(true);
+                    connectedNodeIds.add(edge.getSourceId());
+                    connectedNodeIds.add(edge.getTargetId());
+                }
+            }
+
+            for (String nId : connectedNodeIds) {
+                VBox card = nodeCardMap.get(nId);
+                if (card != null) {
+                    card.pseudoClassStateChanged(HIGHLIGHTED_PSEUDO, true);
+                }
+            }
         }
 
         if (onNodeSelectedListener != null) {
@@ -281,98 +248,26 @@ public class DependencyGraphCanvas extends StackPane {
         this.onNodeSelectedListener = listener;
     }
 
-    public void zoomIn() {
-        double newScale = Math.min(3.0, scale.getX() * 1.2);
-        scale.setX(newScale);
-        scale.setY(newScale);
-    }
-
-    public void zoomOut() {
-        double newScale = Math.max(0.25, scale.getX() / 1.2);
-        scale.setX(newScale);
-        scale.setY(newScale);
-    }
-
-    public void resetZoom() {
-        scale.setX(1.0);
-        scale.setY(1.0);
-        translate.setX(0);
-        translate.setY(0);
-    }
-
-    public void fitToScreen() {
-        if (nodeCardMap.isEmpty()) return;
-
-        double minX = Double.MAX_VALUE;
-        double minY = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE;
-        double maxY = Double.MIN_VALUE;
-
-        for (VBox card : nodeCardMap.values()) {
-            double x = card.getLayoutX();
-            double y = card.getLayoutY();
-            double w = card.getWidth() > 0 ? card.getWidth() : 200;
-            double h = card.getHeight() > 0 ? card.getHeight() : 80;
-
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            maxX = Math.max(maxX, x + w);
-            maxY = Math.max(maxY, y + h);
-        }
-
-        double graphW = maxX - minX + 160;
-        double graphH = maxY - minY + 160;
-        double viewW = getWidth() > 0 ? getWidth() : 800;
-        double viewH = getHeight() > 0 ? getHeight() : 600;
-
-        double scaleFactor = Math.min(1.2, Math.min(viewW / graphW, viewH / graphH));
-        scale.setX(scaleFactor);
-        scale.setY(scaleFactor);
-
-        double centerX = (minX + maxX) / 2.0;
-        double centerY = (minY + maxY) / 2.0;
-        translate.setX((viewW / 2.0) - (centerX * scaleFactor));
-        translate.setY((viewH / 2.0) - (centerY * scaleFactor));
-    }
-
-    public boolean exportToPng(File targetFile) {
-        try {
-            SnapshotParameters params = new SnapshotParameters();
-            Paint bgPaint = getBackground() != null && !getBackground().getFills().isEmpty()
-                    ? getBackground().getFills().get(0).getFill()
-                    : Color.TRANSPARENT;
-            params.setFill(bgPaint);
-            WritableImage fxImage = contentGroup.snapshot(params, null);
-            int width = (int) fxImage.getWidth();
-            int height = (int) fxImage.getHeight();
-            if (width <= 0 || height <= 0) return false;
-
-            BufferedImage bImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            PixelReader reader = fxImage.getPixelReader();
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    bImage.setRGB(x, y, reader.getArgb(x, y));
-                }
-            }
-            return ImageIO.write(bImage, "png", targetFile);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    // Helper visual class for directed curved edge
+    // Helper visual class for directed curved edge with distributed anchors
     private static class EdgeVisual {
         final DependencyEdge edge;
         final VBox sourceCard;
         final VBox targetCard;
+        final int outIndex, outTotal;
+        final int inIndex, inTotal;
         final CubicCurve path = new CubicCurve();
         final Polygon arrowHead = new Polygon();
         final Label labelNode = new Label();
 
-        EdgeVisual(DependencyEdge edge, VBox sourceCard, VBox targetCard) {
+        EdgeVisual(DependencyEdge edge, VBox sourceCard, VBox targetCard,
+                   int outIndex, int outTotal, int inIndex, int inTotal) {
             this.edge = edge;
             this.sourceCard = sourceCard;
             this.targetCard = targetCard;
+            this.outIndex = outIndex;
+            this.outTotal = Math.max(1, outTotal);
+            this.inIndex = inIndex;
+            this.inTotal = Math.max(1, inTotal);
 
             path.getStyleClass().add("graph-edge");
 
@@ -393,11 +288,19 @@ public class DependencyGraphCanvas extends StackPane {
         }
 
         void update() {
-            double srcX = sourceCard.getLayoutX() + (sourceCard.getWidth() > 0 ? sourceCard.getWidth() : 200);
-            double srcY = sourceCard.getLayoutY() + ((sourceCard.getHeight() > 0 ? sourceCard.getHeight() : 80) / 2.0);
+            double srcCardW = sourceCard.getWidth() > 0 ? sourceCard.getWidth() : 200;
+            double srcCardH = sourceCard.getHeight() > 0 ? sourceCard.getHeight() : 80;
+            double tgtCardH = targetCard.getHeight() > 0 ? targetCard.getHeight() : 80;
+
+            // Distributed anchor points along source right and target left
+            double srcAnchorY = (srcCardH * (outIndex + 1.0)) / (outTotal + 1.0);
+            double tgtAnchorY = (tgtCardH * (inIndex + 1.0)) / (inTotal + 1.0);
+
+            double srcX = sourceCard.getLayoutX() + srcCardW;
+            double srcY = sourceCard.getLayoutY() + srcAnchorY;
 
             double tgtX = targetCard.getLayoutX();
-            double tgtY = targetCard.getLayoutY() + ((targetCard.getHeight() > 0 ? targetCard.getHeight() : 80) / 2.0);
+            double tgtY = targetCard.getLayoutY() + tgtAnchorY;
 
             path.setStartX(srcX);
             path.setStartY(srcY);
@@ -411,22 +314,20 @@ public class DependencyGraphCanvas extends StackPane {
             path.setEndX(tgtX);
             path.setEndY(tgtY);
 
-            // Position and rotate arrow at target
+            // Arrow at target
             arrowHead.setLayoutX(tgtX);
             arrowHead.setLayoutY(tgtY);
 
             double angle = Math.toDegrees(Math.atan2(tgtY - path.getControlY2(), tgtX - path.getControlX2()));
             arrowHead.setRotate(angle);
 
-            // Position label at midpoint
-            double midX = (srcX + tgtX) / 2.0;
-            double midY = (srcY + tgtY) / 2.0 - 12;
-            labelNode.setLayoutX(midX - 30);
-            labelNode.setLayoutY(midY);
-        }
-    }
+            // Midpoint at t = 0.5 along cubic bezier
+            // B(0.5) = 0.125 * P0 + 0.375 * P1 + 0.375 * P2 + 0.125 * P3
+            double midX = 0.125 * srcX + 0.375 * (srcX + dx) + 0.375 * (tgtX - dx) + 0.125 * tgtX;
+            double midY = 0.125 * srcY + 0.375 * srcY + 0.375 * tgtY + 0.125 * tgtY;
 
-    private static class Delta {
-        double x, y;
+            labelNode.setLayoutX(midX - 25);
+            labelNode.setLayoutY(midY - 10);
+        }
     }
 }

@@ -233,6 +233,10 @@ public class DependencyGraphTab extends SqlEditorTab {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         // Canvas Navigation Buttons
+        Label lblZoom = new Label("100%");
+        lblZoom.textProperty().bind(graphCanvas.zoomPercentProperty());
+        lblZoom.setStyle("-fx-font-size: 0.8em; -fx-text-fill: -color-fg-muted; -fx-min-width: 38px; -fx-alignment: center;");
+
         btnZoomIn.setOnAction(e -> graphCanvas.zoomIn());
         btnZoomOut.setOnAction(e -> graphCanvas.zoomOut());
         btnFitScreen.setOnAction(e -> graphCanvas.fitToScreen());
@@ -246,7 +250,7 @@ public class DependencyGraphTab extends SqlEditorTab {
                 depthBox,
                 layoutBox,
                 spacer,
-                btnZoomIn, btnZoomOut, btnFitScreen, btnResetZoom, btnRefresh,
+                btnZoomIn, btnZoomOut, lblZoom, btnFitScreen, btnResetZoom, btnRefresh,
                 btnExportPng
         );
 

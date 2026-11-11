@@ -237,6 +237,10 @@ public class SqlVisualizerTab extends SqlEditorTab {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         // Canvas Navigation Buttons
+        Label lblZoom = new Label("100%");
+        lblZoom.textProperty().bind(visualizerCanvas.zoomPercentProperty());
+        lblZoom.setStyle("-fx-font-size: 0.8em; -fx-text-fill: -color-fg-muted; -fx-min-width: 38px; -fx-alignment: center;");
+
         btnZoomIn.setOnAction(e -> visualizerCanvas.zoomIn());
         btnZoomOut.setOnAction(e -> visualizerCanvas.zoomOut());
         btnFitScreen.setOnAction(e -> visualizerCanvas.fitToScreen());
@@ -253,6 +257,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
                 spacer,
                 btnZoomIn,
                 btnZoomOut,
+                lblZoom,
                 btnFitScreen,
                 btnResetZoom,
                 new Separator(Orientation.VERTICAL),
@@ -362,17 +367,15 @@ public class SqlVisualizerTab extends SqlEditorTab {
 
         File file = chooser.showSaveDialog(getContent().getScene().getWindow());
         if (file != null) {
-            try {
-                visualizerCanvas.exportToPng(file);
-                NotificationService ns = NotificationService.getInstance();
+            boolean ok = visualizerCanvas.exportToPng(file);
+            NotificationService ns = NotificationService.getInstance();
+            if (ok) {
                 if (ns != null) {
                     ns.showSuccess("Xuất PNG thành công", "Đã lưu ảnh sơ đồ tại: " + file.getAbsolutePath());
                 }
-            } catch (Exception ex) {
-                log.error("Failed to export PNG: {}", ex.getMessage(), ex);
-                NotificationService ns = NotificationService.getInstance();
+            } else {
                 if (ns != null) {
-                    ns.showError("Xuất file thất bại", ex.getMessage());
+                    ns.showError("Xuất file thất bại", "Không thể ghi tệp hình ảnh PNG.");
                 }
             }
         }

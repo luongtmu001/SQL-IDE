@@ -76,8 +76,8 @@
     -fx-border-radius: 6;
     -fx-background-radius: 6;
     -fx-padding: 8 12;
-    -fx-min-width: 180;
-    -fx-max-width: 220;
+    -fx-min-width: 200;
+    -fx-max-width: 280;
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, -ide-shadow, 6, 0, 0, 2);
 }
