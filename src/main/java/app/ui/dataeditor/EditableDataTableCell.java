@@ -46,24 +46,17 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
         ContextMenu menu = new ContextMenu();
 
         MenuItem miNull = new MenuItem("Gán giá trị [NULL]");
-        miNull.setOnAction(e -> {
-            commitEdit(null);
-            updateRowValue(null);
-        });
+        miNull.setOnAction(e -> applyValue(null));
 
         MenuItem miEmpty = new MenuItem("Gán chuỗi rỗng ''");
-        miEmpty.setOnAction(e -> {
-            commitEdit("");
-            updateRowValue("");
-        });
+        miEmpty.setOnAction(e -> applyValue(""));
 
         MenuItem miRevertCell = new MenuItem("Hoàn tác ô này");
         miRevertCell.setOnAction(e -> {
             ObservableDataRow row = getTableRow() != null ? getTableRow().getItem() : null;
             if (row != null) {
                 Object orig = row.getOriginalValues().get(columnName);
-                commitEdit(orig);
-                updateRowValue(orig);
+                applyValue(orig);
             }
         });
 
@@ -75,6 +68,7 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
                 if (changeListener != null) {
                     changeListener.onCellChanged(row, columnName, getItem());
                 }
+                updateCellStyles();
             }
         });
 
@@ -90,6 +84,7 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
                 if (changeListener != null) {
                     changeListener.onCellChanged(row, columnName, getItem());
                 }
+                updateCellStyles();
             }
         });
 
@@ -169,8 +164,7 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
 
         textField.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.isControlDown() && e.getCode() == KeyCode.DIGIT0) {
-                commitEdit(null);
-                updateRowValue(null);
+                applyValue(null);
                 e.consume();
             } else if (e.getCode() == KeyCode.ENTER) {
                 applyEdit();
@@ -205,8 +199,7 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
                 cancelEdit();
                 return true;
             }
-            commitEdit(parsed);
-            updateRowValue(parsed);
+            applyValue(parsed);
             return true;
         } catch (Exception ex) {
             textField.setStyle("-fx-border-color: -color-danger-emphasis; -fx-border-width: 1.5px;");
@@ -215,10 +208,11 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
         }
     }
 
-    private void updateRowValue(Object newVal) {
+    private void applyValue(Object newVal) {
         ObservableDataRow row = getTableRow() != null ? getTableRow().getItem() : null;
         if (row != null) {
             row.setValue(columnName, newVal);
+            commitEdit(newVal);
             if (changeListener != null) {
                 changeListener.onCellChanged(row, columnName, newVal);
             }

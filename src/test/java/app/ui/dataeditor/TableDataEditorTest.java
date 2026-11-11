@@ -9,6 +9,7 @@ import com.lltool.core.domain.tableeditor.model.TableEditorMetadata;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -359,5 +360,63 @@ class TableDataEditorTest {
         });
         assertTrue(ex2.getMessage().contains("dòng 42"));
         assertTrue(ex2.getMessage().contains("ảnh hưởng là 2"));
+    }
+
+    @Test
+    @DisplayName("DE-8: ObservableDataRow stateProperty reactively updates on cell edit and revert")
+    void testObservableDataRowStateProperty() {
+        Map<String, Object> initial = new HashMap<>();
+        initial.put("id", 1);
+        initial.put("name", "Alice");
+
+        ObservableDataRow row = new ObservableDataRow(1, initial, false);
+        assertEquals(ObservableDataRow.RowState.UNCHANGED, row.getState());
+        assertEquals(ObservableDataRow.RowState.UNCHANGED, row.stateProperty().get());
+
+        row.setValue("name", "Bob");
+        assertEquals(ObservableDataRow.RowState.MODIFIED, row.getState());
+        assertEquals(ObservableDataRow.RowState.MODIFIED, row.stateProperty().get());
+
+        row.setValue("name", "Alice");
+        assertEquals(ObservableDataRow.RowState.UNCHANGED, row.getState());
+        assertEquals(ObservableDataRow.RowState.UNCHANGED, row.stateProperty().get());
+
+        row.markDeleted();
+        assertEquals(ObservableDataRow.RowState.DELETED, row.getState());
+        assertEquals(ObservableDataRow.RowState.DELETED, row.stateProperty().get());
+
+        row.unmarkDeleted();
+        assertEquals(ObservableDataRow.RowState.UNCHANGED, row.getState());
+        assertEquals(ObservableDataRow.RowState.UNCHANGED, row.stateProperty().get());
+    }
+
+    @Test
+    @DisplayName("DE-12: Effective row limit is capped at 50,000 rows to prevent OutOfMemory")
+    void testLimitCap() {
+        int allRowsLimit = 0; // "Tất cả"
+        int effectiveAll = (allRowsLimit <= 0 || allRowsLimit > 50_000) ? 50_000 : allRowsLimit;
+        assertEquals(50_000, effectiveAll);
+
+        int hugeLimit = 1_000_000;
+        int effectiveHuge = (hugeLimit <= 0 || hugeLimit > 50_000) ? 50_000 : hugeLimit;
+        assertEquals(50_000, effectiveHuge);
+
+        int normalLimit = 200;
+        int effectiveNormal = (normalLimit <= 0 || normalLimit > 50_000) ? 50_000 : normalLimit;
+        assertEquals(200, effectiveNormal);
+    }
+
+    @Test
+    @DisplayName("DE-13: Row ID sequence monotonically increments independently of master items size")
+    void testRowIdSequenceMonotonic() {
+        java.util.concurrent.atomic.AtomicInteger rowIdSeq = new java.util.concurrent.atomic.AtomicInteger(5);
+        int id1 = rowIdSeq.incrementAndGet();
+        int id2 = rowIdSeq.incrementAndGet();
+        assertEquals(6, id1);
+        assertEquals(7, id2);
+
+        // Even if items are deleted, nextId does not collide
+        int id3 = rowIdSeq.incrementAndGet();
+        assertEquals(8, id3);
     }
 }

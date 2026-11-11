@@ -12,6 +12,7 @@ import app.ui.components.PaneHeader;
 import app.ui.components.SearchField;
 import app.ui.components.WorkspaceFooter;
 import app.ui.components.WorkspaceToolbar;
+import app.ui.dialogs.DialogChrome;
 import app.ui.dialogs.PreviewDataChangesDialog;
 import app.ui.dialogs.ReadOnlyGuardDialog;
 import app.ui.editor.EmbeddedMonaco;
@@ -69,6 +70,10 @@ public class TableDataEditorTab extends SqlEditorTab {
     private final String engine;
 
     private final app.framework.async.LoadTask<Void> saveTask = new app.framework.async.LoadTask<>();
+    private final app.framework.async.LoadTask<LoadDataResult> loadDataTask = new app.framework.async.LoadTask<>();
+    private final java.util.concurrent.atomic.AtomicInteger rowIdSeq = new java.util.concurrent.atomic.AtomicInteger(0);
+    private String previousLimit = "200 dòng";
+    private final javafx.animation.PauseTransition searchDebounce = new javafx.animation.PauseTransition(javafx.util.Duration.millis(200));
     private final TableDataEditorService dataEditorService = new TableDataEditorService();
     private final TableDesignerService designerService = TableDesignerService.getInstance();
 
@@ -185,7 +190,7 @@ public class TableDataEditorTab extends SqlEditorTab {
                 handleSave();
                 e.consume();
             } else if (e.getCode() == javafx.scene.input.KeyCode.F5) {
-                loadDataAsync();
+                requestReloadData();
                 e.consume();
             } else if (e.isControlDown() && e.getCode() == javafx.scene.input.KeyCode.N) {
                 if (!(e.getTarget() instanceof javafx.scene.control.TextInputControl)) {
@@ -203,6 +208,57 @@ public class TableDataEditorTab extends SqlEditorTab {
         });
     }
 
+    public enum ReloadChoice { CANCEL, SAVE_AND_RELOAD, DISCARD_AND_RELOAD }
+
+    public static ReloadChoice showReloadConfirm(Window owner, String tableName, long changeCount) {
+        ReloadChoice[] result = {ReloadChoice.CANCEL};
+        DialogChrome chrome = DialogChrome.create(owner, "Nạp lại dữ liệu", "fth-alert-triangle").iconStyle("warning");
+        Label msg = new Label("Bảng \"" + tableName + "\" đang có " + changeCount + " thay đổi chưa lưu.");
+        msg.getStyleClass().add("dialog-message");
+        msg.setWrapText(true);
+        Label det = new Label("Nạp lại dữ liệu sẽ làm mất các thay đổi chưa lưu này. Bạn có muốn lưu trước khi nạp lại không?");
+        det.getStyleClass().add("dialog-label");
+        det.setWrapText(true);
+
+        Button cancel = DialogChrome.cancel("Hủy");
+        Button discard = DialogChrome.danger("Bỏ thay đổi");
+        discard.setDefaultButton(false);
+        Button save = DialogChrome.primary("Lưu rồi nạp lại");
+
+        cancel.setOnAction(e -> chrome.close());
+        discard.setOnAction(e -> {
+            result[0] = ReloadChoice.DISCARD_AND_RELOAD;
+            chrome.close();
+        });
+        save.setOnAction(e -> {
+            result[0] = ReloadChoice.SAVE_AND_RELOAD;
+            chrome.close();
+        });
+
+        chrome.content(new VBox(6, msg, det)).footer(null, cancel, discard, save).size(460, -1);
+        chrome.showAndWait();
+        return result[0];
+    }
+
+    public void requestReloadData() {
+        if (dirtyProperty().get()) {
+            long changes = masterItems.stream().filter(r -> r.getState() != ObservableDataRow.RowState.UNCHANGED).count();
+            var stage = app.application.AppContext.getInstance().getPrimaryStage();
+            Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
+            ReloadChoice choice = showReloadConfirm(owner, tableName, changes);
+            switch (choice) {
+                case SAVE_AND_RELOAD -> handleSave();
+                case DISCARD_AND_RELOAD -> {
+                    dirtyProperty().set(false);
+                    loadDataAsync();
+                }
+                case CANCEL -> {}
+            }
+        } else {
+            loadDataAsync();
+        }
+    }
+
     private WorkspaceToolbar buildToolbar() {
         WorkspaceToolbar bar = new WorkspaceToolbar();
 
@@ -213,7 +269,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         playIcon.setIconSize(12);
         btnRun.setGraphic(playIcon);
         btnRun.setTooltip(new Tooltip("Thực thi truy vấn nạp dữ liệu với các tiêu chí hiện tại (F5 / Alt+X)"));
-        btnRun.setOnAction(e -> loadDataAsync());
+        btnRun.setOnAction(e -> requestReloadData());
 
         btnSave.getStyleClass().addAll("button", "success", "small");
         FontIcon saveIcon = new FontIcon("fth-save");
@@ -286,12 +342,35 @@ public class TableDataEditorTab extends SqlEditorTab {
         cbLimit.setPrefWidth(105);
         cbLimit.getStyleClass().add("small");
         cbLimit.setOnAction(e -> {
-            syncLiveSql();
-            loadDataAsync();
+            if (dirtyProperty().get()) {
+                long changes = masterItems.stream().filter(r -> r.getState() != ObservableDataRow.RowState.UNCHANGED).count();
+                var stage = app.application.AppContext.getInstance().getPrimaryStage();
+                Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
+                ReloadChoice choice = showReloadConfirm(owner, tableName, changes);
+                if (choice == ReloadChoice.SAVE_AND_RELOAD) {
+                    previousLimit = cbLimit.getValue();
+                    syncLiveSql();
+                    handleSave();
+                } else if (choice == ReloadChoice.DISCARD_AND_RELOAD) {
+                    previousLimit = cbLimit.getValue();
+                    dirtyProperty().set(false);
+                    syncLiveSql();
+                    loadDataAsync();
+                } else {
+                    cbLimit.setValue(previousLimit);
+                }
+            } else {
+                previousLimit = cbLimit.getValue();
+                syncLiveSql();
+                loadDataAsync();
+            }
         });
 
         txtQuickSearch.setPrefWidth(180);
-        txtQuickSearch.textProperty().addListener((obs, oldV, newV) -> filterGrid(newV));
+        txtQuickSearch.textProperty().addListener((obs, oldV, newV) -> {
+            searchDebounce.setOnFinished(ev -> filterGrid(newV));
+            searchDebounce.playFromStart();
+        });
 
         bar.addCenter(toggleCriteria);
         bar.addCenter(toggleSql);
@@ -360,12 +439,27 @@ public class TableDataEditorTab extends SqlEditorTab {
         tableView.setItems(filteredItems);
 
         tableView.setRowFactory(tv -> new TableRow<>() {
+            private final javafx.beans.value.ChangeListener<ObservableDataRow.RowState> stateListener = (obs, oldV, newV) -> updateRowStyle(newV);
+
             @Override
             protected void updateItem(ObservableDataRow item, boolean empty) {
+                ObservableDataRow old = getItem();
+                if (old != null) {
+                    old.stateProperty().removeListener(stateListener);
+                }
                 super.updateItem(item, empty);
-                getStyleClass().removeAll("row-inserted", "row-modified", "row-deleted");
                 if (!empty && item != null) {
-                    switch (item.getState()) {
+                    item.stateProperty().addListener(stateListener);
+                    updateRowStyle(item.getState());
+                } else {
+                    getStyleClass().removeAll("row-inserted", "row-modified", "row-deleted");
+                }
+            }
+
+            private void updateRowStyle(ObservableDataRow.RowState state) {
+                getStyleClass().removeAll("row-inserted", "row-modified", "row-deleted");
+                if (state != null) {
+                    switch (state) {
                         case INSERTED -> getStyleClass().add("row-inserted");
                         case MODIFIED -> getStyleClass().add("row-modified");
                         case DELETED -> getStyleClass().add("row-deleted");
@@ -377,10 +471,8 @@ public class TableDataEditorTab extends SqlEditorTab {
 
         // Row navigation and active cell listener
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldRow, newRow) -> {
-            if (newRow != null) {
-                int rowIdx = masterItems.indexOf(newRow) + 1;
-                lblRowNav.setText("Dòng " + rowIdx + " / " + masterItems.size());
-            }
+            int selIdx = tableView.getSelectionModel().getSelectedIndex();
+            lblRowNav.setText("Dòng " + (selIdx >= 0 ? (selIdx + 1) : 0) + " / " + filteredItems.size());
         });
 
         tableView.getFocusModel().focusedCellProperty().addListener((obs, oldCell, newCell) -> {
@@ -416,22 +508,22 @@ public class TableDataEditorTab extends SqlEditorTab {
         Button btnFirst = new Button();
         btnFirst.getStyleClass().addAll("button", "small");
         btnFirst.setGraphic(new FontIcon("fth-chevrons-left"));
-        btnFirst.setOnAction(e -> { if (!masterItems.isEmpty()) tableView.getSelectionModel().select(0); });
+        btnFirst.setOnAction(e -> { if (!filteredItems.isEmpty()) tableView.getSelectionModel().selectFirst(); });
 
         Button btnPrev = new Button();
         btnPrev.getStyleClass().addAll("button", "small");
         btnPrev.setGraphic(new FontIcon("fth-chevron-left"));
-        btnPrev.setOnAction(e -> tableView.getSelectionModel().selectPrevious());
+        btnPrev.setOnAction(e -> { if (!filteredItems.isEmpty()) tableView.getSelectionModel().selectPrevious(); });
 
         Button btnNext = new Button();
         btnNext.getStyleClass().addAll("button", "small");
         btnNext.setGraphic(new FontIcon("fth-chevron-right"));
-        btnNext.setOnAction(e -> tableView.getSelectionModel().selectNext());
+        btnNext.setOnAction(e -> { if (!filteredItems.isEmpty()) tableView.getSelectionModel().selectNext(); });
 
         Button btnLast = new Button();
         btnLast.getStyleClass().addAll("button", "small");
         btnLast.setGraphic(new FontIcon("fth-chevrons-right"));
-        btnLast.setOnAction(e -> { if (!masterItems.isEmpty()) tableView.getSelectionModel().select(masterItems.size() - 1); });
+        btnLast.setOnAction(e -> { if (!filteredItems.isEmpty()) tableView.getSelectionModel().selectLast(); });
 
         HBox navBox = new HBox(3, btnFirst, btnPrev, lblRowNav, btnNext, btnLast);
         navBox.setAlignment(Pos.CENTER_LEFT);
@@ -484,104 +576,110 @@ public class TableDataEditorTab extends SqlEditorTab {
         updateSummary();
     }
 
+    private record LoadDataResult(
+            List<String> columnNames,
+            List<ObservableDataRow> loadedRows,
+            TableEditorMetadata newMetadata,
+            TableDesign tableDesign,
+            boolean hitCapLimit
+    ) {}
+
     private void loadDataAsync() {
         if (profile == null) return;
         tableView.setPlaceholder(new Label("Đang truy vấn CSDL..."));
 
         int limit = parseLimit();
+        final int effectiveLimit = (limit <= 0 || limit > 50_000) ? 50_000 : limit;
         boolean isPg = engine.equalsIgnoreCase("postgresql");
         String where = criteriaGrid.buildWhereClause(isPg);
         String orderBy = criteriaGrid.buildOrderByClause(isPg);
 
-        CompletableFuture.runAsync(() -> {
-            try {
-                if (BackendFlags.mock(BackendFlags.Area.METADATA)) {
-                    if (loadedTableDesign == null) {
-                        loadedTableDesign = designerService.createMockTableDesign(engine, catalog, schema, tableName);
-                        metadata = TableEditorMetadata.fromTableDesign(loadedTableDesign);
-                    }
-                    List<String> columnNames = loadedTableDesign.getColumns().stream()
-                            .map(com.lltool.core.domain.tabledesigner.model.ColumnDesign::getName)
-                            .toList();
-                    List<ObservableDataRow> loadedRows = new ArrayList<>();
-                    int count = Math.min(limit, 30);
-                    for (int rowIdx = 1; rowIdx <= count; rowIdx++) {
-                        Map<String, Object> rowVals = new LinkedHashMap<>();
-                        for (var col : loadedTableDesign.getColumns()) {
-                            String name = col.getName();
-                            Object val;
-                            if ("Id".equalsIgnoreCase(name)) {
-                                val = rowIdx;
-                            } else if ("CustomerCode".equalsIgnoreCase(name) || "customer_code".equalsIgnoreCase(name)) {
-                                val = "CUST-" + String.format("%04d", rowIdx);
-                            } else if ("FullName".equalsIgnoreCase(name) || "full_name".equalsIgnoreCase(name)) {
-                                val = (rowIdx == 1) ? "Công ty Cổ phần Giải pháp Công nghệ Thông tin Toàn cầu Việt Nam" : "Khách hàng " + rowIdx;
-                            } else if ("Email".equalsIgnoreCase(name) || "email".equalsIgnoreCase(name)) {
-                                val = (rowIdx == 2) ? null : "customer" + rowIdx + "@example.com";
-                            } else if ("PhoneNumber".equalsIgnoreCase(name) || "phone_number".equalsIgnoreCase(name)) {
-                                val = (rowIdx == 3) ? null : "09012345" + String.format("%02d", rowIdx);
-                            } else if ("Balance".equalsIgnoreCase(name) || "balance".equalsIgnoreCase(name)) {
-                                val = 1500000.50 * rowIdx;
-                            } else if ("Status".equalsIgnoreCase(name) || "status".equalsIgnoreCase(name)) {
-                                val = (rowIdx % 5 == 0) ? "INACTIVE" : "ACTIVE";
-                            } else if ("CreatedAt".equalsIgnoreCase(name) || "created_at".equalsIgnoreCase(name)) {
-                                val = "2026-11-11 10:00:00";
-                            } else {
-                                val = "Value " + rowIdx;
-                            }
-                            rowVals.put(name, val);
-                        }
-                        loadedRows.add(new ObservableDataRow(rowIdx, rowVals, false));
-                    }
+        loadDataTask.execute(ctx -> {
+            ctx.checkCancelled();
 
-                    Platform.runLater(() -> {
-                        criteriaGrid.setAvailableColumns(columnNames);
-                        syncLiveSql();
-                        updatePkBadge();
-                        if (loadedTableDesign != null) {
-                            inspectorPane.update(loadedTableDesign, metadata);
-                        }
-                        buildTableColumns(columnNames);
-                        masterItems.setAll(loadedRows);
-                        updateSummary();
-                        lblReadOnly.setVisible(true);
-                        workspaceFooter.setSampleDataVisible(true);
-                    });
-                    return;
+            if (BackendFlags.mock(BackendFlags.Area.METADATA)) {
+                TableDesign td = loadedTableDesign;
+                if (td == null) {
+                    td = designerService.createMockTableDesign(engine, catalog, schema, tableName);
                 }
-
-                // 1. Ensure metadata is loaded
-                if (metadata == null) {
-                    Result<TableDesign> designRes = designerService.loadTableDesign(profile, catalog, schema, tableName);
-                    if (designRes.isSuccess()) {
-                        loadedTableDesign = designRes.getDataOrThrow();
-                        metadata = TableEditorMetadata.fromTableDesign(loadedTableDesign);
-                    } else {
-                        metadata = new TableEditorMetadata(engine, catalog, schema, tableName, Collections.emptyList());
-                    }
-                }
-
-                // 2. Fetch data via JDBC
-                List<String> pks = metadata != null ? metadata.getPrimaryKeyNames() : Collections.emptyList();
-                String query = dataEditorService.buildSelectQuery(engine, catalog, schema, tableName, null, where, orderBy, pks, limit, 0);
-
-                String targetDb = catalog != null && !catalog.isBlank() ? catalog : profile.databaseName();
-                String pwd = CredentialResolver.resolve(profile, null);
-
-                Result<DatabaseConnection> connRes = ConnectionSessionManager.getInstance().openSession(profile, targetDb, pwd);
-                if (connRes.isFailure()) {
-                    Platform.runLater(() -> tableView.setPlaceholder(new Label("Lỗi kết nối: " + connRes.getError().get().message())));
-                    return;
-                }
-
+                TableEditorMetadata meta = TableEditorMetadata.fromTableDesign(td);
+                List<String> columnNames = td.getColumns().stream()
+                        .map(com.lltool.core.domain.tabledesigner.model.ColumnDesign::getName)
+                        .toList();
                 List<ObservableDataRow> loadedRows = new ArrayList<>();
-                List<String> columnNames = new ArrayList<>();
+                int count = Math.min(effectiveLimit, 30);
+                for (int rowIdx = 1; rowIdx <= count; rowIdx++) {
+                    Map<String, Object> rowVals = new LinkedHashMap<>();
+                    for (var col : td.getColumns()) {
+                        String name = col.getName();
+                        Object val;
+                        if ("Id".equalsIgnoreCase(name)) {
+                            val = rowIdx;
+                        } else if ("CustomerCode".equalsIgnoreCase(name) || "customer_code".equalsIgnoreCase(name)) {
+                            val = "CUST-" + String.format("%04d", rowIdx);
+                        } else if ("FullName".equalsIgnoreCase(name) || "full_name".equalsIgnoreCase(name)) {
+                            val = (rowIdx == 1) ? "Công ty Cổ phần Giải pháp Công nghệ Thông tin Toàn cầu Việt Nam" : "Khách hàng " + rowIdx;
+                        } else if ("Email".equalsIgnoreCase(name) || "email".equalsIgnoreCase(name)) {
+                            val = (rowIdx == 2) ? null : "customer" + rowIdx + "@example.com";
+                        } else if ("PhoneNumber".equalsIgnoreCase(name) || "phone_number".equalsIgnoreCase(name)) {
+                            val = (rowIdx == 3) ? null : "09012345" + String.format("%02d", rowIdx);
+                        } else if ("Balance".equalsIgnoreCase(name) || "balance".equalsIgnoreCase(name)) {
+                            val = 1500000.50 * rowIdx;
+                        } else if ("Status".equalsIgnoreCase(name) || "status".equalsIgnoreCase(name)) {
+                            val = (rowIdx % 5 == 0) ? "INACTIVE" : "ACTIVE";
+                        } else if ("CreatedAt".equalsIgnoreCase(name) || "created_at".equalsIgnoreCase(name)) {
+                            val = "2026-11-11 10:00:00";
+                        } else {
+                            val = "Value " + rowIdx;
+                        }
+                        rowVals.put(name, val);
+                    }
+                    loadedRows.add(new ObservableDataRow(rowIdx, rowVals, false));
+                }
+                return new LoadDataResult(columnNames, loadedRows, meta, td, false);
+            }
 
-                try (DatabaseConnection dbConn = connRes.getDataOrThrow()) {
-                    Connection raw = dbConn.getRawJdbcConnection();
-                    try (Statement stmt = raw.createStatement();
-                         ResultSet rs = stmt.executeQuery(query)) {
+            // 1. Ensure metadata is loaded
+            TableDesign td = loadedTableDesign;
+            TableEditorMetadata meta = metadata;
+            if (meta == null) {
+                Result<TableDesign> designRes = designerService.loadTableDesign(profile, catalog, schema, tableName);
+                if (designRes.isSuccess()) {
+                    td = designRes.getDataOrThrow();
+                    meta = TableEditorMetadata.fromTableDesign(td);
+                } else {
+                    meta = new TableEditorMetadata(engine, catalog, schema, tableName, Collections.emptyList());
+                }
+            }
 
+            ctx.checkCancelled();
+
+            // 2. Fetch data via JDBC
+            List<String> pks = meta != null ? meta.getPrimaryKeyNames() : Collections.emptyList();
+            String query = dataEditorService.buildSelectQuery(engine, catalog, schema, tableName, null, where, orderBy, pks, effectiveLimit, 0);
+
+            String targetDb = catalog != null && !catalog.isBlank() ? catalog : profile.databaseName();
+            String pwd = CredentialResolver.resolve(profile, null);
+
+            Result<DatabaseConnection> connRes = ConnectionSessionManager.getInstance().openSession(profile, targetDb, pwd);
+            if (connRes.isFailure()) {
+                throw new IllegalStateException("Lỗi kết nối: " + connRes.getError().get().message());
+            }
+
+            List<ObservableDataRow> loadedRows = new ArrayList<>();
+            List<String> columnNames = new ArrayList<>();
+            boolean hitCap = false;
+
+            try (DatabaseConnection dbConn = connRes.getDataOrThrow()) {
+                Connection raw = dbConn.getRawJdbcConnection();
+                if (isPg) {
+                    try { raw.setAutoCommit(false); } catch (Exception ignored) {}
+                }
+                try (Statement stmt = raw.createStatement()) {
+                    ctx.registerStatement(stmt);
+                    stmt.setFetchSize(500);
+
+                    try (ResultSet rs = stmt.executeQuery(query)) {
                         ResultSetMetaData rsmd = rs.getMetaData();
                         int colCount = rsmd.getColumnCount();
                         List<TableEditorMetadata.ColumnMeta> metaCols = new ArrayList<>();
@@ -598,8 +696,8 @@ public class TableDataEditorTab extends SqlEditorTab {
                             boolean isPk = false;
                             boolean isComp = false;
                             String defVal = null;
-                            if (loadedTableDesign != null) {
-                                var cdOpt = loadedTableDesign.getColumns().stream()
+                            if (td != null) {
+                                var cdOpt = td.getColumns().stream()
                                         .filter(c -> c.getName().equalsIgnoreCase(cName))
                                         .findFirst();
                                 if (cdOpt.isPresent()) {
@@ -612,41 +710,56 @@ public class TableDataEditorTab extends SqlEditorTab {
                                     cName, typeName, isPk, autoInc, isComp, nullable, defVal, sqlType, prec, scale
                             ));
                         }
-                        metadata = new TableEditorMetadata(engine, catalog, schema, tableName, metaCols);
+                        meta = new TableEditorMetadata(engine, catalog, schema, tableName, metaCols);
 
                         int rowIdx = 1;
                         while (rs.next()) {
+                            ctx.checkCancelled();
                             Map<String, Object> rowVals = new LinkedHashMap<>();
                             for (int i = 1; i <= colCount; i++) {
                                 rowVals.put(columnNames.get(i - 1), rs.getObject(i));
                             }
                             loadedRows.add(new ObservableDataRow(rowIdx++, rowVals, false));
+                            if (loadedRows.size() >= effectiveLimit) {
+                                if (limit <= 0 || limit > 50_000) {
+                                    hitCap = true;
+                                }
+                                break;
+                            }
                         }
+                    } finally {
+                        ctx.unregisterStatement(stmt);
                     }
                 }
-
-                Platform.runLater(() -> {
-                    criteriaGrid.setAvailableColumns(columnNames);
-                    syncLiveSql();
-                    updatePkBadge();
-                    if (loadedTableDesign != null) {
-                        inspectorPane.update(loadedTableDesign, metadata);
-                    }
-                    buildTableColumns(columnNames);
-                    masterItems.setAll(loadedRows);
-                    updateSummary();
-                    dirtyProperty().set(false);
-                    lblReadOnly.setVisible(true);
-                    workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA));
-                });
-
-            } catch (Exception ex) {
-                log.error("Failed to load table data: {}", ex.getMessage(), ex);
-                Platform.runLater(() -> {
-                    tableView.setPlaceholder(new Label("Lỗi nạp dữ liệu: " + ex.getMessage()));
-                    NotificationService.getInstance().showError("Lỗi dữ liệu", ex.getMessage());
-                });
             }
+
+            return new LoadDataResult(columnNames, loadedRows, meta, td, hitCap);
+        }, result -> {
+            this.loadedTableDesign = result.tableDesign();
+            this.metadata = result.newMetadata();
+            this.rowIdSeq.set(result.loadedRows().size());
+
+            criteriaGrid.setAvailableColumns(result.columnNames());
+            syncLiveSql();
+            updatePkBadge();
+            if (this.loadedTableDesign != null) {
+                inspectorPane.update(this.loadedTableDesign, this.metadata);
+            }
+            buildTableColumns(result.columnNames());
+            masterItems.setAll(result.loadedRows());
+            updateSummary();
+            dirtyProperty().set(false);
+            lblReadOnly.setVisible(true);
+            workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA));
+            if (result.hitCapLimit()) {
+                NotificationService.getInstance().showWarning("Giới hạn dữ liệu", "Bảng đã đạt mức trần 50.000 dòng để bảo vệ bộ nhớ. Vui lòng thêm điều kiện lọc.");
+            }
+        }, error -> {
+            log.error("Failed to load table data: {}", error.getMessage(), error);
+            tableView.setPlaceholder(new Label("Lỗi nạp dữ liệu: " + error.getMessage()));
+            NotificationService.getInstance().showError("Lỗi dữ liệu", error.getMessage());
+        }, () -> {
+            tableView.setPlaceholder(new Label("Đã hủy nạp dữ liệu."));
         });
     }
 
@@ -677,13 +790,16 @@ public class TableDataEditorTab extends SqlEditorTab {
         colRowNo.setStyle("-fx-alignment: CENTER; -fx-font-family: monospace;");
         colRowNo.setCellValueFactory(data -> {
             ObservableDataRow row = data.getValue();
-            String prefix = switch (row.getState()) {
-                case INSERTED -> "+ ";
-                case MODIFIED -> "~ ";
-                case DELETED -> "- ";
-                default -> "";
-            };
-            return new SimpleStringProperty(prefix + row.getRowId());
+            if (row == null) return new SimpleStringProperty("");
+            return javafx.beans.binding.Bindings.createStringBinding(() -> {
+                String prefix = switch (row.getState()) {
+                    case INSERTED -> "+ ";
+                    case MODIFIED -> "~ ";
+                    case DELETED -> "- ";
+                    default -> "";
+                };
+                return prefix + row.getRowId();
+            }, row.stateProperty());
         });
         tableView.getColumns().add(colRowNo);
 
@@ -760,15 +876,7 @@ public class TableDataEditorTab extends SqlEditorTab {
             final String finalTypeName = dataTypeName;
             col.setCellFactory(c -> new EditableDataTableCell(colName, readOnlyCol, finalSqlType, finalTypeName, (row, cName, val) -> {
                 updateSummary();
-                dirtyProperty().set(true);
             }));
-
-            col.setOnEditCommit(e -> {
-                ObservableDataRow row = e.getRowValue();
-                row.setValue(colName, e.getNewValue());
-                updateSummary();
-                dirtyProperty().set(true);
-            });
 
             tableView.getColumns().add(col);
         }
@@ -785,7 +893,7 @@ public class TableDataEditorTab extends SqlEditorTab {
     }
 
     private void handleAddRow() {
-        int nextId = masterItems.size() + 1;
+        int nextId = rowIdSeq.incrementAndGet();
         Map<String, Object> emptyVals = new LinkedHashMap<>();
         if (metadata != null) {
             for (var c : metadata.getColumns()) {
@@ -797,7 +905,6 @@ public class TableDataEditorTab extends SqlEditorTab {
         tableView.getSelectionModel().select(newRow);
         tableView.scrollTo(newRow);
         updateSummary();
-        dirtyProperty().set(true);
     }
 
     private void handleDeleteRow() {
@@ -814,16 +921,14 @@ public class TableDataEditorTab extends SqlEditorTab {
                 row.markDeleted();
             }
         }
-        tableView.refresh();
         updateSummary();
-        dirtyProperty().set(true);
     }
 
     private void handleDuplicateRow() {
         ObservableDataRow selected = tableView.getSelectionModel().getSelectedItem();
         if (selected == null) return;
 
-        int nextId = masterItems.size() + 1;
+        int nextId = rowIdSeq.incrementAndGet();
         Map<String, Object> dupVals = new LinkedHashMap<>(selected.getCurrentValues());
 
         // Skip identity column value for duplicated row
@@ -842,7 +947,6 @@ public class TableDataEditorTab extends SqlEditorTab {
         tableView.getSelectionModel().select(dupRow);
         tableView.scrollTo(dupRow);
         updateSummary();
-        dirtyProperty().set(true);
     }
 
     private void handleDiscard() {
@@ -855,9 +959,7 @@ public class TableDataEditorTab extends SqlEditorTab {
             }
         }
         masterItems.removeAll(toRemove);
-        tableView.refresh();
         updateSummary();
-        dirtyProperty().set(false);
     }
 
     private void handlePreviewDml() {
@@ -875,7 +977,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         PreviewDataChangesDialog.show(owner, schema, tableName, ins, upd, del, fullScript, false);
     }
 
-    private void handleSave() {
+    private boolean ensureWritable() {
         ConnectionProfileDto currentProf = profile != null ? app.framework.connection.ProfileLookup.byId(profile.id()) : null;
         if (currentProf == null && profile != null) currentProf = app.framework.connection.ProfileLookup.byName(profile.name());
         if (currentProf == null) currentProf = profile;
@@ -883,15 +985,21 @@ public class TableDataEditorTab extends SqlEditorTab {
             var stage = app.application.AppContext.getInstance().getPrimaryStage();
             Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
             boolean unlocked = ReadOnlyGuardDialog.show(owner, currentProf != null ? currentProf.name() : "");
-            if (!unlocked) return;
+            if (!unlocked) return false;
             currentProf = app.framework.connection.ProfileLookup.byId(currentProf.id());
             if (currentProf == null && profile != null) currentProf = app.framework.connection.ProfileLookup.byName(profile.name());
             if (currentProf != null) this.profile = currentProf;
             lblReadOnly.setText("Cho phép sửa");
             lblReadOnly.setStyle("-fx-text-fill: -color-success-emphasis; -fx-font-weight: bold;");
+            return true;
         } else if (currentProf != null) {
             this.profile = currentProf;
         }
+        return true;
+    }
+
+    private void handleSave() {
+        if (!ensureWritable()) return;
 
         DataChangeBatch batch = buildChangeBatch();
         if (batch.isEmpty()) {
@@ -925,6 +1033,10 @@ public class TableDataEditorTab extends SqlEditorTab {
     }
 
     private void executeBatch(List<com.lltool.core.domain.tableeditor.model.DmlCommand> dmlCommands) {
+        executeBatchWithRetry(dmlCommands, true);
+    }
+
+    private void executeBatchWithRetry(List<com.lltool.core.domain.tableeditor.model.DmlCommand> dmlCommands, boolean allowRetry) {
         ConnectionProfileDto execProfile = this.profile != null ? app.framework.connection.ProfileLookup.byId(this.profile.id()) : null;
         if (execProfile == null && this.profile != null) execProfile = app.framework.connection.ProfileLookup.byName(this.profile.name());
         if (execProfile != null) this.profile = execProfile;
@@ -935,6 +1047,7 @@ public class TableDataEditorTab extends SqlEditorTab {
 
         btnSave.setDisable(true);
         saveTask.execute(ctx -> {
+            ctx.checkCancelled();
             String pwd = CredentialResolver.resolve(finalProfile, null);
             Result<DatabaseConnection> connRes = ConnectionSessionManager.getInstance().openSession(finalProfile, targetDb, pwd);
             if (connRes.isFailure()) {
@@ -948,6 +1061,7 @@ public class TableDataEditorTab extends SqlEditorTab {
 
                 try {
                     for (com.lltool.core.domain.tableeditor.model.DmlCommand cmd : dmlCommands) {
+                        ctx.checkCancelled();
                         try (PreparedStatement ps = raw.prepareStatement(cmd.sql())) {
                             ctx.registerStatement(ps);
                             List<com.lltool.core.domain.tableeditor.model.DmlCommand.DmlParam> params = cmd.params();
@@ -990,14 +1104,14 @@ public class TableDataEditorTab extends SqlEditorTab {
             btnSave.setDisable(false);
             log.error("Failed to execute data batch: {}", error.getMessage(), error);
             String msg = error.getMessage() != null ? error.getMessage() : "";
-            if (msg.contains("READ_ONLY") || msg.contains("25006") || msg.toLowerCase().contains("read-only") || msg.toLowerCase().contains("chỉ đọc")) {
+            if (allowRetry && (msg.contains("READ_ONLY") || msg.contains("25006") || msg.toLowerCase().contains("read-only") || msg.toLowerCase().contains("chỉ đọc"))) {
                 var stage = app.application.AppContext.getInstance().getPrimaryStage();
                 Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
                 boolean unlocked = ReadOnlyGuardDialog.show(owner, finalProfile != null ? finalProfile.name() : "");
                 if (unlocked) {
                     ConnectionProfileDto fresh = app.framework.connection.ProfileLookup.byId(finalProfile.id());
                     if (fresh != null) this.profile = fresh;
-                    executeBatch(dmlCommands);
+                    executeBatchWithRetry(dmlCommands, false);
                 } else {
                     NotificationService.getInstance().showError("Lỗi thực thi dữ liệu", error.getMessage());
                 }
@@ -1070,6 +1184,8 @@ public class TableDataEditorTab extends SqlEditorTab {
         long modified = masterItems.stream().filter(r -> r.getState() == ObservableDataRow.RowState.MODIFIED).count();
         long deleted = masterItems.stream().filter(r -> r.getState() == ObservableDataRow.RowState.DELETED).count();
         long totalChanges = inserted + modified + deleted;
+
+        dirtyProperty().set(totalChanges > 0);
 
         lblSummary.setText("Tổng số: " + total + " dòng");
 
