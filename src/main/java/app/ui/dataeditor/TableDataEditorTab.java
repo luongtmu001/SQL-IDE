@@ -969,7 +969,11 @@ public class TableDataEditorTab extends SqlEditorTab {
         for (ObservableDataRow row : masterItems) {
             if (row.getState() == ObservableDataRow.RowState.INSERTED) {
                 DataRowChange change = new DataRowChange(DataRowChange.Type.INSERT, row.getRowId());
-                change.setNewValues(row.getCurrentValues());
+                Map<String, Object> insertedVals = new LinkedHashMap<>();
+                for (String dirtyCol : row.getDirtyColumns()) {
+                    insertedVals.put(dirtyCol, row.getValue(dirtyCol));
+                }
+                change.setNewValues(insertedVals);
                 batch.addChange(change);
             } else if (row.getState() == ObservableDataRow.RowState.MODIFIED) {
                 DataRowChange change = new DataRowChange(DataRowChange.Type.UPDATE, row.getRowId());

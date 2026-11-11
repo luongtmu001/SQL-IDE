@@ -58,7 +58,9 @@ public class ObservableDataRow {
 
         prop.set(newVal);
 
-        if (state != RowState.INSERTED && state != RowState.DELETED) {
+        if (state == RowState.INSERTED) {
+            dirtyColumns.add(colName);
+        } else if (state != RowState.DELETED) {
             if (!Objects.equals(oldVal, newVal)) {
                 dirtyColumns.add(colName);
                 state = RowState.MODIFIED;
@@ -72,7 +74,7 @@ public class ObservableDataRow {
     }
 
     public boolean isCellDirty(String colName) {
-        return dirtyColumns.contains(colName) || state == RowState.INSERTED;
+        return dirtyColumns.contains(colName);
     }
 
     public Set<String> getDirtyColumns() {
