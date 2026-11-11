@@ -1,5 +1,9 @@
 package app.ui.visualizer;
 
+import app.framework.async.AsyncTaskManager;
+import app.framework.plan.DesktopExecutionPlanService;
+import app.models.PhysicalExecutionPlan;
+import app.models.PlanOperatorNode;
 import app.services.NotificationService;
 import app.ui.components.*;
 import app.ui.editor.EmbeddedMonaco;
@@ -9,6 +13,7 @@ import com.lltool.core.application.visualizer.QueryFlowAnalyzer;
 import com.lltool.core.domain.visualizer.QueryFlowGraph;
 import com.lltool.core.domain.visualizer.QueryFlowNode;
 import com.lltool.core.domain.visualizer.SourceRange;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -17,6 +22,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +36,7 @@ import java.util.function.Consumer;
  * Interactive SQL Visualizer & Query Flow Tab (Phase 3 - Slice 6).
  * Analyzes complex SQL queries into intuitive multi-stage data pipelines,
  * supports two-way editor AST sync, zoom/pan canvas, and execution metrics inspector.
- * Fully refactored to conform to Phase 3 design tokens and component standards (G-SV-1..8).
+ * Fully refactored to conform to Phase 3 design tokens and component standards (SV-1..SV-7).
  */
 public class SqlVisualizerTab extends SqlEditorTab {
 
@@ -45,11 +51,13 @@ public class SqlVisualizerTab extends SqlEditorTab {
     private final String customKey;
 
     private QueryFlowGraph activeGraph;
+    private PauseTransition typingDebounce;
 
     // UI Controls - Header Toolbar
     private final AppButton btnAnalyze = new AppButton("Phân tích", "fth-play", AppButton.Variant.PRIMARY);
     private final ToggleButton btnToggleSqlBox = new ToggleButton("Hiện SQL");
     private final MenuButton btnPresets = new MenuButton("Mẫu");
+    private final AppButton btnEstimatedPlan = new AppButton("Kế hoạch ước lượng", "fth-activity", AppButton.Variant.DEFAULT);
 
     private final IconButton btnZoomIn = new IconButton("fth-plus", "Phóng to (Ctrl++)");
     private final IconButton btnZoomOut = new IconButton("fth-minus", "Thu nhỏ (Ctrl+-)");
@@ -76,7 +84,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
 
     public SqlVisualizerTab(ConnectionProfileDto profile, String catalog, String schema,
                             String queryName, String initialSql,
-                            Consumer<SqlEditorTabAction> tabActionHandler) {
+                            Consumer<SqlEditorTab.SqlEditorTabAction> tabActionHandler) {
         super(
                 buildTabTitle(queryName),
                 "",
@@ -106,7 +114,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
     }
 
     public SqlVisualizerTab(ConnectionProfileDto profile, String catalog, String schema,
-                            Consumer<SqlEditorTabAction> tabActionHandler) {
+                            Consumer<SqlEditorTab.SqlEditorTabAction> tabActionHandler) {
         this(profile, catalog, schema, "Query1", null, tabActionHandler);
     }
 
@@ -168,6 +176,15 @@ public class SqlVisualizerTab extends SqlEditorTab {
                 }
             }
         });
+
+        // Fast typing debounce (SV-5)
+        monacoSql.setOnUserEdit(text -> {
+            if (typingDebounce == null) {
+                typingDebounce = new PauseTransition(Duration.millis(400));
+                typingDebounce.setOnFinished(e -> runAnalysisQuick());
+            }
+            typingDebounce.playFromStart();
+        });
     }
 
     private WorkspaceToolbar buildHeaderToolbar() {
@@ -218,9 +235,11 @@ public class SqlVisualizerTab extends SqlEditorTab {
         });
 
         // Left Controls
+        btnEstimatedPlan.setOnAction(e -> fetchEstimatedPlanMetrics());
         toolbar.addLeft(btnAnalyze);
         toolbar.addLeft(btnToggleSqlBox);
         toolbar.addLeft(btnPresets);
+        toolbar.addLeft(btnEstimatedPlan);
 
         // Canvas Navigation Buttons
         Label lblZoom = new Label("100%");
@@ -301,34 +320,148 @@ public class SqlVisualizerTab extends SqlEditorTab {
             return;
         }
 
-        loadingOverlay.show("Đang phân tích cú pháp AST & luồng dữ liệu...", null);
-
-        new Thread(() -> {
-            try {
-                QueryFlowGraph graph = analyzer.analyze(sql);
-                Thread.sleep(120); // Smooth transition
-
-                Platform.runLater(() -> {
-                    this.activeGraph = graph;
-                    emptyState.setVisible(graph.getNodeCount() == 0);
-                    visualizerCanvas.setGraph(graph);
-                    lblStepStats.setText(graph.getNodeCount() + " bước xử lý");
-
-                    // Fit to screen on initial render
-                    Platform.runLater(visualizerCanvas::fitToScreen);
-                });
-            } catch (Exception ex) {
-                log.error("Failed to analyze SQL flow: {}", ex.getMessage(), ex);
-                Platform.runLater(() -> {
-                    NotificationService ns = NotificationService.getInstance();
-                    if (ns != null) {
-                        ns.showError("Lỗi phân tích SQL", ex.getMessage());
-                    }
-                });
-            } finally {
-                Platform.runLater(loadingOverlay::hide);
+        try {
+            QueryFlowGraph graph = analyzer.analyze(sql);
+            this.activeGraph = graph;
+            if (graph.isUnsupported()) {
+                emptyState.setTitle("Không hỗ trợ câu lệnh này");
+                emptyState.setMessage(graph.getUnsupportedReason());
+                emptyState.setVisible(true);
+                visualizerCanvas.clearCanvas();
+                inspector.inspectNode(null);
+                lblStepStats.setText("0 bước xử lý");
+            } else {
+                emptyState.setVisible(graph.getNodeCount() == 0);
+                visualizerCanvas.setGraph(graph);
+                lblStepStats.setText(graph.getNodeCount() + " bước xử lý");
+                Platform.runLater(visualizerCanvas::fitToScreen);
             }
-        }).start();
+        } catch (Exception ex) {
+            log.error("Failed to analyze SQL flow: {}", ex.getMessage(), ex);
+            NotificationService ns = NotificationService.getInstance();
+            if (ns != null) {
+                ns.showError("Lỗi phân tích SQL", ex.getMessage());
+            }
+        }
+    }
+
+    private void runAnalysisQuick() {
+        String sql = monacoSql.getText();
+        if (sql == null || sql.isBlank()) {
+            emptyState.setVisible(true);
+            visualizerCanvas.clearCanvas();
+            inspector.inspectNode(null);
+            lblStepStats.setText("0 bước xử lý");
+            return;
+        }
+
+        try {
+            QueryFlowGraph graph = analyzer.analyze(sql);
+            this.activeGraph = graph;
+            if (graph.isUnsupported()) {
+                emptyState.setTitle("Không hỗ trợ câu lệnh này");
+                emptyState.setMessage(graph.getUnsupportedReason());
+                emptyState.setVisible(true);
+                visualizerCanvas.clearCanvas();
+                inspector.inspectNode(null);
+                lblStepStats.setText("0 bước xử lý");
+            } else {
+                emptyState.setVisible(graph.getNodeCount() == 0);
+                visualizerCanvas.setGraph(graph);
+                lblStepStats.setText(graph.getNodeCount() + " bước xử lý");
+            }
+        } catch (Exception ex) {
+            log.debug("Live typing parse exception: {}", ex.getMessage());
+        }
+    }
+
+    private void fetchEstimatedPlanMetrics() {
+        if (profile == null) {
+            NotificationService.getInstance().showWarning("Kế hoạch ước lượng", "Cần kết nối CSDL để lấy kế hoạch ước lượng.");
+            return;
+        }
+        String sql = monacoSql.getText();
+        if (sql == null || sql.isBlank() || activeGraph == null) return;
+
+        loadingOverlay.show("Đang lấy kế hoạch thực thi ước lượng...", null);
+        AsyncTaskManager.getInstance().runInBackground(() -> {
+            try {
+                DesktopExecutionPlanService.getInstance().getExecutionPlanAsync(
+                        profile.name(), catalog, schema, sql, "estimated",
+                        new DesktopExecutionPlanService.PlanCallback() {
+                            @Override
+                            public void onStart(String planType, String dialect) {}
+
+                            @Override
+                            public void onSuccess(PhysicalExecutionPlan plan) {
+                                Platform.runLater(() -> {
+                                    if (plan != null && activeGraph != null) {
+                                        applyPlanMetricsToGraph(activeGraph, plan);
+                                        visualizerCanvas.setGraph(activeGraph);
+                                        NotificationService.getInstance().showSuccess("Kế hoạch ước lượng", "Đã cập nhật số liệu ước lượng vào sơ đồ.");
+                                    }
+                                    loadingOverlay.hide();
+                                });
+                            }
+
+                            @Override
+                            public void onError(Throwable error) {
+                                Platform.runLater(() -> {
+                                    loadingOverlay.hide();
+                                    NotificationService.getInstance().showWarning("Kế hoạch ước lượng", "Không thể lấy kế hoạch: " + error.getMessage());
+                                });
+                            }
+                        }
+                );
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    loadingOverlay.hide();
+                    NotificationService.getInstance().showWarning("Kế hoạch ước lượng", "Không thể lấy kế hoạch: " + ex.getMessage());
+                });
+            }
+        });
+    }
+
+    private void applyPlanMetricsToGraph(QueryFlowGraph graph, PhysicalExecutionPlan plan) {
+        if (graph == null || plan == null || plan.getAllNodes() == null) return;
+
+        for (QueryFlowNode qNode : graph.getNodes().values()) {
+            for (PlanOperatorNode pNode : plan.getAllNodes()) {
+                boolean match = false;
+                if (qNode.getType() == com.lltool.core.domain.visualizer.QueryNodeType.SOURCE_TABLE ||
+                    qNode.getType() == com.lltool.core.domain.visualizer.QueryNodeType.JOIN_TABLE) {
+                    if (pNode.getRelationName() != null && !pNode.getRelationName().isBlank()) {
+                        String cleanP = pNode.getRelationName().replace("[", "").replace("]", "").replace("\"", "");
+                        String cleanQ = qNode.getTitle().replace("[", "").replace("]", "").replace("\"", "");
+                        if (cleanP.equalsIgnoreCase(cleanQ) || cleanP.endsWith("." + cleanQ) || cleanQ.endsWith("." + cleanP)) {
+                            match = true;
+                        }
+                    }
+                } else if (qNode.getType() == com.lltool.core.domain.visualizer.QueryNodeType.JOIN) {
+                    if (pNode.getOperatorType() != null && pNode.getOperatorType().toLowerCase().contains("join")) {
+                        match = true;
+                    }
+                } else if (qNode.getType() == com.lltool.core.domain.visualizer.QueryNodeType.AGGREGATE) {
+                    if (pNode.getOperatorType() != null && (pNode.getOperatorType().toLowerCase().contains("hash") || pNode.getOperatorType().toLowerCase().contains("aggregate"))) {
+                        match = true;
+                    }
+                } else if (qNode.getType() == com.lltool.core.domain.visualizer.QueryNodeType.SORT) {
+                    if (pNode.getOperatorType() != null && pNode.getOperatorType().toLowerCase().contains("sort")) {
+                        match = true;
+                    }
+                }
+
+                if (match) {
+                    if (pNode.getEstimatedRows() > 0) {
+                        qNode.setRowCount((long) pNode.getEstimatedRows());
+                    }
+                    if (pNode.getCostPercent() > 0) {
+                        qNode.setEstimatedCost(String.format("%.1f%%", pNode.getCostPercent()));
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     private void handleNodeSelectedOnCanvas(QueryFlowNode node) {
