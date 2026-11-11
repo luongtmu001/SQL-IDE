@@ -145,11 +145,7 @@ public class DependencyGraphTab extends SqlEditorTab {
         WorkspaceToolbar header = buildHeaderToolbar();
 
         // 2. Main Content SplitPane
-        HBox legendBox = buildLegendBox();
-        StackPane.setAlignment(legendBox, Pos.BOTTOM_LEFT);
-        StackPane.setMargin(legendBox, new Insets(8));
-
-        canvasContainer.getChildren().addAll(graphCanvas, legendBox, emptyState);
+        canvasContainer.getChildren().addAll(graphCanvas, emptyState);
         emptyState.setVisible(false);
 
         loadingOverlay = LoadingOverlay.over(canvasContainer);
@@ -159,8 +155,10 @@ public class DependencyGraphTab extends SqlEditorTab {
         splitPane.setDividerPositions(0.70);
         VBox.setVgrow(splitPane, Priority.ALWAYS);
 
-        // 3. Footer
+        // 3. Footer with Stats and Legend
+        HBox legendBox = buildLegendBox();
         workspaceFooter.addSection(lblNodeEdgeStats);
+        workspaceFooter.addSection(legendBox);
         workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
 
         root.getChildren().addAll(header, splitPane, workspaceFooter);
@@ -172,10 +170,9 @@ public class DependencyGraphTab extends SqlEditorTab {
     }
 
     private HBox buildLegendBox() {
-        HBox box = new HBox(10);
+        HBox box = new HBox(12);
         box.setAlignment(Pos.CENTER_LEFT);
         box.getStyleClass().add("graph-legend-box");
-        box.setPadding(new Insets(4, 10, 4, 10));
 
         box.getChildren().addAll(
                 createLegendItem("Bảng", "node-type-table"),

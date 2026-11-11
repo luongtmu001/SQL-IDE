@@ -265,12 +265,7 @@
 
 /* --- Graph Legend Box --- */
 .graph-legend-box {
-    -fx-background-color: -color-bg-subtle;
-    -fx-border-color: -color-border-subtle;
-    -fx-border-width: 1;
-    -fx-border-radius: 4;
-    -fx-background-radius: 4;
-    -fx-opacity: 0.92;
+    -fx-alignment: center-left;
 }
 
 .legend-label {
