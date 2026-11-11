@@ -102,5 +102,32 @@ class ObservableDataRowTest {
         row.unmarkDeleted();
         assertEquals(ObservableDataRow.RowState.MODIFIED, row.getState());
     }
+
+    @Test
+    @DisplayName("DE-6: Normalized equality prevents false dirty transitions (NULL->NULL, 5->5, BigDecimal compareTo)")
+    void testNormalizedEqualityMaintainsUnchanged() {
+        Map<String, Object> initial = new LinkedHashMap<>();
+        initial.put("id", 5);
+        initial.put("note", null);
+        initial.put("price", new java.math.BigDecimal("10.00"));
+
+        ObservableDataRow row = new ObservableDataRow(1, initial, false);
+        assertEquals(ObservableDataRow.RowState.UNCHANGED, row.getState());
+
+        // Set 5 to Integer 5 -> UNCHANGED
+        row.setValue("id", 5);
+        assertEquals(ObservableDataRow.RowState.UNCHANGED, row.getState());
+        assertFalse(row.isCellDirty("id"));
+
+        // Set note from null to null -> UNCHANGED
+        row.setValue("note", null);
+        assertEquals(ObservableDataRow.RowState.UNCHANGED, row.getState());
+        assertFalse(row.isCellDirty("note"));
+
+        // Set price 10.00 to 10.0 -> UNCHANGED (compareTo == 0)
+        row.setValue("price", new java.math.BigDecimal("10.0"));
+        assertEquals(ObservableDataRow.RowState.UNCHANGED, row.getState());
+        assertFalse(row.isCellDirty("price"));
+    }
 }
 

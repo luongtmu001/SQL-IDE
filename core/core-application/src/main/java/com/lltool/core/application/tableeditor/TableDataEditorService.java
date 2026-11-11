@@ -2,6 +2,7 @@ package com.lltool.core.application.tableeditor;
 
 import com.lltool.core.domain.tableeditor.model.DataChangeBatch;
 import com.lltool.core.domain.tableeditor.model.DataRowChange;
+import com.lltool.core.domain.tableeditor.model.DmlCommand;
 import com.lltool.core.domain.tableeditor.model.TableEditorMetadata;
 
 import java.util.*;
@@ -78,14 +79,14 @@ public class TableDataEditorService {
         return sb.toString();
     }
 
-    public List<String> buildDmlStatements(
+    public List<DmlCommand> buildDmlCommands(
             DataChangeBatch batch,
             TableEditorMetadata metadata,
             boolean optimistic) {
 
-        List<String> statements = new ArrayList<>();
+        List<DmlCommand> commands = new ArrayList<>();
         if (batch == null || batch.isEmpty()) {
-            return statements;
+            return commands;
         }
 
         boolean isPg = "postgresql".equalsIgnoreCase(batch.getEngine()) || "postgres".equalsIgnoreCase(batch.getEngine());
@@ -101,6 +102,8 @@ public class TableDataEditorService {
             Map<String, Object> values = insert.getNewValues();
             List<String> colNames = new ArrayList<>();
             List<String> valLiterals = new ArrayList<>();
+            List<DmlCommand.DmlParam> params = new ArrayList<>();
+            List<String> placeholders = new ArrayList<>();
 
             for (Map.Entry<String, Object> entry : values.entrySet()) {
                 String col = entry.getKey();
@@ -113,22 +116,32 @@ public class TableDataEditorService {
                 if (!isPg && identityCols.contains(col.toLowerCase()) && entry.getValue() != null) {
                     hasIdentityInsert = true;
                 }
+                TableEditorMetadata.ColumnMeta colMeta = metadata != null ? metadata.findColumn(col).orElse(null) : null;
+                int sqlType = colMeta != null ? colMeta.sqlType() : java.sql.Types.OTHER;
+
                 colNames.add(quoteIdent(col, isPg));
-                valLiterals.add(formatLiteral(entry.getValue()));
+                placeholders.add("?");
+                params.add(new DmlCommand.DmlParam(entry.getValue(), sqlType));
+                valLiterals.add(formatDialectLiteral(entry.getValue(), colMeta, isPg));
             }
 
             if (!colNames.isEmpty()) {
-                statements.add("INSERT INTO " + qualifiedTable + " (" +
+                String sql = "INSERT INTO " + qualifiedTable + " (" +
                         String.join(", ", colNames) + ") VALUES (" +
-                        String.join(", ", valLiterals) + ");");
+                        String.join(", ", placeholders) + ");";
+                String previewSql = "INSERT INTO " + qualifiedTable + " (" +
+                        String.join(", ", colNames) + ") VALUES (" +
+                        String.join(", ", valLiterals) + ");";
+                commands.add(new DmlCommand(sql, params, previewSql, DataRowChange.Type.INSERT, insert.getRowId()));
             } else {
-                statements.add("INSERT INTO " + qualifiedTable + " DEFAULT VALUES;");
+                String defaultSql = "INSERT INTO " + qualifiedTable + " DEFAULT VALUES;";
+                commands.add(new DmlCommand(defaultSql, Collections.emptyList(), defaultSql, DataRowChange.Type.INSERT, insert.getRowId()));
             }
         }
 
         if (hasIdentityInsert && !isPg) {
-            statements.add(0, "SET IDENTITY_INSERT " + qualifiedTable + " ON;");
-            statements.add("SET IDENTITY_INSERT " + qualifiedTable + " OFF;");
+            commands.add(0, new DmlCommand("SET IDENTITY_INSERT " + qualifiedTable + " ON;", Collections.emptyList(), "SET IDENTITY_INSERT " + qualifiedTable + " ON;"));
+            commands.add(new DmlCommand("SET IDENTITY_INSERT " + qualifiedTable + " OFF;", Collections.emptyList(), "SET IDENTITY_INSERT " + qualifiedTable + " OFF;"));
         }
 
         // 2. UPDATES
@@ -138,40 +151,79 @@ public class TableDataEditorService {
             Map<String, Object> pkVals = update.getPkValues();
 
             List<String> setClauses = new ArrayList<>();
+            List<String> setPreview = new ArrayList<>();
+            List<DmlCommand.DmlParam> params = new ArrayList<>();
+
             for (Map.Entry<String, Object> entry : newVals.entrySet()) {
                 String col = entry.getKey();
                 if (computedCols.contains(col.toLowerCase())) continue;
-                setClauses.add(quoteIdent(col, isPg) + " = " + formatLiteral(entry.getValue()));
+                TableEditorMetadata.ColumnMeta colMeta = metadata != null ? metadata.findColumn(col).orElse(null) : null;
+                int sqlType = colMeta != null ? colMeta.sqlType() : java.sql.Types.OTHER;
+
+                setClauses.add(quoteIdent(col, isPg) + " = ?");
+                setPreview.add(quoteIdent(col, isPg) + " = " + formatDialectLiteral(entry.getValue(), colMeta, isPg));
+                params.add(new DmlCommand.DmlParam(entry.getValue(), sqlType));
             }
 
             if (setClauses.isEmpty()) continue;
 
             List<String> whereClauses = new ArrayList<>();
+            List<String> wherePreview = new ArrayList<>();
+
             // PK match
             if (!pkVals.isEmpty()) {
                 for (Map.Entry<String, Object> pk : pkVals.entrySet()) {
-                    whereClauses.add(quoteIdent(pk.getKey(), isPg) + " = " + formatLiteral(pk.getValue()));
-                }
-            }
+                    TableEditorMetadata.ColumnMeta colMeta = metadata != null ? metadata.findColumn(pk.getKey()).orElse(null) : null;
+                    int sqlType = colMeta != null ? colMeta.sqlType() : java.sql.Types.OTHER;
 
-            // Optimistic concurrency on modified columns
-            if (optimistic && oldVals != null) {
-                for (Map.Entry<String, Object> entry : oldVals.entrySet()) {
-                    String col = entry.getKey();
-                    if (pkVals.containsKey(col)) continue;
-                    Object oldVal = entry.getValue();
+                    whereClauses.add(quoteIdent(pk.getKey(), isPg) + " = ?");
+                    wherePreview.add(quoteIdent(pk.getKey(), isPg) + " = " + formatDialectLiteral(pk.getValue(), colMeta, isPg));
+                    params.add(new DmlCommand.DmlParam(pk.getValue(), sqlType));
+                }
+
+                // DE-4: Optimistic concurrency on modified columns only (excluding PK and non-comparable columns)
+                if (optimistic && oldVals != null) {
+                    for (String col : newVals.keySet()) {
+                        if (pkVals.containsKey(col)) continue;
+                        TableEditorMetadata.ColumnMeta colMeta = metadata != null ? metadata.findColumn(col).orElse(null) : null;
+                        if (!isComparable(colMeta)) continue; // exclude LOB / XML / spatial / float
+                        Object oldVal = oldVals.get(col);
+                        if (oldVal == null) {
+                            whereClauses.add(quoteIdent(col, isPg) + " IS NULL");
+                            wherePreview.add(quoteIdent(col, isPg) + " IS NULL");
+                        } else {
+                            whereClauses.add(quoteIdent(col, isPg) + " = ?");
+                            wherePreview.add(quoteIdent(col, isPg) + " = " + formatDialectLiteral(oldVal, colMeta, isPg));
+                            params.add(new DmlCommand.DmlParam(oldVal, colMeta != null ? colMeta.sqlType() : java.sql.Types.OTHER));
+                        }
+                    }
+                }
+            } else if (oldVals != null && !oldVals.isEmpty()) {
+                // Table without PK: match all comparable columns
+                for (Map.Entry<String, Object> old : oldVals.entrySet()) {
+                    String col = old.getKey();
+                    TableEditorMetadata.ColumnMeta colMeta = metadata != null ? metadata.findColumn(col).orElse(null) : null;
+                    if (!isComparable(colMeta)) continue; // exclude LOB / XML / spatial / float
+                    Object oldVal = old.getValue();
                     if (oldVal == null) {
                         whereClauses.add(quoteIdent(col, isPg) + " IS NULL");
+                        wherePreview.add(quoteIdent(col, isPg) + " IS NULL");
                     } else {
-                        whereClauses.add(quoteIdent(col, isPg) + " = " + formatLiteral(oldVal));
+                        whereClauses.add(quoteIdent(col, isPg) + " = ?");
+                        wherePreview.add(quoteIdent(col, isPg) + " = " + formatDialectLiteral(oldVal, colMeta, isPg));
+                        params.add(new DmlCommand.DmlParam(oldVal, colMeta != null ? colMeta.sqlType() : java.sql.Types.OTHER));
                     }
                 }
             }
 
             if (!whereClauses.isEmpty()) {
-                statements.add("UPDATE " + qualifiedTable + " SET " +
+                String sql = "UPDATE " + qualifiedTable + " SET " +
                         String.join(", ", setClauses) +
-                        " WHERE " + String.join(" AND ", whereClauses) + ";");
+                        " WHERE " + String.join(" AND ", whereClauses) + ";";
+                String previewSql = "UPDATE " + qualifiedTable + " SET " +
+                        String.join(", ", setPreview) +
+                        " WHERE " + String.join(" AND ", wherePreview) + ";";
+                commands.add(new DmlCommand(sql, params, previewSql, DataRowChange.Type.UPDATE, update.getRowId()));
             }
         }
 
@@ -181,28 +233,115 @@ public class TableDataEditorService {
             Map<String, Object> oldVals = del.getOldValues();
 
             List<String> whereClauses = new ArrayList<>();
+            List<String> wherePreview = new ArrayList<>();
+            List<DmlCommand.DmlParam> params = new ArrayList<>();
+
             if (pkVals != null && !pkVals.isEmpty()) {
                 for (Map.Entry<String, Object> pk : pkVals.entrySet()) {
-                    whereClauses.add(quoteIdent(pk.getKey(), isPg) + " = " + formatLiteral(pk.getValue()));
+                    TableEditorMetadata.ColumnMeta colMeta = metadata != null ? metadata.findColumn(pk.getKey()).orElse(null) : null;
+                    int sqlType = colMeta != null ? colMeta.sqlType() : java.sql.Types.OTHER;
+
+                    whereClauses.add(quoteIdent(pk.getKey(), isPg) + " = ?");
+                    wherePreview.add(quoteIdent(pk.getKey(), isPg) + " = " + formatDialectLiteral(pk.getValue(), colMeta, isPg));
+                    params.add(new DmlCommand.DmlParam(pk.getValue(), sqlType));
                 }
             } else if (oldVals != null && !oldVals.isEmpty()) {
                 for (Map.Entry<String, Object> old : oldVals.entrySet()) {
+                    String col = old.getKey();
+                    TableEditorMetadata.ColumnMeta colMeta = metadata != null ? metadata.findColumn(col).orElse(null) : null;
+                    if (!isComparable(colMeta)) continue;
                     Object val = old.getValue();
                     if (val == null) {
-                        whereClauses.add(quoteIdent(old.getKey(), isPg) + " IS NULL");
+                        whereClauses.add(quoteIdent(col, isPg) + " IS NULL");
+                        wherePreview.add(quoteIdent(col, isPg) + " IS NULL");
                     } else {
-                        whereClauses.add(quoteIdent(old.getKey(), isPg) + " = " + formatLiteral(val));
+                        whereClauses.add(quoteIdent(col, isPg) + " = ?");
+                        wherePreview.add(quoteIdent(col, isPg) + " = " + formatDialectLiteral(val, colMeta, isPg));
+                        params.add(new DmlCommand.DmlParam(val, colMeta != null ? colMeta.sqlType() : java.sql.Types.OTHER));
                     }
                 }
             }
 
             if (!whereClauses.isEmpty()) {
-                statements.add("DELETE FROM " + qualifiedTable + " WHERE " +
-                        String.join(" AND ", whereClauses) + ";");
+                String sql = "DELETE FROM " + qualifiedTable + " WHERE " +
+                        String.join(" AND ", whereClauses) + ";";
+                String previewSql = "DELETE FROM " + qualifiedTable + " WHERE " +
+                        String.join(" AND ", wherePreview) + ";";
+                commands.add(new DmlCommand(sql, params, previewSql, DataRowChange.Type.DELETE, del.getRowId()));
             }
         }
 
-        return statements;
+        return commands;
+    }
+
+    public List<String> buildDmlStatements(
+            DataChangeBatch batch,
+            TableEditorMetadata metadata,
+            boolean optimistic) {
+        return buildDmlCommands(batch, metadata, optimistic).stream()
+                .map(DmlCommand::previewSql)
+                .toList();
+    }
+
+    public static boolean isComparable(TableEditorMetadata.ColumnMeta col) {
+        if (col == null) return true;
+        int t = col.sqlType();
+        if (t == java.sql.Types.BLOB || t == java.sql.Types.CLOB || t == java.sql.Types.NCLOB ||
+            t == java.sql.Types.LONGVARBINARY || t == java.sql.Types.LONGVARCHAR || t == java.sql.Types.LONGNVARCHAR ||
+            t == java.sql.Types.SQLXML || t == java.sql.Types.FLOAT || t == java.sql.Types.DOUBLE ||
+            t == java.sql.Types.REAL || t == java.sql.Types.ARRAY || t == java.sql.Types.STRUCT) {
+            return false;
+        }
+        String typeName = col.dataType() != null ? col.dataType().toLowerCase() : "";
+        if (typeName.contains("text") || typeName.contains("image") || typeName.contains("xml") ||
+            typeName.contains("geography") || typeName.contains("geometry") ||
+            typeName.contains("float") || typeName.contains("real") || typeName.contains("double") ||
+            typeName.contains("json") || typeName.contains("blob") || typeName.contains("clob")) {
+            return false;
+        }
+        return true;
+    }
+
+    public static String formatDialectLiteral(Object value, TableEditorMetadata.ColumnMeta colMeta, boolean isPg) {
+        if (value == null) return "NULL";
+        if (value instanceof Boolean b) {
+            if (isPg) return b ? "TRUE" : "FALSE";
+            return b ? "1" : "0";
+        }
+        if (value instanceof Number) {
+            return value.toString();
+        }
+        if (value instanceof byte[] bytes) {
+            StringBuilder sb = new StringBuilder();
+            if (isPg) {
+                sb.append("E'\\\\x");
+                for (byte b : bytes) sb.append(String.format("%02x", b));
+                sb.append("'::bytea");
+            } else {
+                sb.append("0x");
+                for (byte b : bytes) sb.append(String.format("%02X", b));
+            }
+            return sb.toString();
+        }
+
+        String str = value.toString();
+        String escaped = str.replace("'", "''");
+
+        if (!isPg) {
+            boolean isNchar = false;
+            if (colMeta != null) {
+                int st = colMeta.sqlType();
+                String dt = colMeta.dataType() != null ? colMeta.dataType().toLowerCase() : "";
+                if (st == java.sql.Types.NVARCHAR || st == java.sql.Types.NCHAR || st == java.sql.Types.LONGNVARCHAR
+                        || dt.contains("nvarchar") || dt.contains("nchar") || dt.contains("ntext")) {
+                    isNchar = true;
+                }
+            }
+            if (isNchar) {
+                return "N'" + escaped + "'";
+            }
+        }
+        return "'" + escaped + "'";
     }
 
     public static String quoteIdent(String name, boolean isPostgres) {

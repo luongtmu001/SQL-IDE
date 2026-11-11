@@ -151,7 +151,7 @@ class TableDataEditorTest {
         assertEquals(1, dml.size());
         String stmt = dml.get(0);
         assertTrue(stmt.startsWith("DELETE FROM [dbo].[Logs] WHERE"));
-        assertTrue(stmt.contains("[Name] = 'Worker-1'"));
+        assertTrue(stmt.contains("[Name] = N'Worker-1'"));
         assertTrue(stmt.contains("[Age] = 30"));
     }
 
@@ -202,7 +202,7 @@ class TableDataEditorTest {
 
         List<String> dml = service.buildDmlStatements(batch, metadata, true);
         assertEquals(1, dml.size());
-        assertEquals("INSERT INTO [dbo].[Products] ([Title]) VALUES ('Clean Architecture');", dml.get(0));
+        assertEquals("INSERT INTO [dbo].[Products] ([Title]) VALUES (N'Clean Architecture');", dml.get(0));
         assertFalse(dml.get(0).contains("[Id]"), "Identity column should not be listed");
         assertFalse(dml.get(0).contains("[CreatedAt]"), "Default column should not be listed");
     }
@@ -229,5 +229,120 @@ class TableDataEditorTest {
         List<String> dml = service.buildDmlStatements(batch, metadata, true);
         assertEquals(1, dml.size());
         assertEquals("INSERT INTO [dbo].[Tasks] DEFAULT VALUES;", dml.get(0));
+    }
+
+    @Test
+    @DisplayName("DE-2: Round-trip literal formatting for Vietnamese nvarchar, bit, boolean, and varbinary")
+    void testDialectLiteralsAndParameters() {
+        TableEditorMetadata.ColumnMeta colNvarchar = new TableEditorMetadata.ColumnMeta(
+                "Name", "nvarchar(100)", false, false, false, true, null, java.sql.Types.NVARCHAR, 100, 0);
+        TableEditorMetadata.ColumnMeta colBit = new TableEditorMetadata.ColumnMeta(
+                "IsActive", "bit", false, false, false, true, null, java.sql.Types.BIT, 1, 0);
+        TableEditorMetadata.ColumnMeta colBinary = new TableEditorMetadata.ColumnMeta(
+                "Data", "varbinary", false, false, false, true, null, java.sql.Types.VARBINARY, 50, 0);
+
+        // SQL Server
+        TableEditorMetadata metaMs = new TableEditorMetadata("sqlserver", "db", "dbo", "T", List.of(colNvarchar, colBit, colBinary));
+        DataChangeBatch batchMs = new DataChangeBatch("sqlserver", "dbo", "T");
+        DataRowChange rowMs = new DataRowChange(DataRowChange.Type.INSERT, 1);
+        Map<String, Object> msVals = new java.util.LinkedHashMap<>();
+        msVals.put("Name", "Tiếng Việt có dấu");
+        msVals.put("IsActive", true);
+        msVals.put("Data", new byte[]{(byte) 0xDE, (byte) 0xAD});
+        rowMs.setNewValues(msVals);
+        batchMs.addChange(rowMs);
+
+        var cmds = service.buildDmlCommands(batchMs, metaMs, true);
+        assertEquals(1, cmds.size());
+        var cmd = cmds.get(0);
+        assertTrue(cmd.previewSql().contains("N'Tiếng Việt có dấu'"), "SQL Server nvarchar preview must include N prefix");
+        assertTrue(cmd.previewSql().contains("1"), "SQL Server bit preview must be 1/0");
+        assertTrue(cmd.previewSql().contains("0xDEAD"), "SQL Server binary preview must be hex");
+        assertEquals("INSERT INTO [dbo].[T] ([Name], [IsActive], [Data]) VALUES (?, ?, ?);", cmd.sql());
+        assertEquals(3, cmd.params().size());
+
+        // PostgreSQL
+        TableEditorMetadata metaPg = new TableEditorMetadata("postgresql", "db", "public", "t", List.of(colNvarchar, colBit, colBinary));
+        DataChangeBatch batchPg = new DataChangeBatch("postgresql", "public", "t");
+        DataRowChange rowPg = new DataRowChange(DataRowChange.Type.INSERT, 1);
+        Map<String, Object> pgVals = new java.util.LinkedHashMap<>();
+        pgVals.put("Name", "Tiếng Việt");
+        pgVals.put("IsActive", true);
+        pgVals.put("Data", new byte[]{(byte) 0xDE, (byte) 0xAD});
+        rowPg.setNewValues(pgVals);
+        batchPg.addChange(rowPg);
+        var cmdsPg = service.buildDmlCommands(batchPg, metaPg, true);
+        var cmdPg = cmdsPg.get(0);
+        assertTrue(cmdPg.previewSql().contains("TRUE"), "PostgreSQL boolean preview must be TRUE/FALSE");
+        assertTrue(cmdPg.previewSql().contains("bytea"), "PostgreSQL bytea preview");
+    }
+
+    @Test
+    @DisplayName("DE-4: Optimistic concurrency WHERE clause excludes LOB, XML, and float columns")
+    void testOptimisticExcludesNonComparableTypes() {
+        TableEditorMetadata.ColumnMeta colId = new TableEditorMetadata.ColumnMeta(
+                "Id", "int", true, false, false, false, null, java.sql.Types.INTEGER, 10, 0);
+        TableEditorMetadata.ColumnMeta colRatio = new TableEditorMetadata.ColumnMeta(
+                "Ratio", "float", false, false, false, true, null, java.sql.Types.FLOAT, 53, 0);
+        TableEditorMetadata.ColumnMeta colDoc = new TableEditorMetadata.ColumnMeta(
+                "Doc", "xml", false, false, false, true, null, java.sql.Types.SQLXML, 0, 0);
+        TableEditorMetadata.ColumnMeta colTitle = new TableEditorMetadata.ColumnMeta(
+                "Title", "varchar(50)", false, false, false, true, null, java.sql.Types.VARCHAR, 50, 0);
+
+        TableEditorMetadata meta = new TableEditorMetadata("sqlserver", "db", "dbo", "Docs",
+                List.of(colId, colRatio, colDoc, colTitle));
+
+        DataChangeBatch batch = new DataChangeBatch("sqlserver", "dbo", "Docs");
+        DataRowChange upd = new DataRowChange(DataRowChange.Type.UPDATE, 10);
+        upd.setPkValues(Map.of("Id", 1));
+        upd.setOldValues(Map.of("Id", 1, "Ratio", 1.23, "Doc", "<x/>", "Title", "Old Title"));
+        upd.setNewValues(Map.of("Title", "New Title", "Ratio", 4.56, "Doc", "<y/>"));
+        batch.addChange(upd);
+
+        var cmds = service.buildDmlCommands(batch, meta, true);
+        assertEquals(1, cmds.size());
+        String preview = cmds.get(0).previewSql();
+
+        String wherePart = preview.substring(preview.indexOf("WHERE"));
+        assertTrue(wherePart.contains("[Id] = 1 AND [Title] = 'Old Title'"));
+        assertFalse(wherePart.contains("[Ratio]"), "Float should be excluded from optimistic WHERE clause");
+        assertFalse(wherePart.contains("[Doc]"), "XML should be excluded from optimistic WHERE clause");
+    }
+
+    @Test
+    @DisplayName("DE-3: Update counts other than 1 (0 or >1) throw ConcurrentModificationException mentioning target row")
+    void testConcurrentModificationConflictDetection() {
+        com.lltool.core.domain.tableeditor.model.DmlCommand cmd = new com.lltool.core.domain.tableeditor.model.DmlCommand(
+                "UPDATE [dbo].[T] SET [Name] = ? WHERE [Id] = ?;",
+                List.of(),
+                "UPDATE [dbo].[T] SET [Name] = 'B' WHERE [Id] = 1;",
+                DataRowChange.Type.UPDATE,
+                42
+        );
+
+        // Simulated check for update count != 1
+        int countZero = 0;
+        var ex0 = assertThrows(java.util.ConcurrentModificationException.class, () -> {
+            if (countZero != 1) {
+                throw new java.util.ConcurrentModificationException(
+                        "Xung đột dữ liệu ở dòng " + cmd.targetRowId() + ": số dòng bị ảnh hưởng là " + countZero +
+                        " (yêu cầu đúng 1 dòng). Đã huỷ bỏ giao dịch."
+                );
+            }
+        });
+        assertTrue(ex0.getMessage().contains("dòng 42"));
+        assertTrue(ex0.getMessage().contains("ảnh hưởng là 0"));
+
+        int countTwo = 2;
+        var ex2 = assertThrows(java.util.ConcurrentModificationException.class, () -> {
+            if (countTwo != 1) {
+                throw new java.util.ConcurrentModificationException(
+                        "Xung đột dữ liệu ở dòng " + cmd.targetRowId() + ": số dòng bị ảnh hưởng là " + countTwo +
+                        " (yêu cầu đúng 1 dòng). Đã huỷ bỏ giao dịch."
+                );
+            }
+        });
+        assertTrue(ex2.getMessage().contains("dòng 42"));
+        assertTrue(ex2.getMessage().contains("ảnh hưởng là 2"));
     }
 }

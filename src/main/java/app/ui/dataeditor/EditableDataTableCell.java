@@ -5,20 +5,37 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
+import java.sql.Types;
 import java.util.Objects;
 
 /**
- * Custom TableCell supporting inline editing, NULL styling, and dirty tracking.
+ * Custom TableCell supporting inline editing, strongly typed parsing, NULL styling, and dirty tracking (DE-6, DE-8).
  */
 public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> {
 
+    @FunctionalInterface
+    public interface CellChangeListener {
+        void onCellChanged(ObservableDataRow row, String columnName, Object newValue);
+    }
+
     private final String columnName;
     private final boolean readOnly;
+    private final int sqlType;
+    private final String typeName;
+    private final CellChangeListener changeListener;
     private TextField textField;
+    private String startEditText = "";
 
     public EditableDataTableCell(String columnName, boolean readOnly) {
+        this(columnName, readOnly, Types.OTHER, "", null);
+    }
+
+    public EditableDataTableCell(String columnName, boolean readOnly, int sqlType, String typeName, CellChangeListener changeListener) {
         this.columnName = columnName;
         this.readOnly = readOnly;
+        this.sqlType = sqlType;
+        this.typeName = typeName != null ? typeName : "";
+        this.changeListener = changeListener;
         setAlignment(Pos.CENTER_LEFT);
         if (!readOnly) {
             setupContextMenu();
@@ -55,7 +72,9 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
             ObservableDataRow row = getTableRow() != null ? getTableRow().getItem() : null;
             if (row != null) {
                 row.revert();
-                if (getTableView() != null) getTableView().refresh();
+                if (changeListener != null) {
+                    changeListener.onCellChanged(row, columnName, getItem());
+                }
             }
         });
 
@@ -68,7 +87,9 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
                 } else {
                     row.markDeleted();
                 }
-                if (getTableView() != null) getTableView().refresh();
+                if (changeListener != null) {
+                    changeListener.onCellChanged(row, columnName, getItem());
+                }
             }
         });
 
@@ -89,7 +110,10 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
             createTextField();
         }
         Object item = getItem();
-        textField.setText(item != null ? String.valueOf(item) : "");
+        startEditText = item != null ? String.valueOf(item) : "";
+        textField.setText(startEditText);
+        textField.setStyle(null);
+        textField.setTooltip(null);
         setText(null);
         setGraphic(textField);
         textField.selectAll();
@@ -99,6 +123,10 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
     @Override
     public void cancelEdit() {
         super.cancelEdit();
+        if (textField != null) {
+            textField.setStyle(null);
+            textField.setTooltip(null);
+        }
         setText(formatText(getItem()));
         setGraphic(null);
         updateCellStyles();
@@ -141,14 +169,11 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
 
         textField.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.isControlDown() && e.getCode() == KeyCode.DIGIT0) {
-                // Ctrl+0 sets cell to NULL
                 commitEdit(null);
                 updateRowValue(null);
                 e.consume();
             } else if (e.getCode() == KeyCode.ENTER) {
-                String text = textField.getText();
-                commitEdit(text);
-                updateRowValue(text);
+                applyEdit();
                 e.consume();
             } else if (e.getCode() == KeyCode.ESCAPE) {
                 cancelEdit();
@@ -158,17 +183,45 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
 
         textField.focusedProperty().addListener((obs, oldV, newV) -> {
             if (!newV && isEditing()) {
-                String text = textField.getText();
-                commitEdit(text);
-                updateRowValue(text);
+                applyEdit();
             }
         });
+    }
+
+    private boolean applyEdit() {
+        if (!isEditing() || textField == null) return true;
+        String text = textField.getText();
+        if (getItem() == null && (text == null || text.isEmpty())) {
+            cancelEdit();
+            return true;
+        }
+        if (Objects.equals(startEditText, text)) {
+            cancelEdit();
+            return true;
+        }
+        try {
+            Object parsed = CellValueParser.parse(text, sqlType, typeName);
+            if (ObservableDataRow.areValuesEqual(getItem(), parsed)) {
+                cancelEdit();
+                return true;
+            }
+            commitEdit(parsed);
+            updateRowValue(parsed);
+            return true;
+        } catch (Exception ex) {
+            textField.setStyle("-fx-border-color: -color-danger-emphasis; -fx-border-width: 1.5px;");
+            textField.setTooltip(new Tooltip(ex.getMessage()));
+            return false;
+        }
     }
 
     private void updateRowValue(Object newVal) {
         ObservableDataRow row = getTableRow() != null ? getTableRow().getItem() : null;
         if (row != null) {
             row.setValue(columnName, newVal);
+            if (changeListener != null) {
+                changeListener.onCellChanged(row, columnName, newVal);
+            }
             updateCellStyles();
         }
     }
@@ -197,4 +250,3 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
         return String.valueOf(item);
     }
 }
-

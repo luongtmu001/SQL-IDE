@@ -19,14 +19,14 @@ public class ObservableDataRow {
     }
 
     private final int rowId;
-    private RowState state = RowState.UNCHANGED;
+    private final ObjectProperty<RowState> stateProperty = new SimpleObjectProperty<>(RowState.UNCHANGED);
     private final Map<String, Object> originalValues = new LinkedHashMap<>();
     private final Map<String, ObjectProperty<Object>> currentProperties = new LinkedHashMap<>();
     private final Set<String> dirtyColumns = new HashSet<>();
 
     public ObservableDataRow(int rowId, Map<String, Object> initialValues, boolean isNewRow) {
         this.rowId = rowId;
-        this.state = isNewRow ? RowState.INSERTED : RowState.UNCHANGED;
+        setState(isNewRow ? RowState.INSERTED : RowState.UNCHANGED);
 
         if (initialValues != null) {
             for (Map.Entry<String, Object> e : initialValues.entrySet()) {
@@ -41,7 +41,12 @@ public class ObservableDataRow {
     }
 
     public int getRowId() { return rowId; }
-    public RowState getState() { return state; }
+    public RowState getState() { return stateProperty.get(); }
+    public ObjectProperty<RowState> stateProperty() { return stateProperty; }
+
+    private void setState(RowState newState) {
+        stateProperty.set(newState);
+    }
 
     public ObservableValue<Object> getProperty(String colName) {
         return currentProperties.computeIfAbsent(colName, k -> new SimpleObjectProperty<>(null));
@@ -58,19 +63,35 @@ public class ObservableDataRow {
 
         prop.set(newVal);
 
+        RowState state = getState();
         if (state == RowState.INSERTED) {
             dirtyColumns.add(colName);
         } else if (state != RowState.DELETED) {
-            if (!Objects.equals(oldVal, newVal)) {
+            if (!areValuesEqual(oldVal, newVal)) {
                 dirtyColumns.add(colName);
-                state = RowState.MODIFIED;
+                setState(RowState.MODIFIED);
             } else {
                 dirtyColumns.remove(colName);
                 if (dirtyColumns.isEmpty()) {
-                    state = RowState.UNCHANGED;
+                    setState(RowState.UNCHANGED);
                 }
             }
         }
+    }
+
+    public static boolean areValuesEqual(Object oldVal, Object newVal) {
+        if (oldVal == null && newVal == null) return true;
+        if (oldVal == null || newVal == null) return false;
+        if (oldVal instanceof java.math.BigDecimal bd1 && newVal instanceof java.math.BigDecimal bd2) {
+            return bd1.compareTo(bd2) == 0;
+        }
+        if (oldVal instanceof Number n1 && newVal instanceof Number n2) {
+            if (n1.getClass().equals(n2.getClass())) {
+                return n1.equals(n2);
+            }
+            return Double.compare(n1.doubleValue(), n2.doubleValue()) == 0;
+        }
+        return Objects.equals(oldVal, newVal);
     }
 
     public boolean isCellDirty(String colName) {
@@ -82,16 +103,16 @@ public class ObservableDataRow {
     }
 
     public void markDeleted() {
-        if (state == RowState.INSERTED) {
+        if (getState() == RowState.INSERTED) {
             // New row marked deleted -> handled by removing from list
         } else {
-            state = RowState.DELETED;
+            setState(RowState.DELETED);
         }
     }
 
     public void unmarkDeleted() {
-        if (state == RowState.DELETED) {
-            state = dirtyColumns.isEmpty() ? RowState.UNCHANGED : RowState.MODIFIED;
+        if (getState() == RowState.DELETED) {
+            setState(dirtyColumns.isEmpty() ? RowState.UNCHANGED : RowState.MODIFIED);
         }
     }
 
@@ -103,7 +124,7 @@ public class ObservableDataRow {
             }
         }
         dirtyColumns.clear();
-        state = RowState.UNCHANGED;
+        setState(RowState.UNCHANGED);
     }
 
     public Map<String, Object> getOriginalValues() {

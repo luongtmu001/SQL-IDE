@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
@@ -67,6 +68,7 @@ public class TableDataEditorTab extends SqlEditorTab {
     private final String tableName;
     private final String engine;
 
+    private final app.framework.async.LoadTask<Void> saveTask = new app.framework.async.LoadTask<>();
     private final TableDataEditorService dataEditorService = new TableDataEditorService();
     private final TableDesignerService designerService = TableDesignerService.getInstance();
 
@@ -177,20 +179,26 @@ public class TableDataEditorTab extends SqlEditorTab {
         // Load data async on open
         loadDataAsync();
 
-        // Keyboard Shortcuts
+        // Keyboard Shortcuts (DE-5)
         root.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
             if (e.isControlDown() && e.getCode() == javafx.scene.input.KeyCode.S) {
                 handleSave();
                 e.consume();
-            } else if (e.isControlDown() && e.getCode() == javafx.scene.input.KeyCode.N) {
-                handleAddRow();
-                e.consume();
-            } else if (e.getCode() == javafx.scene.input.KeyCode.DELETE) {
-                handleDeleteRow();
-                e.consume();
             } else if (e.getCode() == javafx.scene.input.KeyCode.F5) {
                 loadDataAsync();
                 e.consume();
+            } else if (e.isControlDown() && e.getCode() == javafx.scene.input.KeyCode.N) {
+                if (!(e.getTarget() instanceof javafx.scene.control.TextInputControl)) {
+                    handleAddRow();
+                    e.consume();
+                }
+            } else if (e.getCode() == javafx.scene.input.KeyCode.DELETE) {
+                if (!(e.getTarget() instanceof javafx.scene.control.TextInputControl)
+                        && (tableView.isFocused() || (tableView.getFocusModel() != null && tableView.getFocusModel().getFocusedCell() != null))
+                        && tableView.getEditingCell() == null) {
+                    handleDeleteRow();
+                    e.consume();
+                }
             }
         });
     }
@@ -574,9 +582,35 @@ public class TableDataEditorTab extends SqlEditorTab {
 
                         ResultSetMetaData rsmd = rs.getMetaData();
                         int colCount = rsmd.getColumnCount();
+                        List<TableEditorMetadata.ColumnMeta> metaCols = new ArrayList<>();
                         for (int i = 1; i <= colCount; i++) {
-                            columnNames.add(rsmd.getColumnLabel(i));
+                            String cName = rsmd.getColumnLabel(i);
+                            columnNames.add(cName);
+                            int sqlType = rsmd.getColumnType(i);
+                            String typeName = rsmd.getColumnTypeName(i);
+                            int prec = rsmd.getPrecision(i);
+                            int scale = rsmd.getScale(i);
+                            boolean nullable = rsmd.isNullable(i) != ResultSetMetaData.columnNoNulls;
+                            boolean autoInc = rsmd.isAutoIncrement(i);
+
+                            boolean isPk = false;
+                            boolean isComp = false;
+                            String defVal = null;
+                            if (loadedTableDesign != null) {
+                                var cdOpt = loadedTableDesign.getColumns().stream()
+                                        .filter(c -> c.getName().equalsIgnoreCase(cName))
+                                        .findFirst();
+                                if (cdOpt.isPresent()) {
+                                    isPk = cdOpt.get().isPrimaryKey();
+                                    isComp = cdOpt.get().isComputed();
+                                    defVal = cdOpt.get().getDefaultValue();
+                                }
+                            }
+                            metaCols.add(new TableEditorMetadata.ColumnMeta(
+                                    cName, typeName, isPk, autoInc, isComp, nullable, defVal, sqlType, prec, scale
+                            ));
                         }
+                        metadata = new TableEditorMetadata(engine, catalog, schema, tableName, metaCols);
 
                         int rowIdx = 1;
                         while (rs.next()) {
@@ -712,7 +746,20 @@ public class TableDataEditorTab extends SqlEditorTab {
             col.setGraphic(headerBox);
 
             boolean readOnlyCol = isIdentity || isComputed;
-            col.setCellFactory(c -> new EditableDataTableCell(colName, readOnlyCol));
+            int colSqlType = java.sql.Types.OTHER;
+            if (metadata != null) {
+                var cmOpt = metadata.findColumn(colName);
+                if (cmOpt.isPresent()) {
+                    colSqlType = cmOpt.get().sqlType();
+                    if (dataTypeName == null) dataTypeName = cmOpt.get().dataType();
+                }
+            }
+            final int finalSqlType = colSqlType;
+            final String finalTypeName = dataTypeName;
+            col.setCellFactory(c -> new EditableDataTableCell(colName, readOnlyCol, finalSqlType, finalTypeName, (row, cName, val) -> {
+                updateSummary();
+                dirtyProperty().set(true);
+            }));
 
             col.setOnEditCommit(e -> {
                 ObservableDataRow row = e.getRowValue();
@@ -850,7 +897,8 @@ public class TableDataEditorTab extends SqlEditorTab {
             return;
         }
 
-        List<String> dmlStatements = dataEditorService.buildDmlStatements(batch, metadata, true);
+        List<com.lltool.core.domain.tableeditor.model.DmlCommand> dmlCommands = dataEditorService.buildDmlCommands(batch, metadata, true);
+        List<String> dmlStatements = dmlCommands.stream().map(com.lltool.core.domain.tableeditor.model.DmlCommand::previewSql).toList();
         String fullScript = String.join("\n", dmlStatements);
 
         int ins = batch.getInserts().size();
@@ -868,49 +916,59 @@ public class TableDataEditorTab extends SqlEditorTab {
 
         var result = resultOpt.get();
         if (result.action() == PreviewDataChangesDialog.Action.EXECUTE) {
-            executeBatch(dmlStatements);
+            executeBatch(dmlCommands);
         } else if (result.action() == PreviewDataChangesDialog.Action.OPEN_IN_SQL_TAB) {
             openInSqlTab(fullScript);
         }
     }
 
-    private void executeBatch(List<String> dmlStatements) {
+    private void executeBatch(List<com.lltool.core.domain.tableeditor.model.DmlCommand> dmlCommands) {
         ConnectionProfileDto execProfile = this.profile != null ? app.framework.connection.ProfileLookup.byId(this.profile.id()) : null;
         if (execProfile == null && this.profile != null) execProfile = app.framework.connection.ProfileLookup.byName(this.profile.name());
         if (execProfile != null) this.profile = execProfile;
         else execProfile = this.profile;
 
-        String targetDb = catalog != null && !catalog.isBlank() ? catalog : (execProfile != null ? execProfile.databaseName() : null);
-        String pwd = CredentialResolver.resolve(execProfile, null);
-
-        Result<DatabaseConnection> connRes = ConnectionSessionManager.getInstance().openSession(execProfile, targetDb, pwd);
-        if (connRes.isFailure()) {
-            String err = connRes.getError().get().message();
-            if (err.contains("READ_ONLY") || err.toLowerCase().contains("chỉ đọc") || err.toLowerCase().contains("read-only")) {
-                var stage = app.application.AppContext.getInstance().getPrimaryStage();
-                Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
-                boolean unlocked = ReadOnlyGuardDialog.show(owner, execProfile != null ? execProfile.name() : "");
-                if (unlocked) {
-                    ConnectionProfileDto fresh = app.framework.connection.ProfileLookup.byId(execProfile.id());
-                    if (fresh != null) this.profile = fresh;
-                    executeBatch(dmlStatements);
-                    return;
-                }
-            }
-            NotificationService.getInstance().showError("Lỗi kết nối", err);
-            return;
-        }
-
         final ConnectionProfileDto finalProfile = execProfile;
-        CompletableFuture.runAsync(() -> {
+        String targetDb = catalog != null && !catalog.isBlank() ? catalog : (execProfile != null ? execProfile.databaseName() : null);
+
+        btnSave.setDisable(true);
+        saveTask.execute(ctx -> {
+            String pwd = CredentialResolver.resolve(finalProfile, null);
+            Result<DatabaseConnection> connRes = ConnectionSessionManager.getInstance().openSession(finalProfile, targetDb, pwd);
+            if (connRes.isFailure()) {
+                throw new RuntimeException(connRes.getError().get().message());
+            }
+
             try (DatabaseConnection dbConn = connRes.getDataOrThrow()) {
                 Connection raw = dbConn.getRawJdbcConnection();
                 boolean prevAutoCommit = raw.getAutoCommit();
                 raw.setAutoCommit(false);
 
-                try (Statement stmt = raw.createStatement()) {
-                    for (String sql : dmlStatements) {
-                        stmt.execute(sql);
+                try {
+                    for (com.lltool.core.domain.tableeditor.model.DmlCommand cmd : dmlCommands) {
+                        try (PreparedStatement ps = raw.prepareStatement(cmd.sql())) {
+                            ctx.registerStatement(ps);
+                            List<com.lltool.core.domain.tableeditor.model.DmlCommand.DmlParam> params = cmd.params();
+                            for (int i = 0; i < params.size(); i++) {
+                                var p = params.get(i);
+                                if (p.value() == null) {
+                                    ps.setNull(i + 1, p.sqlType());
+                                } else {
+                                    ps.setObject(i + 1, p.value(), p.sqlType());
+                                }
+                            }
+                            boolean hasRs = ps.execute();
+                            if (!hasRs && cmd.type() != null) {
+                                int count = ps.getUpdateCount();
+                                if (count != 1) {
+                                    raw.rollback();
+                                    throw new java.util.ConcurrentModificationException(
+                                            "Xung đột dữ liệu ở dòng " + cmd.targetRowId() + ": số dòng bị ảnh hưởng là " + count +
+                                            " (yêu cầu đúng 1 dòng). Đã huỷ bỏ giao dịch."
+                                    );
+                                }
+                            }
+                        }
                     }
                     raw.commit();
                 } catch (Exception ex) {
@@ -919,30 +977,30 @@ public class TableDataEditorTab extends SqlEditorTab {
                 } finally {
                     try { raw.setAutoCommit(prevAutoCommit); } catch (Exception ignored) {}
                 }
-
-                Platform.runLater(() -> {
-                    NotificationService.getInstance().showSuccess("Lưu thành công", "Đã cập nhật dữ liệu bảng " + tableName);
-                    dirtyProperty().set(false);
-                    loadDataAsync();
-                });
-
-            } catch (Exception e) {
-                log.error("Failed to execute data batch: {}", e.getMessage(), e);
-                String msg = e.getMessage() != null ? e.getMessage() : "";
-                if (msg.contains("25006") || msg.toLowerCase().contains("read-only") || msg.toLowerCase().contains("readonly") || msg.toLowerCase().contains("chỉ đọc") || msg.toLowerCase().contains("read only")) {
-                    Platform.runLater(() -> {
-                        var stage = app.application.AppContext.getInstance().getPrimaryStage();
-                        Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
-                        boolean unlocked = ReadOnlyGuardDialog.show(owner, finalProfile != null ? finalProfile.name() : "");
-                        if (unlocked) {
-                            executeBatch(dmlStatements);
-                        } else {
-                            NotificationService.getInstance().showError("Lỗi thực thi dữ liệu", e.getMessage());
-                        }
-                    });
+            }
+            return null;
+        }, unused -> {
+            btnSave.setDisable(false);
+            NotificationService.getInstance().showSuccess("Lưu thành công", "Đã cập nhật dữ liệu bảng " + tableName);
+            dirtyProperty().set(false);
+            loadDataAsync();
+        }, error -> {
+            btnSave.setDisable(false);
+            log.error("Failed to execute data batch: {}", error.getMessage(), error);
+            String msg = error.getMessage() != null ? error.getMessage() : "";
+            if (msg.contains("READ_ONLY") || msg.contains("25006") || msg.toLowerCase().contains("read-only") || msg.toLowerCase().contains("chỉ đọc")) {
+                var stage = app.application.AppContext.getInstance().getPrimaryStage();
+                Window owner = stage != null && stage.getScene() != null ? stage.getScene().getWindow() : null;
+                boolean unlocked = ReadOnlyGuardDialog.show(owner, finalProfile != null ? finalProfile.name() : "");
+                if (unlocked) {
+                    ConnectionProfileDto fresh = app.framework.connection.ProfileLookup.byId(finalProfile.id());
+                    if (fresh != null) this.profile = fresh;
+                    executeBatch(dmlCommands);
                 } else {
-                    Platform.runLater(() -> NotificationService.getInstance().showError("Lỗi thực thi dữ liệu", e.getMessage()));
+                    NotificationService.getInstance().showError("Lỗi thực thi dữ liệu", error.getMessage());
                 }
+            } else {
+                NotificationService.getInstance().showError("Lỗi thực thi dữ liệu", error.getMessage());
             }
         });
     }
