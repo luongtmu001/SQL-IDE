@@ -2,7 +2,9 @@ package app.ui.compare;
 
 import app.application.AppContext;
 import app.controllers.MainController;
+import app.framework.async.LoadTask;
 import app.framework.backend.BackendFlags;
+import app.framework.compare.SchemaSnapshotLoader;
 import app.framework.connection.ConnectionSessionManager;
 import app.framework.connection.ProfileLookup;
 import app.framework.metadata.DesktopMetadataService;
@@ -15,6 +17,7 @@ import app.ui.editor.SqlEditorTab;
 import com.lltool.core.application.connection.dto.ConnectionProfileDto;
 import com.lltool.core.application.schemacompare.SchemaCompareService;
 import com.lltool.core.domain.schemacompare.model.*;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -26,12 +29,12 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
+import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
@@ -44,7 +47,15 @@ public class SchemaCompareTab extends SqlEditorTab {
 
     private static final Logger log = LoggerFactory.getLogger(SchemaCompareTab.class);
 
+    public record CompareEndpoint(ConnectionProfileDto profile, String catalog, String schema) {}
+
     private final SchemaCompareService compareService = new SchemaCompareService();
+
+    private CompareEndpoint capturedSourceEndpoint;
+    private CompareEndpoint capturedTargetEndpoint;
+    private boolean isSwapping = false;
+    private LoadTask<SchemaCompareResult> activeCompareTask;
+    private final PauseTransition scriptDebounce = new PauseTransition(Duration.millis(150));
 
     // Endpoints State
     private ConnectionProfileDto sourceProfile;
@@ -174,6 +185,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         setCustomContent(tabKey, root);
 
         // 4. Wire events and populate profile combos
+        scriptDebounce.setOnFinished(e -> generateAndDisplayScript());
         setupEvents(root);
         populateEndpoints();
     }
@@ -454,18 +466,12 @@ public class SchemaCompareTab extends SqlEditorTab {
     private void populateEndpoints() {
         List<ConnectionProfileDto> profiles = ProfileLookup.all();
         if (profiles.isEmpty()) {
-            // Mock profile entries if store is empty
-            ConnectionProfileDto mockDev = new ConnectionProfileDto(
-                    "dev-1", "MSSQL-DEV (localhost:1433)", "Default", "Dev", false,
-                    "sqlserver", "localhost", 1433, "B10_PhucLoi", null, "sa", "SQL_PASSWORD",
-                    null, false, 30, true, Collections.emptyMap(), null, null
-            );
-            ConnectionProfileDto mockProd = new ConnectionProfileDto(
-                    "prod-1", "MSSQL-PROD (192.168.1.100)", "Default", "Prod", false,
-                    "sqlserver", "192.168.1.100", 1433, "B10_PhucLoi", null, "sa", "SQL_PASSWORD",
-                    null, false, 30, true, Collections.emptyMap(), null, null
-            );
-            profiles = List.of(mockDev, mockProd);
+            emptyState.setMessage("Không có kết nối nào trong hệ thống. Vui lòng tạo kết nối trước khi so sánh schema.");
+            emptyState.setVisible(true);
+            emptyState.setManaged(true);
+            diffTreeView.setVisible(false);
+            btnRunCompare.setDisable(true);
+            return;
         }
 
         cbSourceProfile.getItems().setAll(profiles);
@@ -493,58 +499,109 @@ public class SchemaCompareTab extends SqlEditorTab {
         cbTargetProfile.setButtonCell(new ProfileListCell());
 
         // Catalogs & Schemas loaders
-        cbSourceProfile.setOnAction(e -> loadCatalogsForEndpoint(cbSourceProfile.getValue(), cbSourceCatalog, cbSourceSchema, sourceCatalog, sourceSchema));
-        cbTargetProfile.setOnAction(e -> loadCatalogsForEndpoint(cbTargetProfile.getValue(), cbTargetCatalog, cbTargetSchema, targetCatalog, targetSchema));
+        cbSourceProfile.setOnAction(e -> {
+            if (!isSwapping) {
+                loadCatalogsForEndpoint(cbSourceProfile.getValue(), cbSourceCatalog, cbSourceSchema, sourceCatalog, sourceSchema);
+                markResultStale();
+            }
+        });
+        cbTargetProfile.setOnAction(e -> {
+            if (!isSwapping) {
+                loadCatalogsForEndpoint(cbTargetProfile.getValue(), cbTargetCatalog, cbTargetSchema, targetCatalog, targetSchema);
+                markResultStale();
+            }
+        });
 
         loadCatalogsForEndpoint(cbSourceProfile.getValue(), cbSourceCatalog, cbSourceSchema, sourceCatalog, sourceSchema);
         loadCatalogsForEndpoint(cbTargetProfile.getValue(), cbTargetCatalog, cbTargetSchema, targetCatalog, targetSchema);
     }
 
     private void loadCatalogsForEndpoint(ConnectionProfileDto p, ComboBox<String> cbCat, ComboBox<String> cbSch, String initCat, String initSch) {
-        if (p == null) return;
+        if (p == null) {
+            cbCat.getItems().clear();
+            cbSch.getItems().clear();
+            return;
+        }
 
         DesktopMetadataService.getInstance().fetchCatalogs(p, dbs -> {
-            List<String> list = (dbs != null && !dbs.isEmpty()) ? dbs : List.of("B10_PhucLoi", "BravoSetup", "master");
-            cbCat.getItems().setAll(list);
-            if (initCat != null && list.contains(initCat)) {
-                cbCat.setValue(initCat);
+            if (dbs != null && !dbs.isEmpty()) {
+                cbCat.getItems().setAll(dbs);
+                if (initCat != null && dbs.contains(initCat)) {
+                    cbCat.setValue(initCat);
+                } else if (!dbs.isEmpty()) {
+                    cbCat.setValue(dbs.get(0));
+                }
+                loadSchemasForEndpoint(p, cbCat.getValue(), cbSch, initSch);
             } else {
-                cbCat.setValue(list.get(0));
+                cbCat.getItems().clear();
+                cbSch.getItems().clear();
+                NotificationService.getInstance().showWarning("Schema Compare", "Không thể lấy danh sách database từ kết nối " + p.name());
             }
-            loadSchemasForEndpoint(p, cbCat.getValue(), cbSch, initSch);
         });
 
-        cbCat.setOnAction(e -> loadSchemasForEndpoint(p, cbCat.getValue(), cbSch, null));
+        cbCat.setOnAction(e -> {
+            if (!isSwapping) {
+                loadSchemasForEndpoint(p, cbCat.getValue(), cbSch, null);
+                markResultStale();
+            }
+        });
     }
 
     private void loadSchemasForEndpoint(ConnectionProfileDto p, String cat, ComboBox<String> cbSch, String initSch) {
-        if (p == null || cat == null) return;
+        if (p == null || cat == null) {
+            cbSch.getItems().clear();
+            return;
+        }
 
         DesktopMetadataService.getInstance().fetchSchemas(p, cat, schemas -> {
-            List<String> list = (schemas != null && !schemas.isEmpty()) ? schemas : List.of("dbo", "sales", "audit");
-            cbSch.getItems().setAll(list);
-            if (initSch != null && list.contains(initSch)) {
-                cbSch.setValue(initSch);
+            if (schemas != null && !schemas.isEmpty()) {
+                cbSch.getItems().setAll(schemas);
+                if (initSch != null && schemas.contains(initSch)) {
+                    cbSch.setValue(initSch);
+                } else if (!schemas.isEmpty()) {
+                    cbSch.setValue(schemas.get(0));
+                }
             } else {
-                cbSch.setValue(list.get(0));
+                cbSch.getItems().clear();
+                String defSch = (p.databaseType() != null && p.databaseType().toLowerCase().contains("postgre")) ? "public" : "dbo";
+                cbSch.getItems().setAll(List.of(defSch));
+                cbSch.setValue(defSch);
             }
         });
     }
 
     private void swapEndpoints() {
-        ConnectionProfileDto p = cbSourceProfile.getValue();
-        String c = cbSourceCatalog.getValue();
-        String s = cbSourceSchema.getValue();
+        isSwapping = true;
+        try {
+            ConnectionProfileDto p = cbSourceProfile.getValue();
+            ObservableList<String> srcCats = FXCollections.observableArrayList(cbSourceCatalog.getItems());
+            String c = cbSourceCatalog.getValue();
+            ObservableList<String> srcSchs = FXCollections.observableArrayList(cbSourceSchema.getItems());
+            String s = cbSourceSchema.getValue();
 
-        cbSourceProfile.setValue(cbTargetProfile.getValue());
-        cbSourceCatalog.setValue(cbTargetCatalog.getValue());
-        cbSourceSchema.setValue(cbTargetSchema.getValue());
+            cbSourceProfile.setValue(cbTargetProfile.getValue());
+            cbSourceCatalog.setItems(FXCollections.observableArrayList(cbTargetCatalog.getItems()));
+            cbSourceCatalog.setValue(cbTargetCatalog.getValue());
+            cbSourceSchema.setItems(FXCollections.observableArrayList(cbTargetSchema.getItems()));
+            cbSourceSchema.setValue(cbTargetSchema.getValue());
 
-        cbTargetProfile.setValue(p);
-        cbTargetCatalog.setValue(c);
-        cbTargetSchema.setValue(s);
+            cbTargetProfile.setValue(p);
+            cbTargetCatalog.setItems(srcCats);
+            cbTargetCatalog.setValue(c);
+            cbTargetSchema.setItems(srcSchs);
+            cbTargetSchema.setValue(s);
 
-        NotificationService.getInstance().showInfo("Schema Compare", "Đã hoán đổi chiều so sánh giữa Source và Target.");
+            markResultStale();
+            NotificationService.getInstance().showInfo("Schema Compare", "Đã hoán đổi chiều so sánh giữa Source và Target.");
+        } finally {
+            isSwapping = false;
+        }
+    }
+
+    private void markResultStale() {
+        if (compareResult != null) {
+            lblFooterStatus.setText("Cấu hình endpoints đã thay đổi — hãy bấm 'So sánh' để cập nhật kết quả.");
+        }
     }
 
     private void showOptionsDialog() {
@@ -580,7 +637,7 @@ public class SchemaCompareTab extends SqlEditorTab {
             this.includeDropTables = chkDrop.isSelected();
             chrome.close();
             if (compareResult != null) {
-                generateAndDisplayScript();
+                scheduleScriptGeneration();
             }
         });
 
@@ -599,63 +656,120 @@ public class SchemaCompareTab extends SqlEditorTab {
         String srcSch = cbSourceSchema.getValue();
         String tgtSch = cbTargetSchema.getValue();
 
-        loadingOverlay.show("Đang phân tích và so sánh metadata giữa hai cơ sở dữ liệu...", () -> {
+        if (srcP == null || tgtP == null) {
+            NotificationService.getInstance().showWarning("Thiếu thông tin kết nối", "Vui lòng chọn đầy đủ kết nối Nguồn và kết nối Đích.");
+            lblFooterStatus.setText("Lỗi: Chưa chọn kết nối nguồn/đích");
+            return;
+        }
+
+        String srcEngine = (srcP.databaseType() != null && srcP.databaseType().toLowerCase().contains("postgre")) ? "postgresql" : "sqlserver";
+        String tgtEngine = (tgtP.databaseType() != null && tgtP.databaseType().toLowerCase().contains("postgre")) ? "postgresql" : "sqlserver";
+
+        // SC-3: Database type check
+        if (!srcEngine.equalsIgnoreCase(tgtEngine)) {
+            NotificationService.getInstance().showWarning("Không thể so sánh",
+                    String.format("Không thể so sánh giữa 2 hệ quản trị khác nhau (Source: %s, Target: %s).", srcEngine, tgtEngine));
+            lblFooterStatus.setText("Lỗi: Không cùng loại hệ quản trị CSDL");
+            return;
+        }
+
+        // SC-3: Same endpoint check
+        boolean sameProfile = Objects.equals(srcP.id(), tgtP.id());
+        boolean sameCatalog = Objects.equals(srcDb, tgtDb);
+        boolean sameSchema = Objects.equals(srcSch != null ? srcSch.trim() : "", tgtSch != null ? tgtSch.trim() : "");
+        if (sameProfile && sameCatalog && sameSchema) {
+            NotificationService.getInstance().showWarning("Cảnh báo Endpoint", "Nguồn và Đích đang trỏ cùng một cơ sở dữ liệu và schema.");
+            lblFooterStatus.setText("Cảnh báo: Nguồn và Đích trùng nhau hoàn toàn");
+            return;
+        }
+
+        CompareEndpoint currentSrc = new CompareEndpoint(srcP, srcDb, srcSch);
+        CompareEndpoint currentTgt = new CompareEndpoint(tgtP, tgtDb, tgtSch);
+
+        loadingOverlay.show("Đang chuẩn bị so sánh metadata...", () -> {
+            if (activeCompareTask != null) {
+                activeCompareTask.cancel();
+            }
             loadingOverlay.hide();
+            btnRunCompare.setDisable(false);
             lblFooterStatus.setText("Đã hủy so sánh");
         });
         btnRunCompare.setDisable(true);
         long startTime = System.currentTimeMillis();
 
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                // Determine engine
-                String engine = (srcP != null && srcP.databaseType() != null && srcP.databaseType().toLowerCase().contains("postgre"))
-                        ? "postgresql" : "sqlserver";
+        if (activeCompareTask == null) {
+            activeCompareTask = new LoadTask<>();
+        }
 
-                // Build snapshots (Mock fallback if mock enabled or connection not active)
-                SchemaSnapshot srcSnap = compareService.createMockSnapshot(engine, srcDb != null ? srcDb : "DEV", srcSch != null ? srcSch : "dbo", true);
-                SchemaSnapshot tgtSnap = compareService.createMockSnapshot(engine, tgtDb != null ? tgtDb : "PROD", tgtSch != null ? tgtSch : "dbo", false);
+        activeCompareTask.execute(
+                ctx -> {
+                    ctx.checkCancelled();
+                    SchemaSnapshot srcSnap;
+                    SchemaSnapshot tgtSnap;
 
-                Thread.sleep(300); // UI feel
-                return compareService.compare(srcSnap, tgtSnap);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        }).whenComplete((result, throwable) -> Platform.runLater(() -> {
-            loadingOverlay.hide();
-            btnRunCompare.setDisable(false);
-            long elapsed = System.currentTimeMillis() - startTime;
+                    if (BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled()) {
+                        srcSnap = SchemaSnapshotLoader.createMockSnapshot(srcEngine, srcDb != null ? srcDb : "DEV", srcSch != null ? srcSch : "dbo", true);
+                        tgtSnap = SchemaSnapshotLoader.createMockSnapshot(tgtEngine, tgtDb != null ? tgtDb : "PROD", tgtSch != null ? tgtSch : "dbo", false);
+                    } else {
+                        SchemaSnapshotLoader.SnapshotLoadResult srcRes = SchemaSnapshotLoader.load(srcP, srcDb, srcSch, true, msg -> {
+                            Platform.runLater(() -> loadingOverlay.setMessage(msg));
+                        });
+                        ctx.checkCancelled();
 
-            if (throwable != null) {
-                log.error("Schema compare error: {}", throwable.getMessage(), throwable);
-                NotificationService.getInstance().showError("Lỗi So sánh Schema", throwable.getMessage());
-                lblFooterStatus.setText("Lỗi: " + throwable.getMessage());
-                return;
-            }
+                        SchemaSnapshotLoader.SnapshotLoadResult tgtRes = SchemaSnapshotLoader.load(tgtP, tgtDb, tgtSch, false, msg -> {
+                            Platform.runLater(() -> loadingOverlay.setMessage(msg));
+                        });
+                        ctx.checkCancelled();
 
-            this.compareResult = result;
-            activeDiffs.setAll(result.getDiffs());
+                        srcSnap = srcRes.snapshot();
+                        tgtSnap = tgtRes.snapshot();
+                    }
 
-            // Update Metrics Bar
-            SchemaCompareSummary s = result.getSummary();
-            lblDiffSummaryBadge.setText(s.getTotalDifferences() + " khác biệt");
-            if (filterToggle.getButton("ALL") != null) filterToggle.getButton("ALL").setText("Tất cả (" + s.totalObjects() + ")");
-            if (filterToggle.getButton("DIFF") != null) filterToggle.getButton("DIFF").setText("Khác biệt (" + s.getTotalDifferences() + ")");
-            if (filterToggle.getButton("NEW") != null) filterToggle.getButton("NEW").setText("Chỉ có ở nguồn (" + s.missingInTargetCount() + ")");
-            if (filterToggle.getButton("DEL") != null) filterToggle.getButton("DEL").setText("Chỉ có ở đích (" + s.extraInTargetCount() + ")");
-            if (filterToggle.getButton("MOD") != null) filterToggle.getButton("MOD").setText("Khác nhau (" + s.differentCount() + ")");
+                    return compareService.compare(srcSnap, tgtSnap);
+                },
+                result -> {
+                    loadingOverlay.hide();
+                    btnRunCompare.setDisable(false);
+                    long elapsed = System.currentTimeMillis() - startTime;
 
-            lblFooterStatus.setText(String.format("So sánh hoàn tất: %d khác biệt / %d đối tượng (%d ms)",
-                    s.getTotalDifferences(), s.totalObjects(), elapsed));
-            workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
+                    this.capturedSourceEndpoint = currentSrc;
+                    this.capturedTargetEndpoint = currentTgt;
+                    this.compareResult = result;
+                    activeDiffs.setAll(result.getDiffs());
 
-            emptyState.setVisible(false);
-            emptyState.setManaged(false);
-            diffTreeView.setVisible(true);
+                    // Update Metrics Bar
+                    SchemaCompareSummary s = result.getSummary();
+                    lblDiffSummaryBadge.setText(s.getTotalDifferences() + " khác biệt");
+                    if (filterToggle.getButton("ALL") != null) filterToggle.getButton("ALL").setText("Tất cả (" + s.totalObjects() + ")");
+                    if (filterToggle.getButton("DIFF") != null) filterToggle.getButton("DIFF").setText("Khác biệt (" + s.getTotalDifferences() + ")");
+                    if (filterToggle.getButton("NEW") != null) filterToggle.getButton("NEW").setText("Chỉ có ở nguồn (" + s.missingInTargetCount() + ")");
+                    if (filterToggle.getButton("DEL") != null) filterToggle.getButton("DEL").setText("Chỉ có ở đích (" + s.extraInTargetCount() + ")");
+                    if (filterToggle.getButton("MOD") != null) filterToggle.getButton("MOD").setText("Khác nhau (" + s.differentCount() + ")");
 
-            rebuildTree();
-            generateAndDisplayScript();
-        }));
+                    lblFooterStatus.setText(String.format("So sánh hoàn tất: %d khác biệt / %d đối tượng (%d ms)",
+                            s.getTotalDifferences(), s.totalObjects(), elapsed));
+                    workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
+
+                    emptyState.setVisible(false);
+                    emptyState.setManaged(false);
+                    diffTreeView.setVisible(true);
+
+                    rebuildTree();
+                    generateAndDisplayScript();
+                },
+                throwable -> {
+                    loadingOverlay.hide();
+                    btnRunCompare.setDisable(false);
+                    log.error("Schema compare error: {}", throwable.getMessage(), throwable);
+                    NotificationService.getInstance().showError("Lỗi So sánh Schema", throwable.getMessage());
+                    lblFooterStatus.setText("Lỗi: " + throwable.getMessage());
+                },
+                () -> {
+                    loadingOverlay.hide();
+                    btnRunCompare.setDisable(false);
+                    lblFooterStatus.setText("Đã hủy so sánh");
+                }
+        );
     }
 
     private void applyFilterMode(String mode) {
@@ -739,8 +853,8 @@ public class SchemaCompareTab extends SqlEditorTab {
         this.selectedDiff = diff;
         if (diff == null) return;
 
-        String srcName = (sourceProfile != null ? sourceProfile.name() : "DEV");
-        String tgtName = (targetProfile != null ? targetProfile.name() : "PROD");
+        String srcName = (capturedSourceEndpoint != null && capturedSourceEndpoint.profile() != null ? capturedSourceEndpoint.profile().name() : (sourceProfile != null ? sourceProfile.name() : "DEV"));
+        String tgtName = (capturedTargetEndpoint != null && capturedTargetEndpoint.profile() != null ? capturedTargetEndpoint.profile().name() : (targetProfile != null ? targetProfile.name() : "PROD"));
 
         String colStatsSrc = diff.getObjectType() == SchemaObjectType.TABLE ? (diff.getSourceColumnCount() + " cột") : diff.getObjectType().getDisplayName();
         String colStatsTgt = diff.getObjectType() == SchemaObjectType.TABLE ? (diff.getTargetColumnCount() + " cột") : diff.getObjectType().getDisplayName();
@@ -762,11 +876,19 @@ public class SchemaCompareTab extends SqlEditorTab {
     private void toggleAllSelection(boolean selected) {
         for (SchemaObjectDiff d : activeDiffs) {
             if (d.getStatus() != DiffStatus.IDENTICAL) {
-                d.setSelected(selected);
+                if (selected && d.isDestructive() && !includeDropTables) {
+                    d.setSelected(false);
+                } else {
+                    d.setSelected(selected);
+                }
             }
         }
         diffTreeView.refresh();
-        generateAndDisplayScript();
+        scheduleScriptGeneration();
+    }
+
+    private void scheduleScriptGeneration() {
+        scriptDebounce.playFromStart();
     }
 
     private void generateAndDisplayScript() {
@@ -775,6 +897,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         Set<String> selectedNames = new HashSet<>();
         for (SchemaObjectDiff d : activeDiffs) {
             if (d.isSelected()) {
+                selectedNames.add(d.getObjectType().name() + ":" + d.getQualifiedName());
                 selectedNames.add(d.getQualifiedName());
             }
         }
@@ -811,9 +934,11 @@ public class SchemaCompareTab extends SqlEditorTab {
 
         MainController mc = AppContext.getInstance().getMainController();
         if (mc != null) {
-            String title = "Migration_" + (targetCatalog != null ? targetCatalog : "Deploy") + ".sql";
-            String conn = targetProfile != null ? targetProfile.name() : (sourceProfile != null ? sourceProfile.name() : "");
-            mc.openQueryConsole(title, sql, conn, targetCatalog, targetSchema);
+            String tgtCat = (capturedTargetEndpoint != null && capturedTargetEndpoint.catalog() != null) ? capturedTargetEndpoint.catalog() : targetCatalog;
+            String tgtSch = (capturedTargetEndpoint != null && capturedTargetEndpoint.schema() != null) ? capturedTargetEndpoint.schema() : targetSchema;
+            String title = "Migration_" + (tgtCat != null ? tgtCat : "Deploy") + ".sql";
+            String conn = (capturedTargetEndpoint != null && capturedTargetEndpoint.profile() != null) ? capturedTargetEndpoint.profile().name() : (targetProfile != null ? targetProfile.name() : "");
+            mc.openQueryConsole(title, sql, conn, tgtCat, tgtSch);
         }
     }
 
@@ -885,7 +1010,7 @@ public class SchemaCompareTab extends SqlEditorTab {
                 SchemaTreeNode node = getItem();
                 if (node != null && !node.isCategory() && node.getDiff() != null) {
                     node.getDiff().setSelected(chkObj.isSelected());
-                    generateAndDisplayScript();
+                    scheduleScriptGeneration();
                 }
             });
         }
@@ -935,6 +1060,11 @@ public class SchemaCompareTab extends SqlEditorTab {
                         lblObjBadge.setText("Giống nhau");
                         lblObjBadge.setVariant(Badge.Variant.NEUTRAL);
                     }
+                }
+
+                if (d.isDestructive()) {
+                    lblObjBadge.setText(lblObjBadge.getText() + " (Destructive)");
+                    lblObjBadge.setVariant(Badge.Variant.DANGER);
                 }
 
                 setGraphic(rootObj);

@@ -101,6 +101,12 @@ public final class LoadingOverlay {
         setShown(false);
     }
 
+    public void setMessage(String text) {
+        if (message != null) {
+            message.setText(text != null ? text : "");
+        }
+    }
+
     public boolean isShowing() {
         return host.isVisible() || delay.getStatus() == javafx.animation.Animation.Status.RUNNING;
     }
