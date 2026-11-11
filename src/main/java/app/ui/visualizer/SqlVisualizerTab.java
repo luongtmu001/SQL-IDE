@@ -270,7 +270,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
         statsBox.setAlignment(Pos.CENTER_LEFT);
         footer.addSection(statsBox);
 
-        footer.setSampleDataVisible(true);
+        footer.setSampleDataVisible(app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.METADATA) || app.framework.metadata.MockMetadataProvider.isEnabled());
     }
 
     private void initShortcuts() {
