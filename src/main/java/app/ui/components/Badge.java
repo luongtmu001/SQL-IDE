@@ -14,6 +14,7 @@ public class Badge extends Label {
         WARNING("badge-warning"),
         DANGER("badge-danger"),
         PRIMARY("badge-primary"),
+        ACCENT("badge-accent"),
         NEUTRAL("badge-neutral");
 
         private final String cssClass;
@@ -61,6 +62,10 @@ public class Badge extends Label {
 
     public static Badge danger(String text) {
         return new Badge(text, Variant.DANGER);
+    }
+
+    public static Badge accent(String text) {
+        return new Badge(text, Variant.ACCENT);
     }
 
     public static Badge neutral(String text) {

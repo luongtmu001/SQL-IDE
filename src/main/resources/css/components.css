@@ -1734,3 +1734,112 @@
 .icon-warning { -fx-icon-color: -color-warning-fg; }
 .icon-danger { -fx-icon-color: -color-danger-fg; }
 .icon-muted { -fx-icon-color: -color-fg-muted; }
+
+/* =====================================================================
+   Phase 3 Shared Components
+   ===================================================================== */
+
+/* WorkspaceToolbar */
+.workspace-toolbar {
+    -fx-background-color: -ide-toolbar-bg;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* PaneHeader */
+.pane-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+.pane-header-title {
+    -fx-font-size: 0.9em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+.pane-header-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+/* WorkspaceFooter */
+.workspace-footer {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1 0 0 0;
+    -fx-font-size: 0.8em;
+}
+.footer-label {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.8em;
+}
+.footer-separator {
+    -fx-padding: 0 2;
+}
+
+/* SegmentedToggle */
+.segmented-toggle-group {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 6;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+}
+.segmented-toggle-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.85em;
+    -fx-padding: 4 10;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+.segmented-toggle-button:hover {
+    -fx-text-fill: -color-fg-default;
+    -fx-background-color: -color-bg-muted;
+}
+.segmented-toggle-button:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+}
+.segmented-toggle-button:selected .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+/* FilterChip */
+.filter-chip {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 3 10;
+    -fx-font-size: 0.82em;
+    -fx-text-fill: -color-fg-muted;
+    -fx-cursor: hand;
+}
+.filter-chip:hover {
+    -fx-text-fill: -color-fg-default;
+    -fx-border-color: -color-border-default;
+}
+.filter-chip:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: 600;
+}
+.filter-chip-check {
+    -fx-icon-color: -color-accent-fg;
+}
+
+/* Badge variants */
+.badge-accent {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-border-color: -color-accent-emphasis;
+}
+
+.empty-state-tech-desc {
+    -fx-font-family: monospace;
+    -fx-font-size: 0.8em;
+    -fx-text-fill: -color-fg-muted;
+}

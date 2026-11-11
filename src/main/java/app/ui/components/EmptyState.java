@@ -59,5 +59,28 @@ public class EmptyState extends VBox {
     public void setMessage(String message) {
         messageLabel.setText(message);
     }
+
+    public static EmptyState error(String title, String technicalDetails, Runnable onRetry) {
+        EmptyState es = new EmptyState("fth-alert-triangle", title != null ? title : "Đã xảy ra lỗi", "");
+        es.icon.getStyleClass().add("icon-warning");
+
+        if (technicalDetails != null && !technicalDetails.isBlank()) {
+            javafx.scene.control.TitledPane detailsPane = new javafx.scene.control.TitledPane();
+            detailsPane.setText("Chi tiết");
+            detailsPane.setExpanded(false);
+            Label detailsLabel = new Label(technicalDetails);
+            detailsLabel.setWrapText(true);
+            detailsLabel.getStyleClass().add("empty-state-tech-desc");
+            detailsPane.setContent(detailsLabel);
+            detailsPane.setMaxWidth(380);
+            es.getChildren().add(detailsPane);
+        }
+
+        if (onRetry != null) {
+            es.setActionButton("Thử lại", "fth-rotate-cw", onRetry);
+        }
+
+        return es;
+    }
 }
 
