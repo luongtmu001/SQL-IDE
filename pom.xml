@@ -255,6 +255,14 @@
                     <!-- Phase 8: unit tests never touch real servers (in-memory SQLite sandbox / mock metadata) -->
                     <systemPropertyVariables>
                         <sqlide.backend>mock</sqlide.backend>
+                        <!-- Tests must never write to the user's real data (%APPDATA%\LLTool-Desktop): connections, vault, settings, workspaces.
+                             Do not override APPDATA instead: QueryDbIT and GridPerfIT read their settings from there. -->
+                        <sqlide.dataDir>${project.build.directory}/test-appdata</sqlide.dataDir>
+                        <!-- Keeps AppDirectoryManager's first-start migration from copying ~/.lltool (vault included) into the folder above,
+                             and keeps the code that still uses ~/.lltool or ~/.sqlide away from the real home folder. -->
+                        <user.home>${project.build.directory}/test-home</user.home>
+                        <!-- Keeps Java Preferences away from Windows Registry (HKCU\Software\JavaSoft\Prefs) -->
+                        <java.util.prefs.PreferencesFactory>app.test.InMemoryPreferencesFactory</java.util.prefs.PreferencesFactory>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
