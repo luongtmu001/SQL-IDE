@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Table Data Editor Mockup — SSMS Query Designer & Edit Rows Style</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --ide-bg-base: #1e1e24;
+      --ide-bg-editor: #18181b;
+      --ide-bg-toolbar: #23232a;
+      --ide-bg-pane-header: #202026;
+      --ide-bg-input: #121215;
+      --ide-border: #32323d;
+      --ide-border-subtle: #272730;
+      --ide-border-active: #3b82f6;
+      --ide-text-main: #e4e4e7;
+      --ide-text-muted: #9ca3af;
+      --ide-text-dim: #6b7280;
+      --ide-accent: #3b82f6;
+      --ide-accent-hover: #60a5fa;
+      --ide-warning: #f59e0b;
+      --ide-warning-bg: rgba(245, 158, 11, 0.12);
+      --ide-success: #10b981;
+      --ide-success-bg: rgba(16, 185, 129, 0.12);
+      --ide-danger: #ef4444;
+      --ide-danger-bg: rgba(239, 68, 68, 0.15);
+      --ide-info: #06b6d4;
+      --ide-grid-header: #272730;
+      --ide-grid-row-alt: #1a1a1f;
+      --ide-grid-selected: #1e3a5f;
+      --ide-font-mono: 'JetBrains Mono', Consolas, 'Fira Code', monospace;
+      --ide-font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    body {
+      font-family: var(--ide-font-sans);
+      background-color: var(--ide-bg-base);
+      color: var(--ide-text-main);
+      user-select: none;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Cell dirty flag triangle */
+    .cell-dirty-flag {
+      position: relative;
+    }
+    .cell-dirty-flag::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 0;
+      height: 0;
+      border-top: 6px solid var(--ide-warning);
+      border-left: 6px solid transparent;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--ide-bg-editor);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3f3f4e;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #525266;
+    }
+
+    .tde-split-handle {
+      cursor: row-resize;
+      transition: background 0.15s;
+    }
+    .tde-split-handle:hover {
+      background: var(--ide-accent) !important;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-screen text-xs bg-[var(--ide-bg-base)]">
+
+  <!-- TOP HEADER / TAB TITLE BAR -->
+  <header class="h-9 px-3 bg-[var(--ide-bg-toolbar)] border-b border-[var(--ide-border)] flex items-center justify-between flex-shrink-0">
+    <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 px-2.5 py-1 bg-[var(--ide-bg-editor)] border border-[var(--ide-border)] rounded text-xs font-semibold">
+        <i class="fa-solid fa-table-cells text-[var(--ide-info)]"></i>
+        <span>Data: <span class="text-white font-mono">dbo.Customers</span></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-[var(--ide-warning)]" title="Có 3 thay đổi chưa lưu"></span>
+      </div>
+      <span class="text-[var(--ide-text-dim)]">|</span>
+      <div class="flex items-center gap-1 text-[var(--ide-text-muted)] text-[11px]">
+        <i class="fa-solid fa-server text-[var(--ide-success)]"></i>
+        <span>DEV-SQLSERVER / <b class="text-gray-300">NorthwindDB</b></span>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-2">
+      <span id="badgePkStatus" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-[11px]">
+        <i class="fa-solid fa-key"></i> PK: Id
+      </span>
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-medium text-[11px]">
+        <i class="fa-solid fa-shield-halved"></i> Giao dịch an toàn
+      </span>
+      <button onclick="toggleConstraintDrawer()" class="h-6 px-2 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-medium flex items-center gap-1 transition">
+        <i class="fa-solid fa-circle-info"></i> Inspector
+      </button>
+    </div>
+  </header>
+
+  <!-- TOP TOOLBAR (SSMS QUERY DESIGNER STYLE) -->
+  <nav class="h-9 px-3 bg-[var(--ide-bg-toolbar)] border-b border-[var(--ide-border)] flex items-center gap-1.5 flex-shrink-0 text-xs">
+    <!-- Action buttons -->
+    <button onclick="simulateExecute()" class="h-6 px-2.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium flex items-center gap-1.5 shadow-sm transition active:scale-95" title="Thực thi kịch bản lọc (F5 / Alt+X)">
+      <i class="fa-solid fa-play text-[10px]"></i>
+      <span>Run (F5)</span>
+    </button>
+
+    <button onclick="openPreviewDialog()" class="h-6 px-2.5 rounded bg-emerald-700 hover:bg-emerald-600 text-white font-semibold flex items-center gap-1.5 shadow-sm transition active:scale-95" title="Lưu các thay đổi xuống CSDL (Ctrl+S)">
+      <i class="fa-solid fa-floppy-disk text-[10px]"></i>
+      <span>Save (<span id="btnSaveBadge">3</span>)</span>
+    </button>
+
+    <button onclick="simulateDiscard()" class="h-6 px-2 rounded bg-[var(--ide-bg-input)] hover:bg-gray-700 text-gray-300 border border-[var(--ide-border)] flex items-center gap-1.5 transition" title="Hủy bỏ thay đổi và tải lại dữ liệu">
+      <i class="fa-solid fa-rotate-left text-[10px]"></i>
+      <span>Discard</span>
+    </button>
+
+    <div class="h-4 w-[1px] bg-[var(--ide-border)] mx-1"></div>
+
+    <!-- Row Operations -->
+    <button onclick="addNewRow()" class="h-6 px-2 rounded bg-[var(--ide-bg-input)] hover:bg-emerald-950/60 text-emerald-400 border border-emerald-600/40 flex items-center gap-1.5 transition" title="Thêm một dòng mới ở cuối (Ctrl+N)">
+      <i class="fa-solid fa-plus text-[10px]"></i>
+      <span>Add Row</span>
+    </button>
+
+    <button onclick="deleteSelectedRow()" class="h-6 px-2 rounded bg-[var(--ide-bg-input)] hover:bg-rose-950/60 text-rose-400 border border-rose-600/40 flex items-center gap-1.5 transition" title="Đánh dấu xóa dòng đang chọn (Delete)">
+      <i class="fa-solid fa-trash text-[10px]"></i>
+      <span>Delete Row</span>
+    </button>
+
+    <button onclick="duplicateRow()" class="h-6 px-2 rounded bg-[var(--ide-bg-input)] hover:bg-gray-700 text-gray-300 border border-[var(--ide-border)] flex items-center gap-1.5 transition" title="Nhân bản dòng được chọn">
+      <i class="fa-solid fa-clone text-[10px]"></i>
+      <span>Duplicate</span>
+    </button>
+
+    <div class="h-4 w-[1px] bg-[var(--ide-border)] mx-1"></div>
+
+    <!-- SSMS Pane Toggles (Grid is ALWAYS visible, toggles only Criteria and SQL) -->
+    <div class="flex items-center bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded p-0.5 gap-0.5">
+      <button id="toggleCriteriaBtn" onclick="togglePane('criteria')" class="h-5 px-2 rounded bg-blue-600 text-white font-medium flex items-center gap-1 transition" title="Ẩn/Hiện Criteria Pane (Điều kiện lọc & Sắp xếp)">
+        <i class="fa-solid fa-filter text-[10px]"></i>
+        <span>Criteria</span>
+      </button>
+      <button id="toggleSqlBtn" onclick="togglePane('sql')" class="h-5 px-2 rounded bg-blue-600 text-white font-medium flex items-center gap-1 transition" title="Ẩn/Hiện SQL Pane (Kịch bản truy vấn)">
+        <i class="fa-solid fa-code text-[10px]"></i>
+        <span>SQL</span>
+      </button>
+    </div>
+
+    <div class="h-4 w-[1px] bg-[var(--ide-border)] mx-1"></div>
+
+    <!-- Limit Selector -->
+    <div class="flex items-center gap-1.5 ml-1">
+      <span class="text-[var(--ide-text-muted)] text-[11px]">Top:</span>
+      <select id="selectTopLimit" onchange="updateLimit(this.value)" class="h-6 px-1.5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-gray-200 outline-none text-[11px] focus:border-blue-500">
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="200" selected>200</option>
+        <option value="500">500</option>
+        <option value="1000">1000</option>
+        <option value="0">All</option>
+      </select>
+    </div>
+
+    <!-- Quick Filter -->
+    <div class="relative ml-2 flex-1 max-w-xs">
+      <i class="fa-solid fa-magnifying-glass absolute left-2 top-1.5 text-gray-500 text-[10px]"></i>
+      <input type="text" id="quickSearchInput" onkeyup="filterGrid(this.value)" placeholder="Tìm nhanh trong dữ liệu..." class="w-full h-6 pl-6 pr-2 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-gray-200 outline-none placeholder:text-gray-500 text-[11px] focus:border-blue-500">
+    </div>
+
+    <!-- Script Button -->
+    <button onclick="openPreviewDialog()" class="ml-auto h-6 px-2 rounded bg-[var(--ide-bg-input)] hover:bg-gray-700 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 transition">
+      <i class="fa-solid fa-scroll text-[10px]"></i>
+      <span>Preview DML</span>
+    </button>
+  </nav>
+
+  <!-- WORKSPACE BODY WITH SPLIT PANES -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- MAIN EDITING AREA (CRITERIA + SQL + GRID) -->
+    <div id="mainEditingArea" class="flex-1 flex flex-col overflow-hidden bg-[var(--ide-bg-editor)]">
+
+      <!-- 1. CRITERIA PANE (SSMS Criteria Grid) -->
+      <section id="criteriaPane" class="h-36 border-b border-[var(--ide-border)] flex flex-col flex-shrink-0 bg-[var(--ide-bg-base)]">
+        <div class="h-6 px-3 bg-[var(--ide-bg-pane-header)] border-b border-[var(--ide-border-subtle)] flex items-center justify-between text-[11px]">
+          <div class="flex items-center gap-2 font-semibold text-gray-300">
+            <i class="fa-solid fa-filter text-cyan-400"></i>
+            <span>CRITERIA PANE — ĐIỀU KIỆN LỌC & SẮP XẾP</span>
+            <span id="criteriaCountBadge" class="px-1.5 py-0.2 rounded bg-gray-800 text-gray-400 text-[10px] border border-gray-700">2 điều kiện</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="addCriteriaRow()" class="h-4.5 px-1.5 rounded bg-emerald-900/40 text-emerald-300 hover:bg-emerald-800/50 border border-emerald-600/40 text-[10px] flex items-center gap-1">
+              <i class="fa-solid fa-plus text-[9px]"></i> Thêm tiêu chí
+            </button>
+            <button onclick="clearAllCriteria()" class="h-4.5 px-1.5 rounded bg-rose-900/40 text-rose-300 hover:bg-rose-800/50 border border-rose-600/40 text-[10px] flex items-center gap-1">
+              <i class="fa-solid fa-trash-can text-[9px]"></i> Xóa hết
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-auto">
+          <table class="w-full text-left border-collapse font-sans text-xs">
+            <thead class="sticky top-0 bg-[var(--ide-grid-header)] text-gray-300 text-[11px] font-semibold border-b border-[var(--ide-border)]">
+              <tr>
+                <th class="py-1 px-2 border-r border-[var(--ide-border)] w-8 text-center">#</th>
+                <th class="py-1 px-2 border-r border-[var(--ide-border)] w-48">Cột (Column)</th>
+                <th class="py-1 px-2 border-r border-[var(--ide-border)] w-36">Toán tử (Operator)</th>
+                <th class="py-1 px-2 border-r border-[var(--ide-border)] w-56">Giá trị lọc (Filter)</th>
+                <th class="py-1 px-2 border-r border-[var(--ide-border)] w-44">Hoặc (Or...)</th>
+                <th class="py-1 px-2 border-r border-[var(--ide-border)] w-32">Sắp xếp (Sort)</th>
+                <th class="py-1 px-2 border-r border-[var(--ide-border)] w-20 text-center">Thứ tự</th>
+                <th class="py-1 px-2 w-10 text-center">Xóa</th>
+              </tr>
+            </thead>
+            <tbody id="criteriaTableBody" class="divide-y divide-[var(--ide-border-subtle)] text-gray-200">
+              <!-- Criteria Row 1 -->
+              <tr class="hover:bg-[var(--ide-bg-toolbar)]">
+                <td class="px-2 py-1 text-center text-gray-500 font-mono text-[10px]">1</td>
+                <td class="px-2 py-1">
+                  <select class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-gray-200 outline-none">
+                    <option value="Country" selected>Country (nvarchar)</option>
+                    <option value="Id">Id (int)</option>
+                    <option value="CompanyName">CompanyName (nvarchar)</option>
+                    <option value="City">City (nvarchar)</option>
+                    <option value="PostalCode">PostalCode (nvarchar)</option>
+                  </select>
+                </td>
+                <td class="px-2 py-1">
+                  <select class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-cyan-300 outline-none">
+                    <option value="=" selected>= (Bằng)</option>
+                    <option value="<>"><> (Khác)</option>
+                    <option value="LIKE">LIKE (Chứa chuỗi)</option>
+                    <option value="IN">IN (Trong danh sách)</option>
+                    <option value="IS NULL">IS NULL</option>
+                    <option value="IS NOT NULL">IS NOT NULL</option>
+                  </select>
+                </td>
+                <td class="px-2 py-1">
+                  <input type="text" value="'Vietnam'" class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1.5 text-amber-200 font-mono outline-none focus:border-blue-500">
+                </td>
+                <td class="px-2 py-1">
+                  <input type="text" value="'Germany'" class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1.5 text-gray-400 font-mono outline-none focus:border-blue-500">
+                </td>
+                <td class="px-2 py-1">
+                  <select class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-gray-300 outline-none">
+                    <option value="None">None</option>
+                    <option value="ASC" selected>ASC (Tăng dần)</option>
+                    <option value="DESC">DESC (Giảm dần)</option>
+                  </select>
+                </td>
+                <td class="px-2 py-1 text-center">
+                  <input type="number" value="1" class="w-12 h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-center text-gray-300 outline-none">
+                </td>
+                <td class="px-2 py-1 text-center">
+                  <button class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-xmark"></i></button>
+                </td>
+              </tr>
+              <!-- Criteria Row 2 -->
+              <tr class="hover:bg-[var(--ide-bg-toolbar)]">
+                <td class="px-2 py-1 text-center text-gray-500 font-mono text-[10px]">2</td>
+                <td class="px-2 py-1">
+                  <select class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-gray-200 outline-none">
+                    <option value="City" selected>City (nvarchar)</option>
+                    <option value="Id">Id (int)</option>
+                    <option value="CompanyName">CompanyName (nvarchar)</option>
+                    <option value="Country">Country (nvarchar)</option>
+                  </select>
+                </td>
+                <td class="px-2 py-1">
+                  <select class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-cyan-300 outline-none">
+                    <option value="LIKE" selected>LIKE (Chứa chuỗi)</option>
+                    <option value="=">= (Bằng)</option>
+                    <option value="<>"><> (Khác)</option>
+                    <option value="IS NOT NULL">IS NOT NULL</option>
+                  </select>
+                </td>
+                <td class="px-2 py-1">
+                  <input type="text" value="'%Hanoi%'" class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1.5 text-amber-200 font-mono outline-none focus:border-blue-500">
+                </td>
+                <td class="px-2 py-1">
+                  <input type="text" placeholder="(Không có)" class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1.5 text-gray-500 font-mono outline-none focus:border-blue-500">
+                </td>
+                <td class="px-2 py-1">
+                  <select class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-gray-300 outline-none">
+                    <option value="None" selected>None</option>
+                    <option value="ASC">ASC (Tăng dần)</option>
+                    <option value="DESC">DESC (Giảm dần)</option>
+                  </select>
+                </td>
+                <td class="px-2 py-1 text-center">
+                  <input type="number" class="w-12 h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-center text-gray-500 outline-none" placeholder="—">
+                </td>
+                <td class="px-2 py-1 text-center">
+                  <button class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-xmark"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- RESIZE HANDLE 1 -->
+      <div id="splitHandle1" class="tde-split-handle h-1.5 bg-[var(--ide-border)] hover:bg-blue-500"></div>
+
+      <!-- 2. SQL PANE (Live Synced SQL) -->
+      <section id="sqlPane" class="h-24 border-b border-[var(--ide-border)] flex flex-col flex-shrink-0 bg-[var(--ide-bg-editor)]">
+        <div class="h-6 px-3 bg-[var(--ide-bg-pane-header)] border-b border-[var(--ide-border-subtle)] flex items-center justify-between text-[11px]">
+          <div class="flex items-center gap-2 font-semibold text-gray-300">
+            <i class="fa-solid fa-code text-amber-400"></i>
+            <span>SQL PANE — CÂU TRUY VẤN SELECT ĐƯỢC ĐỒNG BỘ TỰ ĐỘNG</span>
+          </div>
+          <span class="text-[10px] text-gray-400 font-mono">Dialect: Microsoft SQL Server (T-SQL)</span>
+        </div>
+        <div class="flex-1 p-2 font-mono text-xs text-blue-300 bg-[var(--ide-bg-editor)] overflow-auto select-text">
+          <span class="text-purple-400 font-bold">SELECT TOP</span> <span class="text-amber-300 font-semibold">200</span>
+          [Id], [CustomerCode], [CompanyName], [ContactName], [City], [Country], [Balance], [CreatedDate]
+          <br><span class="text-purple-400 font-bold">FROM</span> [dbo].[Customers]
+          <br><span class="text-purple-400 font-bold">WHERE</span> ([Country] = <span class="text-emerald-300">'Vietnam'</span> <span class="text-purple-400 font-bold">OR</span> [Country] = <span class="text-emerald-300">'Germany'</span>)
+          <span class="text-purple-400 font-bold">AND</span> [City] <span class="text-purple-400 font-bold">LIKE</span> <span class="text-emerald-300">'%Hanoi%'</span>
+          <br><span class="text-purple-400 font-bold">ORDER BY</span> [Country] <span class="text-purple-400 font-bold">ASC</span>;
+        </div>
+      </section>
+
+      <!-- RESIZE HANDLE 2 -->
+      <div id="splitHandle2" class="tde-split-handle h-1.5 bg-[var(--ide-border)] hover:bg-blue-500"></div>
+
+      <!-- 3. RESULT DATA GRID PANE -->
+      <section id="gridPane" class="flex-1 flex flex-col overflow-hidden bg-[var(--ide-bg-editor)]">
+        <div class="h-6 px-3 bg-[var(--ide-bg-pane-header)] border-b border-[var(--ide-border-subtle)] flex items-center justify-between text-[11px]">
+          <div class="flex items-center gap-2 font-semibold text-gray-300">
+            <i class="fa-solid fa-table text-emerald-400"></i>
+            <span>DATA GRID — CHỈNH SỬA DỮ LIỆU TRỰC TIẾP</span>
+            <span class="text-[10px] text-gray-400">(Nhấn đúp hoặc Enter để sửa ô, Ctrl+0 gán [NULL], Esc hủy ô)</span>
+          </div>
+          <div class="flex items-center gap-3 text-[11px]">
+            <span class="text-amber-400 flex items-center gap-1"><i class="fa-solid fa-pencil text-[10px]"></i> 2 Dòng đã sửa</span>
+            <span class="text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-asterisk text-[10px]"></i> 1 Dòng mới thêm</span>
+            <span class="text-rose-400 flex items-center gap-1"><i class="fa-solid fa-xmark text-[10px]"></i> 1 Dòng đánh dấu xóa</span>
+          </div>
+        </div>
+
+        <!-- THE DATA TABLE -->
+        <div class="flex-1 overflow-auto relative">
+          <table class="w-full text-left border-collapse font-sans text-xs select-none">
+            <!-- Header Row -->
+            <thead class="sticky top-0 bg-[var(--ide-grid-header)] text-gray-200 border-b border-[var(--ide-border)] shadow-sm z-20">
+              <tr>
+                <!-- Sticky Row Selector Header -->
+                <th class="py-1.5 px-2 border-r border-[var(--ide-border)] w-12 text-center text-gray-400 font-mono text-[10px] bg-[var(--ide-grid-header)] sticky left-0 z-30">
+                  #
+                </th>
+
+                <!-- Col: Id (PK, Identity) -->
+                <th class="py-1.5 px-3 border-r border-[var(--ide-border)] min-w-[90px] font-medium">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="flex items-center gap-1 font-semibold text-white">
+                      <i class="fa-solid fa-key text-amber-400 text-[10px]" title="Primary Key"></i>
+                      <i class="fa-solid fa-lock text-gray-500 text-[9px]" title="Identity / Read-only"></i>
+                      Id
+                    </span>
+                    <span class="text-[10px] text-gray-400 font-mono">int</span>
+                  </div>
+                </th>
+
+                <!-- Col: CustomerCode (Unique) -->
+                <th class="py-1.5 px-3 border-r border-[var(--ide-border)] min-w-[130px] font-medium">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="flex items-center gap-1 font-semibold text-white">
+                      <i class="fa-solid fa-fingerprint text-purple-400 text-[10px]" title="Unique Constraint"></i>
+                      CustomerCode
+                    </span>
+                    <span class="text-[10px] text-gray-400 font-mono">varchar(20)</span>
+                  </div>
+                </th>
+
+                <!-- Col: CompanyName -->
+                <th class="py-1.5 px-3 border-r border-[var(--ide-border)] min-w-[180px] font-medium">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="font-semibold text-white">CompanyName</span>
+                    <span class="text-[10px] text-gray-400 font-mono">nvarchar(100)</span>
+                  </div>
+                </th>
+
+                <!-- Col: ContactName -->
+                <th class="py-1.5 px-3 border-r border-[var(--ide-border)] min-w-[140px] font-medium">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="font-semibold text-white">ContactName</span>
+                    <span class="text-[10px] text-gray-400 font-mono">nvarchar(50)</span>
+                  </div>
+                </th>
+
+                <!-- Col: City -->
+                <th class="py-1.5 px-3 border-r border-[var(--ide-border)] min-w-[110px] font-medium">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="font-semibold text-white">City</span>
+                    <span class="text-[10px] text-gray-400 font-mono">nvarchar(50)</span>
+                  </div>
+                </th>
+
+                <!-- Col: Country -->
+                <th class="py-1.5 px-3 border-r border-[var(--ide-border)] min-w-[110px] font-medium">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="font-semibold text-white">Country</span>
+                    <span class="text-[10px] text-gray-400 font-mono">nvarchar(50)</span>
+                  </div>
+                </th>
+
+                <!-- Col: Balance -->
+                <th class="py-1.5 px-3 border-r border-[var(--ide-border)] min-w-[120px] font-medium text-right">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="font-semibold text-white">Balance</span>
+                    <span class="text-[10px] text-gray-400 font-mono">decimal(18,2)</span>
+                  </div>
+                </th>
+
+                <!-- Col: CreatedDate -->
+                <th class="py-1.5 px-3 min-w-[140px] font-medium">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="font-semibold text-white">CreatedDate</span>
+                    <span class="text-[10px] text-gray-400 font-mono">datetime2</span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+
+            <!-- Data Rows Body -->
+            <tbody id="gridTableBody" class="divide-y divide-[var(--ide-border-subtle)] text-gray-200">
+
+              <!-- ROW 1: Normal Unchanged -->
+              <tr class="hover:bg-[var(--ide-grid-selected)]/40 transition-colors group">
+                <td class="py-1 px-2 border-r border-[var(--ide-border)] text-center text-gray-500 font-mono text-[11px] bg-[var(--ide-bg-base)] sticky left-0 z-10 flex items-center justify-center gap-1">
+                  <span class="w-3 text-cyan-400 font-bold group-hover:inline-block">1</span>
+                </td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] font-mono text-gray-400 bg-gray-900/40" title="Identity (Read-only)">101</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] font-mono">VN-HAN-001</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Thang Long Corp</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Nguyen Van A</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Hanoi</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Vietnam</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] text-right font-mono text-emerald-400">12,500,000.00</td>
+                <td class="py-1 px-3 font-mono text-gray-400">2026-01-15 09:30:00</td>
+              </tr>
+
+              <!-- ROW 2: MODIFIED ROW (With Dirty Cells) -->
+              <tr class="bg-amber-500/5 hover:bg-amber-500/10 transition-colors group">
+                <td class="py-1 px-2 border-r border-[var(--ide-border)] text-center font-mono text-[11px] bg-[var(--ide-bg-base)] sticky left-0 z-10 text-amber-400 font-bold">
+                  <span title="Dòng đã sửa đổi (Modified)">✏ 2</span>
+                </td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] font-mono text-gray-400 bg-gray-900/40">102</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] font-mono">VN-SGN-002</td>
+                <!-- Cell Modified: CompanyName -->
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] bg-amber-500/15 cell-dirty-flag text-amber-200 font-medium" title="Giá trị gốc: Bach Dang Maritime Ltd">
+                  Saigon Logistics JSC
+                </td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Tran Thi B</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Ho Chi Minh</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Vietnam</td>
+                <!-- Cell Modified: Balance -->
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] text-right font-mono bg-amber-500/15 cell-dirty-flag text-amber-200 font-medium" title="Giá trị gốc: 4,200,000.00">
+                  8,750,000.00
+                </td>
+                <td class="py-1 px-3 font-mono text-gray-400">2026-02-10 14:15:22</td>
+              </tr>
+
+              <!-- ROW 3: MODIFIED ROW with NULL Value (Ctrl+0) -->
+              <tr class="bg-amber-500/5 hover:bg-amber-500/10 transition-colors group">
+                <td class="py-1 px-2 border-r border-[var(--ide-border)] text-center font-mono text-[11px] bg-[var(--ide-bg-base)] sticky left-0 z-10 text-amber-400 font-bold">
+                  <span title="Dòng đã sửa đổi (Modified)">✏ 3</span>
+                </td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] font-mono text-gray-400 bg-gray-900/40">103</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] font-mono">DE-BER-009</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Berlin Auto Teile GmbH</td>
+                <!-- Cell set to NULL via Ctrl+0 -->
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] bg-amber-500/15 cell-dirty-flag text-gray-500 italic font-mono" title="Đã chuyển thành NULL (Giá trị gốc: Hans Gruber)">
+                  [NULL]
+                </td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Berlin</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Germany</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] text-right font-mono text-emerald-400">95,000.00</td>
+                <td class="py-1 px-3 font-mono text-gray-400">2026-03-01 11:00:00</td>
+              </tr>
+
+              <!-- ROW 4: MARKED FOR DELETION (Red line-through) -->
+              <tr class="bg-rose-500/10 hover:bg-rose-500/15 transition-colors line-through text-rose-300 opacity-70 group">
+                <td class="py-1 px-2 border-r border-[var(--ide-border)] text-center font-mono text-[11px] bg-[var(--ide-bg-base)] sticky left-0 z-10 text-rose-400 font-bold">
+                  <span title="Đã đánh dấu xóa (Sẽ chạy DELETE khi Save)">🗙 4</span>
+                </td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] font-mono">104</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] font-mono">VN-DAD-004</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Danang Seafood Express</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Le Quang C</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Danang</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)]">Vietnam</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] text-right font-mono">0.00</td>
+                <td class="py-1 px-3 font-mono">2026-03-12 16:45:00</td>
+              </tr>
+
+              <!-- ROW 5: NEW INSERTED ROW (Green outline/bg) -->
+              <tr class="bg-emerald-500/10 hover:bg-emerald-500/15 transition-colors text-emerald-200 group">
+                <td class="py-1 px-2 border-r border-[var(--ide-border)] text-center font-mono text-[11px] bg-[var(--ide-bg-base)] sticky left-0 z-10 text-emerald-400 font-bold">
+                  <span title="Dòng mới thêm (Sẽ chạy INSERT khi Save)">✱ *</span>
+                </td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] font-mono text-gray-500 italic bg-gray-900/40">(Auto Identity)</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] font-mono bg-emerald-500/10 cell-dirty-flag">VN-HAN-099</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] bg-emerald-500/10 cell-dirty-flag">VinFast Innovation Lab</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] bg-emerald-500/10 cell-dirty-flag">Pham Nhat V</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] bg-emerald-500/10 cell-dirty-flag">Hanoi</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] bg-emerald-500/10 cell-dirty-flag">Vietnam</td>
+                <td class="py-1 px-3 border-r border-[var(--ide-border)] text-right font-mono bg-emerald-500/10 cell-dirty-flag">500,000,000.00</td>
+                <td class="py-1 px-3 font-mono text-gray-500 italic">(Default: GETDATE())</td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT SLIDE-OUT DRAWER: CONSTRAINT & SCHEMA INSPECTOR -->
+    <aside id="constraintDrawer" class="w-80 border-l border-[var(--ide-border)] bg-[var(--ide-bg-base)] flex flex-col flex-shrink-0 transition-all duration-200 z-30 shadow-xl">
+      <!-- Drawer Header -->
+      <div class="h-9 px-3 bg-[var(--ide-bg-pane-header)] border-b border-[var(--ide-border)] flex items-center justify-between text-xs font-semibold">
+        <div class="flex items-center gap-1.5 text-cyan-400">
+          <i class="fa-solid fa-circle-nodes"></i>
+          <span>Schema & Constraints Inspector</span>
+        </div>
+        <button onclick="toggleConstraintDrawer()" class="w-5 h-5 rounded hover:bg-gray-700 text-gray-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Drawer Content -->
+      <div class="flex-1 overflow-auto p-3 space-y-4 text-xs">
+        <!-- Table Summary Card -->
+        <div class="p-2.5 rounded bg-[var(--ide-bg-editor)] border border-[var(--ide-border)] space-y-1.5">
+          <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Thông tin bảng</div>
+          <div class="flex justify-between"><span class="text-gray-400">Bảng:</span> <span class="font-mono font-semibold text-white">dbo.Customers</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Hệ quản trị:</span> <span class="text-cyan-300">Microsoft SQL Server</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Khóa chính:</span> <span class="text-amber-400 font-mono font-semibold">Id (CLUSTERED)</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Trạng thái:</span> <span class="text-emerald-400 font-semibold">● Cho phép ghi (Read-Write)</span></div>
+        </div>
+
+        <!-- 1. Primary Key Section -->
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-1.5 font-semibold text-amber-400">
+            <i class="fa-solid fa-key text-[11px]"></i>
+            <span>Khóa chính (Primary Key)</span>
+          </div>
+          <div class="p-2 rounded bg-[var(--ide-bg-editor)] border border-amber-500/20 text-[11px] space-y-1">
+            <div class="font-mono text-white font-semibold">PK_Customers_Id</div>
+            <div class="text-gray-400">Cột: <span class="text-amber-300 font-mono">Id (int, IDENTITY 1,1)</span></div>
+            <div class="text-gray-400">Kiểu: <span class="text-gray-200">Clustered Index</span></div>
+          </div>
+        </div>
+
+        <!-- 2. Foreign Keys Section -->
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-1.5 font-semibold text-blue-400">
+            <i class="fa-solid fa-link text-[11px]"></i>
+            <span>Khóa ngoại (Foreign Keys)</span>
+          </div>
+          <div class="space-y-1.5">
+            <div class="p-2 rounded bg-[var(--ide-bg-editor)] border border-blue-500/20 text-[11px] space-y-1">
+              <div class="font-mono text-white font-semibold">FK_Customers_CountryId</div>
+              <div class="text-gray-400">Cột nguồn: <span class="text-blue-300 font-mono">CountryId</span></div>
+              <div class="text-gray-400">Bảng đích: <a href="#" class="text-cyan-400 underline font-mono">dbo.Countries(Id)</a></div>
+              <div class="text-gray-400">On Delete: <span class="text-gray-300 font-mono">NO_ACTION</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Unique Constraints Section -->
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-1.5 font-semibold text-purple-400">
+            <i class="fa-solid fa-fingerprint text-[11px]"></i>
+            <span>Ràng buộc duy nhất (Unique)</span>
+          </div>
+          <div class="p-2 rounded bg-[var(--ide-bg-editor)] border border-purple-500/20 text-[11px] space-y-1">
+            <div class="font-mono text-white font-semibold">UQ_Customers_CustomerCode</div>
+            <div class="text-gray-400">Cột: <span class="text-purple-300 font-mono">CustomerCode</span></div>
+          </div>
+        </div>
+
+        <!-- 4. Check Constraints Section -->
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-1.5 font-semibold text-emerald-400">
+            <i class="fa-solid fa-circle-check text-[11px]"></i>
+            <span>Ràng buộc kiểm tra (CHECK)</span>
+          </div>
+          <div class="p-2 rounded bg-[var(--ide-bg-editor)] border border-emerald-500/20 text-[11px] space-y-1">
+            <div class="font-mono text-white font-semibold">CK_Customers_Balance</div>
+            <div class="text-gray-300 font-mono text-[10px] bg-black/40 p-1 rounded">([Balance] >= 0)</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- BOTTOM STATUS BAR -->
+  <footer class="h-6 px-3 bg-[var(--ide-bg-toolbar)] border-t border-[var(--ide-border)] flex items-center justify-between text-[11px] text-[var(--ide-text-muted)] flex-shrink-0 z-20">
+    <div class="flex items-center gap-3">
+      <!-- Row Navigator -->
+      <div class="flex items-center gap-1 text-gray-400">
+        <button class="hover:text-white px-1"><i class="fa-solid fa-backward-step text-[10px]"></i></button>
+        <button class="hover:text-white px-1"><i class="fa-solid fa-caret-left text-xs"></i></button>
+        <span class="font-mono text-gray-200 font-semibold">Dòng 2 / 200</span>
+        <button class="hover:text-white px-1"><i class="fa-solid fa-caret-right text-xs"></i></button>
+        <button class="hover:text-white px-1"><i class="fa-solid fa-forward-step text-[10px]"></i></button>
+      </div>
+
+      <span class="text-gray-600">|</span>
+
+      <!-- Metrics -->
+      <span class="flex items-center gap-1 text-gray-300">
+        <i class="fa-solid fa-database text-[10px] text-cyan-400"></i> Tổng số: <b class="text-white font-mono">200</b> dòng
+      </span>
+
+      <span class="text-gray-600">|</span>
+
+      <span class="flex items-center gap-1 text-amber-400 font-semibold">
+        <i class="fa-solid fa-clock-rotate-left text-[10px]"></i> 3 thay đổi chờ lưu (1 Insert, 1 Update, 1 Delete)
+      </span>
+
+      <span class="text-gray-600">|</span>
+
+      <span class="flex items-center gap-1 text-emerald-400">
+        <i class="fa-solid fa-circle-check text-[10px]"></i> Lỗi ràng buộc: <b>0</b>
+      </span>
+    </div>
+
+    <!-- Right status -->
+    <div class="flex items-center gap-3">
+      <span class="font-mono text-gray-400 text-[10px]">Ô đang chọn: [Dòng 2, Cột: CompanyName (nvarchar)]</span>
+      <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold text-[10px] flex items-center gap-1">
+        <i class="fa-solid fa-pen text-[9px]"></i> EDITABLE
+      </span>
+    </div>
+  </footer>
+
+  <!-- MODAL DIALOG: PREVIEW DML CHANGES (STANDALONE MOCKUP DIALOG) -->
+  <div id="previewDialog" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-2xl bg-[var(--ide-bg-base)] border border-[var(--ide-border)] rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <!-- Dialog Header -->
+      <div class="h-10 px-4 bg-[var(--ide-bg-pane-header)] border-b border-[var(--ide-border)] flex items-center justify-between">
+        <div class="flex items-center gap-2 font-semibold text-white text-xs">
+          <i class="fa-solid fa-database text-blue-400"></i>
+          <span>Xác nhận Áp dụng Thay đổi Dữ liệu (DML Preview)</span>
+        </div>
+        <button onclick="closePreviewDialog()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Dialog Body -->
+      <div class="p-4 flex-1 overflow-auto space-y-3 text-xs">
+        <!-- Changes Summary Badges -->
+        <div class="flex items-center gap-2 p-2.5 rounded bg-[var(--ide-bg-editor)] border border-[var(--ide-border)]">
+          <span class="text-gray-300 font-medium">Tổng kết thao tác:</span>
+          <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold">+1 INSERT</span>
+          <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold">~1 UPDATE</span>
+          <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-semibold">-1 DELETE</span>
+          <span class="ml-auto text-[11px] text-emerald-400 flex items-center gap-1">
+            <i class="fa-solid fa-lock text-[10px]"></i> Optimistic Concurrency On
+          </span>
+        </div>
+
+        <div class="text-[11px] text-gray-400">
+          Kịch bản DML sau sẽ được thực thi trong một <b>Transaction an toàn</b>. Nếu phát hiện xung đột đồng thời hoặc lỗi ràng buộc, toàn bộ thay đổi sẽ tự động Rollback:
+        </div>
+
+        <!-- SQL Box -->
+        <pre class="p-3 rounded bg-black/60 border border-[var(--ide-border)] font-mono text-xs text-blue-300 overflow-auto max-h-60 leading-relaxed select-text">
+<span class="text-purple-400 font-bold">BEGIN TRANSACTION;</span>
+
+<span class="text-gray-500">-- 1. INSERT NEW ROW (Auto Identity handled)</span>
+<span class="text-purple-400 font-bold">INSERT INTO</span> [dbo].[Customers] ([CustomerCode], [CompanyName], [ContactName], [City], [Country], [Balance])
+<span class="text-purple-400 font-bold">VALUES</span> (<span class="text-emerald-300">'VN-HAN-099'</span>, <span class="text-emerald-300">'VinFast Innovation Lab'</span>, <span class="text-emerald-300">'Pham Nhat V'</span>, <span class="text-emerald-300">'Hanoi'</span>, <span class="text-emerald-300">'Vietnam'</span>, <span class="text-amber-300">500000000.00</span>);
+
+<span class="text-gray-500">-- 2. UPDATE WITH OPTIMISTIC CONCURRENCY CHECK</span>
+<span class="text-purple-400 font-bold">UPDATE</span> [dbo].[Customers]
+<span class="text-purple-400 font-bold">SET</span> [CompanyName] = <span class="text-emerald-300">'Saigon Logistics JSC'</span>, [Balance] = <span class="text-amber-300">8750000.00</span>
+<span class="text-purple-400 font-bold">WHERE</span> [Id] = <span class="text-amber-300">102</span>
+  <span class="text-purple-400 font-bold">AND</span> [CompanyName] = <span class="text-emerald-300">'Bach Dang Maritime Ltd'</span>
+  <span class="text-purple-400 font-bold">AND</span> [Balance] = <span class="text-amber-300">4200000.00</span>;
+
+<span class="text-gray-500">-- 3. DELETE WITH PRIMARY KEY</span>
+<span class="text-purple-400 font-bold">DELETE FROM</span> [dbo].[Customers]
+<span class="text-purple-400 font-bold">WHERE</span> [Id] = <span class="text-amber-300">104</span>;
+
+<span class="text-purple-400 font-bold">COMMIT TRANSACTION;</span></pre>
+      </div>
+
+      <!-- Dialog Footer -->
+      <div class="h-12 px-4 bg-[var(--ide-bg-pane-header)] border-t border-[var(--ide-border)] flex items-center justify-between">
+        <button onclick="closePreviewDialog()" class="h-7 px-3 rounded bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          <span>Mở trong tab SQL</span>
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button onclick="closePreviewDialog()" class="h-7 px-3 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-600 transition">
+            Hủy
+          </button>
+          <button onclick="commitMockSave()" class="h-7 px-4 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-md flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-check text-xs"></i>
+            <span>Thực thi ngay</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC FOR MOCKUP INTERACTIVITY -->
+  <script>
+    let isCriteriaVisible = true;
+    let isSqlVisible = true;
+    let isGridVisible = true;
+    let isDrawerVisible = true;
+
+    function togglePane(pane) {
+      if (pane === 'criteria') {
+        isCriteriaVisible = !isCriteriaVisible;
+        document.getElementById('criteriaPane').style.display = isCriteriaVisible ? 'flex' : 'none';
+        document.getElementById('splitHandle1').style.display = isCriteriaVisible ? 'block' : 'none';
+        updateToggleBtn('toggleCriteriaBtn', isCriteriaVisible);
+      } else if (pane === 'sql') {
+        isSqlVisible = !isSqlVisible;
+        document.getElementById('sqlPane').style.display = isSqlVisible ? 'flex' : 'none';
+        document.getElementById('splitHandle2').style.display = isSqlVisible ? 'block' : 'none';
+        updateToggleBtn('toggleSqlBtn', isSqlVisible);
+      } else if (pane === 'grid') {
+        isGridVisible = !isGridVisible;
+        document.getElementById('gridPane').style.display = isGridVisible ? 'flex' : 'none';
+        updateToggleBtn('toggleGridBtn', isGridVisible);
+      }
+    }
+
+    function updateToggleBtn(btnId, active) {
+      const btn = document.getElementById(btnId);
+      if (active) {
+        btn.className = "h-5 px-2 rounded bg-blue-600 text-white font-medium flex items-center gap-1 transition";
+      } else {
+        btn.className = "h-5 px-2 rounded bg-transparent text-gray-400 hover:text-white flex items-center gap-1 transition";
+      }
+    }
+
+    function toggleConstraintDrawer() {
+      isDrawerVisible = !isDrawerVisible;
+      const drawer = document.getElementById('constraintDrawer');
+      drawer.style.display = isDrawerVisible ? 'flex' : 'none';
+    }
+
+    function openPreviewDialog() {
+      document.getElementById('previewDialog').classList.remove('hidden');
+    }
+
+    function closePreviewDialog() {
+      document.getElementById('previewDialog').classList.add('hidden');
+    }
+
+    function commitMockSave() {
+      closePreviewDialog();
+      alert('✓ Giao dịch thành công! Toàn bộ 3 thay đổi (1 INSERT, 1 UPDATE, 1 DELETE) đã được commit an toàn vào NorthwindDB.');
+    }
+
+    function simulateExecute() {
+      const top = document.getElementById('selectTopLimit').value;
+      alert(`Đang thực thi truy vấn nạp Top ${top || 'All'} dòng dữ liệu với điều kiện Criteria hiện tại...`);
+    }
+
+    function simulateDiscard() {
+      if (confirm('Bạn có chắc muốn hủy bỏ tất cả 3 thay đổi chưa lưu và tải lại dữ liệu từ cơ sở dữ liệu?')) {
+        alert('Đã hoàn tác toàn bộ thay đổi.');
+      }
+    }
+
+    function addNewRow() {
+      alert('Thao tác "+ Add Row": Tạo một dòng mới có trạng thái ✱ (INSERTED) ở cuối bảng để nhập liệu.');
+    }
+
+    function deleteSelectedRow() {
+      alert('Thao tác "- Delete Row": Đánh dấu dòng đang chọn bằng hiệu ứng gạch ngang đỏ 🗙 (DELETED). Nhấn Save sẽ chạy lệnh DELETE.');
+    }
+
+    function duplicateRow() {
+      alert('Thao tác "Duplicate": Sao chép các giá trị của dòng đang chọn sang dòng mới (bỏ qua giá trị cột Identity/PK).');
+    }
+
+    function addCriteriaRow() {
+      const tbody = document.getElementById('criteriaTableBody');
+      const idx = tbody.children.length + 1;
+      const tr = document.createElement('tr');
+      tr.className = "hover:bg-[var(--ide-bg-toolbar)]";
+      tr.innerHTML = `
+        <td class="px-2 py-1 text-center text-gray-500 font-mono text-[10px]">${idx}</td>
+        <td class="px-2 py-1">
+          <select class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-gray-200 outline-none">
+            <option value="Balance">Balance (decimal)</option>
+            <option value="CustomerCode">CustomerCode (varchar)</option>
+            <option value="CreatedDate">CreatedDate (datetime2)</option>
+          </select>
+        </td>
+        <td class="px-2 py-1">
+          <select class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-cyan-300 outline-none">
+            <option value=">">> (Lớn hơn)</option>
+            <option value="<">< (Nhỏ hơn)</option>
+            <option value="=">= (Bằng)</option>
+          </select>
+        </td>
+        <td class="px-2 py-1">
+          <input type="text" value="1000000" class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1.5 text-amber-200 font-mono outline-none">
+        </td>
+        <td class="px-2 py-1">
+          <input type="text" placeholder="(Không có)" class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1.5 text-gray-500 font-mono outline-none">
+        </td>
+        <td class="px-2 py-1">
+          <select class="w-full h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-gray-300 outline-none">
+            <option value="None">None</option>
+            <option value="ASC">ASC</option>
+            <option value="DESC">DESC</option>
+          </select>
+        </td>
+        <td class="px-2 py-1 text-center">
+          <input type="number" class="w-12 h-5 bg-[var(--ide-bg-input)] border border-[var(--ide-border)] rounded text-xs px-1 text-center text-gray-500 outline-none" placeholder="—">
+        </td>
+        <td class="px-2 py-1 text-center">
+          <button onclick="this.closest('tr').remove()" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-xmark"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function clearAllCriteria() {
+      document.getElementById('criteriaTableBody').innerHTML = '';
+      document.getElementById('criteriaCountBadge').innerText = '0 điều kiện';
+    }
+
+    function filterGrid(val) {
+      console.log('Filtering grid by:', val);
+    }
+  </script>
+</body>
+</html>
+

@@ -97,7 +97,7 @@
 
 .td-inspector-title {
     -fx-font-weight: bold;
-    -fx-font-size: 1.05em;
+    -fx-font-size: 1em;
     -fx-text-fill: -color-fg-default;
 }
 
@@ -117,7 +117,7 @@
 
 .td-inspector-section-title {
     -fx-font-weight: bold;
-    -fx-font-size: 0.9em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
 }
 

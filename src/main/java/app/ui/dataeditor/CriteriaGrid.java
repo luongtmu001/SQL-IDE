@@ -27,8 +27,8 @@ public class CriteriaGrid extends VBox {
 
     public CriteriaGrid() {
         getStyleClass().add("tde-criteria-pane");
-        setPrefHeight(150);
-        setMinHeight(100);
+        setPrefHeight(app.ui.components.UiMetrics.em(11.5));
+        setMinHeight(app.ui.components.UiMetrics.em(7.5));
 
         HBox header = buildHeader();
         setupTable();
@@ -64,31 +64,25 @@ public class CriteriaGrid extends VBox {
         header.setPadding(new Insets(3, 10, 3, 10));
         header.getStyleClass().add("tde-pane-header");
 
-        FontIcon filterIcon = new FontIcon("fth-filter");
-        filterIcon.setIconSize(12);
-        filterIcon.setStyle("-fx-icon-color: -color-accent-fg;");
+        FontIcon filterIcon = app.ui.components.Icons.of("fth-filter", app.ui.components.IconScale.SM);
+        filterIcon.getStyleClass().add("icon-accent");
 
         Label lblTitle = new Label("Bộ lọc và sắp xếp");
-        lblTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 0.85em; -fx-text-fill: -color-fg-default;");
+        lblTitle.getStyleClass().add("criteria-header-title");
 
-        lblCountBadge.setStyle("-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-subtle; " +
-                "-fx-border-radius: 3; -fx-background-radius: 3; -fx-padding: 1 5 1 5; -fx-font-size: 0.8em; -fx-text-fill: -color-fg-muted;");
+        lblCountBadge.getStyleClass().add("criteria-count-badge");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button btnAdd = new Button("Thêm tiêu chí");
-        btnAdd.getStyleClass().addAll("button", "small");
-        FontIcon addIcon = new FontIcon("fth-plus");
-        addIcon.setIconSize(11);
-        btnAdd.setGraphic(addIcon);
+        btnAdd.getStyleClass().add("button");
+        btnAdd.setGraphic(app.ui.components.Icons.of("fth-plus", app.ui.components.IconScale.SM));
         btnAdd.setOnAction(e -> addEmptyRow());
 
         Button btnClear = new Button("Xóa hết");
-        btnClear.getStyleClass().addAll("button", "small");
-        FontIcon clearIcon = new FontIcon("fth-trash-2");
-        clearIcon.setIconSize(11);
-        btnClear.setGraphic(clearIcon);
+        btnClear.getStyleClass().add("button");
+        btnClear.setGraphic(app.ui.components.Icons.of("fth-trash-2", app.ui.components.IconScale.SM));
         btnClear.setOnAction(e -> criteriaList.clear());
 
         header.getChildren().addAll(filterIcon, lblTitle, lblCountBadge, spacer, btnAdd, btnClear);
@@ -108,14 +102,14 @@ public class CriteriaGrid extends VBox {
 
         // 1. Row Index (#)
         TableColumn<CriteriaRow, String> colIndex = new TableColumn<>("#");
-        colIndex.setPrefWidth(35);
-        colIndex.setMaxWidth(45);
-        colIndex.setStyle("-fx-alignment: CENTER; -fx-font-family: monospace;");
+        colIndex.setPrefWidth(app.ui.components.UiMetrics.em(2.69));
+        colIndex.setMaxWidth(app.ui.components.UiMetrics.em(3.46));
+        colIndex.getStyleClass().add("criteria-col-index");
         colIndex.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(criteriaList.indexOf(data.getValue()) + 1)));
 
         // 2. Column
         TableColumn<CriteriaRow, String> colColumn = new TableColumn<>("Cột");
-        colColumn.setPrefWidth(160);
+        colColumn.setPrefWidth(app.ui.components.UiMetrics.em(12.31));
         colColumn.setCellValueFactory(data -> data.getValue().columnProperty());
         colColumn.setCellFactory(tc -> new TableCell<>() {
             private final ComboBox<String> combo = new ComboBox<>();
@@ -144,7 +138,7 @@ public class CriteriaGrid extends VBox {
 
         // 3. Operator
         TableColumn<CriteriaRow, String> colOp = new TableColumn<>("Toán tử");
-        colOp.setPrefWidth(130);
+        colOp.setPrefWidth(app.ui.components.UiMetrics.em(10));
         colOp.setCellValueFactory(data -> data.getValue().operatorProperty());
         colOp.setCellFactory(tc -> new TableCell<>() {
             private final ComboBox<String> combo = new ComboBox<>(FXCollections.observableArrayList(
@@ -174,13 +168,13 @@ public class CriteriaGrid extends VBox {
 
         // 4. Filter Value
         TableColumn<CriteriaRow, String> colFilter = new TableColumn<>("Giá trị");
-        colFilter.setPrefWidth(180);
+        colFilter.setPrefWidth(app.ui.components.UiMetrics.em(13.85));
         colFilter.setCellValueFactory(data -> data.getValue().filterValueProperty());
         colFilter.setCellFactory(tc -> new TableCell<>() {
             private final TextField tf = new TextField();
             {
                 tf.setMaxWidth(Double.MAX_VALUE);
-                tf.setStyle("-fx-font-family: monospace;");
+                tf.getStyleClass().add("code-inline");
                 tf.setOnAction(e -> commitVal());
                 tf.focusedProperty().addListener((obs, oldV, newV) -> { if (!newV) commitVal(); });
             }
@@ -209,13 +203,13 @@ public class CriteriaGrid extends VBox {
 
         // 5. Or Value
         TableColumn<CriteriaRow, String> colOr = new TableColumn<>("Hoặc");
-        colOr.setPrefWidth(140);
+        colOr.setPrefWidth(app.ui.components.UiMetrics.em(10.77));
         colOr.setCellValueFactory(data -> data.getValue().orValueProperty());
         colOr.setCellFactory(tc -> new TableCell<>() {
             private final TextField tf = new TextField();
             {
                 tf.setMaxWidth(Double.MAX_VALUE);
-                tf.setStyle("-fx-font-family: monospace;");
+                tf.getStyleClass().add("code-inline");
                 tf.setOnAction(e -> commitVal());
                 tf.focusedProperty().addListener((obs, oldV, newV) -> { if (!newV) commitVal(); });
             }
@@ -244,7 +238,7 @@ public class CriteriaGrid extends VBox {
 
         // 6. Sort Type
         TableColumn<CriteriaRow, String> colSort = new TableColumn<>("Sắp xếp");
-        colSort.setPrefWidth(110);
+        colSort.setPrefWidth(app.ui.components.UiMetrics.em(8.46));
         colSort.setCellValueFactory(data -> data.getValue().sortTypeProperty());
         colSort.setCellFactory(tc -> new TableCell<>() {
             private final ComboBox<String> combo = new ComboBox<>(FXCollections.observableArrayList("None", "ASC", "DESC"));
@@ -272,8 +266,8 @@ public class CriteriaGrid extends VBox {
 
         // 7. Sort Order
         TableColumn<CriteriaRow, String> colOrder = new TableColumn<>("Thứ tự");
-        colOrder.setPrefWidth(55);
-        colOrder.setStyle("-fx-alignment: CENTER;");
+        colOrder.setPrefWidth(app.ui.components.UiMetrics.em(4.23));
+        colOrder.getStyleClass().add("criteria-col-center");
         colOrder.setCellValueFactory(data -> data.getValue().sortOrderProperty());
         colOrder.setCellFactory(TextFieldTableCell.forTableColumn());
         colOrder.setOnEditCommit(e -> {
@@ -283,16 +277,15 @@ public class CriteriaGrid extends VBox {
 
         // 8. Delete button
         TableColumn<CriteriaRow, Void> colDel = new TableColumn<>("Xóa");
-        colDel.setPrefWidth(45);
-        colDel.setMaxWidth(50);
-        colDel.setStyle("-fx-alignment: CENTER;");
+        colDel.setPrefWidth(app.ui.components.UiMetrics.em(3.46));
+        colDel.setMaxWidth(app.ui.components.UiMetrics.em(3.85));
+        colDel.getStyleClass().add("criteria-col-center");
         colDel.setCellFactory(tc -> new TableCell<>() {
             private final Button btn = new Button();
             {
-                btn.getStyleClass().addAll("button", "small");
-                FontIcon icon = new FontIcon("fth-x");
-                icon.setIconSize(11);
-                icon.setStyle("-fx-icon-color: -color-danger-fg;");
+                btn.getStyleClass().add("button");
+                FontIcon icon = app.ui.components.Icons.of("fth-x", app.ui.components.IconScale.SM);
+                icon.getStyleClass().add("icon-danger");
                 btn.setGraphic(icon);
                 btn.setTooltip(new Tooltip("Xóa điều kiện này"));
                 btn.setOnAction(e -> {

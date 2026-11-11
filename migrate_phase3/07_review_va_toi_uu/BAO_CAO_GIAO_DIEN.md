@@ -190,3 +190,61 @@ Lệnh thực thi:
 3. **G-SV-3 & G-SV-5 (Ẩn số liệu giả và tính toán bố cục SQL Visualizer):**
    - Thay vì hiển thị số liệu chi phí và số dòng giả lập, hệ thống ẩn hoàn toàn badge và trường thông tin khi giá trị là `null`.
    - Các giai đoạn (stages) không có toán tử được loại bỏ tự động khỏi sơ đồ và khoảng cách các cột giai đoạn được co giãn thích ứng theo bề rộng canvas.
+
+---
+
+## 6. Đối chiếu và Chuẩn hóa theo Quy tắc Đồng nhất Giao diện (07-ui-consistency-rules.md)
+
+Thực hiện rà soát và chuẩn hóa toàn bộ các màn hình tính năng Phase 3 theo bộ quy tắc R-UI-10 đến R-UI-24 và hoàn tất các hạng mục hạ tầng H-1 đến H-6:
+
+### 6.1. Hạng mục Hạ tầng (H-1 đến H-6)
+- **H-1 (Typography theo Scene & Window):**
+  - Đã tích hợp `UiMetrics.applyUiTypography(scene)` vào `ThemeService.applyThemeToScene(scene)` áp dụng font family và font size từ Settings lên root của mọi Scene (kể cả dialogs và modal stages).
+  - Tự động áp dụng lại typography cho mọi Scene/Window đang mở khi người dùng thay đổi font size trong Settings.
+- **H-2 & H-3 (Hệ thống Icon động & Refactor Component dùng chung sang `em`):**
+  - Xây dựng `UiMetrics` và `Icons.of(literal, IconScale)` với các bậc tỷ lệ chuẩn: `SM` (base - 2), `MD` (base, mặc định), `LG` (base + 4), `XL` (base * 2.5).
+  - Component dùng chung (`PaneHeader`, `WorkspaceToolbar`, `WorkspaceFooter`, `SegmentedToggle`, `FilterChip`, `EmptyState`) đã gỡ bỏ hoàn toàn `setMinHeight / setMaxHeight` số nguyên px, thay bằng padding `em` và tỷ lệ co giãn tự động theo font chữ.
+  - Bổ sung các class chuẩn vào `components.css`: `.text-secondary`, `.text-title`, `.code-inline`, `.icon-muted`, `.icon-accent`, `.icon-success`, `.icon-warning`, `.icon-danger`.
+  - Cập nhật `shape-flat.css` bổ sung tất cả selector Phase 3 để hỗ trợ chế độ phẳng (`appearance.panelStyle = flat`).
+- **H-4 (Kiểm tra tự động - UiRulesLintTest):**
+  - Xây dựng `app.ui.UiRulesLintTest` tự động quét mã nguồn Phase 3 Java và CSS.
+  - Kết quả: **0 vi phạm** (0 mã màu hardcode, 0 font size px, 0 icon size cứng, 0 setStyle inline).
+- **H-6 (Đồng bộ tài liệu Token):**
+  - Cập nhật bảng chiều cao trong `03-design-tokens.md` ghi rõ giá trị tham chiếu tại 13px và trỏ sang R-UI-14.
+
+### 6.2. Kết quả Rà soát và Chỉnh sửa từng Màn hình Phase 3
+1. **Table Designer (`ui/designer/*`):**
+   - Loại bỏ `small` variant trên các nút toolbar và grid actions; icon chuyển sang `Icons.of(...)`.
+   - Bỏ lặp biểu tượng `+` trong nhãn ("+ Thêm cột" → "Thêm cột").
+   - Gỡ bỏ `setStyle` inline ở ghi chú trigger sang `.text-secondary`.
+   - Chuẩn hóa CSS cỡ chữ về `1em` và `0.85em`.
+2. **Table Data Editor (`ui/dataeditor/*`):**
+   - Gỡ bỏ 100% `setStyle` inline trong `ConstraintInspectorPane` và `CriteriaGrid`, chuyển sang các class CSS chuyên biệt (`.tde-section-card`, `.tde-fk-item`, `.criteria-header-title`, `.criteria-count-badge`, `.col-row-no`, `.cell-invalid`).
+   - Chuyển toàn bộ icon tạo mới sang `Icons.of(...)` với scale SM/MD phù hợp.
+   - Chuẩn hóa các cỡ font chữ phụ và subtitle trong `table-data-editor.css` về `0.85em`.
+3. **Object Content Search (`ui/search/*`):**
+   - Thay thế các `setStyle` inline ở error label, warning banner và cột bảng occurrences bằng `.search-regex-error`, `.search-warn-message`, `.col-index-center`, `.col-num-right`.
+   - Gỡ bỏ min/max height 24px cố định trong CSS footer, chuyển sang padding `0.15em 0.75em`.
+   - Icon tree cell và toolbar chuyển sang dùng `Icons.bind / Icons.of`.
+4. **Schema Compare (`ui/compare/*`):**
+   - Gỡ bỏ `setStyle` inline ở tổng kết khác biệt (`.compare-metrics-title`) và options dialog (`.options-dialog-content`).
+   - Nút swap đảo chiều chuyển sang kích thước `2.15em` co giãn theo font chữ.
+   - Chuẩn hóa toàn bộ badge diff và status label về `0.85em`.
+5. **Dependency Graph (`ui/dependency/*`):**
+   - Gỡ bỏ `setStyle` inline trên nhãn zoom, chuyển sang `.dep-zoom-label`.
+   - Bỏ các cỡ chữ không chuẩn (`0.72em`, `0.78em`, `0.82em`, `0.88em`, `0.95em`) trong `dependency-graph.css`, đồng bộ về `1em` và `0.85em`.
+   - Icon canvas và inspector chuyển sang dùng `Icons.of(...)`.
+6. **SQL Visualizer (`ui/visualizer/*`):**
+   - Gỡ bỏ hardcoded font size `12px` trong `sql-visualizer.css:73`, chuyển sang `1em`.
+   - Gỡ bỏ `setStyle` inline trên canvas row count (`.flow-node-row-count`) và zoom label (`.qf-zoom-label`).
+   - Chuẩn hóa toàn bộ cỡ chữ trong thẻ node và inspector về `1em` và `0.85em`.
+7. **Hộp thoại SaveDesignDialog & PreviewDataChangesDialog:**
+   - Chuyển các icon sang `Icons.of(...)` với scale chuẩn LG/MD.
+   - Thừa hưởng typography tự động qua `ThemeService.applyThemeToScene`.
+
+### 6.3. Kết quả Kiểm thử Tổng thể
+- **Kiểm tra Lint Quy tắc UI (`UiRulesLintTest`):** 1/1 test passed (0 lỗi).
+- **Bộ kiểm thử Phase 3:** 69/69 tests passed (100% BUILD SUCCESS).
+- **Ảnh chụp nghiệm thu:** 32 ảnh cập nhật mới nhất ở 4 cấu hình: 1500x880 Dark/Light và 1280x720 Dark/Light tại `migrate_phase3/07_review_va_toi_uu/screenshots/after/`.
+
+

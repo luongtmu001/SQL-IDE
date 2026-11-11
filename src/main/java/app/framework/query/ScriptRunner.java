@@ -231,13 +231,27 @@ public final class ScriptRunner {
                             List<QueryResultColumn> columns = new ArrayList<>();
                             int[] sqlTypes = new int[cols + 1];
                             String[] typeNames = new String[cols + 1];
+                            String detectedTableName = null;
+                            boolean allSame = true;
                             for (int i = 1; i <= cols; i++) {
                                 sqlTypes[i] = meta.getColumnType(i);
                                 typeNames[i] = meta.getColumnTypeName(i);
                                 String label = meta.getColumnLabel(i);
+                                String colTable = null;
+                                try {
+                                    colTable = meta.getTableName(i);
+                                } catch (Exception ignored) {}
                                 columns.add(new QueryResultColumn(label != null && !label.isBlank() ? label : "(No column name)",
-                                        meta.getColumnTypeName(i)));
+                                        meta.getColumnTypeName(i), colTable));
+                                if (colTable != null && !colTable.isBlank()) {
+                                    if (detectedTableName == null) {
+                                        detectedTableName = colTable;
+                                    } else if (!detectedTableName.equalsIgnoreCase(colTable)) {
+                                        allSame = false;
+                                    }
+                                }
                             }
+                            String sourceTable = (allSame && detectedTableName != null && !detectedTableName.isBlank()) ? detectedTableName : null;
                             List<QueryResultRow> rows = new ArrayList<>();
                             int rowNum = 1;
                             boolean truncated = false;
@@ -271,7 +285,7 @@ public final class ScriptRunner {
                             setNo++;
                             totalRows += rows.size();
                             String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-                            results.add(new QueryResult(piece.sql(), columns, rows, System.currentTimeMillis() - scriptStart, ts));
+                            results.add(new QueryResult(piece.sql(), columns, rows, System.currentTimeMillis() - scriptStart, ts, sourceTable));
                             messages.add(new Message(Message.Kind.INFO, "(" + rows.size() + " row(s) returned)"));
                             if (truncated) {
                                 messages.add(new Message(Message.Kind.WARNING, String.format(

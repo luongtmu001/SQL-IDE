@@ -2,6 +2,7 @@ package app.ui.components;
 
 import app.application.AppContext;
 import app.controllers.MainController;
+import app.framework.designer.TableDesignerService;
 import app.framework.metadata.DesktopMetadataService;
 import app.framework.metadata.MockMetadataProvider;
 import app.framework.metadata.ObjectScriptService;
@@ -14,9 +15,12 @@ import app.services.ExplorerConnectionState;
 import app.services.ExplorerConnectionState.Status;
 import app.services.ExplorerGroupService;
 import app.services.NotificationService;
+import app.ui.dialogs.CopyTableDialog;
 import com.lltool.core.application.connection.dto.ConnectionProfileDto;
+import com.lltool.core.domain.tabledesigner.model.TableDesign;
 import com.lltool.infrastructure.database.api.metadata.ColumnMetadata;
 import com.lltool.infrastructure.database.api.metadata.TableMetadata;
+import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -303,16 +307,46 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
         if (ti == null || actions == null) return;
         actions.disconnect(ti);
         javafx.application.Platform.runLater(() -> {
+            if (ti.getValue() != null) {
+                var node = ti.getValue();
+                var profile = node.getConnectionProfile() != null ? node.getConnectionProfile() : app.framework.connection.ProfileLookup.byName(node.getName());
+                if (profile != null) {
+                    app.framework.metadata.filter.DesktopFilterManager.getInstance().syncFromProfile(profile);
+                    app.services.ExplorerConnectionState.getInstance().set(profile.id(), app.services.ExplorerConnectionState.Status.CONNECTED);
+                    if (profile.databaseName() != null && !profile.databaseName().isBlank()) {
+                        GlobalDesktopState.getInstance().setActiveCatalog(profile.databaseName());
+                    }
+                    String defSch = app.services.DefaultSchemaService.get(profile.id());
+                    if (defSch != null && !defSch.isBlank()) {
+                        GlobalDesktopState.getInstance().setActiveSchema(defSch);
+                    }
+                }
+                GlobalDesktopState.getInstance().setActiveConnection(node.getName());
+            }
             ti.setExpanded(true);
-            if (ti.getValue() != null) GlobalDesktopState.getInstance().setActiveConnection(ti.getValue().getName());
         });
     }
 
     private void connectNode() {
         TreeItem<DatabaseNode> ti = getTreeItem();
         if (ti == null) return;
+        if (ti.getValue() != null) {
+            var node = ti.getValue();
+            var profile = node.getConnectionProfile() != null ? node.getConnectionProfile() : app.framework.connection.ProfileLookup.byName(node.getName());
+            if (profile != null) {
+                app.framework.metadata.filter.DesktopFilterManager.getInstance().syncFromProfile(profile);
+                app.services.ExplorerConnectionState.getInstance().set(profile.id(), app.services.ExplorerConnectionState.Status.CONNECTED);
+                if (profile.databaseName() != null && !profile.databaseName().isBlank()) {
+                    GlobalDesktopState.getInstance().setActiveCatalog(profile.databaseName());
+                }
+                String defSch = app.services.DefaultSchemaService.get(profile.id());
+                if (defSch != null && !defSch.isBlank()) {
+                    GlobalDesktopState.getInstance().setActiveSchema(defSch);
+                }
+            }
+            GlobalDesktopState.getInstance().setActiveConnection(node.getName());
+        }
         ti.setExpanded(true);
-        if (ti.getValue() != null) GlobalDesktopState.getInstance().setActiveConnection(ti.getValue().getName());
     }
 
     /** Never wider than the viewport: no horizontal scrolling, long names are ellipsised. */
@@ -710,8 +744,18 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
                 items.add(action("Filter Schemas...", "fth-filter", () -> {
                     if (actions != null) actions.filterObjects(item);
                 }));
-                items.add(deferred("So sánh Schema...", "fth-git-pull-request"));
-                items.add(deferred("Search Object Content...", "fth-search"));
+                items.add(action("So sánh Schema...", "fth-git-commit", () -> {
+                    MainController mc = AppContext.getInstance().getMainController();
+                    if (mc != null && mc.getEditorController() != null) {
+                        mc.getEditorController().openSchemaCompareTab(item.getConnectionProfile(), item.getName(), null, null, null, null);
+                    }
+                }));
+                items.add(action("Search Object Content...", "fth-search", () -> {
+                    MainController mc = AppContext.getInstance().getMainController();
+                    if (mc != null && mc.getEditorController() != null) {
+                        mc.getEditorController().openObjectContentSearchTab(item.getConnectionProfile(), item.getName(), null);
+                    }
+                }));
                 items.add(sep());
                 items.add(action("Set Active Database", "fth-check-circle", () -> {
                     GlobalDesktopState.getInstance().setActiveCatalog(item.getName());
@@ -722,9 +766,20 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
             }
             case SCHEMA -> {
                 items.add(newQuery(item));
-                items.add(deferred("So sánh Schema...", "fth-git-pull-request"));
+                items.add(action("So sánh Schema...", "fth-git-commit", () -> {
+                    MainController mc = AppContext.getInstance().getMainController();
+                    if (mc != null && mc.getEditorController() != null) {
+                        mc.getEditorController().openSchemaCompareTab(item.getConnectionProfile(), item.getCatalog(), item.getName(), null, null, null);
+                    }
+                }));
+                items.add(action("Search Object Content...", "fth-search", () -> {
+                    MainController mc = AppContext.getInstance().getMainController();
+                    if (mc != null && mc.getEditorController() != null) {
+                        mc.getEditorController().openObjectContentSearchTab(item.getConnectionProfile(), item.getCatalog(), item.getName());
+                    }
+                }));
                 items.add(sep());
-                items.add(deferred("New Table...", "fth-plus-square"));
+                items.add(newTableAction(item));
                 items.add(sep());
                 items.add(action("Set Active Schema", "fth-check-circle", () -> {
                     GlobalDesktopState.getInstance().setActiveSchema(item.getName());
@@ -737,7 +792,7 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
                 items.add(newQuery(item));
                 if (item.getType() == DatabaseNodeType.CATEGORY_TABLES) {
                     items.add(sep());
-                    items.add(deferred("New Table...", "fth-plus-square"));
+                    items.add(newTableAction(item));
                 }
                 if (isFilterableCategory(item.getType())) {
                     items.add(sep());
@@ -767,7 +822,14 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
             case COLUMN -> {
                 items.add(newQuery(item));
                 items.add(sep());
-                items.add(deferred("Dependencies (Phụ thuộc)", "fth-share-2"));
+                items.add(action("Dependencies (Phụ thuộc)", "fth-share-2", () -> {
+                    MainController mc = AppContext.getInstance().getMainController();
+                    if (mc != null) {
+                        String table = item.getTableMetadata() != null ? item.getTableMetadata().name() : null;
+                        mc.openDependencyGraph(item.getConnectionProfile(), item.getCatalog(), item.getSchema(),
+                                table, item.getName(), com.lltool.core.domain.dependency.DependencyNodeType.COLUMN);
+                    }
+                }));
                 items.add(sep());
                 items.add(action("Copy Column Name", "fth-copy", () -> copyToClipboard(item.getName())));
                 items.add(action("Copy Qualified Column Name", "fth-copy", () -> {
@@ -876,7 +938,13 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
         items.add(sep());
         items.add(deferred("SQL Trace Profiler...", "fth-activity"));
         items.add(deferred("Activity Monitor (Phiên & Khóa)...", "fth-heart"));
-        items.add(deferred("So sánh Schema...", "fth-git-pull-request"));
+        items.add(action("So sánh Schema...", "fth-git-pull-request", () -> {
+            MainController mc = AppContext.getInstance().getMainController();
+            if (mc != null && mc.getEditorController() != null) {
+                ConnectionProfileDto p = item.getConnectionProfile();
+                mc.getEditorController().openSchemaCompareTab(p, p != null ? p.databaseName() : null, null, null, null, null);
+            }
+        }));
         items.add(sep());
         items.add(action("New Group...", "fth-folder-plus", () -> {
             if (actions != null) actions.newGroup(item.getGroupPath() != null ? item.getGroupPath() : "");
@@ -1019,16 +1087,22 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
         }
         items.add(sep());
         items.add(action("Select Top 1000", "fth-list", () -> runOrOpen(item, item.getName() + ".sql", selectTop(dialect, q, 1000))));
-        items.add(deferred("Edit Data (Top 200 Rows)", "fth-edit"));
+        items.add(editDataAction(item));
         items.add(action("Select Count(*)", "fth-hash", () -> runOrOpen(item, item.getName() + "_count.sql",
                 SqlScriptGenerator.generateCount(dialect, tbl))));
         items.add(sep());
-        items.add(deferred("New Table...", "fth-plus-square"));
-        items.add(deferred("Copy Table", "fth-copy"));
-        items.add(deferred("Design Table", "fth-edit-3"));
+        items.add(newTableAction(item));
+        items.add(copyTableAction(item));
+        items.add(designTableAction(item));
         items.add(sep());
         items.add(deferred("Indexes", "fth-bookmark"));
-        items.add(deferred("Dependencies (Phụ thuộc)", "fth-share-2"));
+        items.add(action("Dependencies (Phụ thuộc)", "fth-share-2", () -> {
+            MainController mc = AppContext.getInstance().getMainController();
+            if (mc != null) {
+                mc.openDependencyGraph(item.getConnectionProfile(), item.getCatalog(), item.getSchema(),
+                        item.getName(), null, com.lltool.core.domain.dependency.DependencyNodeType.TABLE);
+            }
+        }));
         items.add(sep());
         items.add(action("Copy Table Name", "fth-copy", () -> copyToClipboard(item.getName())));
         items.add(action("Copy Qualified Name", "fth-copy", () -> copyToClipboard(q)));
@@ -1066,7 +1140,12 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
         }
         items.add(sep());
         items.add(action("Select Top 1000", "fth-list", () -> runOrOpen(item, item.getName() + ".sql", selectTop(dialect, q, 1000))));
-        items.add(deferred("Design View (Trực quan hóa SQL)", "fth-git-merge"));
+        items.add(action("Design View (Trực quan hóa SQL)", "fth-git-merge", () -> {
+            MainController mc = AppContext.getInstance().getMainController();
+            if (mc != null) {
+                mc.openSqlVisualizer(item.getConnectionProfile(), item.getCatalog(), item.getSchema(), item.getName(), create);
+            }
+        }));
         items.add(sep());
         items.add(action("View Definition", "fth-eye", () -> openGenerated(item, vk,
                 ObjectScriptService.Action.CREATE, item.getName() + "_definition.sql", create)));
@@ -1074,7 +1153,13 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
             items.add(action("Refresh Data", "fth-refresh-ccw", () -> openScript(item, item.getName() + "_refresh.sql",
                     "REFRESH MATERIALIZED VIEW " + q + ";")));
         }
-        items.add(deferred("Dependencies (Phụ thuộc)", "fth-share-2"));
+        items.add(action("Dependencies (Phụ thuộc)", "fth-share-2", () -> {
+            MainController mc = AppContext.getInstance().getMainController();
+            if (mc != null) {
+                mc.openDependencyGraph(item.getConnectionProfile(), item.getCatalog(), item.getSchema(),
+                        item.getName(), null, mv ? com.lltool.core.domain.dependency.DependencyNodeType.MATERIALIZED_VIEW : com.lltool.core.domain.dependency.DependencyNodeType.VIEW);
+            }
+        }));
         items.add(sep());
         items.add(action("Copy Name", "fth-copy", () -> copyToClipboard(item.getName())));
         items.add(refresh());
@@ -1114,7 +1199,13 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
         items.add(action("Execute", "fth-play", () -> openScript(item, item.getName() + "_exec.sql", exec)));
         items.add(action("View Definition", "fth-eye", () -> openGenerated(item, rk,
                 ObjectScriptService.Action.CREATE, item.getName() + "_definition.sql", create)));
-        items.add(deferred("Dependencies (Phụ thuộc)", "fth-share-2"));
+        items.add(action("Dependencies (Phụ thuộc)", "fth-share-2", () -> {
+            MainController mc = AppContext.getInstance().getMainController();
+            if (mc != null) {
+                mc.openDependencyGraph(item.getConnectionProfile(), item.getCatalog(), item.getSchema(),
+                        item.getName(), null, proc ? com.lltool.core.domain.dependency.DependencyNodeType.PROCEDURE : com.lltool.core.domain.dependency.DependencyNodeType.FUNCTION);
+            }
+        }));
         items.add(sep());
         items.add(action("Copy Name", "fth-copy", () -> copyToClipboard(item.getName())));
         items.add(refresh());
@@ -1276,8 +1367,16 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
             if (mc == null) return;
             String conn = item.getConnectionProfile() != null ? item.getConnectionProfile().name()
                     : (item.getType() == DatabaseNodeType.CONNECTION ? item.getName() : null);
-            String db = item.getType() == DatabaseNodeType.DATABASE ? item.getName() : item.getCatalog();
+            String db = item.getType() == DatabaseNodeType.DATABASE ? item.getName()
+                    : (item.getCatalog() != null ? item.getCatalog()
+                    : (item.getConnectionProfile() != null ? item.getConnectionProfile().databaseName() : null));
             String schema = item.getType() == DatabaseNodeType.SCHEMA ? item.getName() : item.getSchema();
+            if (schema == null && item.getConnectionProfile() != null) {
+                schema = app.services.DefaultSchemaService.get(item.getConnectionProfile().id());
+                if (schema == null && item.getConnectionProfile().properties() != null) {
+                    schema = item.getConnectionProfile().properties().get("defaultSchema");
+                }
+            }
             String header = "-- " + (conn != null ? conn : "") + (db != null ? " / " + db : "") + (schema != null ? " / " + schema : "") + "\n\n";
             mc.openQueryConsole("Query.sql", header, conn, db, schema);
         });
@@ -1285,11 +1384,113 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
         return mi;
     }
 
+    private MenuItem newTableAction(DatabaseNode item) {
+        boolean isSqlite = item.getConnectionProfile() != null && "SQLITE".equalsIgnoreCase(item.getConnectionProfile().databaseType());
+        if (isSqlite) {
+            return deferred("New Table...", "fth-plus-square");
+        }
+        return action("New Table...", "fth-plus-square", () -> {
+            MainController mc = AppContext.getInstance().getMainController();
+            if (mc == null) return;
+            String cat = item.getType() == DatabaseNodeType.DATABASE ? item.getName() : item.getCatalog();
+            String sch = item.getType() == DatabaseNodeType.SCHEMA ? item.getName() : item.getSchema();
+            mc.openTableDesigner(item.getConnectionProfile(), cat, sch, "Table_1", true);
+        });
+    }
+
+    private MenuItem editDataAction(DatabaseNode item) {
+        return action("Edit Data (Top 200 Rows)", "fth-edit", () -> {
+            MainController mc = AppContext.getInstance().getMainController();
+            if (mc == null) return;
+            mc.openTableDataEditor(item.getConnectionProfile(), item.getCatalog(), item.getSchema(), item.getName());
+        });
+    }
+
+    private MenuItem designTableAction(DatabaseNode item) {
+        boolean isSqlite = item.getConnectionProfile() != null && "SQLITE".equalsIgnoreCase(item.getConnectionProfile().databaseType());
+        if (isSqlite) {
+            return deferred("Design Table", "fth-edit-3");
+        }
+        MenuItem mi = action("Design Table", "fth-edit-3", () -> {
+            MainController mc = AppContext.getInstance().getMainController();
+            if (mc == null) return;
+            String cat = item.getCatalog();
+            String sch = item.getSchema();
+            mc.openTableDesigner(item.getConnectionProfile(), cat, sch, item.getName(), false);
+        });
+        mi.setAccelerator(KeyCombination.keyCombination("F4"));
+        return mi;
+    }
+
+    private MenuItem copyTableAction(DatabaseNode item) {
+        boolean isSqlite = item.getConnectionProfile() != null && "SQLITE".equalsIgnoreCase(item.getConnectionProfile().databaseType());
+        if (isSqlite) {
+            return deferred("Copy Table", "fth-copy");
+        }
+        return action("Copy Table...", "fth-copy", () -> {
+            MainController mc = AppContext.getInstance().getMainController();
+            if (mc == null) return;
+            handleCopyTable(item, mc);
+        });
+    }
+
+    private void handleCopyTable(DatabaseNode item, MainController mc) {
+        ConnectionProfileDto profile = item.getConnectionProfile();
+        if (profile == null) return;
+        String cat = item.getCatalog();
+        String sch = item.getSchema();
+        String tbl = item.getName();
+        String engine = (profile.databaseType() != null && profile.databaseType().toLowerCase().contains("postgre")) ? "postgresql" : "sqlserver";
+
+        // Fetch schemas and tables in background for validation in CopyTableDialog
+        DesktopMetadataService.getInstance().fetchSchemas(profile, cat, schemas -> {
+            DesktopMetadataService.getInstance().fetchTables(profile, cat, sch, tables -> {
+                List<String> tableNames = tables != null
+                        ? tables.stream().map(TableMetadata::name).toList()
+                        : List.of();
+                javafx.stage.Window owner = AppContext.getInstance().getPrimaryStage();
+
+                var answer = CopyTableDialog.show(owner, engine, cat, sch, tbl, schemas, tableNames);
+                if (answer.isEmpty()) return;
+
+                var copyReq = answer.get();
+
+                // Load source design and clone
+                TableDesignerService.getInstance().loadTableDesignAsync(profile, cat, sch, tbl)
+                        .thenAccept(res -> Platform.runLater(() -> {
+                            if (res.isSuccess()) {
+                                TableDesign sourceDesign = res.getDataOrThrow();
+                                var cloneRes = TableDesignerService.getInstance().cloneForCopy(
+                                        sourceDesign, copyReq.targetSchema(), copyReq.targetTableName(), copyReq.options());
+                                if (cloneRes.isSuccess()) {
+                                    TableDesign clonedDesign = cloneRes.getDataOrThrow();
+                                    mc.openTableDesignerForCopy(profile, cat, copyReq.targetSchema(), copyReq.targetTableName(), clonedDesign);
+                                    NotificationService.getInstance().showSuccess("Sao chép bảng",
+                                            "Đã khởi tạo bản sao cấu trúc bảng [" + copyReq.targetSchema() + "].[" + copyReq.targetTableName() + "]");
+                                } else {
+                                    NotificationService.getInstance().showError("Lỗi sao chép",
+                                            cloneRes.getError().map(e -> e.message()).orElse("Không thể nhân bản cấu trúc bảng."));
+                                }
+                            } else {
+                                NotificationService.getInstance().showError("Lỗi tải bảng nguồn",
+                                        res.getError().map(e -> e.message()).orElse("Không thể tải metadata của bảng nguồn."));
+                            }
+                        }));
+            });
+        });
+    }
+
     private void openScript(DatabaseNode item, String title, String sql) {
         MainController mc = AppContext.getInstance().getMainController();
         if (mc == null) return;
         String conn = item.getConnectionProfile() != null ? item.getConnectionProfile().name() : null;
-        mc.openQueryConsole(title, sql, conn, item.getCatalog(), item.getSchema());
+        String db = item.getCatalog() != null ? item.getCatalog()
+                : (item.getConnectionProfile() != null ? item.getConnectionProfile().databaseName() : null);
+        String schema = item.getSchema();
+        if (schema == null && item.getConnectionProfile() != null) {
+            schema = app.services.DefaultSchemaService.get(item.getConnectionProfile().id());
+        }
+        mc.openQueryConsole(title, sql, conn, db, schema);
     }
 
     /** Prototype rule: never run against a real database while mock metadata is on (Q1 = a). */
@@ -1297,12 +1498,18 @@ public class DatabaseTreeCell extends TreeCell<DatabaseNode> {
         MainController mc = AppContext.getInstance().getMainController();
         if (mc == null) return;
         String conn = item.getConnectionProfile() != null ? item.getConnectionProfile().name() : null;
+        String db = item.getCatalog() != null ? item.getCatalog()
+                : (item.getConnectionProfile() != null ? item.getConnectionProfile().databaseName() : null);
+        String schema = item.getSchema();
+        if (schema == null && item.getConnectionProfile() != null) {
+            schema = app.services.DefaultSchemaService.get(item.getConnectionProfile().id());
+        }
         if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.QUERY)) {
-            mc.openQueryConsole(title, sql, conn, item.getCatalog(), item.getSchema());
+            mc.openQueryConsole(title, sql, conn, db, schema);
             NotificationService.getInstance().showInfo("Prototype",
                     "Đã mở câu lệnh trong tab mới. Chạy truy vấn thật sẽ bật khi tích hợp backend (Gate D).");
         } else {
-            mc.executeQueryDirectly(title, sql, conn, item.getCatalog(), item.getSchema());
+            mc.executeQueryDirectly(title, sql, conn, db, schema);
         }
     }
 

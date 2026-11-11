@@ -19,11 +19,11 @@ public final class TabSession {
     private volatile Integer serverPid;
     private volatile long connectedAt;
 
-    TabSession(String tabId) {
+    public TabSession(String tabId) {
         this.tabId = tabId;
     }
 
-    void connecting(ConnectionProfileDto p, String db) {
+    public void connecting(ConnectionProfileDto p, String db) {
         profile = p;
         database = db;
         connection = null;
@@ -32,7 +32,7 @@ public final class TabSession {
         state = State.CONNECTING;
     }
 
-    void connected(ConnectionProfileDto p, String db, DatabaseConnection c, Integer pid) {
+    public void connected(ConnectionProfileDto p, String db, DatabaseConnection c, Integer pid) {
         profile = p;
         database = db;
         connection = c;
@@ -74,6 +74,28 @@ public final class TabSession {
     /** Profile read-only, or every connection read-only (user decision 2026-11-05). */
     public boolean readOnly() {
         return BackendFlags.readOnlyAll() || (profile != null && profile.readOnly());
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        if (profile != null && profile.readOnly() != readOnly) {
+            this.profile = new ConnectionProfileDto(
+                    profile.id(), profile.name(), profile.group(), profile.environment(),
+                    readOnly,
+                    profile.databaseType(), profile.host(), profile.port(), profile.databaseName(),
+                    profile.sqliteFilePath(), profile.username(), profile.authType(),
+                    profile.credentialRef(), profile.savePassword(), profile.timeoutSeconds(),
+                    profile.trustServerCertificate(), profile.properties(),
+                    profile.createdAt(), profile.updatedAt()
+            );
+        }
+        if (!readOnly && connection != null) {
+            var dbType = profile != null ? app.framework.connection.ConnectionSessionManager.mapDatabaseType(profile.databaseType()) : null;
+            app.framework.connection.ConnectionSessionManager.removeReadOnly(connection, dbType);
+        }
+    }
+
+    public void setProfile(ConnectionProfileDto profile) {
+        this.profile = profile;
     }
 
     public String environment() {

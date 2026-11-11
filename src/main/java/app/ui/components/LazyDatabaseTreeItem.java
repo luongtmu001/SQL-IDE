@@ -271,6 +271,26 @@ public class LazyDatabaseTreeItem extends TreeItem<DatabaseNode> {
 
     private void loadConnectionChildren(DatabaseNode node, ConnectionProfileDto profile) {
         String dialect = profile.databaseType().toUpperCase();
+        if (!DesktopFilterManager.getInstance().hasDatabaseFilter(profile.id())) {
+            DesktopFilterManager.getInstance().syncFromProfile(profile);
+        }
+        String defaultSchema = app.services.DefaultSchemaService.get(profile.id());
+        if (defaultSchema == null && profile.properties() != null) {
+            defaultSchema = profile.properties().get("defaultSchema");
+            if (defaultSchema == null) defaultSchema = profile.properties().get("schema");
+        }
+        final String resolvedSchema = defaultSchema;
+        Platform.runLater(() -> {
+            if (profile.name() != null && !profile.name().isBlank()) {
+                app.framework.state.GlobalDesktopState.getInstance().setActiveConnection(profile.name());
+            }
+            if (profile.databaseName() != null && !profile.databaseName().isBlank()) {
+                app.framework.state.GlobalDesktopState.getInstance().setActiveCatalog(profile.databaseName());
+            }
+            if (resolvedSchema != null && !resolvedSchema.isBlank()) {
+                app.framework.state.GlobalDesktopState.getInstance().setActiveSchema(resolvedSchema);
+            }
+        });
 
         if (dialect.contains("SQLITE")) {
             Platform.runLater(() -> {
@@ -305,17 +325,21 @@ public class LazyDatabaseTreeItem extends TreeItem<DatabaseNode> {
         }
 
         // PostgreSQL & SQL Server: Fetch catalogs (databases) with DatabaseFilter
-        DatabaseFilter dbFilter = DesktopFilterManager.getInstance().getDatabaseFilter(profile.id());
-        String defaultSchema = app.services.DefaultSchemaService.get(profile.id());
-
         DesktopMetadataService.getInstance().fetchCatalogs(profile, catalogs -> {
             super.getChildren().clear();
             if (showLoadError(profile)) return;
             node.clearChildren();
 
+            DatabaseFilter dbFilter = DesktopFilterManager.getInstance().getDatabaseFilter(profile.id());
+
             if (catalogs.isEmpty()) {
-                String defaultDb = profile.databaseName() != null && !profile.databaseName().isBlank() ? profile.databaseName() : "postgres";
-                catalogs = List.of(defaultDb);
+                if (profile.databaseName() != null && !profile.databaseName().isBlank()) {
+                    catalogs = List.of(profile.databaseName());
+                } else if (dialect.contains("SQLSERVER") || dialect.contains("MSSQL")) {
+                    catalogs = List.of("master");
+                } else if (dialect.contains("POSTGRE")) {
+                    catalogs = List.of("postgres");
+                }
             }
 
             java.util.List<TreeItem<DatabaseNode>> batch3 = new java.util.ArrayList<>(); // one tree event, not one per row
@@ -325,9 +349,17 @@ public class LazyDatabaseTreeItem extends TreeItem<DatabaseNode> {
                 }
                 DatabaseNode dbNode = new DatabaseNode(catName, DatabaseNodeType.DATABASE, profile.databaseType());
                 // LLTool: the database node carries the connection's default schema (New Query context)
-                dbNode.setConnectionProfile(profile).setCatalog(catName).setSchema(defaultSchema);
+                dbNode.setConnectionProfile(profile).setCatalog(catName).setSchema(resolvedSchema);
                 node.addChild(dbNode);
                 batch3.add(new LazyDatabaseTreeItem(dbNode));
+            }
+            if (batch3.isEmpty() && dbFilter.isActive() && !dbFilter.getSelectedDatabases().isEmpty()) {
+                for (String catName : dbFilter.getSelectedDatabases()) {
+                    DatabaseNode dbNode = new DatabaseNode(catName, DatabaseNodeType.DATABASE, profile.databaseType());
+                    dbNode.setConnectionProfile(profile).setCatalog(catName).setSchema(resolvedSchema);
+                    node.addChild(dbNode);
+                    batch3.add(new LazyDatabaseTreeItem(dbNode));
+                }
             }
             super.getChildren().addAll(batch3);
 
@@ -347,6 +379,7 @@ public class LazyDatabaseTreeItem extends TreeItem<DatabaseNode> {
             }
 
             node.setLoaded(true);
+            refreshTreeView();
         });
     }
 
@@ -849,8 +882,12 @@ public class LazyDatabaseTreeItem extends TreeItem<DatabaseNode> {
 
             java.util.List<TreeItem<DatabaseNode>> batch13 = new java.util.ArrayList<>(); // one tree event, not one per row
             for (RoutineMetadata routine : matched) {
+                String rName = routine.name();
+                if (rName != null && rName.contains(";")) {
+                    rName = rName.substring(0, rName.indexOf(';')).trim();
+                }
                 DatabaseNodeType rt = routine.isProcedure() ? DatabaseNodeType.PROCEDURE : DatabaseNodeType.FUNCTION;
-                DatabaseNode rNode = new DatabaseNode(routine.name(), rt, routine.returnType());
+                DatabaseNode rNode = new DatabaseNode(rName, rt, routine.returnType());
                 rNode.setConnectionProfile(profile).setCatalog(catalog).setSchema(schema);
                 node.addChild(rNode);
                 batch13.add(new LazyDatabaseTreeItem(rNode));

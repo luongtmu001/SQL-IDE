@@ -51,9 +51,8 @@ public class ForeignKeyGrid extends VBox {
 
     private void applyGridTypography() {
         var settings = SettingsService.getInstance().getCurrentSettings();
-        int fontSize = settings != null ? settings.getGridFontSize() : 12;
-        double rowHeight = Math.max(24.0, fontSize * 1.8 + 6.0);
-        tableView.setFixedCellSize(rowHeight);
+        // R-UI-11: a configuration grid follows the UI font ("Giao diện"), not the result-grid setting
+        tableView.setFixedCellSize(app.ui.components.UiMetrics.em(1.85));
     }
 
     private HBox buildToolbar() {
@@ -63,18 +62,14 @@ public class ForeignKeyGrid extends VBox {
         bar.getStyleClass().add("td-row-toolbar");
 
         Button btnAdd = new Button("Thêm Khoá ngoại");
-        btnAdd.getStyleClass().addAll("button", "small");
-        FontIcon addIcon = new FontIcon("fth-plus");
-        addIcon.setIconSize(13);
-        btnAdd.setGraphic(addIcon);
+        btnAdd.getStyleClass().add("button");
+        btnAdd.setGraphic(app.ui.components.Icons.of("fth-plus"));
         btnAdd.setTooltip(new Tooltip("Thêm ràng buộc khoá ngoại mới"));
         btnAdd.setOnAction(e -> addNewFk());
 
         Button btnDelete = new Button("Xóa");
-        btnDelete.getStyleClass().addAll("button", "small");
-        FontIcon delIcon = new FontIcon("fth-trash-2");
-        delIcon.setIconSize(13);
-        btnDelete.setGraphic(delIcon);
+        btnDelete.getStyleClass().add("button");
+        btnDelete.setGraphic(app.ui.components.Icons.of("fth-trash-2"));
         btnDelete.setTooltip(new Tooltip("Xóa khóa ngoại đang chọn"));
         btnDelete.setOnAction(e -> deleteSelectedFk());
 
@@ -95,7 +90,7 @@ public class ForeignKeyGrid extends VBox {
 
         // 1. FK Name
         TableColumn<ForeignKeyViewModel, String> colName = new TableColumn<>("Tên Khóa ngoại");
-        colName.setPrefWidth(180);
+        colName.setPrefWidth(app.ui.components.UiMetrics.em(13.85));
         colName.setCellValueFactory(data -> data.getValue().nameProperty());
         colName.setCellFactory(TextFieldTableCell.forTableColumn());
         colName.setOnEditCommit(e -> {
@@ -105,7 +100,7 @@ public class ForeignKeyGrid extends VBox {
 
         // 2. Source Column(s)
         TableColumn<ForeignKeyViewModel, String> colSource = new TableColumn<>("Cột bảng hiện tại");
-        colSource.setPrefWidth(160);
+        colSource.setPrefWidth(app.ui.components.UiMetrics.em(12.31));
         colSource.setCellValueFactory(data -> data.getValue().sourceColumnsProperty());
         colSource.setCellFactory(TextFieldTableCell.forTableColumn());
         colSource.setOnEditCommit(e -> {
@@ -115,7 +110,7 @@ public class ForeignKeyGrid extends VBox {
 
         // 3. Target Schema
         TableColumn<ForeignKeyViewModel, String> colTargetSchema = new TableColumn<>("Schema đích");
-        colTargetSchema.setPrefWidth(110);
+        colTargetSchema.setPrefWidth(app.ui.components.UiMetrics.em(8.46));
         colTargetSchema.setCellValueFactory(data -> data.getValue().targetSchemaProperty());
         colTargetSchema.setCellFactory(TextFieldTableCell.forTableColumn());
         colTargetSchema.setOnEditCommit(e -> {
@@ -125,7 +120,7 @@ public class ForeignKeyGrid extends VBox {
 
         // 4. Target Table
         TableColumn<ForeignKeyViewModel, String> colTargetTable = new TableColumn<>("Bảng tham chiếu");
-        colTargetTable.setPrefWidth(160);
+        colTargetTable.setPrefWidth(app.ui.components.UiMetrics.em(12.31));
         colTargetTable.setCellValueFactory(data -> data.getValue().targetTableProperty());
         colTargetTable.setCellFactory(TextFieldTableCell.forTableColumn());
         colTargetTable.setOnEditCommit(e -> {
@@ -135,7 +130,7 @@ public class ForeignKeyGrid extends VBox {
 
         // 5. Target Column(s)
         TableColumn<ForeignKeyViewModel, String> colTargetCols = new TableColumn<>("Cột tham chiếu");
-        colTargetCols.setPrefWidth(160);
+        colTargetCols.setPrefWidth(app.ui.components.UiMetrics.em(12.31));
         colTargetCols.setCellValueFactory(data -> data.getValue().targetColumnsProperty());
         colTargetCols.setCellFactory(TextFieldTableCell.forTableColumn());
         colTargetCols.setOnEditCommit(e -> {
@@ -145,7 +140,7 @@ public class ForeignKeyGrid extends VBox {
 
         // 6. On Delete
         TableColumn<ForeignKeyViewModel, ForeignKeyAction> colOnDelete = new TableColumn<>("On Delete");
-        colOnDelete.setPrefWidth(125);
+        colOnDelete.setPrefWidth(app.ui.components.UiMetrics.em(9.62));
         colOnDelete.setCellValueFactory(data -> data.getValue().onDeleteProperty());
         colOnDelete.setCellFactory(ComboBoxTableCell.forTableColumn(
                 ForeignKeyAction.NO_ACTION, ForeignKeyAction.CASCADE, ForeignKeyAction.SET_NULL, ForeignKeyAction.SET_DEFAULT, ForeignKeyAction.RESTRICT
@@ -157,7 +152,7 @@ public class ForeignKeyGrid extends VBox {
 
         // 7. On Update
         TableColumn<ForeignKeyViewModel, ForeignKeyAction> colOnUpdate = new TableColumn<>("On Update");
-        colOnUpdate.setPrefWidth(125);
+        colOnUpdate.setPrefWidth(app.ui.components.UiMetrics.em(9.62));
         colOnUpdate.setCellValueFactory(data -> data.getValue().onUpdateProperty());
         colOnUpdate.setCellFactory(ComboBoxTableCell.forTableColumn(
                 ForeignKeyAction.NO_ACTION, ForeignKeyAction.CASCADE, ForeignKeyAction.SET_NULL, ForeignKeyAction.SET_DEFAULT, ForeignKeyAction.RESTRICT

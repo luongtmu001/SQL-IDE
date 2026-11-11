@@ -57,3 +57,4 @@ class CellValueParserTest {
         assertThrows(IllegalArgumentException.class, () -> CellValueParser.parse("invalid-uuid", Types.OTHER, "uuid"));
     }
 }
+

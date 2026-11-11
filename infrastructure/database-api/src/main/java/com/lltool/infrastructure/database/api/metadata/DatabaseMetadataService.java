@@ -1,6 +1,8 @@
 package com.lltool.infrastructure.database.api.metadata;
 
+import com.lltool.core.common.error.AppError;
 import com.lltool.core.common.result.Result;
+import com.lltool.core.domain.tabledesigner.model.TableDesign;
 import com.lltool.infrastructure.database.api.DatabaseConnection;
 
 import java.util.List;
@@ -41,6 +43,10 @@ public interface DatabaseMetadataService {
 
     default Result<List<ConstraintMetadata>> getConstraints(DatabaseConnection connection, String catalog, String schema, String table) {
         return Result.success(java.util.Collections.emptyList());
+    }
+
+    default Result<TableDesign> getTableDesign(DatabaseConnection connection, String catalog, String schema, String table) {
+        return Result.failure(AppError.validation("UNSUPPORTED_OPERATION", "Table design metadata reading is not supported for this provider"));
     }
 }
 

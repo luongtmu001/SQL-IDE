@@ -76,13 +76,12 @@
 
 /* AppButton & IconButton */
 .app-button {
-    -fx-font-size: 12px;
     -fx-cursor: hand;
 }
 
 .icon-button {
     -fx-cursor: hand;
-    -fx-padding: 4 6 4 6;
+    -fx-padding: 0.3em 0.45em;
     -fx-background-radius: 4;
 }
 
@@ -111,7 +110,6 @@
 
 .search-field-icon {
     -fx-icon-color: -color-fg-muted;
-    -fx-icon-size: 13px;
 }
 
 .search-field-input {
@@ -132,7 +130,6 @@
 
 .search-field-clear-btn .ikonli-font-icon {
     -fx-icon-color: -color-fg-muted;
-    -fx-icon-size: 11px;
 }
 
 .search-field-clear-btn:hover .ikonli-font-icon {
@@ -881,7 +878,7 @@
     -fx-cursor: hand;
 }
 
-/* D4: stacked grids (StackedGridsPane) — splitter between grids, minimize button, docked headers */
+/* D4: stacked grids (StackedGridsPane) â€” splitter between grids, minimize button, docked headers */
 .stacked-grids {
     -fx-background-color: -color-bg-default;
 }
@@ -1118,7 +1115,7 @@
     -fx-opacity: 0.6;
 }
 
-/* T4: group titles of the Themes menu ("Tối · GitHub Theme"): readable, not a greyed-out command */
+/* T4: group titles of the Themes menu ("Tá»‘i Â· GitHub Theme"): readable, not a greyed-out command */
 .menu-item.theme-group-header:disabled {
     -fx-opacity: 1;
 }
@@ -1254,7 +1251,7 @@
 /* =====================================================================
    Object Explorer (SCR-MAIN-002, Gate B 2026-11-05)
    22px rows, chevrons, groups, connection dot + type, count badges,
-   hover ⋯ / filter buttons, no horizontal scrolling.
+   hover â‹¯ / filter buttons, no horizontal scrolling.
    ===================================================================== */
 .explorer-header .explorer-title {
     -fx-font-size: 11px;
@@ -1384,7 +1381,7 @@
 }
 
 /* row actions float over the right end of the row (hover / selection), so names keep the full width otherwise */
-/* LLTool explorer.css .tree-node-actions: fades in from transparent over 18px (left → right), then solid,
+/* LLTool explorer.css .tree-node-actions: fades in from transparent over 18px (left â†’ right), then solid,
    so the icons read clearly over a long name. Bottom layer = panel background, top layer = hover colour. */
 .explorer-action-bar {
     -fx-padding: 0 4 0 18;
@@ -1452,7 +1449,7 @@
     -fx-rotate: 90;
 }
 
-/* never scroll horizontally: rows are as wide as the panel, long names get "…" */
+/* never scroll horizontally: rows are as wide as the panel, long names get "â€¦" */
 .explorer-tree .virtual-flow > .scroll-bar:horizontal {
     -fx-pref-height: 0;
     -fx-max-height: 0;
@@ -1744,6 +1741,12 @@
     -fx-background-color: -ide-toolbar-bg;
     -fx-border-color: -color-border-subtle;
     -fx-border-width: 0 0 1 0;
+    -fx-padding: 0.3em 0.6em;
+    -fx-spacing: 0.45em;
+}
+
+.workspace-toolbar-group {
+    -fx-spacing: 0.45em;
 }
 
 /* PaneHeader */
@@ -1751,9 +1754,12 @@
     -fx-background-color: -color-bg-subtle;
     -fx-border-color: -color-border-subtle;
     -fx-border-width: 0 0 1 0;
+    -fx-padding: 0.15em 0.75em;
+    -fx-min-height: 2.15em;
+    -fx-alignment: center-left;
 }
 .pane-header-title {
-    -fx-font-size: 0.9em;
+    -fx-font-size: 1em;
     -fx-font-weight: bold;
     -fx-text-fill: -color-fg-default;
 }
@@ -1766,14 +1772,15 @@
     -fx-background-color: -color-bg-subtle;
     -fx-border-color: -color-border-subtle;
     -fx-border-width: 1 0 0 0;
-    -fx-font-size: 0.8em;
+    -fx-padding: 0.15em 0.75em;
+    -fx-font-size: 0.85em;
 }
 .footer-label {
     -fx-text-fill: -color-fg-muted;
-    -fx-font-size: 0.8em;
+    -fx-font-size: 0.85em;
 }
 .footer-separator {
-    -fx-padding: 0 2;
+    -fx-padding: 0 0.15em;
 }
 
 /* SegmentedToggle */
@@ -1788,7 +1795,7 @@
     -fx-background-color: transparent;
     -fx-text-fill: -color-fg-muted;
     -fx-font-size: 0.85em;
-    -fx-padding: 4 10;
+    -fx-padding: 0.25em 0.75em;
     -fx-background-radius: 4;
     -fx-cursor: hand;
 }
@@ -1812,8 +1819,8 @@
     -fx-border-radius: 12;
     -fx-background-radius: 12;
     -fx-border-width: 1;
-    -fx-padding: 3 10;
-    -fx-font-size: 0.82em;
+    -fx-padding: 0.25em 0.75em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
     -fx-cursor: hand;
 }
@@ -1831,6 +1838,43 @@
     -fx-icon-color: -color-accent-fg;
 }
 
+/* Typography & Icon Standard Classes (R-UI-11 & H-3) */
+.text-secondary {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.text-title {
+    -fx-font-size: 1.15em;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.code-inline {
+    -fx-font-family: monospace;
+    -fx-font-size: 0.92em;
+}
+
+.icon-muted {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.icon-accent {
+    -fx-icon-color: -color-accent-fg;
+}
+
+.icon-success {
+    -fx-icon-color: -color-success-fg;
+}
+
+.icon-warning {
+    -fx-icon-color: -color-warning-fg;
+}
+
+.icon-danger {
+    -fx-icon-color: -color-danger-fg;
+}
+
 /* Badge variants */
 .badge-accent {
     -fx-background-color: -color-accent-subtle;
@@ -1840,6 +1884,103 @@
 
 .empty-state-tech-desc {
     -fx-font-family: monospace;
-    -fx-font-size: 0.8em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
+}
+
+/* =====================================================================
+   R-UI-14: IDE density for workspace tabs (Phase 3 screens).
+   Everything is in em so it follows the UI font size; at 13px a control is ~24px high.
+   ===================================================================== */
+.workspace-root .button,
+.workspace-root .toggle-button {
+    -fx-padding: 0.25em 0.75em;
+}
+/* controls inside a pane header or a footer are one step tighter so the bar keeps its height */
+.workspace-root .pane-header .button,
+.workspace-root .pane-header .toggle-button,
+.workspace-root .workspace-footer .button {
+    -fx-padding: 0.1em 0.6em;
+}
+.workspace-root .pane-header .button.button-icon,
+.workspace-root .pane-header .icon-button,
+.workspace-root .workspace-footer .button.button-icon {
+    -fx-padding: 0.15em 0.35em;
+}
+.workspace-root .button.button-icon,
+.workspace-root .toggle-button.button-icon,
+.workspace-root .icon-button {
+    -fx-padding: 0.3em 0.45em;
+}
+.workspace-root .menu-button,
+.workspace-root .split-menu-button {
+    -fx-padding: 0;
+}
+.workspace-root .menu-button > .label,
+.workspace-root .split-menu-button > .label {
+    -fx-padding: 0.25em 0.3em 0.25em 0.75em;
+}
+.workspace-root .menu-button > .arrow-button,
+.workspace-root .split-menu-button > .arrow-button {
+    -fx-padding: 0.25em 0.6em 0.25em 0.3em;
+}
+.workspace-root .combo-box-base {
+    -fx-padding: 0;
+}
+.workspace-root .combo-box > .list-cell,
+.workspace-root .combo-box-base > .text-field {
+    -fx-padding: 0.25em 0.3em 0.25em 0.6em;
+}
+.workspace-root .combo-box-base > .arrow-button {
+    -fx-padding: 0.25em 0.6em 0.25em 0.3em;
+}
+.workspace-root .text-field {
+    -fx-padding: 0.25em 0.6em;
+}
+.workspace-root .spinner > .text-field {
+    -fx-padding: 0.25em 0.6em;
+}
+.workspace-root .custom-search-field {
+    -fx-padding: 0 0.45em;
+}
+.workspace-root .custom-search-field .text-field {
+    -fx-padding: 0.25em 0.3em;
+}
+/* rows of lists, trees and feature grids: 1.7em - 1.85em */
+.workspace-root .table-row-cell,
+.workspace-root .tree-table-row-cell {
+    -fx-cell-size: 1.85em;
+}
+.workspace-root .table-view .table-cell,
+.workspace-root .tree-table-view .tree-table-cell {
+    -fx-padding: 0.15em 0.6em;
+}
+.workspace-root .table-view .column-header .label {
+    -fx-padding: 0.25em 0.6em;
+}
+.workspace-root .tree-cell,
+.workspace-root .list-cell {
+    -fx-padding: 0.2em 0.45em;
+}
+.workspace-root .combo-box-popup .list-cell {
+    -fx-padding: 0.3em 0.6em;
+}
+.workspace-root .tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-padding: 0.3em 0.75em;
+}
+/* toggle that is ON inside a toolbar: light accent, never a solid fill (R-UI-14.4) */
+.workspace-root .toggle-button.toolbar-toggle:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-border-color: -color-accent-muted;
+}
+.workspace-root .toggle-button.toolbar-toggle:selected .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+.toolbar-overflow-menu > .arrow-button {
+    -fx-padding: 0;
+}
+.toolbar-overflow-menu > .arrow-button > .arrow {
+    -fx-padding: 0;
+    -fx-shape: null;
 }

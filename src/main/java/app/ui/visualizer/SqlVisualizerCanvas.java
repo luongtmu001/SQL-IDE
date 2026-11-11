@@ -92,6 +92,9 @@ public class SqlVisualizerCanvas extends ZoomableGraphPane {
         fitToScreen();
     }
 
+    /** Widest a node card may get, in em of the UI font. */
+    private static final double CARD_MAX_WIDTH_EM = 21.5;
+
     private void renderStageGuides(QueryFlowGraph graph) {
         Map<Integer, List<QueryFlowNode>> stageMap = new TreeMap<>();
         for (QueryFlowNode node : graph.getNodes().values()) {
@@ -101,8 +104,22 @@ public class SqlVisualizerCanvas extends ZoomableGraphPane {
         List<String> stages = graph.getStageTitles();
         int activeStagesCount = stageMap.size();
         double availableWidth = Math.max(getWidth(), 800.0) - 160.0;
-        double stageWidth = Math.max(220.0, activeStagesCount > 1 ? availableWidth / (activeStagesCount - 1) : 260.0);
+        // a column is never narrower than the widest card plus a gap, so cards cannot overlap
+        double minStageWidth = app.ui.components.UiMetrics.em(CARD_MAX_WIDTH_EM + 2.5);
+        double stageWidth = Math.max(minStageWidth, activeStagesCount > 1 ? availableWidth / (activeStagesCount - 1) : minStageWidth);
         double originX = 80.0;
+
+        // guides follow the nodes: the pill sits just above the top-most card of the whole graph
+        double top = Double.MAX_VALUE;
+        double bottom = -Double.MAX_VALUE;
+        for (QueryFlowNode n : graph.getNodes().values()) {
+            top = Math.min(top, n.getY());
+            bottom = Math.max(bottom, n.getY());
+        }
+        if (top == Double.MAX_VALUE) { top = 100; bottom = 100; }
+        double pillY = top - app.ui.components.UiMetrics.em(3.2);
+        double guideTop = pillY - app.ui.components.UiMetrics.em(0.6);
+        double guideBottom = bottom + app.ui.components.UiMetrics.em(8);
 
         int colIdx = 0;
         for (Map.Entry<Integer, List<QueryFlowNode>> entry : stageMap.entrySet()) {
@@ -122,12 +139,12 @@ public class SqlVisualizerCanvas extends ZoomableGraphPane {
             Label stageHeader = new Label(title);
             stageHeader.getStyleClass().add("qf-stage-pill");
             stageHeader.setLayoutX(stageX);
-            stageHeader.setLayoutY(50.0);
+            stageHeader.setLayoutY(pillY);
             backgroundGroup.getChildren().add(stageHeader);
 
             // Vertical divider line between stages
             if (colIdx > 0) {
-                Line divider = new Line(stageX - 30, 40, stageX - 30, 520);
+                Line divider = new Line(stageX - 30, guideTop, stageX - 30, guideBottom);
                 divider.getStyleClass().add("stage-divider");
                 divider.getStrokeDashArray().addAll(4.0, 4.0);
                 backgroundGroup.getChildren().add(divider);
@@ -140,8 +157,8 @@ public class SqlVisualizerCanvas extends ZoomableGraphPane {
     private VBox createNodeCard(QueryFlowNode node) {
         VBox card = new VBox(6);
         card.getStyleClass().add("qf-node-card");
-        card.setMinWidth(200);
-        card.setMaxWidth(280);
+        card.setMinWidth(app.ui.components.UiMetrics.em(15.5));
+        card.setMaxWidth(app.ui.components.UiMetrics.em(CARD_MAX_WIDTH_EM));
 
         // Styling class according to node type
         switch (node.getType()) {
@@ -161,14 +178,13 @@ public class SqlVisualizerCanvas extends ZoomableGraphPane {
         Label stepBadge = new Label(String.valueOf(node.getStepIndex()));
         stepBadge.getStyleClass().add("qf-step-badge");
 
-        FontIcon icon = new FontIcon(getNodeIconLiteral(node.getType()));
-        icon.setIconSize(15);
+        FontIcon icon = app.ui.components.Icons.of(getNodeIconLiteral(node.getType()), app.ui.components.IconScale.MD);
         icon.getStyleClass().add("qf-node-icon");
 
         Label titleLabel = new Label(node.getTitle());
         titleLabel.getStyleClass().add("qf-node-title");
         titleLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
-        titleLabel.setMaxWidth(200);
+        titleLabel.setMaxWidth(app.ui.components.UiMetrics.em(15.38));
         titleLabel.setTooltip(new Tooltip(node.getTitle()));
 
         topRow.getChildren().addAll(stepBadge, icon, titleLabel);
@@ -177,7 +193,7 @@ public class SqlVisualizerCanvas extends ZoomableGraphPane {
         Label subtitleLabel = new Label(node.getSubtitle());
         subtitleLabel.getStyleClass().add("qf-node-subtitle");
         subtitleLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
-        subtitleLabel.setMaxWidth(240);
+        subtitleLabel.setMaxWidth(app.ui.components.UiMetrics.em(18.46));
         subtitleLabel.setTooltip(new Tooltip(node.getSubtitle()));
 
         card.getChildren().addAll(topRow, subtitleLabel);
@@ -195,7 +211,7 @@ public class SqlVisualizerCanvas extends ZoomableGraphPane {
 
             if (node.getRowCount() != null) {
                 Label rowLabel = new Label(String.format("%,d dòng", node.getRowCount()));
-                rowLabel.setStyle("-fx-font-size: 0.72em; -fx-text-fill: -color-fg-muted;");
+                rowLabel.getStyleClass().add("flow-node-row-count");
                 metaRow.getChildren().add(rowLabel);
             }
 

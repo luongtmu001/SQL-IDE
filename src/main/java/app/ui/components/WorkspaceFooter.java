@@ -19,10 +19,6 @@ public class WorkspaceFooter extends HBox {
     public WorkspaceFooter() {
         super(8);
         setAlignment(Pos.CENTER_LEFT);
-        setMinHeight(24);
-        setPrefHeight(24);
-        setMaxHeight(24);
-        setPadding(new Insets(2, 12, 2, 12));
         getStyleClass().add("workspace-footer");
 
         leftBox.setAlignment(Pos.CENTER_LEFT);

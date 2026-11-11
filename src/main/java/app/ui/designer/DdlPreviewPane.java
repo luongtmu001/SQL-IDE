@@ -28,8 +28,8 @@ public class DdlPreviewPane extends VBox {
 
     public DdlPreviewPane() {
         getStyleClass().add("td-ddl-preview-pane");
-        setPrefHeight(160);
-        setMinHeight(60);
+        setPrefHeight(app.ui.components.UiMetrics.em(12));
+        setMinHeight(app.ui.components.UiMetrics.em(4.5));
 
         HBox header = buildHeader();
         monaco = new EmbeddedMonaco(modelId, "sql", "-- Đang tải DDL...");
@@ -46,8 +46,7 @@ public class DdlPreviewPane extends VBox {
         bar.setPadding(new Insets(2, 8, 2, 8));
         bar.getStyleClass().add("td-ddl-preview-header");
 
-        FontIcon icon = new FontIcon("fth-code");
-        icon.setIconSize(13);
+        FontIcon icon = app.ui.components.Icons.of("fth-code");
 
         Label title = new Label("Xem trước DDL");
         title.getStyleClass().add("td-ddl-preview-title");
@@ -56,10 +55,8 @@ public class DdlPreviewPane extends VBox {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button btnCopy = new Button();
-        btnCopy.getStyleClass().addAll("button", "small");
-        FontIcon copyIcon = new FontIcon("fth-copy");
-        copyIcon.setIconSize(13);
-        btnCopy.setGraphic(copyIcon);
+        btnCopy.getStyleClass().add("button");
+        btnCopy.setGraphic(app.ui.components.Icons.of("fth-copy"));
         btnCopy.setTooltip(new Tooltip("Sao chép DDL vào Clipboard"));
         btnCopy.setOnAction(e -> {
             String text = monaco.getText();
@@ -71,10 +68,8 @@ public class DdlPreviewPane extends VBox {
         });
 
         Button btnFormat = new Button();
-        btnFormat.getStyleClass().addAll("button", "small");
-        FontIcon formatIcon = new FontIcon("fth-align-left");
-        formatIcon.setIconSize(13);
-        btnFormat.setGraphic(formatIcon);
+        btnFormat.getStyleClass().add("button");
+        btnFormat.setGraphic(app.ui.components.Icons.of("fth-align-left"));
         btnFormat.setTooltip(new Tooltip("Định dạng SQL"));
         btnFormat.setOnAction(e -> monaco.format());
 

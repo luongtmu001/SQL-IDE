@@ -195,7 +195,10 @@ public class ResultsGridTest {
                 // Test Multi-Grid Support
                 QueryResult result2 = new QueryResult("SELECT * FROM items_2", cols, rows, 10, "12:00:01");
                 loadedCtrl.setQueryResults(List.of(result, result2));
-                assertTrue(loadedCtrl.getResultsTabPane().getTabs().get(0).getText().contains("2 bảng"), "Multi-grid tab text should show 2 tables");
+                javafx.scene.control.Tab tab0 = loadedCtrl.getResultsTabPane().getTabs().get(0);
+                boolean has2Tables = (tab0.getText() != null && tab0.getText().contains("2 bảng"))
+                        || (tab0.getTooltip() != null && tab0.getTooltip().getText().contains("2 bảng"));
+                assertTrue(has2Tables, "Multi-grid tab text or tooltip should show 2 tables");
 
                 latch.countDown();
             } catch (Exception e) {

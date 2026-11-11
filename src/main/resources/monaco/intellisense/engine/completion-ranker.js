@@ -16,6 +16,7 @@
         constructor(options = {}) {
             this.storageKey = options.storageKey || 'intellisense_mru_history';
             this.maxEntries = options.maxEntries || 500;
+            this._cachedHistory = null;
         }
 
         static getInstance() {
@@ -51,19 +52,34 @@
             return `${dt}::${conn}::${tp}::${nm}`;
         }
 
-        loadHistory() {
-            if (typeof localStorage === 'undefined') return {};
+        loadHistory(forceReload = false) {
+            if (!forceReload && this._cachedHistory) return this._cachedHistory;
+            if (typeof localStorage === 'undefined') {
+                this._cachedHistory = {};
+                this._historyEmpty = true;
+                return this._cachedHistory;
+            }
             try {
                 const raw = localStorage.getItem(this.storageKey);
-                if (!raw) return {};
+                if (!raw) {
+                    this._cachedHistory = {};
+                    this._historyEmpty = true;
+                    return this._cachedHistory;
+                }
                 const parsed = JSON.parse(raw);
-                return (parsed && typeof parsed === 'object') ? parsed : {};
+                this._cachedHistory = (parsed && typeof parsed === 'object') ? parsed : {};
+                this._historyEmpty = Object.keys(this._cachedHistory).length === 0;
+                return this._cachedHistory;
             } catch (e) {
-                return {};
+                this._cachedHistory = {};
+                this._historyEmpty = true;
+                return this._cachedHistory;
             }
         }
 
         saveHistory(history) {
+            this._cachedHistory = history;
+            this._historyEmpty = !history || Object.keys(history).length === 0;
             if (typeof localStorage === 'undefined') return;
             try {
                 const keys = Object.keys(history);
@@ -83,6 +99,8 @@
                         pruned[scored[i].key] = history[scored[i].key];
                     }
                     localStorage.setItem(this.storageKey, JSON.stringify(pruned));
+                    this._cachedHistory = pruned;
+                    this._historyEmpty = Object.keys(pruned).length === 0;
                 } else {
                     localStorage.setItem(this.storageKey, JSON.stringify(history));
                 }
@@ -128,41 +146,24 @@
             }
         }
 
-        getMruBonus(dbType, connectionId, type, name) {
+        getMruBonus(dbType, connectionId, type, name, cachedNow) {
             if (!name) return 0;
+            const history = this.loadHistory();
+            if (!history || this._historyEmpty) return 0;
             try {
                 const dt = this.normalizeDbType(dbType);
                 const conn = String(connectionId || 'default').trim();
                 const tp = this.normalizeType(type);
                 const nm = String(name || '').trim().toLowerCase();
 
-                const history = this.loadHistory();
-                let entry = history[`${dt}::${conn}::${tp}::${nm}`];
-
-                // Fallback 1: db engine wide (* connection)
-                if (!entry || !entry.count) {
-                    entry = history[`${dt}::*::${tp}::${nm}`];
-                }
-
-                // Fallback 2: universal (* engine, * connection)
-                if (!entry || !entry.count) {
-                    entry = history[`*::*::${tp}::${nm}`];
-                }
-
-                // Fallback 3: scan any matching key for this db engine
-                if (!entry || !entry.count) {
-                    const suffix = `::${tp}::${nm}`;
-                    for (const k of Object.keys(history)) {
-                        if (k.startsWith(`${dt}::`) && k.endsWith(suffix)) {
-                            entry = history[k];
-                            break;
-                        }
-                    }
-                }
+                // Direct O(1) property lookup (eliminates O(N) loop and Object.keys allocations)
+                let entry = history[`${dt}::${conn}::${tp}::${nm}`]
+                         || history[`${dt}::*::${tp}::${nm}`]
+                         || history[`*::*::${tp}::${nm}`];
 
                 if (!entry || !entry.count) return 0;
 
-                const now = Date.now();
+                const now = cachedNow || Date.now();
                 const ageHours = Math.max(0, (now - (entry.lastUsed || now)) / 3600000);
                 // Decay half-life: 72h (3 days). Drops smoothly from 1.0 down to 0.2
                 const recency = Math.max(0.2, 1 / (1 + ageHours / 72));
@@ -176,6 +177,8 @@
         }
 
         clearHistory() {
+            this._cachedHistory = {};
+            this._historyEmpty = true;
             if (typeof localStorage === 'undefined') return;
             try {
                 localStorage.removeItem(this.storageKey);
@@ -208,6 +211,10 @@
 
             const dbType = (context.dbType || (context.tabCtx && context.tabCtx.dbType) || 'common').toLowerCase();
             const connId = (context.connectionId || (context.tabCtx && context.tabCtx.connectionId) || 'default');
+
+            if (isMru && this.mruManager && typeof this.mruManager.loadHistory === 'function') {
+                this.mruManager.loadHistory();
+            }
 
             // Phase 3: Visibility Filter - in WHERE and HAVING, hide aliases of the SELECT list (Spec 8.2 & 8.3)
             let candidatesToRank = items;
@@ -254,6 +261,9 @@
             }
 
             // Calculate contextual rank score for each item
+            const rankingNow = Date.now();
+            const hasMruHistory = Boolean(isMru && this.mruManager && (this.mruManager.loadHistory() && !this.mruManager._historyEmpty));
+
             unique.forEach(item => {
                 let contextScore = 0;
                 const type = item.type || item.kind || '';
@@ -582,8 +592,8 @@
 
                 if (isV2) {
                     item._finalScore = (matchScore * 2) + contextScore + levelScore + (item.popularity * 2);
-                    if (isMru && this.mruManager) {
-                        const mruBonus = this.mruManager.getMruBonus(dbType, connId, type, item.name || item.label);
+                    if (hasMruHistory) {
+                        const mruBonus = this.mruManager.getMruBonus(dbType, connId, type, item.name || item.label, rankingNow);
                         if (mruBonus > 0) {
                             item.mruBonus = mruBonus;
                             item._finalScore += mruBonus;
@@ -628,7 +638,8 @@
                         if (!aExact && bExact) return 1;
                     }
                 }
-                return (a.name || '').localeCompare(b.name || '');
+                const an = a.name || '', bn = b.name || '';
+                return an < bn ? -1 : (an > bn ? 1 : 0);
             });
 
             // Issue I8 & Spec GĐ4 / RC4: Group Quota Limiting

@@ -1,45 +1,24 @@
 # Workflow 02 — Screen Inventory
 # Quy trình 02 — Kiểm kê màn hình
 
-## Goal
+## Trạng thái
 
-Create a complete list of screens and UI surfaces before analyzing them individually.
+Danh mục đã duyệt ở Gate A: `ui-specifications/00-application/screen-inventory.md` và `.json`.
 
-## What counts as a screen/surface?
+Hiện có **22 gói đặc tả** trong `01-screens/`: `SCR-SHELL-001`, `SCR-MAIN-001…005`, `SCR-SET-001`, `SCR-DLG-001…014`, `SCR-SPLASH-001`.
 
-- Main application window.
-- Separate top-level windows.
-- Settings/preferences pages.
-- Modal and non-modal dialogs.
-- Side panels and tool windows.
-- Menus and context menus with meaningful action sets.
-- Popovers, dropdown panels, wizards, and multi-step flows.
-- Important empty/loading/error/selection states that materially change layout.
+`screen-inventory.md` lập ngày 2026-11-04 nên chưa có `SCR-SPLASH-001`, ghi 21 màn hình, và cột đích JavaFX còn cũ. Khi có dịp, cập nhật file này và `03-traceability/`.
 
-## Steps
+## Màn hình mới
 
-1. Inspect navigation entries and window creation calls.
-2. Search HTML templates and route/view registration.
-3. Search event handlers that open dialogs, menus, panels, or auxiliary windows.
-4. Compare source-derived list with what can be reached in the running app.
-5. Assign stable screen IDs: `SCR-<AREA>-<NNN>`.
-6. Record parent screen, trigger, importance, implementation dependencies, and evidence.
-7. Identify recommended migration order based on shared shell dependencies and user priority; do not decide priority silently.
+Một bề mặt được tính là màn hình khi nó là cửa sổ riêng, dialog, panel công cụ, menu có nhiều thao tác, luồng nhiều bước, hoặc trạng thái làm đổi bố cục.
 
-## Required outputs
+1. Xác nhận với người dùng rằng màn hình này nằm trong phạm vi. Nhiều tính năng đang bị loại có chủ đích (`rules/01`, mục 2).
+2. Tìm trong `screen-inventory.md`, phần ngoài phạm vi, để tránh làm trùng.
+3. Cấp ID `SCR-<AREA>-<NNN>`, không dùng lại ID cũ.
+4. Thêm vào `screen-inventory.md`, `.json`, `navigation-map.md` với trạng thái `discovered`, `partially_observed`, `observed` hoặc `blocked`.
+5. Không xóa mục nào. Muốn loại thì ghi `deprecated_candidate` và chờ xác nhận.
 
-- `ui-specifications/00-application/screen-inventory.md`
-- `ui-specifications/00-application/screen-inventory.json`
-- `ui-specifications/00-application/navigation-map.md`
+## Điều kiện dừng
 
-## Inventory status values
-
-- `discovered`
-- `partially_observed`
-- `observed`
-- `blocked`
-- `deprecated_candidate` (requires user confirmation; never remove automatically)
-
-## Stop condition
-
-Present the inventory and proposed screen-by-screen order. Wait for the user to select or approve the first screen.
+Nêu phạm vi và thứ tự đề xuất, chờ người dùng đồng ý rồi mới sang Workflow 03.

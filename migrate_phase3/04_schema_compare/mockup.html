@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schema Compare Mockup — SQL IDE Desktop</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --ide-bg-base: #18181b;
+      --ide-bg-subtle: #202026;
+      --ide-bg-editor: #121215;
+      --ide-border: #2e2e38;
+      --ide-border-subtle: #272730;
+      --ide-text-main: #f4f4f5;
+      --ide-text-muted: #a1a1aa;
+      --ide-accent: #3b82f6;
+      --ide-diff-added: rgba(16, 185, 129, 0.2);
+      --ide-diff-deleted: rgba(239, 68, 68, 0.2);
+      --ide-diff-modified: rgba(234, 179, 8, 0.2);
+      --ide-font-mono: 'JetBrains Mono', Consolas, 'Fira Code', monospace;
+      --ide-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      font-family: var(--ide-font-sans);
+      background-color: var(--ide-bg-base);
+      color: var(--ide-text-main);
+      user-select: none;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Diff line styling */
+    .diff-line-added {
+      background-color: rgba(16, 185, 129, 0.15);
+      border-left: 3px solid #10b981;
+    }
+    .diff-line-deleted {
+      background-color: rgba(239, 68, 68, 0.15);
+      border-left: 3px solid #ef4444;
+    }
+    .diff-line-modified {
+      background-color: rgba(234, 179, 8, 0.15);
+      border-left: 3px solid #eab308;
+    }
+  </style>
+</head>
+<body class="text-xs">
+
+  <!-- 1. TOP SOURCE VS TARGET SELECTION HEADER -->
+  <header class="p-3 bg-[var(--ide-bg-subtle)] border-b border-[var(--ide-border)] flex flex-col gap-2.5 flex-shrink-0">
+    <div class="flex items-center justify-between gap-4">
+      
+      <!-- Source Box -->
+      <div class="flex-1 flex items-center gap-2 bg-[var(--ide-bg-editor)] p-1.5 rounded border border-[var(--ide-border)]">
+        <span class="px-1.5 py-0.5 rounded bg-blue-900/50 text-blue-300 font-bold text-[10px] uppercase border border-blue-700/50">Source</span>
+        <select class="bg-transparent text-gray-200 outline-none text-xs font-medium flex-1">
+          <option>MSSQL-PROD (192.168.1.100)</option>
+          <option selected>MSSQL-DEV (localhost:1433)</option>
+        </select>
+        <span class="text-gray-500">/</span>
+        <select class="bg-transparent text-gray-200 outline-none text-xs font-semibold">
+          <option selected>B10_PhucLoi</option>
+          <option>BravoSetup</option>
+        </select>
+        <select class="bg-transparent text-gray-300 outline-none text-xs">
+          <option selected>dbo</option>
+          <option>sales</option>
+        </select>
+      </div>
+
+      <!-- Direction & Swap Button -->
+      <button onclick="swapEndpoints()" class="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 border border-gray-700 flex items-center justify-center text-gray-300 transition" title="Đảo chiều so sánh">
+        <i class="fa-solid fa-arrows-left-right text-xs"></i>
+      </button>
+
+      <!-- Target Box -->
+      <div class="flex-1 flex items-center gap-2 bg-[var(--ide-bg-editor)] p-1.5 rounded border border-[var(--ide-border)]">
+        <span class="px-1.5 py-0.5 rounded bg-amber-900/50 text-amber-300 font-bold text-[10px] uppercase border border-amber-700/50">Target</span>
+        <select class="bg-transparent text-gray-200 outline-none text-xs font-medium flex-1">
+          <option selected>MSSQL-PROD (192.168.1.100)</option>
+          <option>MSSQL-DEV (localhost:1433)</option>
+        </select>
+        <span class="text-gray-500">/</span>
+        <select class="bg-transparent text-gray-200 outline-none text-xs font-semibold">
+          <option selected>B10_PhucLoi</option>
+          <option>BravoSetup</option>
+        </select>
+        <select class="bg-transparent text-gray-300 outline-none text-xs">
+          <option selected>dbo</option>
+          <option>sales</option>
+        </select>
+      </div>
+
+      <!-- Compare Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button class="h-8 px-2.5 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 flex items-center gap-1.5" title="Tùy chọn so sánh">
+          <i class="fa-solid fa-sliders text-[11px]"></i>
+          <span>Options</span>
+        </button>
+        <button onclick="runCompare()" class="h-8 px-4 rounded bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center gap-2 shadow-md transition">
+          <i class="fa-solid fa-play text-[11px]"></i>
+          <span>So sánh Schema</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. FILTER & METRICS BAR -->
+    <div class="flex items-center justify-between text-xs pt-1 border-t border-[var(--ide-border-subtle)]">
+      <div class="flex items-center gap-2">
+        <span class="text-gray-400 font-medium">Tổng khác biệt:</span>
+        <span class="px-2 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-600/40 font-bold">5 khác biệt</span>
+        <span class="text-gray-500">|</span>
+        <button class="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-600/40 font-medium text-[11px]">Tất cả (24)</button>
+        <button class="px-2 py-0.5 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 text-[11px]">Khác biệt (5)</button>
+        <button class="px-2 py-0.5 rounded bg-emerald-950/50 text-emerald-300 hover:bg-emerald-900/50 text-[11px]">+ Thêm mới (2)</button>
+        <button class="px-2 py-0.5 rounded bg-rose-950/50 text-rose-300 hover:bg-rose-900/50 text-[11px]">- Bị xóa (1)</button>
+        <button class="px-2 py-0.5 rounded bg-amber-950/50 text-amber-300 hover:bg-amber-900/50 text-[11px]">Δ Khác cấu trúc (2)</button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="toggleAllCheckboxes(true)" class="text-blue-400 hover:underline text-[11px]">Chọn tất cả</button>
+        <span class="text-gray-500">·</span>
+        <button onclick="toggleAllCheckboxes(false)" class="text-blue-400 hover:underline text-[11px]">Bỏ chọn</button>
+        <button onclick="openScriptDrawer()" class="ml-2 h-6 px-3 rounded bg-emerald-700 hover:bg-emerald-600 text-white font-medium flex items-center gap-1.5 shadow transition">
+          <i class="fa-solid fa-file-code text-[11px]"></i>
+          <span>Sinh Script Di chuyển (Deploy)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. MAIN CONTENT: DIFF TREE (LEFT) & SIDE-BY-SIDE DDL (RIGHT) -->
+  <main class="flex-1 flex overflow-hidden">
+    
+    <!-- LEFT: OBJECT DIFF MATRIX TREE -->
+    <aside class="w-84 border-r border-[var(--ide-border)] bg-[var(--ide-bg-base)] flex flex-col flex-shrink-0 overflow-y-auto">
+      
+      <!-- Category 1: Tables -->
+      <div class="border-b border-[var(--ide-border-subtle)]">
+        <div class="px-3 py-1.5 bg-[var(--ide-bg-subtle)] font-semibold text-gray-300 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-table text-blue-400"></i>
+            <span>BẢNG DỮ LIỆU (TABLES)</span>
+          </div>
+          <span class="px-1.5 py-0.2 rounded bg-amber-900/50 text-amber-300 text-[10px] font-bold">2 diffs</span>
+        </div>
+        
+        <div class="divide-y divide-[var(--ide-border-subtle)]">
+          <!-- Item 1: Modified Table (Selected) -->
+          <div onclick="selectDiffObject(0)" class="diff-tree-item p-2 bg-blue-950/30 border-l-2 border-blue-500 flex items-center justify-between cursor-pointer hover:bg-gray-800/40">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" checked class="accent-blue-500">
+              <span class="font-medium text-white">dbo.orders</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-600/50 text-[10px] font-bold">Δ Modified</span>
+          </div>
+
+          <!-- Item 2: New Table in Source -->
+          <div onclick="selectDiffObject(1)" class="diff-tree-item p-2 flex items-center justify-between cursor-pointer hover:bg-gray-800/40">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" checked class="accent-blue-500">
+              <span class="font-medium text-gray-300">dbo.audit_events</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 text-[10px] font-bold">+ New in Source</span>
+          </div>
+
+          <!-- Item 3: Deleted Table in Target -->
+          <div onclick="selectDiffObject(2)" class="diff-tree-item p-2 flex items-center justify-between cursor-pointer hover:bg-gray-800/40">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" checked class="accent-blue-500">
+              <span class="font-medium text-gray-300">dbo.legacy_logs</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded bg-rose-950/80 text-rose-300 border border-rose-600/50 text-[10px] font-bold">- Deleted in Source</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 2: Views -->
+      <div class="border-b border-[var(--ide-border-subtle)]">
+        <div class="px-3 py-1.5 bg-[var(--ide-bg-subtle)] font-semibold text-gray-300 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-eye text-cyan-400"></i>
+            <span>VIEWS</span>
+          </div>
+          <span class="px-1.5 py-0.2 rounded bg-amber-900/50 text-amber-300 text-[10px] font-bold">1 diff</span>
+        </div>
+        <div class="p-2 flex items-center justify-between cursor-pointer hover:bg-gray-800/40">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" checked class="accent-blue-500">
+            <span class="font-medium text-gray-300">dbo.v_customer_orders</span>
+          </div>
+          <span class="px-1.5 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-600/50 text-[10px] font-bold">Δ Modified</span>
+        </div>
+      </div>
+
+      <!-- Category 3: Stored Procedures -->
+      <div class="border-b border-[var(--ide-border-subtle)]">
+        <div class="px-3 py-1.5 bg-[var(--ide-bg-subtle)] font-semibold text-gray-300 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-microchip text-purple-400"></i>
+            <span>STORED PROCEDURES</span>
+          </div>
+          <span class="px-1.5 py-0.2 rounded bg-emerald-900/50 text-emerald-300 text-[10px] font-bold">1 diff</span>
+        </div>
+        <div class="p-2 flex items-center justify-between cursor-pointer hover:bg-gray-800/40">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" checked class="accent-blue-500">
+            <span class="font-medium text-gray-300">dbo.usp_sync_stock</span>
+          </div>
+          <span class="px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 text-[10px] font-bold">+ New in Source</span>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT: SIDE-BY-SIDE DDL DIFF VIEWER -->
+    <section class="flex-1 flex flex-col bg-[var(--ide-bg-editor)] overflow-hidden">
+      
+      <!-- Diff View Header -->
+      <div class="h-8 bg-[var(--ide-bg-subtle)] border-b border-[var(--ide-border)] flex items-center text-xs font-semibold flex-shrink-0">
+        <div class="flex-1 px-3 border-r border-[var(--ide-border)] flex items-center justify-between text-blue-300">
+          <span>SOURCE: dbo.orders (MSSQL-DEV)</span>
+          <span class="text-gray-500 text-[10px] font-normal">7 cột, 1 PK, 1 FK</span>
+        </div>
+        <div class="flex-1 px-3 flex items-center justify-between text-amber-300">
+          <span>TARGET: dbo.orders (MSSQL-PROD)</span>
+          <span class="text-gray-500 text-[10px] font-normal">5 cột, 1 PK, 0 FK</span>
+        </div>
+      </div>
+
+      <!-- Diff Text Container -->
+      <div class="flex-1 flex overflow-auto font-mono text-[12px] leading-5 text-gray-300 divide-x divide-[var(--ide-border)]">
+        
+        <!-- Left (Source Code) -->
+        <div class="flex-1 p-3 overflow-x-auto space-y-0.5">
+          <div class="text-blue-400 font-bold">CREATE TABLE [dbo].[orders] (</div>
+          <div>    [id] INT IDENTITY(1,1) NOT NULL,</div>
+          <div>    [customer_id] INT NOT NULL,</div>
+          <div class="diff-line-added px-1 rounded text-emerald-300 font-semibold">    [order_code] VARCHAR(32) NOT NULL,   -- MỚI</div>
+          <div>    [amount] NUMERIC(18, 2) NOT NULL,</div>
+          <div>    [status] VARCHAR(20) DEFAULT 'active',</div>
+          <div class="diff-line-added px-1 rounded text-emerald-300 font-semibold">    [notes] NVARCHAR(500) NULL,           -- MỚI</div>
+          <div>    [created_at] DATETIME2 DEFAULT GETDATE(),</div>
+          <div>    CONSTRAINT [PK_orders] PRIMARY KEY CLUSTERED ([id]),</div>
+          <div class="diff-line-added px-1 rounded text-emerald-300 font-semibold">    CONSTRAINT [FK_orders_customer] FOREIGN KEY ([customer_id]) REFERENCES [dbo].[customers]([id])</div>
+          <div class="text-blue-400 font-bold">);</div>
+        </div>
+
+        <!-- Right (Target Code) -->
+        <div class="flex-1 p-3 overflow-x-auto space-y-0.5">
+          <div class="text-blue-400 font-bold">CREATE TABLE [dbo].[orders] (</div>
+          <div>    [id] INT IDENTITY(1,1) NOT NULL,</div>
+          <div>    [customer_id] INT NOT NULL,</div>
+          <div class="diff-line-deleted px-1 rounded text-rose-400 line-through">    -- [order_code] chưa có ở Target</div>
+          <div>    [amount] NUMERIC(18, 2) NOT NULL,</div>
+          <div>    [status] VARCHAR(20) DEFAULT 'active',</div>
+          <div class="diff-line-deleted px-1 rounded text-rose-400 line-through">    -- [notes] chưa có ở Target</div>
+          <div>    [created_at] DATETIME2 DEFAULT GETDATE(),</div>
+          <div>    CONSTRAINT [PK_orders] PRIMARY KEY CLUSTERED ([id])</div>
+          <div class="diff-line-deleted px-1 rounded text-rose-400 line-through">    -- Chưa có FK constraint</div>
+          <div class="text-blue-400 font-bold">);</div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 4. SLIDE-UP SCRIPT DRAWER (Collapsible) -->
+  <div id="scriptDrawer" class="h-44 bg-[var(--ide-bg-subtle)] border-t border-[var(--ide-border)] flex flex-col flex-shrink-0">
+    <div class="h-7 px-3 bg-[var(--ide-bg-base)] border-b border-[var(--ide-border-subtle)] flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2 font-semibold text-emerald-400">
+        <i class="fa-solid fa-scroll"></i>
+        <span>KỊCH BẢN NÂNG CẤP TỰ ĐỘNG (GENERATED MIGRATION SCRIPT)</span>
+        <span class="text-gray-400 font-normal text-[10px]">Áp dụng thay đổi từ DEV sang PROD</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="copyScript()" class="h-5 px-2 rounded bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 text-[10px] flex items-center gap-1">
+          <i class="fa-solid fa-copy text-[9px]"></i> Copy
+        </button>
+        <button onclick="openScriptInTab()" class="h-5 px-2 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium text-[10px] flex items-center gap-1">
+          <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> Mở vào Tab SQL
+        </button>
+      </div>
+    </div>
+
+    <!-- Script Content -->
+    <pre class="flex-1 p-3 m-0 overflow-auto font-mono text-[11px] leading-5 text-gray-200 bg-[var(--ide-bg-editor)]">
+<span class="text-gray-500">-- =====================================================================</span>
+<span class="text-gray-500">-- Migration Script Generated by SQL IDE Schema Compare</span>
+<span class="text-gray-500">-- Source: DEV.B10_PhucLoi  ==>  Target: PROD.B10_PhucLoi</span>
+<span class="text-gray-500">-- =====================================================================</span>
+
+<span class="text-blue-400 font-bold">BEGIN TRANSACTION</span>;
+<span class="text-blue-400 font-bold">SET XACT_ABORT ON</span>;
+
+<span class="text-gray-500">-- 1. Alter Table dbo.orders (Add missing columns & FK)</span>
+<span class="text-blue-400 font-bold">ALTER TABLE</span> [dbo].[orders] <span class="text-blue-400 font-bold">ADD</span> [order_code] VARCHAR(32) NOT NULL DEFAULT '';
+<span class="text-blue-400 font-bold">ALTER TABLE</span> [dbo].[orders] <span class="text-blue-400 font-bold">ADD</span> [notes] NVARCHAR(500) NULL;
+<span class="text-blue-400 font-bold">ALTER TABLE</span> [dbo].[orders] <span class="text-blue-400 font-bold">ADD CONSTRAINT</span> [FK_orders_customer] <span class="text-blue-400 font-bold">FOREIGN KEY</span> ([customer_id]) <span class="text-blue-400 font-bold">REFERENCES</span> [dbo].[customers]([id]);
+
+<span class="text-blue-400 font-bold">COMMIT TRANSACTION</span>;
+    </pre>
+  </div>
+
+  <script>
+    function swapEndpoints() {
+      alert("Đã hoán đổi chiều so sánh giữa Source và Target!");
+    }
+
+    function runCompare() {
+      alert("Đang phân tích và so sánh metadata giữa hai cơ sở dữ liệu...");
+    }
+
+    function toggleAllCheckboxes(state) {
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = state);
+    }
+
+    function selectDiffObject(idx) {
+      alert(`Đang nạp DDL so sánh chi tiết cho mục được chọn #${idx}`);
+    }
+
+    function copyScript() {
+      alert("Đã sao chép kịch bản SQL Migration vào clipboard!");
+    }
+
+    function openScriptInTab() {
+      alert("Đang mở Migration Script vào một Tab Editor mới với đúng context kết nối!");
+    }
+  </script>
+</body>
+</html>
+

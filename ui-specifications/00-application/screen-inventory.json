@@ -568,11 +568,56 @@
       ],
       "evidence": "code_verified",
       "screenshots": []
+    },
+    {
+      "id": "SCR-TD-001",
+      "name": "Table Designer (New / Edit / Copy Table)",
+      "nameVi": "Thiết kế bảng (Tạo mới / Sửa / Sao chép bảng)",
+      "kind": "workspace-tab",
+      "parent": "SCR-MAIN-003",
+      "trigger": "Explorer context menu (New Table, Design Table, Copy Table) or F4",
+      "source": {
+        "files": [
+          "app/services/table_designer_service.py",
+          "app/api/designer_api.py",
+          "static/js/table-designer.js",
+          "static/css/table-designer.css"
+        ],
+        "notes": "Table designer with column grid, inspector, live DDL preview, save migration dialog, and copy table dialog"
+      },
+      "target": {
+        "files": [
+          "app/ui/designer/TableDesignerTab.java",
+          "app/ui/designer/ColumnGrid.java",
+          "app/ui/designer/ColumnInspector.java",
+          "app/ui/designer/DdlPreviewPane.java",
+          "app/ui/designer/SaveDesignDialog.java",
+          "app/ui/designer/CopyTableDialog.java",
+          "app/framework/designer/TableDesignerService.java",
+          "core/core-domain/... (TableDesign, ColumnDesign, etc.)",
+          "core/core-application/... (TableDesignValidator, TableDesignDiffer, DdlDialect)"
+        ],
+        "note": "Approved specification under Gate 1 (TD0). Supports SQL Server & PostgreSQL; SQLite deferred."
+      },
+      "status": "analyzed",
+      "importance": "high",
+      "dependsOn": [
+        "SCR-MAIN-001",
+        "SCR-MAIN-002",
+        "SCR-MAIN-003"
+      ],
+      "evidence": "code_verified (Python source) + observed (4 approved mockups)",
+      "screenshots": [
+        "01-new-table.png",
+        "02-edit-table.png",
+        "03-review-apply-dialog.png",
+        "04-copy-table-dialog.png"
+      ]
     }
   ],
   "excluded": [
     {
-      "item": "Workspace tab views: table designer, data editor, dependency graph, object search, SQL visualizer, structured data, activity monitor, schema compare, user permissions, diff",
+      "item": "Workspace tab views: data editor, dependency graph, object search, SQL visualizer, structured data, activity monitor, schema compare, user permissions, diff (table designer moved into SCR-TD-001)",
       "reason": "out of approved scope"
     },
     {
@@ -580,8 +625,8 @@
       "reason": "out of approved scope"
     },
     {
-      "item": "Table design apply preview modal (belongs to table designer)",
-      "reason": "out of approved scope"
+      "item": "Table design apply preview modal (moved into SCR-TD-001 SaveDesignDialog)",
+      "reason": "included in SCR-TD-001"
     },
     {
       "item": "Result comparator in-page modal",

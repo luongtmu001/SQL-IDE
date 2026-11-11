@@ -21,6 +21,10 @@
             <artifactId>core-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.lltool.core</groupId>
+            <artifactId>core-domain</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>

@@ -94,8 +94,8 @@ public final class PreviewDataChangesDialog {
 
         VBox content = new VBox(10);
         content.setPadding(new Insets(12, 16, 12, 16));
-        content.setPrefWidth(700);
-        content.setPrefHeight(460);
+        content.setPrefWidth(app.ui.components.UiMetrics.em(53.85));
+        content.setPrefHeight(app.ui.components.UiMetrics.em(35));
 
         // 1. Top Badges Row (G-DL-2: 3 count badges)
         HBox summaryBox = new HBox(8);
@@ -104,9 +104,9 @@ public final class PreviewDataChangesDialog {
         Label lblSummary = new Label("Thay đổi DML:");
         lblSummary.getStyleClass().add("dialog-message");
 
-        Badge badgeIns = new Badge("+" + insertCount + " thêm", Badge.Variant.SUCCESS);
-        Badge badgeUpd = new Badge("~" + updateCount + " sửa", Badge.Variant.WARNING);
-        Badge badgeDel = new Badge("-" + deleteCount + " xóa", Badge.Variant.DANGER);
+        Badge badgeIns = new Badge(insertCount + " thêm", Badge.Variant.SUCCESS);
+        Badge badgeUpd = new Badge(updateCount + " sửa", Badge.Variant.WARNING);
+        Badge badgeDel = new Badge(deleteCount + " xoá", Badge.Variant.DANGER);
 
         summaryBox.getChildren().addAll(lblSummary, badgeIns, badgeUpd, badgeDel);
 
@@ -124,9 +124,7 @@ public final class PreviewDataChangesDialog {
 
         // 3. Action Buttons (G-DL-2)
         Button btnOpenSql = DialogChrome.secondary("Mở trong tab SQL");
-        FontIcon sqlIcon = new FontIcon("fth-external-link");
-        sqlIcon.setIconSize(13);
-        btnOpenSql.setGraphic(sqlIcon);
+        btnOpenSql.setGraphic(app.ui.components.Icons.of("fth-external-link"));
         btnOpenSql.setOnAction(e -> {
             String s = monaco.getText() != null ? monaco.getText() : script;
             if (resultConsumer != null) resultConsumer.accept(new PreviewResult(Action.OPEN_IN_SQL_TAB, s));
@@ -141,9 +139,7 @@ public final class PreviewDataChangesDialog {
             });
 
             Button btnExecute = DialogChrome.primary("Thực thi");
-            FontIcon runIcon = new FontIcon("fth-play");
-            runIcon.setIconSize(13);
-            btnExecute.setGraphic(runIcon);
+            btnExecute.setGraphic(app.ui.components.Icons.of("fth-play"));
             btnExecute.setOnAction(e -> {
                 String s = monaco.getText() != null ? monaco.getText() : script;
                 if (resultConsumer != null) resultConsumer.accept(new PreviewResult(Action.EXECUTE, s));

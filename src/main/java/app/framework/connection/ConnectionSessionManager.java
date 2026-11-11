@@ -40,6 +40,16 @@ public class ConnectionSessionManager {
                 activeConnectionName.set(newVal.name());
                 GlobalDesktopState.getInstance().setActiveConnection(newVal.name());
                 GlobalDesktopState.getInstance().setActiveDialect(newVal.databaseType());
+                if (newVal.databaseName() != null && !newVal.databaseName().isBlank()) {
+                    GlobalDesktopState.getInstance().setActiveCatalog(newVal.databaseName());
+                }
+                String defSchema = app.services.DefaultSchemaService.get(newVal.id());
+                if ((defSchema == null || defSchema.isBlank()) && newVal.properties() != null) {
+                    defSchema = newVal.properties().get("defaultSchema");
+                }
+                if (defSchema != null && !defSchema.isBlank()) {
+                    GlobalDesktopState.getInstance().setActiveSchema(defSchema);
+                }
             } else {
                 activeConnectionName.set("");
                 GlobalDesktopState.getInstance().setActiveConnection("");
@@ -242,8 +252,19 @@ public class ConnectionSessionManager {
         String db = database != null && !database.isBlank() ? database : profile.databaseName();
         Result<DatabaseConnection> res = optProvider.get().connect(toConfig(profile, type, db), password);
         if (res.isSuccess()) {
+            DatabaseConnection conn = res.getDataOrThrow();
+            String defSchema = app.services.DefaultSchemaService.get(profile.id());
+            if ((defSchema == null || defSchema.isBlank()) && profile.properties() != null) {
+                defSchema = profile.properties().get("defaultSchema");
+            }
+            if (defSchema != null && !defSchema.isBlank() && type != DatabaseType.SQLITE) {
+                try {
+                    conn.getRawJdbcConnection().setSchema(defSchema);
+                } catch (Exception ignored) {
+                }
+            }
             boolean readOnly = app.framework.backend.BackendFlags.readOnlyAll() || profile.readOnly();
-            if (readOnly) applyReadOnly(res.getDataOrThrow(), type);
+            if (readOnly) applyReadOnly(conn, type);
         }
         return res;
     }
@@ -262,6 +283,8 @@ public class ConnectionSessionManager {
             if (type == DatabaseType.POSTGRESQL) {
                 try (Statement st = raw.createStatement()) {
                     st.execute("SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY");
+                } catch (Exception e) {
+                    log.debug("SET SESSION READ ONLY not supported: {}", e.getMessage());
                 }
             }
         } catch (Exception e) {
@@ -269,7 +292,26 @@ public class ConnectionSessionManager {
         }
     }
 
-    private DatabaseConnectionConfig toConfig(ConnectionProfileDto profile, DatabaseType type, String databaseTarget) {
+    /** Clears JDBC read-only flag and resets PostgreSQL session to READ WRITE. */
+    public static void removeReadOnly(DatabaseConnection conn, DatabaseType type) {
+        try {
+            Connection raw = conn.getRawJdbcConnection();
+            if (type != DatabaseType.SQLITE) {
+                try {
+                    raw.setReadOnly(false);
+                } catch (Exception ignored) {}
+            }
+            if (type == DatabaseType.POSTGRESQL) {
+                try (Statement st = raw.createStatement()) {
+                    st.execute("SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE");
+                } catch (Exception ignored) {}
+            }
+        } catch (Exception e) {
+            log.debug("Could not remove read-only from session: {}", e.getMessage());
+        }
+    }
+
+    public DatabaseConnectionConfig toConfig(ConnectionProfileDto profile, DatabaseType type, String databaseTarget) {
         Map<String, String> properties = new HashMap<>();
         if (profile.properties() != null) {
             properties.putAll(profile.properties());

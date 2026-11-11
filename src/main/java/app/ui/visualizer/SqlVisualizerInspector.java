@@ -45,9 +45,9 @@ public class SqlVisualizerInspector extends VBox {
         grid.setHgap(16);
         grid.setVgap(6);
         ColumnConstraints col1 = new ColumnConstraints();
-        col1.setMinWidth(140);
-        col1.setPrefWidth(140);
-        col1.setMaxWidth(140);
+        col1.setMinWidth(app.ui.components.UiMetrics.em(10.77));
+        col1.setPrefWidth(app.ui.components.UiMetrics.em(10.77));
+        col1.setMaxWidth(app.ui.components.UiMetrics.em(10.77));
         ColumnConstraints col2 = new ColumnConstraints();
         col2.setHgrow(Priority.ALWAYS);
         grid.getColumnConstraints().addAll(col1, col2);
@@ -71,7 +71,7 @@ public class SqlVisualizerInspector extends VBox {
         sqlSnippetArea.getStyleClass().add("qf-sql-snippet-box");
         sqlSnippetArea.setWrapText(true);
         sqlSnippetArea.setMaxWidth(Double.MAX_VALUE);
-        sqlSnippetArea.setMinHeight(48);
+        sqlSnippetArea.setMinHeight(app.ui.components.UiMetrics.em(3.7));
 
         snippetBox.getChildren().addAll(snippetHeader, sqlSnippetArea);
 

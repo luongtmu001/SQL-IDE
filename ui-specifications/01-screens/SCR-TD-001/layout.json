@@ -1,0 +1,258 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-TD-001",
+  "screen_name": "Table Designer",
+  "source_window_size": {
+    "width": 1456,
+    "height": 816,
+    "display_scale": "unknown"
+  },
+  "layout_type": "desktop",
+  "regions": [
+    {
+      "id": "REG-TD-ROOT",
+      "name": "Table Designer Tab Root",
+      "purpose": "Khung gốc chứa toàn bộ màn hình thiết kế bảng bên trong tab editor",
+      "parent_id": null,
+      "layout_role": "workspace",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": 600,
+        "min_height": 400,
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [
+        "REG-TD-HEADER",
+        "REG-TD-SUBTABS",
+        "REG-TD-SPLIT-MAIN",
+        "REG-TD-FOOTER"
+      ],
+      "visibility_rules": [],
+      "evidence": ["01-new-table.png", "02-edit-table.png"]
+    },
+    {
+      "id": "REG-TD-HEADER",
+      "name": "Header Action Toolbar",
+      "purpose": "Thanh công cụ trên cùng: Schema, Tên bảng, nút Lưu, Undo/Redo, Live DDL toggle, Inspector toggle",
+      "parent_id": "REG-TD-ROOT",
+      "layout_role": "header",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": 36,
+        "min_width": 600,
+        "min_height": 36,
+        "resizable": false,
+        "flexible": false
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": ["01-new-table.png"]
+    },
+    {
+      "id": "REG-TD-SUBTABS",
+      "name": "Sub-tab Navigation Strip",
+      "purpose": "Dải tab chuyển đổi giữa Cột, Chỉ mục, Khóa ngoại, Unique, Check, Trigger",
+      "parent_id": "REG-TD-ROOT",
+      "layout_role": "navigation",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": 32,
+        "min_width": 600,
+        "min_height": 32,
+        "resizable": false,
+        "flexible": false
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": ["01-new-table.png"]
+    },
+    {
+      "id": "REG-TD-SPLIT-MAIN",
+      "name": "Main Work Area Horizontal Split",
+      "purpose": "SplitPane ngang chia tách vùng thiết kế chính (trái) và Column Inspector (phải)",
+      "parent_id": "REG-TD-ROOT",
+      "layout_role": "content",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": 600,
+        "min_height": 300,
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [
+        "REG-TD-DESIGN-AREA",
+        "REG-TD-INSPECTOR"
+      ],
+      "visibility_rules": [],
+      "evidence": ["01-new-table.png"]
+    },
+    {
+      "id": "REG-TD-DESIGN-AREA",
+      "name": "Design Work Area Vertical Split",
+      "purpose": "SplitPane dọc chứa thanh thao tác dòng + Lưới cột (trên) và Vùng DDL Preview (dưới)",
+      "parent_id": "REG-TD-SPLIT-MAIN",
+      "layout_role": "content",
+      "position": "left",
+      "sizing": {
+        "width": "flexible",
+        "height": "fill",
+        "min_width": 380,
+        "min_height": 300,
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [
+        "REG-TD-ROW-TOOLBAR",
+        "REG-TD-GRID-CONTAINER",
+        "REG-TD-DDL-PREVIEW"
+      ],
+      "visibility_rules": [],
+      "evidence": ["01-new-table.png"]
+    },
+    {
+      "id": "REG-TD-ROW-TOOLBAR",
+      "name": "Row Operations Toolbar",
+      "purpose": "Thanh công cụ thao tác dòng: Thêm, Chèn, Xóa, Nhân bản, Di chuyển, Lọc",
+      "parent_id": "REG-TD-DESIGN-AREA",
+      "layout_role": "toolbar",
+      "position": "top",
+      "sizing": {
+        "width": "fill",
+        "height": 28,
+        "min_width": 380,
+        "min_height": 28,
+        "resizable": false,
+        "flexible": false
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": ["01-new-table.png", "02-edit-table.png"]
+    },
+    {
+      "id": "REG-TD-GRID-CONTAINER",
+      "name": "Column Grid Table Container",
+      "purpose": "Khung chứa TableView danh sách các cột",
+      "parent_id": "REG-TD-DESIGN-AREA",
+      "layout_role": "content",
+      "position": "center",
+      "sizing": {
+        "width": "fill",
+        "height": "fill",
+        "min_width": 380,
+        "min_height": 180,
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": ["01-new-table.png"]
+    },
+    {
+      "id": "REG-TD-DDL-PREVIEW",
+      "name": "Live DDL Preview Pane",
+      "purpose": "Khung xem trước mã DDL / Migration SQL dạng Monaco Editor read-only",
+      "parent_id": "REG-TD-DESIGN-AREA",
+      "layout_role": "docked-bottom",
+      "position": "bottom",
+      "sizing": {
+        "width": "fill",
+        "height": 160,
+        "min_width": 380,
+        "min_height": 80,
+        "resizable": true,
+        "flexible": false
+      },
+      "children": [],
+      "visibility_rules": [
+        "visible when btnToggleDdlPreview is active"
+      ],
+      "evidence": ["01-new-table.png"]
+    },
+    {
+      "id": "REG-TD-INSPECTOR",
+      "name": "Column Inspector Sidebar",
+      "purpose": "Khung mở rộng thuộc tính nâng cao của cột đang chọn (Collation, Identity, Sequence, Computed, Default)",
+      "parent_id": "REG-TD-SPLIT-MAIN",
+      "layout_role": "sidebar",
+      "position": "right",
+      "sizing": {
+        "width": 290,
+        "height": "fill",
+        "min_width": 240,
+        "min_height": 300,
+        "resizable": true,
+        "flexible": false
+      },
+      "children": [],
+      "visibility_rules": [
+        "visible when btnToggleInspector is active"
+      ],
+      "evidence": ["01-new-table.png"]
+    },
+    {
+      "id": "REG-TD-FOOTER",
+      "name": "Designer Status Footer Bar",
+      "purpose": "Thanh trạng thái chân tab: tổng số cột, số PK, cảnh báo validation và lỗi",
+      "parent_id": "REG-TD-ROOT",
+      "layout_role": "footer",
+      "position": "bottom",
+      "sizing": {
+        "width": "fill",
+        "height": 24,
+        "min_width": 600,
+        "min_height": 24,
+        "resizable": false,
+        "flexible": false
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": ["01-new-table.png"]
+    },
+    {
+      "id": "REG-TD-SAVE-DIALOG",
+      "name": "Save Design & Review Migration Dialog",
+      "purpose": "Cửa sổ modal xem trước, xác nhận và chạy script migration",
+      "parent_id": null,
+      "layout_role": "dialog",
+      "position": "center",
+      "sizing": {
+        "width": 820,
+        "height": 580,
+        "min_width": 700,
+        "min_height": 480,
+        "resizable": true,
+        "flexible": true
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": ["03-review-apply-dialog.png"]
+    },
+    {
+      "id": "REG-TD-COPY-DIALOG",
+      "name": "Copy Table Structure Dialog",
+      "purpose": "Cửa sổ modal cấu hình sao chép cấu trúc bảng sang bảng mới",
+      "parent_id": null,
+      "layout_role": "dialog",
+      "position": "center",
+      "sizing": {
+        "width": 480,
+        "height": 420,
+        "min_width": 480,
+        "min_height": 420,
+        "resizable": false,
+        "flexible": false
+      },
+      "children": [],
+      "visibility_rules": [],
+      "evidence": ["04-copy-table-dialog.png"]
+    }
+  ]
+}
+

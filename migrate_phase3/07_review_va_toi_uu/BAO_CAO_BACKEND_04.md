@@ -73,3 +73,4 @@ Tất cả các test đã được thực thi và vượt qua 100% qua lệnh `.
 1. **TableDesign Copy Method:** Trong kế hoạch và ghi chú có nhắc đến `copy()`, trong khi method thực tế của domain model là `deepCopy()`.
 2. **ForeignKeyAction Package:** Nằm trong value object `com.lltool.core.domain.tabledesigner.valueobject.ForeignKeyAction`, không nằm trong package `model`.
 3. **LoadingOverlay Dynamic Updates:** `LoadingOverlay` ban đầu chỉ có `show(text, cancelAction)` và không có `setMessage(text)`. Đã bổ sung `setMessage(String text)` để cập nhật tiến độ mượt mà từ background thread sang JavaFX application thread.
+

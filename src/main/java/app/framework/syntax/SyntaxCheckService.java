@@ -11,6 +11,7 @@ import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,23 @@ public final class SyntaxCheckService {
 
     /** @param checked false = nothing was checked (no connection / dialect not supported / disabled / failed) */
     public record Outcome(String tabId, boolean checked, List<SyntaxDiagnostic> diagnostics) {
+        public int errorsCount() {
+            if (diagnostics == null) return 0;
+            int count = 0;
+            for (var d : diagnostics) {
+                if (d.severity() == SyntaxDiagnostic.Severity.ERROR) count++;
+            }
+            return count;
+        }
+
+        public int warningsCount() {
+            if (diagnostics == null) return 0;
+            int count = 0;
+            for (var d : diagnostics) {
+                if (d.severity() == SyntaxDiagnostic.Severity.WARNING || d.severity() == SyntaxDiagnostic.Severity.HINT) count++;
+            }
+            return count;
+        }
     }
 
     private static final SyntaxCheckService INSTANCE = new SyntaxCheckService();
@@ -111,6 +129,7 @@ public final class SyntaxCheckService {
 
     /** A connection was disconnected: drop its syntax connections. */
     public void closeFor(String profileId) {
+        SyntaxCoordinator.getInstance().invalidateCache(profileId);
         worker.execute(() -> {
             connections.entrySet().removeIf(e -> {
                 if (e.getKey().startsWith(profileId + "|")) {
@@ -123,6 +142,7 @@ public final class SyntaxCheckService {
     }
 
     public void closeAll() {
+        SyntaxCoordinator.getInstance().invalidateCache(null);
         worker.execute(() -> {
             connections.values().forEach(SyntaxCheckService::closeQuietly);
             connections.clear();
@@ -141,11 +161,18 @@ public final class SyntaxCheckService {
     private Outcome run(String tabId, String sql) {
         Outcome none = new Outcome(tabId, false, List.of());
         if (sql == null || sql.length() > MAX_CHARS) return none;
-        TabSession session = TabSessionManager.getInstance().get(tabId);
-        if (session == null || session.state() != TabSession.State.CONNECTED || session.profile() == null) return none;
-        ConnectionProfileDto profile = session.profile();
-        if (ScriptRunner.Dialect.of(profile.databaseType()) != ScriptRunner.Dialect.SQLSERVER) return none;   // PostgreSQL: S1b
         if (sql.isBlank()) return new Outcome(tabId, true, List.of());
+
+        TabSession session = TabSessionManager.getInstance().get(tabId);
+        if (session == null || session.state() != TabSession.State.CONNECTED || session.profile() == null) {
+            List<SyntaxDiagnostic> offline = SyntaxCoordinator.getInstance().validate(
+                    sql, "sqlserver", null, null, null, null, false, true, null);
+            return new Outcome(tabId, true, offline);
+        }
+
+        ConnectionProfileDto profile = session.profile();
+        ScriptRunner.Dialect dialect = ScriptRunner.Dialect.of(profile.databaseType());
+        String dialectStr = (dialect == ScriptRunner.Dialect.POSTGRESQL) ? "postgresql" : "sqlserver";
 
         sweepIdle();
         String key = profile.id() + "|" + session.database();
@@ -155,21 +182,48 @@ public final class SyntaxCheckService {
             var res = ConnectionSessionManager.getInstance()
                     .openSession(profile, session.database(), CredentialResolver.resolve(profile, null));
             app.framework.intellisense.IntellisensePerf.log("syntax connection opened in " + (System.currentTimeMillis() - perfStart) + " ms");
-            if (res.isFailure()) return none;
+            if (res.isFailure()) {
+                List<SyntaxDiagnostic> offline = SyntaxCoordinator.getInstance().validate(
+                        sql, dialectStr, null, profile.id(), session.database(), null, false, true, null);
+                return new Outcome(tabId, true, offline);
+            }
             entry = new Entry(res.getDataOrThrow());
             connections.put(key, entry);
         }
         try {
             long perfCheck = System.currentTimeMillis();
-            List<SyntaxDiagnostic> d = SqlServerSyntaxChecker.check(entry.connection.getRawJdbcConnection(), sql);
+
+            Map<String, List<String>> cachedTables = null;
+            try {
+                var detailsFut = app.framework.intellisense.MetadataSnapshotStore.getInstance()
+                        .details(profile, session.database());
+                var details = (detailsFut != null && detailsFut.isDone()) ? detailsFut.getNow(null) : null;
+                if (details != null && details.columnsJson() != null) {
+                    cachedTables = parseColumnsFromJson(details.columnsJson());
+                }
+            } catch (Exception ignored) { }
+
+            List<SyntaxDiagnostic> d = SyntaxCoordinator.getInstance().validate(
+                    sql,
+                    dialectStr,
+                    entry.connection.getRawJdbcConnection(),
+                    profile.id(),
+                    session.database(),
+                    null,
+                    false,
+                    true,
+                    cachedTables
+            );
             entry.lastUse = System.currentTimeMillis();
-            app.framework.intellisense.IntellisensePerf.log("syntax check " + (entry.lastUse - perfCheck) + " ms, " + sql.length() + " chars, " + d.size() + " errors");
+            app.framework.intellisense.IntellisensePerf.log("syntax check " + (entry.lastUse - perfCheck) + " ms, " + sql.length() + " chars, " + d.size() + " diagnostics");
             return new Outcome(tabId, true, d);
         } catch (Exception e) {
             log.debug("Syntax connection {} dropped: {}", key, e.getMessage());
             connections.remove(key);
             closeQuietly(entry);
-            return none;
+            List<SyntaxDiagnostic> offline = SyntaxCoordinator.getInstance().validate(
+                    sql, dialectStr, null, profile.id(), session.database(), null, false, true, null);
+            return new Outcome(tabId, true, offline);
         }
     }
 
@@ -190,5 +244,31 @@ public final class SyntaxCheckService {
         } catch (Exception ignored) {
             // already closed
         }
+    }
+
+    private static Map<String, List<String>> parseColumnsFromJson(Map<String, String> columnsJson) {
+        if (columnsJson == null || columnsJson.isEmpty()) return null;
+        Map<String, List<String>> out = new HashMap<>();
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (var e : columnsJson.entrySet()) {
+            String key = e.getKey(); // "schema|table"
+            String schema = key.contains("|") ? key.substring(0, key.indexOf('|')) : "";
+            String table = key.contains("|") ? key.substring(key.indexOf('|') + 1) : key;
+            try {
+                com.fasterxml.jackson.databind.JsonNode arr = mapper.readTree(e.getValue());
+                if (arr.isArray()) {
+                    List<String> cols = new ArrayList<>();
+                    for (var item : arr) {
+                        String colName = item.path("name").asText(null);
+                        if (colName != null) cols.add(colName);
+                    }
+                    if (!schema.isBlank()) {
+                        out.put(schema + "." + table, cols);
+                    }
+                    out.put(table, cols);
+                }
+            } catch (Exception ignored) { }
+        }
+        return out;
     }
 }

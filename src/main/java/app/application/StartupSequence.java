@@ -23,7 +23,7 @@ final class StartupSequence {
 
     private static final Logger log = LoggerFactory.getLogger(StartupSequence.class);
 
-    static final long MIN_SPLASH_MILLIS = 1750;
+    static final long MIN_SPLASH_MILLIS = 300;
     /** A safety net: an editor that never reports ready must not keep the user out of the IDE forever. */
     static final long READY_TIMEOUT_MILLIS = 30_000;
     /** The main window paints behind the splash before the splash fades out. */

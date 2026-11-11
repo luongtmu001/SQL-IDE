@@ -6,6 +6,7 @@ import app.framework.metadata.DesktopMetadataService;
 import app.framework.metadata.MockMetadataProvider;
 import app.framework.metadata.SqlScriptGenerator;
 import app.framework.metadata.filter.DesktopFilterManager;
+import app.framework.state.GlobalDesktopState;
 import app.models.DatabaseNode;
 import app.models.DatabaseNodeType;
 import app.services.ConnectionColorService;
@@ -106,6 +107,12 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
                     handleNodeAction(node);
                 }
                 e.consume();
+            } else if (e.getCode() == KeyCode.F4 && node.getType() == DatabaseNodeType.TABLE) {
+                var mc = app.application.AppContext.getInstance().getMainController();
+                if (mc != null) {
+                    mc.openTableDesigner(node.getConnectionProfile(), node.getCatalog(), node.getSchema(), node.getName(), false);
+                }
+                e.consume();
             } else if (e.getCode() == KeyCode.F5) {
                 if (sel instanceof LazyDatabaseTreeItem lazy && node.getType() != DatabaseNodeType.GROUP) lazy.reload();
                 else loadData();
@@ -183,6 +190,11 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
             var res = DesktopBootstrap.getInstance().getConnectionApi().getConnections();
             if (res.isSuccess() && !res.getDataOrThrow().isEmpty()) {
                 profiles = new ArrayList<>(res.getDataOrThrow());
+                for (ConnectionProfileDto p : profiles) {
+                    if (!DesktopFilterManager.getInstance().hasDatabaseFilter(p.id())) {
+                        DesktopFilterManager.getInstance().syncFromProfile(p);
+                    }
+                }
                 buildGroupedTree(rootData, profiles);
             } else {
                 rootData = DatabaseMockService.getInstance().createMockRoot();
@@ -843,10 +855,29 @@ public class SidebarController implements Initializable, DatabaseTreeCell.Explor
         if (connectionId == null || explorerTree.getRoot() == null) return;
         List<DatabaseNode> conns = new ArrayList<>();
         collectConnections(rootData, conns);
-        conns.stream().filter(n -> connectionId.equals(n.getConnectionId())).findFirst().ifPresent(n -> {
+        conns.stream().filter(n -> connectionId.equals(n.getConnectionId()) || connectionId.equalsIgnoreCase(n.getName())).findFirst().ifPresent(n -> {
+            var profile = n.getConnectionProfile() != null ? n.getConnectionProfile() : app.framework.connection.ProfileLookup.byName(n.getName());
+            if (profile != null) {
+                DesktopFilterManager.getInstance().syncFromProfile(profile);
+            }
             selectConnectionInTree(n);
             TreeItem<DatabaseNode> sel = explorerTree.getSelectionModel().getSelectedItem();
             if (sel != null) sel.setExpanded(true);
+            GlobalDesktopState.getInstance().setActiveConnection(n.getName());
+            if (profile != null) {
+                if (profile.databaseName() != null && !profile.databaseName().isBlank()) {
+                    GlobalDesktopState.getInstance().setActiveCatalog(profile.databaseName());
+                }
+                String sch = app.services.DefaultSchemaService.get(profile.id());
+                if (sch == null) sch = app.services.DefaultSchemaService.get(profile.name());
+                if (sch == null && profile.properties() != null) {
+                    sch = profile.properties().get("schema");
+                    if (sch == null) sch = profile.properties().get("defaultSchema");
+                }
+                if (sch != null && !sch.isBlank()) {
+                    GlobalDesktopState.getInstance().setActiveSchema(sch);
+                }
+            }
         });
     }
 

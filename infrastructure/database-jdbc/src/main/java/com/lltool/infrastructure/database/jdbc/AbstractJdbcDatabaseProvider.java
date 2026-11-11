@@ -208,23 +208,37 @@ public abstract class AbstractJdbcDatabaseProvider implements DatabaseProvider {
     @Override
     public Result<List<RoutineMetadata>> getRoutines(DatabaseConnection connection, String catalog, String schema) {
         try {
-            List<RoutineMetadata> routines = new ArrayList<>();
+            Map<String, RoutineMetadata> routines = new LinkedHashMap<>();
             Connection raw = connection.getRawJdbcConnection();
             DatabaseMetaData meta = raw.getMetaData();
 
             try (ResultSet rs = meta.getProcedures(catalog, schema, "%")) {
                 while (rs.next()) {
-                    routines.add(new RoutineMetadata(rs.getString("PROCEDURE_NAME"), schema, catalog, "PROCEDURE", null));
+                    String name = rs.getString("PROCEDURE_NAME");
+                    if (name != null) {
+                        int semi = name.indexOf(';');
+                        if (semi >= 0) {
+                            name = name.substring(0, semi);
+                        }
+                        routines.putIfAbsent(name + "|PROCEDURE", new RoutineMetadata(name, schema, catalog, "PROCEDURE", null));
+                    }
                 }
             } catch (Exception ignored) {}
 
             try (ResultSet rs = meta.getFunctions(catalog, schema, "%")) {
                 while (rs.next()) {
-                    routines.add(new RoutineMetadata(rs.getString("FUNCTION_NAME"), schema, catalog, "FUNCTION", null));
+                    String name = rs.getString("FUNCTION_NAME");
+                    if (name != null) {
+                        int semi = name.indexOf(';');
+                        if (semi >= 0) {
+                            name = name.substring(0, semi);
+                        }
+                        routines.putIfAbsent(name + "|FUNCTION", new RoutineMetadata(name, schema, catalog, "FUNCTION", null));
+                    }
                 }
             } catch (Exception ignored) {}
 
-            return Result.success(routines);
+            return Result.success(new ArrayList<>(routines.values()));
         } catch (Exception e) {
             log.error("Failed to fetch routines: {}", e.getMessage());
             return Result.failure(AppError.system("Failed to fetch routines", e));

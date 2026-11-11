@@ -17,7 +17,8 @@ import java.util.function.Consumer;
  * Features:
  * - Generation tracking (cancels and discards results from older executions)
  * - Safe cancellation of active statements via Statement.cancel()
- * - JavaFX Application Thread dispatch for onSuccess, onError, and onCancelled callbacks
+ * - JavaFX Application Thread dispatch for onSuccess, onError, and onCancelled
+ * callbacks
  */
 public class LoadTask<T> {
 
@@ -33,9 +34,13 @@ public class LoadTask<T> {
 
     public interface Context {
         void registerStatement(Statement stmt);
+
         void unregisterStatement(Statement stmt);
+
         boolean isCancelled();
+
         void checkCancelled() throws InterruptedException;
+
         long getGeneration();
     }
 
@@ -50,7 +55,8 @@ public class LoadTask<T> {
 
         @Override
         public void registerStatement(Statement stmt) {
-            if (stmt == null) return;
+            if (stmt == null)
+                return;
             if (cancelled.get()) {
                 try {
                     stmt.cancel();
@@ -107,10 +113,10 @@ public class LoadTask<T> {
         final AtomicBoolean completed = new AtomicBoolean(false);
 
         ActiveExecution(long generation,
-                        ContextImpl context,
-                        Consumer<R> onSuccess,
-                        Consumer<Throwable> onError,
-                        Runnable onCancelled) {
+                ContextImpl context,
+                Consumer<R> onSuccess,
+                Consumer<Throwable> onError,
+                Runnable onCancelled) {
             this.generation = generation;
             this.context = context;
             this.onSuccess = onSuccess;
@@ -124,9 +130,9 @@ public class LoadTask<T> {
     }
 
     public synchronized void execute(Worker<T> worker,
-                                     Consumer<T> onSuccess,
-                                     Consumer<Throwable> onError,
-                                     Runnable onCancelled) {
+            Consumer<T> onSuccess,
+            Consumer<Throwable> onError,
+            Runnable onCancelled) {
         Objects.requireNonNull(worker, "worker cannot be null");
         cancel();
 

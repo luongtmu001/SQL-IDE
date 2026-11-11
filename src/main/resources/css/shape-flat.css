@@ -54,7 +54,24 @@
 .cm-card,
 .cm-field-button,
 .cm-eye-button,
-.match-count-badge {
+.match-count-badge,
+.segmented-toggle-group,
+.segmented-toggle-button,
+.filter-chip,
+.dep-node-card,
+.flow-node-card,
+.legend-box,
+.tde-badge-pk,
+.tde-badge-nopk,
+.tde-badge-unknown,
+.diff-badge-added,
+.diff-badge-removed,
+.diff-badge-changed,
+.diff-badge-identical,
+.badge-accent,
+.constraint-card,
+.search-badge,
+.search-scope-badge {
     -fx-background-radius: 0;
     -fx-border-radius: 0;
 }

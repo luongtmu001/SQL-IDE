@@ -852,6 +852,10 @@ public class EditorController implements Initializable {
         return primaryTabPane;
     }
 
+    public void setPrimaryTabPane(TabPane primaryTabPane) {
+        this.primaryTabPane = primaryTabPane;
+    }
+
     public boolean isSplit() {
         return isSplit;
     }
@@ -1019,10 +1023,16 @@ public class EditorController implements Initializable {
     public app.ui.designer.TableDesignerTab openTableDesignerTab(
             com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
             String catalog, String schema, String tableName, boolean isNewTable) {
-        String key = "table_designer|" + (profile != null ? profile.id() : "default") + "|" +
-                (schema != null ? schema : "dbo") + "." + (tableName != null ? tableName : "new_table");
+        String key = "table_designer_" + (isNewTable ? "new_" : "edit_") + catalog + "_" + (schema != null ? schema : "dbo") + "_" + (tableName != null ? tableName : "Table_1");
+        if (app.ui.window.FeatureWindowManager.getInstance().isWindowMode(key)) {
+            var existing = app.ui.window.FeatureWindowManager.getInstance().getTabByKey(key);
+            if (existing instanceof app.ui.designer.TableDesignerTab dt) {
+                app.ui.window.FeatureWindowManager.getInstance().dockToTab(dt, dt.getContentRoot(), dt.getToggleWindowButton());
+                return dt;
+            }
+        }
         for (Tab t : primaryTabPane.getTabs()) {
-            if (t instanceof app.ui.designer.TableDesignerTab dt && key.equals(dt.getCustomKey())) {
+            if (t instanceof app.ui.designer.TableDesignerTab dt && (key.equals(dt.getCustomKey()) || dt.getCustomKey().contains(tableName))) {
                 primaryTabPane.getSelectionModel().select(dt);
                 return dt;
             }
@@ -1085,6 +1095,13 @@ public class EditorController implements Initializable {
             com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
             String catalog, String initialSearch) {
         String key = "obj_search|" + (profile != null ? profile.id() : "default") + "|" + (catalog != null ? catalog : "");
+        if (app.ui.window.FeatureWindowManager.getInstance().isWindowMode(key)) {
+            var existing = app.ui.window.FeatureWindowManager.getInstance().getTabByKey(key);
+            if (existing instanceof app.ui.search.ObjectContentSearchTab st) {
+                app.ui.window.FeatureWindowManager.getInstance().dockToTab(st, st.getContentRoot(), st.getToggleWindowButton());
+                return st;
+            }
+        }
         for (Tab t : primaryTabPane.getTabs()) {
             if (t instanceof app.ui.search.ObjectContentSearchTab st && key.equals(st.getCustomKey())) {
                 primaryTabPane.getSelectionModel().select(st);
@@ -1111,6 +1128,13 @@ public class EditorController implements Initializable {
             String initialTargetSchema) {
         String key = "schema_compare|" + (sourceProfile != null ? sourceProfile.id() : "src") + "|" +
                 (targetProfile != null ? targetProfile.id() : "tgt");
+        if (app.ui.window.FeatureWindowManager.getInstance().isWindowMode(key)) {
+            var existing = app.ui.window.FeatureWindowManager.getInstance().getTabByKey(key);
+            if (existing instanceof app.ui.compare.SchemaCompareTab ct) {
+                app.ui.window.FeatureWindowManager.getInstance().dockToTab(ct, ct.getContentRoot(), ct.getToggleWindowButton());
+                return ct;
+            }
+        }
         for (Tab t : primaryTabPane.getTabs()) {
             if (t instanceof app.ui.compare.SchemaCompareTab ct && key.equals(ct.getCustomKey())) {
                 primaryTabPane.getSelectionModel().select(ct);
@@ -1136,6 +1160,13 @@ public class EditorController implements Initializable {
         String key = "dep_graph|" + (profile != null ? profile.id() : "default") + "|" +
                 (schema != null ? schema : "dbo") + "." + (objectName != null ? objectName : "orders") +
                 (columnName != null ? "." + columnName : "");
+        if (app.ui.window.FeatureWindowManager.getInstance().isWindowMode(key)) {
+            var existing = app.ui.window.FeatureWindowManager.getInstance().getTabByKey(key);
+            if (existing instanceof app.ui.dependency.DependencyGraphTab dt) {
+                app.ui.window.FeatureWindowManager.getInstance().dockToTab(dt, dt.getContentRoot(), dt.getToggleWindowButton());
+                return dt;
+            }
+        }
         for (Tab t : primaryTabPane.getTabs()) {
             if (t instanceof app.ui.dependency.DependencyGraphTab dt && key.equals(dt.getCustomKey())) {
                 primaryTabPane.getSelectionModel().select(dt);
@@ -1159,6 +1190,13 @@ public class EditorController implements Initializable {
             String catalog, String schema, String queryName, String initialSql) {
         String key = "sql_visualizer|" + (profile != null ? profile.id() : "default") + "|" +
                 (queryName != null ? queryName : "Query1");
+        if (app.ui.window.FeatureWindowManager.getInstance().isWindowMode(key)) {
+            var existing = app.ui.window.FeatureWindowManager.getInstance().getTabByKey(key);
+            if (existing instanceof app.ui.visualizer.SqlVisualizerTab vt) {
+                app.ui.window.FeatureWindowManager.getInstance().dockToTab(vt, vt.getContentRoot(), vt.getToggleWindowButton());
+                return vt;
+            }
+        }
         for (Tab t : primaryTabPane.getTabs()) {
             if (t instanceof app.ui.visualizer.SqlVisualizerTab vt && key.equals(vt.getCustomKey())) {
                 primaryTabPane.getSelectionModel().select(vt);
@@ -1174,5 +1212,140 @@ public class EditorController implements Initializable {
         refreshTabDecorations();
         primaryTabPane.getSelectionModel().select(tab);
         return tab;
+    }
+
+    public javafx.stage.Stage openTableDesignerWindow(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String schema, String tableName, boolean isNewTable) {
+        String key = "table_designer_" + (isNewTable ? "new_" : "edit_") + catalog + "_" + (schema != null ? schema : "dbo") + "_" + (tableName != null ? tableName : "Table_1");
+        if (app.ui.window.FeatureWindowManager.getInstance().isWindowMode(key)) {
+            var stg = app.ui.window.FeatureWindowManager.getInstance().getStageByKey(key);
+            if (stg != null) {
+                stg.toFront();
+                stg.requestFocus();
+                return stg;
+            }
+        }
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.designer.TableDesignerTab dt && (key.equals(dt.getCustomKey()) || dt.getCustomKey().contains(tableName))) {
+                return app.ui.window.FeatureWindowManager.getInstance().detachToWindow(
+                        dt, dt.getContentRoot(), dt.getToggleWindowButton(), dt.getTabTitle(), "fth-edit-3");
+            }
+        }
+        app.ui.designer.TableDesignerTab tab = new app.ui.designer.TableDesignerTab(
+                profile, catalog, schema, tableName, isNewTable, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        return app.ui.window.FeatureWindowManager.getInstance().openInWindow(
+                tab, tab.getContentRoot(), tab.getToggleWindowButton(), tab.getTabTitle(), "fth-edit-3");
+    }
+
+    public javafx.stage.Stage openObjectContentSearchWindow(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String initialSearch) {
+        String key = "obj_search|" + (profile != null ? profile.id() : "default") + "|" + (catalog != null ? catalog : "");
+        if (app.ui.window.FeatureWindowManager.getInstance().isWindowMode(key)) {
+            var stg = app.ui.window.FeatureWindowManager.getInstance().getStageByKey(key);
+            if (stg != null) {
+                stg.toFront();
+                stg.requestFocus();
+                return stg;
+            }
+        }
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.search.ObjectContentSearchTab st && key.equals(st.getCustomKey())) {
+                return app.ui.window.FeatureWindowManager.getInstance().detachToWindow(
+                        st, st.getContentRoot(), st.getToggleWindowButton(), "Search Objects Content", "fth-search");
+            }
+        }
+        app.ui.search.ObjectContentSearchTab tab = new app.ui.search.ObjectContentSearchTab(
+                profile, catalog, initialSearch, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        return app.ui.window.FeatureWindowManager.getInstance().openInWindow(
+                tab, tab.getContentRoot(), tab.getToggleWindowButton(), "Search Objects Content", "fth-search");
+    }
+
+    public javafx.stage.Stage openSchemaCompareWindow(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto sourceProfile,
+            String sourceDatabase,
+            String initialSourceSchema,
+            com.lltool.core.application.connection.dto.ConnectionProfileDto targetProfile,
+            String targetDatabase,
+            String initialTargetSchema) {
+        String key = "schema_compare|" + (sourceProfile != null ? sourceProfile.id() : "src") + "|" +
+                (targetProfile != null ? targetProfile.id() : "tgt");
+        if (app.ui.window.FeatureWindowManager.getInstance().isWindowMode(key)) {
+            var stg = app.ui.window.FeatureWindowManager.getInstance().getStageByKey(key);
+            if (stg != null) {
+                stg.toFront();
+                stg.requestFocus();
+                return stg;
+            }
+        }
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.compare.SchemaCompareTab ct && key.equals(ct.getCustomKey())) {
+                return app.ui.window.FeatureWindowManager.getInstance().detachToWindow(
+                        ct, ct.getContentRoot(), ct.getToggleWindowButton(), "Schema Compare & Sync", "fth-git-commit");
+            }
+        }
+        app.ui.compare.SchemaCompareTab tab = new app.ui.compare.SchemaCompareTab(
+                sourceProfile, sourceDatabase, initialSourceSchema,
+                targetProfile, targetDatabase, initialTargetSchema, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        return app.ui.window.FeatureWindowManager.getInstance().openInWindow(
+                tab, tab.getContentRoot(), tab.getToggleWindowButton(), "Schema Compare & Sync", "fth-git-commit");
+    }
+
+    public javafx.stage.Stage openDependencyGraphWindow(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String schema, String objectName, String columnName,
+            com.lltool.core.domain.dependency.DependencyNodeType objectType) {
+        String key = "dep_graph|" + (profile != null ? profile.id() : "default") + "|" +
+                (schema != null ? schema : "dbo") + "." + (objectName != null ? objectName : "orders") +
+                (columnName != null ? "." + columnName : "");
+        if (app.ui.window.FeatureWindowManager.getInstance().isWindowMode(key)) {
+            var stg = app.ui.window.FeatureWindowManager.getInstance().getStageByKey(key);
+            if (stg != null) {
+                stg.toFront();
+                stg.requestFocus();
+                return stg;
+            }
+        }
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.dependency.DependencyGraphTab dt && key.equals(dt.getCustomKey())) {
+                return app.ui.window.FeatureWindowManager.getInstance().detachToWindow(
+                        dt, dt.getContentRoot(), dt.getToggleWindowButton(), "Dependency Graph", "fth-share-2");
+            }
+        }
+        app.ui.dependency.DependencyGraphTab tab = new app.ui.dependency.DependencyGraphTab(
+                profile, catalog, schema, objectName, columnName, objectType, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        return app.ui.window.FeatureWindowManager.getInstance().openInWindow(
+                tab, tab.getContentRoot(), tab.getToggleWindowButton(), "Dependency Graph", "fth-share-2");
+    }
+
+    public javafx.stage.Stage openSqlVisualizerWindow(
+            com.lltool.core.application.connection.dto.ConnectionProfileDto profile,
+            String catalog, String schema, String queryName, String initialSql) {
+        String key = "sql_visualizer|" + (profile != null ? profile.id() : "default") + "|" +
+                (queryName != null ? queryName : "Query1");
+        if (app.ui.window.FeatureWindowManager.getInstance().isWindowMode(key)) {
+            var stg = app.ui.window.FeatureWindowManager.getInstance().getStageByKey(key);
+            if (stg != null) {
+                stg.toFront();
+                stg.requestFocus();
+                return stg;
+            }
+        }
+        for (Tab t : primaryTabPane.getTabs()) {
+            if (t instanceof app.ui.visualizer.SqlVisualizerTab vt && key.equals(vt.getCustomKey())) {
+                return app.ui.window.FeatureWindowManager.getInstance().detachToWindow(
+                        vt, vt.getContentRoot(), vt.getToggleWindowButton(), "SQL Visualizer", "fth-cpu");
+            }
+        }
+        app.ui.visualizer.SqlVisualizerTab tab = new app.ui.visualizer.SqlVisualizerTab(
+                profile, catalog, schema, queryName, initialSql, this::handleTabAction);
+        tab.setOnClosed(e -> updateEmptyState());
+        return app.ui.window.FeatureWindowManager.getInstance().openInWindow(
+                tab, tab.getContentRoot(), tab.getToggleWindowButton(), "SQL Visualizer", "fth-cpu");
     }
 }

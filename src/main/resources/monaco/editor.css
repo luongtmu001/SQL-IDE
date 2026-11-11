@@ -4,14 +4,41 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: transparent !important;
+    background-color: transparent;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 #monaco-container {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    background-color: transparent !important;
+    background-color: transparent;
+}
+
+/* Strict font rendering and crisp anti-aliasing for Monaco Editor */
+.monaco-editor,
+.monaco-editor .view-line,
+.monaco-editor .view-lines,
+.monaco-editor .margin {
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    text-rendering: optimizeLegibility !important;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+}
+
+/* Object Content Search Highlight Decorations */
+.ocs-monaco-match {
+    background-color: rgba(234, 179, 8, 0.35) !important;
+    border-bottom: 2px solid rgba(234, 179, 8, 0.8) !important;
+}
+
+.ocs-monaco-match-active {
+    background-color: rgba(249, 115, 22, 0.6) !important;
+    outline: 1px solid #f97316 !important;
+    border-radius: 2px !important;
 }
 

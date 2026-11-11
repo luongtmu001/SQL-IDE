@@ -1,50 +1,61 @@
 # Scope, Boundaries & Guardrails
 # Phạm vi, ranh giới và nguyên tắc bảo vệ
 
-## 1. Source of truth / Nguồn chuẩn
+## 1. Nguồn chuẩn / Source of truth
 
-**Vietnamese:** Ứng dụng Python/PyWebView hiện tại là nguồn tham chiếu chính cho chức năng, cấu trúc điều hướng và hành vi. Không được coi HTML/CSS là kiến trúc bắt buộc phải sao chép sang JavaFX.
+| Câu hỏi | Nguồn chuẩn |
+|---|---|
+| Chức năng, luồng nghiệp vụ, ý nghĩa dữ liệu | Code Python của LLTool (chỉ đọc). Tài liệu Python có thể đã cũ: khi lệch thì **lấy code làm chuẩn** |
+| Trạng thái code Java hiện tại | Code trên `master`, rồi đến `HANDOFF.md` |
+| Thiết kế giao diện đã chốt | Quyết định của người dùng trong `ui-specifications/` (Gate B, Gate C, R-UI-01) |
+| Mục tiêu giao diện | **Tương đương VS Code**, không sao chép 100% bản Python |
 
-**English:** The existing Python/PyWebView application is the primary reference for capabilities, navigation, and behavior. HTML/CSS implementation details are not required to be copied into JavaFX.
+`MIGRATION_TRACKER.md` ghi Feature 1–8 là `COMPLETE`, nhưng các dòng đó có trước Giai đoạn 8 và phần lớn dựa trên test mock. **Không dùng file đó để kết luận tính năng đã xong với server thật.** Riêng các rule ở `docs/LLTool_Java_Migration_3_Files/AGENTS.md` vẫn có giá trị, trừ dòng "Java 25, JavaFX 25": `pom.xml` thực tế dùng release 21 và JavaFX 21.0.5.
 
-## 2. Separate UI from logic / Tách UI khỏi logic
+## 2. Phạm vi / Scope
 
-During discovery, read source code to understand behavior. During prototype implementation, do not connect real services, databases, credentials, file mutations, or production APIs.
+**Trong phạm vi:** màn hình chính, Settings, các dialog và splash; logic thật theo các mốc D1–D9; IntelliSense và Check Syntax theo kế hoạch Feature 09.
 
-Trong giai đoạn khảo sát, được đọc mã nguồn để hiểu hành vi. Trong giai đoạn prototype, không kết nối dịch vụ thật, database, thông tin xác thực, thao tác ghi dữ liệu thật hoặc API production.
+**Ngoài phạm vi khi chưa có yêu cầu:** table designer, data editor, dependency graph, object search, SQL visualizer, activity monitor, schema compare, Profiler, Query History, Snippets, BRAVO, Google Sheets, Report Gen, MySQL. Lối vào của các tính năng này vẫn được giữ và hiện mờ `(chưa hỗ trợ)`.
 
-## 3. No silent feature loss / Không âm thầm loại bỏ chức năng
+## 3. Không âm thầm bỏ chức năng / No silent feature loss
 
-Every discovered visible or reachable UI action must be represented in the component catalog and traceability map. If an action is intentionally omitted or consolidated, record the reason and obtain user approval.
+Mọi thao tác trong LLTool phải có mặt trong danh mục component và ma trận truy vết. Muốn bỏ hoặc gộp phải ghi lý do và xin duyệt. Tính năng mới thì đề xuất riêng, không gộp vào việc đang làm.
 
-Mọi thao tác giao diện được phát hiện, kể cả thao tác nằm trong menu hoặc trạng thái phụ, phải có trong danh mục component và bảng truy vết. Nếu muốn bỏ hoặc gộp, phải ghi rõ lý do và xin duyệt.
+## 4. Nhãn bằng chứng / Evidence labels
 
-## 4. Evidence labels / Nhãn mức độ bằng chứng
+- `observed`: thấy trực tiếp trên app đang chạy.
+- `code_verified`: xác nhận từ code.
+- `inferred`: suy luận, chưa kiểm chứng.
+- `unknown`: chưa biết.
 
-Use one of these values for every important behavior:
+Không trình bày `inferred` hay `unknown` như sự thật. Với kết quả kiểm thử, ghi rõ: mock, IT với server thật, hay người dùng đã thử trên máy.
 
-- `observed`: directly observed in the running application.
-- `code_verified`: confirmed from event handler/backend code.
-- `inferred`: plausible interpretation, not fully verified.
-- `unknown`: not established.
+## 5. An toàn dữ liệu / Data safety
 
-Never present `inferred` or `unknown` as confirmed behavior.
+- Mọi kết nối **chỉ đọc** (`sqlide.readOnly=true`) theo quyết định ngày 2026-11-05. Không đổi mặc định này khi chưa được duyệt riêng.
+- Không chạy lệnh ghi, xóa, đổi quyền hay `EXPLAIN ANALYZE` câu ghi lên server thật, kể cả để thử.
+- Chỉ thử trên server thử local: SQL Server `localhost,1433`, PostgreSQL `localhost,5432`. **Không thử trên PROD.**
+- Không ghi mật khẩu vào repo, tài liệu, log hay lời nhắc. Không đọc hoặc in nội dung `%APPDATA%\LLTool-Desktop\it-db.properties` và `vault.enc`.
+- `%APPDATA%\LLTool\` thuộc app Python: chỉ đọc. `%APPDATA%\LLTool-Desktop\` là dữ liệu thật của người dùng: test không được ghi vào đây.
+- Không tự kết nối DB lúc khởi động (giữ bản sửa T1).
 
-## 5. Change control / Kiểm soát thay đổi
+## 6. Kiểm soát thay đổi / Change control
 
-- No backend rewrite.
-- No database schema changes.
-- No business-rule changes.
-- No unrelated dependency or framework migration.
-- No deletion of existing UI features.
-- No replacement of Monaco or other editor technology unless explicitly requested.
-- Keep each screen implementation isolated and reviewable.
+- Không đổi lược đồ dữ liệu đã lưu khi chưa có phương án tương thích hoặc nhập dữ liệu.
+- Không đổi dependency hay framework lớn khi chưa nêu đánh đổi và được duyệt.
+- Không đổi hoặc thay Monaco, không thay `TableView` khi chưa được duyệt.
+- Mỗi lần chỉ làm một mốc hoặc một màn hình.
+- Không commit, merge, tạo tag hay push khi người dùng chưa yêu cầu.
+- Không xóa worktree và nhánh `claude/*`: có nhánh còn việc chưa merge (`HANDOFF.md`, mục 2).
 
-## 6. Approval gates / Điểm chờ phê duyệt
+## 7. Điểm duyệt / Approval gates
 
-Gate A: approve screen inventory and migration order.  
-Gate B: approve the individual screen specification and proposed redesign.  
-Gate C: approve runnable JavaFX prototype.  
-Gate D: approve integration of real application logic.
+| Gate | Nội dung | Trạng thái |
+|---|---|---|
+| A | Danh mục màn hình và thứ tự | Đã duyệt |
+| B | Đặc tả từng màn hình | Đã chốt khi làm từng giai đoạn. Riêng 17 gói đặc tả viết hồi tố ngày 2026-11-05 **chưa qua Gate B** |
+| C | Prototype | Đã qua cho 21 màn hình, kèm khoảng trống đã ghi. `SCR-SHELL-001` là tạm duyệt |
+| D | Tích hợp logic thật | Đã đồng ý ngày 2026-11-05, **duyệt riêng từng mốc D1…D9** |
 
-The agent must stop at each requested gate. Silence is not approval.
+Dừng tại mỗi điểm duyệt. Im lặng không phải là đồng ý.

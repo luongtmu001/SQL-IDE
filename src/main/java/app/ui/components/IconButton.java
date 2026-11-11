@@ -28,6 +28,7 @@ public class IconButton extends Button {
     }
 
     private void init() {
+        Icons.bind(fontIcon, IconScale.MD);
         setGraphic(fontIcon);
         getStyleClass().addAll("icon-button", Styles.BUTTON_ICON, Styles.FLAT);
     }
@@ -35,7 +36,8 @@ public class IconButton extends Button {
     public void setIcon(String iconLiteral) {
         if (iconLiteral != null && !iconLiteral.isBlank()) {
             fontIcon.setIconLiteral(iconLiteral);
-            setGraphic(fontIcon);
+            Icons.bind(fontIcon, IconScale.MD);
+        setGraphic(fontIcon);
         } else {
             setGraphic(null);
         }

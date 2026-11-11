@@ -94,7 +94,9 @@ public class SchemaCompareTab extends SqlEditorTab {
 
     private final Hyperlink linkSelectAll = new Hyperlink("Chọn tất cả");
     private final Hyperlink linkDeselectAll = new Hyperlink("Bỏ chọn");
-    private final AppButton btnDeployScript = new AppButton("Sinh script", "fth-code", AppButton.Variant.SUCCESS);
+    private final AppButton btnDeployScript = new AppButton("Sinh script", "fth-code", AppButton.Variant.DEFAULT);
+    private final IconButton btnToggleWindow = new IconButton("fth-external-link", "Mở dạng cửa sổ riêng");
+    private VBox rootContainer;
 
     // UI Controls - Master Tree
     private final SearchField quickFilterField = new SearchField("Lọc danh sách đối tượng...");
@@ -115,7 +117,7 @@ public class SchemaCompareTab extends SqlEditorTab {
     private VBox scriptDrawer;
     private final Label lblScriptBadge = new Label("0 đối tượng");
     private final IconButton btnCopyScript = new IconButton("fth-copy", "Copy Script");
-    private final AppButton btnOpenScriptInSql = new AppButton("Mở vào Tab SQL", "fth-external-link", AppButton.Variant.PRIMARY, AppButton.Size.SMALL);
+    private final AppButton btnOpenScriptInSql = new AppButton("Mở vào Tab SQL", "fth-external-link", AppButton.Variant.DEFAULT);
     private EmbeddedMonaco scriptEditor;
 
     // UI Controls - Footer
@@ -155,7 +157,7 @@ public class SchemaCompareTab extends SqlEditorTab {
 
     private void initializeView() {
         VBox root = new VBox();
-        root.getStyleClass().add("schema-compare-root");
+        root.getStyleClass().addAll("schema-compare-root", "workspace-root");
 
         var cssRes = getClass().getResource("/css/schema-compare.css");
         if (cssRes != null) {
@@ -181,9 +183,14 @@ public class SchemaCompareTab extends SqlEditorTab {
         WorkspaceFooter footer = buildFooter();
 
         root.getChildren().addAll(headerBar, mainSplitPane, footer);
+        this.rootContainer = root;
 
-        String tabKey = "schema_compare_" + System.currentTimeMillis();
+        String tabKey = "schema_compare|" + (sourceProfile != null ? sourceProfile.id() : "src") + "|" +
+                (targetProfile != null ? targetProfile.id() : "tgt");
         setCustomContent(tabKey, root);
+
+        btnToggleWindow.setOnAction(e -> app.ui.window.FeatureWindowManager.getInstance().toggleWindow(
+                this, rootContainer, btnToggleWindow, "Schema Compare & Sync", "fth-git-commit"));
 
         // 4. Wire events and populate profile combos
         scriptDebounce.setOnFinished(e -> generateAndDisplayScript());
@@ -200,15 +207,28 @@ public class SchemaCompareTab extends SqlEditorTab {
         srcBox.getStyleClass().add("endpoint-box");
         HBox.setHgrow(srcBox, Priority.ALWAYS);
 
-        Label lblSourceBadge = new Label("SOURCE");
+        Label lblSourceBadge = new Label("Nguồn");
         lblSourceBadge.getStyleClass().add("endpoint-badge-source");
 
         cbSourceProfile.setPromptText("Kết nối Nguồn");
-        cbSourceProfile.setMinWidth(120);
+        // set here, not in populateEndpoints(): without these the combo shows the record's toString()
+        cbSourceProfile.setCellFactory(lv -> new ProfileListCell());
+        cbSourceProfile.setButtonCell(new ProfileListCell());
+        cbTargetProfile.setCellFactory(lv -> new ProfileListCell());
+        cbTargetProfile.setButtonCell(new ProfileListCell());
+        // a value that is not in the item list is rendered through the converter, not the cell
+        javafx.util.StringConverter<ConnectionProfileDto> profileName = new javafx.util.StringConverter<>() {
+            @Override public String toString(ConnectionProfileDto p) { return p == null ? "" : p.name(); }
+            @Override public ConnectionProfileDto fromString(String s) { return null; }
+        };
+        cbSourceProfile.setConverter(profileName);
+        cbTargetProfile.setConverter(profileName);
+        lblSourceBadge.setMinWidth(Region.USE_PREF_SIZE);
+        cbSourceProfile.setMinWidth(app.ui.components.UiMetrics.em(9.23));
         cbSourceCatalog.setPromptText("Database");
-        cbSourceCatalog.setMinWidth(120);
+        cbSourceCatalog.setMinWidth(app.ui.components.UiMetrics.em(9.23));
         cbSourceSchema.setPromptText("Schema");
-        cbSourceSchema.setMinWidth(100);
+        cbSourceSchema.setMinWidth(app.ui.components.UiMetrics.em(7.69));
         cbSourceSchema.setEditable(true);
 
         HBox.setHgrow(cbSourceProfile, Priority.ALWAYS);
@@ -226,15 +246,16 @@ public class SchemaCompareTab extends SqlEditorTab {
         tgtBox.getStyleClass().add("endpoint-box");
         HBox.setHgrow(tgtBox, Priority.ALWAYS);
 
-        Label lblTargetBadge = new Label("TARGET");
+        Label lblTargetBadge = new Label("Đích");
         lblTargetBadge.getStyleClass().add("endpoint-badge-target");
 
         cbTargetProfile.setPromptText("Kết nối Đích");
-        cbTargetProfile.setMinWidth(120);
+        lblTargetBadge.setMinWidth(Region.USE_PREF_SIZE);
+        cbTargetProfile.setMinWidth(app.ui.components.UiMetrics.em(9.23));
         cbTargetCatalog.setPromptText("Database");
-        cbTargetCatalog.setMinWidth(120);
+        cbTargetCatalog.setMinWidth(app.ui.components.UiMetrics.em(9.23));
         cbTargetSchema.setPromptText("Schema");
-        cbTargetSchema.setMinWidth(100);
+        cbTargetSchema.setMinWidth(app.ui.components.UiMetrics.em(7.69));
         cbTargetSchema.setEditable(true);
 
         HBox.setHgrow(cbTargetProfile, Priority.ALWAYS);
@@ -259,7 +280,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         row1NarrowBottom.setAlignment(Pos.CENTER_LEFT);
 
         Runnable updateEndpointsLayout = () -> {
-            boolean narrow = header.getWidth() > 0 && header.getWidth() < 1400;
+            boolean narrow = header.getWidth() > 0 && header.getWidth() < app.ui.components.UiMetrics.em(108);
             endpointsContainer.getChildren().clear();
             if (narrow) {
                 row1NarrowTop.getChildren().setAll(srcBox, btnSwap);
@@ -275,14 +296,19 @@ public class SchemaCompareTab extends SqlEditorTab {
         endpointsContainer.getChildren().setAll(row1Wide);
 
         // Row 2: Filter & Metrics Bar
-        HBox row2 = new HBox(8);
+        // FlowPane: when the tab is narrow the groups wrap to a second line instead of cutting labels
+        javafx.scene.layout.FlowPane row2 = new javafx.scene.layout.FlowPane(8, 4);
         row2.getStyleClass().add("compare-filter-bar");
         row2.setAlignment(Pos.CENTER_LEFT);
+        row2.setRowValignment(javafx.geometry.VPos.CENTER);
 
         Label lblMetricsTitle = new Label("Tổng khác biệt:");
         lblMetricsTitle.getStyleClass().add("compare-metrics-title");
 
         lblDiffSummaryBadge.getStyleClass().addAll("badge", "badge-warning");
+        for (Labeled rigid : new Labeled[]{lblMetricsTitle, lblDiffSummaryBadge, linkSelectAll, linkDeselectAll}) {
+            rigid.setMinWidth(Region.USE_PREF_SIZE);
+        }
 
         // SegmentedToggle for filtering
         filterToggle.addItem("ALL", "Tất cả (0)", "fth-layers");
@@ -310,18 +336,28 @@ public class SchemaCompareTab extends SqlEditorTab {
                 filterToggle,
                 filterSpacer,
                 linkSelectAll, new Label("·"), linkDeselectAll,
-                btnDeployScript
+                btnDeployScript,
+                new Separator(Orientation.VERTICAL),
+                btnToggleWindow
         );
 
         header.getChildren().addAll(endpointsContainer, row2);
         return header;
     }
 
+    public VBox getContentRoot() {
+        return rootContainer;
+    }
+
+    public IconButton getToggleWindowButton() {
+        return btnToggleWindow;
+    }
+
     private VBox buildMasterPane() {
         VBox pane = new VBox();
         pane.getStyleClass().add("object-search-master");
-        pane.setMinWidth(300);
-        pane.setPrefWidth(380);
+        pane.setMinWidth(app.ui.components.UiMetrics.em(23.08));
+        pane.setPrefWidth(app.ui.components.UiMetrics.em(29.23));
 
         // Quick filter box
         VBox headerBox = new VBox(6);
@@ -376,8 +412,8 @@ public class SchemaCompareTab extends SqlEditorTab {
         box.getStyleClass().add("diff-viewer-container");
         VBox.setVgrow(box, Priority.ALWAYS);
 
-        sourceHeader = new PaneHeader("SOURCE: (Chưa chọn đối tượng)", "fth-database", "DEV");
-        targetHeader = new PaneHeader("TARGET: (Chưa chọn đối tượng)", "fth-database", "PROD");
+        sourceHeader = new PaneHeader("Nguồn: (chưa chọn đối tượng)", "fth-database");
+        targetHeader = new PaneHeader("Đích: (chưa chọn đối tượng)", "fth-database");
 
         sourceEditor = new EmbeddedMonaco("compare_source_" + System.currentTimeMillis(), "sql", "-- SOURCE DDL");
         sourceEditor.setReadOnly(true);
@@ -407,8 +443,8 @@ public class SchemaCompareTab extends SqlEditorTab {
     private VBox buildScriptDrawer() {
         VBox drawer = new VBox();
         drawer.getStyleClass().add("script-drawer");
-        drawer.setPrefHeight(180);
-        drawer.setMinHeight(28);
+        drawer.setPrefHeight(app.ui.components.UiMetrics.em(14));
+        drawer.setMinHeight(app.ui.components.UiMetrics.em(2.15));
 
         // Header using PaneHeader
         PaneHeader header = new PaneHeader("Script đồng bộ", "fth-file-text", "");
@@ -853,19 +889,19 @@ public class SchemaCompareTab extends SqlEditorTab {
         this.selectedDiff = diff;
         if (diff == null) return;
 
-        String srcName = (capturedSourceEndpoint != null && capturedSourceEndpoint.profile() != null ? capturedSourceEndpoint.profile().name() : (sourceProfile != null ? sourceProfile.name() : "DEV"));
-        String tgtName = (capturedTargetEndpoint != null && capturedTargetEndpoint.profile() != null ? capturedTargetEndpoint.profile().name() : (targetProfile != null ? targetProfile.name() : "PROD"));
+        String srcName = (capturedSourceEndpoint != null && capturedSourceEndpoint.profile() != null ? capturedSourceEndpoint.profile().name() : (sourceProfile != null ? sourceProfile.name() : ""));
+        String tgtName = (capturedTargetEndpoint != null && capturedTargetEndpoint.profile() != null ? capturedTargetEndpoint.profile().name() : (targetProfile != null ? targetProfile.name() : ""));
 
         String colStatsSrc = diff.getObjectType() == SchemaObjectType.TABLE ? (diff.getSourceColumnCount() + " cột") : diff.getObjectType().getDisplayName();
         String colStatsTgt = diff.getObjectType() == SchemaObjectType.TABLE ? (diff.getTargetColumnCount() + " cột") : diff.getObjectType().getDisplayName();
 
         if (sourceHeader != null) {
-            sourceHeader.setTitle("SOURCE: " + diff.getQualifiedName());
+            sourceHeader.setTitle("Nguồn: " + diff.getQualifiedName());
             sourceHeader.setSubtitle(colStatsSrc + " · " + srcName);
         }
 
         if (targetHeader != null) {
-            targetHeader.setTitle("TARGET: " + diff.getQualifiedName());
+            targetHeader.setTitle("Đích: " + diff.getQualifiedName());
             targetHeader.setSubtitle(colStatsTgt + " · " + tgtName);
         }
 

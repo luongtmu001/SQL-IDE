@@ -1,58 +1,57 @@
-# Java Desktop UI Designer Skill
-# Skill thiết kế giao diện Java Desktop
+# SQL-IDE Java Desktop Skill
+# Skill tiếp tục dự án SQL-IDE
 
-**Version:** 1.0  
-**Primary target:** JavaFX desktop application  
-**Source UI:** Existing Python + PyWebView application  
-**Design direction:** Hybrid Modern Native — professional IDE structure with modern desktop visual language.
+**Phiên bản:** 2.0 (2026-11-08). Thay cho bản 1.0 ngày 2026-11-04, vốn chỉ viết cho giai đoạn dựng prototype.  
+**Dự án:** SQL-IDE, `D:\Luong\NB_Personal\NB_Java\SQL-IDE`  
+**Nguồn tham chiếu (chỉ đọc):** LLTool Python + PyWebView  
+**Phong cách:** tương đương VS Code, chuyên về cơ sở dữ liệu như DataGrip.
 
-## Purpose / Mục đích
+## Thay đổi so với bản 1.0
 
-This skill guides an AI coding agent to inspect an existing Python/PyWebView application, document every screen and UI element, redesign the UI for JavaFX, build runnable UI prototypes with mock data, review them, and wait for approval before integrating application logic.
-
-Skill này hướng dẫn AI Agent khảo sát ứng dụng Python/PyWebView hiện tại, đặc tả từng màn hình và thành phần giao diện, thiết kế lại bằng JavaFX, dựng prototype chạy được với dữ liệu giả, kiểm tra chất lượng và chờ phê duyệt trước khi tích hợp logic.
-
-## Read order / Thứ tự đọc
-
-Do not load every file at once. Read only the task-specific files.
-
-| Task | Required files |
+| Bản 1.0 | Thực tế, bản 2.0 |
 |---|---|
-| Understand the skill | `SKILL.md`, `rules/01-scope-and-guardrails.md` |
-| Discover the Python project | `workflows/01-project-discovery.md` |
-| Inventory screens | `workflows/02-screen-inventory.md`, `templates/application-map.template.md` |
-| Analyze one screen | `workflows/03-screen-analysis.md`, relevant templates in `templates/` |
-| Define visual language | `rules/02-design-principles.md`, `rules/03-design-tokens.md`, `rules/04-component-rules.md` |
-| Build JavaFX prototype | `workflows/04-prototype-implementation.md` |
-| Review and acceptance | `workflows/05-review-and-approval.md`, `rules/05-quality-gates.md` |
+| Skill dùng chung cho mọi dự án Python sang JavaFX | Skill riêng cho SQL-IDE |
+| Việc chính là khảo sát và dựng prototype mock | UI đã xong, việc chính là nối logic thật và kiểm chứng |
+| Cấm nối backend | Gate D đã duyệt. Mặc định backend thật, mọi kết nối chỉ đọc |
+| Token là ví dụ minh họa | Dùng token đã duyệt, biến `-ide-*` và theme registry |
+| 5 workflow | Thêm workflow nối backend và đối chiếu Python; workflow prototype đổi thành sửa UI |
+| Không có trạng thái dự án | Có `HANDOFF.md` ghi việc đã làm, chưa làm, cảnh báo và việc tiếp theo |
+| README nhắc tới `templates/application-map.template.md` | File này chưa từng tồn tại, đã bỏ tham chiếu |
 
-## Output location / Vị trí đầu ra
+## Thứ tự đọc
 
-Create documentation in the target project, not inside this reusable skill folder:
+Không đọc hết một lần.
+
+| Mục đích | File |
+|---|---|
+| Bắt đầu mọi phiên làm việc | `HANDOFF.md`, `SKILL.md`, `rules/01-scope-and-guardrails.md` |
+| Sửa giao diện | `workflows/04-ui-change.md`, `rules/02-design-principles.md`, `rules/03-design-tokens.md`, `rules/04-component-rules.md` |
+| Nối logic thật | `workflows/06-backend-integration.md`, `rules/06-backend-and-performance.md` |
+| Đối chiếu với Python | `workflows/07-python-parity.md`, `templates/parity-diff.template.md` |
+| Thêm màn hình mới | `workflows/02-screen-inventory.md`, `workflows/03-screen-analysis.md`, `templates/*` |
+| Khảo sát lại Python | `workflows/01-project-discovery.md` |
+| Nghiệm thu | `workflows/05-review-and-approval.md`, `rules/05-quality-gates.md` |
+
+Kiến trúc và vị trí code nằm ở `ui-specifications/00-application/PROJECT-OVERVIEW.md`. File đó lập ngày 2026-11-05, phần sai lệch đã ghi trong `HANDOFF.md`, mục 8.
+
+## Vị trí đầu ra
+
+Tài liệu dự án nằm trong repo, không nằm trong thư mục skill:
 
 ```text
 ui-specifications/
-  00-application/
-  01-screens/
-  02-design-system/
-  03-traceability/
-  04-reports/
+  00-application/     tổng quan, danh mục màn hình, bản đồ nguồn Python
+  01-screens/         22 gói đặc tả (SCR-*)
+  02-design-system/   tokens.md, tokens.json
+  03-traceability/    ma trận truy vết
+  04-reports/         migration-plan, phase7-review, phase8-plan
+docs/
+  performance-rules.md
+  feature_*.md        phân tích từng tính năng
 ```
 
-## Non-negotiable workflow / Quy trình bắt buộc
+## Quy ước ngôn ngữ
 
-1. Discover before designing.
-2. Inventory all screens before selecting implementation order.
-3. Analyze one screen at a time.
-4. Record evidence and uncertainty; never invent behavior.
-5. Preserve existing capabilities unless the user explicitly approves a change.
-6. Build UI-only prototypes with mock data first.
-7. Review against screenshots, specifications, and traceability.
-8. Stop for user approval before backend/business-logic integration.
-
-## Bilingual convention / Quy ước song ngữ
-
-- File names, IDs, code identifiers, component names: English.
-- Explanations and user-facing reports: Vietnamese first, English second where useful.
-- Technical terms may remain in English, followed by a Vietnamese explanation on first use.
-- Keep JSON keys and enum values in English for predictable parsing.
+- Tên file, ID, định danh code, khóa JSON: tiếng Anh.
+- Giải thích và báo cáo: tiếng Việt trước, thêm tiếng Anh khi có ích.
+- Chữ hiển thị trong app: tiếng Việt, giữ nguyên tên kỹ thuật như trong LLTool.

@@ -1,54 +1,53 @@
 # Quality Gates & Acceptance Criteria
 # Cổng chất lượng và tiêu chí nghiệm thu
 
-## Gate 1 — Discovery completeness
+## Gate 1 — Đặc tả màn hình mới
 
-- [ ] Main window and auxiliary windows identified.
-- [ ] Menus, dialogs, popovers, context menus, and secondary states inventoried.
-- [ ] Source files and entry points recorded.
-- [ ] Unknown/unreachable screens explicitly listed.
-- [ ] No screen assumed from memory without source evidence.
+- [ ] Có đủ bộ file trong `ui-specifications/01-screens/<ID>/`.
+- [ ] Mọi vùng, component, nút có ID ổn định.
+- [ ] Đã có tương tác, trạng thái, bằng chứng, điều chưa rõ.
+- [ ] Có ánh xạ Python sang JavaFX.
 
-## Gate 2 — Screen specification completeness
+## Gate 2 — Thay đổi giao diện
 
-- [ ] Full-screen screenshot captured where possible.
-- [ ] Every region has a stable ID.
-- [ ] Every component and button has a stable ID.
-- [ ] Menu hierarchy documented.
-- [ ] Interactions and state transitions documented.
-- [ ] Resizing, empty, loading, error, and disabled states considered.
-- [ ] Evidence and uncertainty recorded.
-- [ ] Python-to-JavaFX mapping exists.
+- [ ] App chạy được và đúng khi co giãn cửa sổ.
+- [ ] Đúng cả `rounded` lẫn `flat`, cả theme sáng lẫn tối.
+- [ ] Không hard-code màu hay bán kính.
+- [ ] Mọi control đã ghi trong đặc tả đều có mặt.
+- [ ] Có ảnh chụp thật khi sửa lỗi hình ảnh. Không kết luận chỉ từ đọc CSS.
 
-## Gate 3 — Prototype quality
+## Gate 3 — Tích hợp logic thật (mỗi mốc D*)
 
-- [ ] JavaFX prototype launches.
-- [ ] Uses mock/sample data only.
-- [ ] No real backend or database operations.
-- [ ] Layout behaves correctly when resized.
-- [ ] All documented controls are represented.
-- [ ] Shared design tokens and components are used.
-- [ ] No placeholder controls masquerade as completed functionality.
-- [ ] No unrelated files or logic modified.
+- [ ] Có công tắc mock/thật khi khu vực cần.
+- [ ] Không chặn FX thread. Có timeout, lỗi hiển thị rõ, hủy được khi việc có thể kéo dài.
+- [ ] Giữ các lớp bảo vệ chỉ đọc.
+- [ ] Đúng cho từng loại DB trong phạm vi: SQL Server, PostgreSQL, SQLite.
+- [ ] Đã đạt tiêu chí của mốc trong `04-reports/phase8-plan.md`.
+- [ ] Test tự động không cần server chạy được bằng `-Dsqlide.backend=mock`. Test cần server đặt tên `*IT`.
+- [ ] Người dùng đã thử trên máy các mục không tự động được.
 
-## Gate 4 — Visual and interaction review
+## Gate 4 — Đối chiếu Python
 
-Compare source and target side by side. Review:
-- Information architecture and region coverage.
-- Relative sizing and hierarchy.
-- Typography, spacing, icons, and color roles.
-- Button/menu coverage.
-- Keyboard and mouse interactions.
-- Focus, hover, disabled, selected, loading, empty, and error states.
-- Minimum window size and resizing.
-- Readability at the user's display scaling.
+- [ ] Mỗi khác biệt có một mục theo `templates/parity-diff.template.md`.
+- [ ] Khác biệt được phân loại: giữ theo Python, khác đã duyệt, cải tiến đã duyệt.
+- [ ] Chạy cùng corpus trên hai bên khi có corpus.
 
-## Completion status
+## Gate 5 — Hiệu năng
 
-Use only:
-- `PASS`
-- `PASS_WITH_KNOWN_GAPS`
-- `NEEDS_REVISION`
-- `BLOCKED`
+- [ ] Đã rà theo `docs/performance-rules.md`.
+- [ ] Có số đo trước và sau khi việc ảnh hưởng tốc độ.
 
-A screen cannot be marked `PASS` if undocumented controls or unverified critical interactions remain.
+## Gate 6 — Hoàn tất một việc
+
+- [ ] Biên dịch được.
+- [ ] Bộ unit test không có lỗi mới, so với danh sách lỗi đã biết trong `HANDOFF.md`.
+- [ ] Không còn việc hoặc file tạm ngoài phạm vi.
+- [ ] Đã cập nhật `HANDOFF.md` và tài liệu trạng thái liên quan.
+
+## Nhãn hoàn thành
+
+Chỉ dùng `PASS`, `PASS_WITH_KNOWN_GAPS`, `NEEDS_REVISION`, `BLOCKED`.
+
+Không ghi `PASS` khi còn control chưa ghi nhận hoặc tương tác quan trọng chưa kiểm chứng.
+
+Giữ riêng hai khái niệm: `implemented` (đã có code) và `verified` (đã kiểm chứng, ghi rõ bằng cách nào). Chỉ người dùng mới đánh dấu được `approved`.

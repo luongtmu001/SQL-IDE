@@ -11,6 +11,7 @@ public class PhysicalExecutionPlan {
 
     private String dialect = "sqlserver";
     private String planType = "estimated"; // "estimated" or "actual"
+    private boolean simulated = false;
     private double totalCost = 0.0;
     private PlanOperatorNode rootNode;
     private String rawPlanText = "";
@@ -57,6 +58,14 @@ public class PhysicalExecutionPlan {
 
     public int getNodeCount() {
         return allNodes.size();
+    }
+
+    public boolean isSimulated() {
+        return simulated;
+    }
+
+    public void setSimulated(boolean simulated) {
+        this.simulated = simulated;
     }
 
     /**

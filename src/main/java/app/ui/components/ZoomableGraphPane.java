@@ -55,6 +55,10 @@ public class ZoomableGraphPane extends Pane {
     private double dragStartY;
     private boolean isPanning = false;
 
+    /** True while the view is the automatic fit; a manual pan or zoom turns it off until the next fit. */
+    private boolean autoFit = true;
+    private boolean fitScheduled;
+
     private Runnable onBackgroundClicked;
 
     public ZoomableGraphPane() {
@@ -74,6 +78,20 @@ public class ZoomableGraphPane extends Pane {
 
         setCursor(Cursor.DEFAULT);
         initInteractions();
+
+        // The pane often gets its final size after the graph was set (split panes, drawers).
+        // Keep the automatic fit in step with the size until the user pans or zooms.
+        widthProperty().addListener((o, a, b) -> scheduleAutoFit());
+        heightProperty().addListener((o, a, b) -> scheduleAutoFit());
+    }
+
+    private void scheduleAutoFit() {
+        if (!autoFit || fitScheduled || nodesPane.getChildren().isEmpty()) return;
+        fitScheduled = true;
+        javafx.application.Platform.runLater(() -> {
+            fitScheduled = false;
+            if (autoFit) fitToScreen();
+        });
     }
 
     private void initInteractions() {
@@ -109,6 +127,7 @@ public class ZoomableGraphPane extends Pane {
 
         setOnMouseDragged(e -> {
             if (isPanning) {
+                autoFit = false;
                 translate.setX(e.getX() - dragStartX);
                 translate.setY(e.getY() - dragStartY);
             }
@@ -153,6 +172,7 @@ public class ZoomableGraphPane extends Pane {
     }
 
     public void resetZoom() {
+        autoFit = false;
         scale.setX(1.0);
         scale.setY(1.0);
         translate.setX(0);
@@ -163,6 +183,7 @@ public class ZoomableGraphPane extends Pane {
     public void zoomAt(double factor, double pivotX, double pivotY) {
         double newScale = scale.getX() * factor;
         if (newScale >= 0.25 && newScale <= 3.0) {
+            autoFit = false;
             double dx = (pivotX - translate.getX()) * (1 - factor);
             double dy = (pivotY - translate.getY()) * (1 - factor);
 
@@ -225,6 +246,11 @@ public class ZoomableGraphPane extends Pane {
         double tx = (viewW / 2.0) - (centerX * s);
         double ty = (viewH / 2.0) - (centerY * s);
 
+        // Still larger than the view at the smallest readable scale: show the start of the graph
+        // (top-left) instead of centring it, which would cut both ends.
+        if (graphW * s > viewW) tx = (padding - minX) * s;
+        if (graphH * s > viewH) ty = (padding - minY) * s;
+
         return new FitResult(s, tx, ty);
     }
 
@@ -239,8 +265,8 @@ public class ZoomableGraphPane extends Pane {
 
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE;
-        double maxY = Double.MIN_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
 
         int count = 0;
         for (Node n : nodesPane.getChildren()) {
@@ -256,6 +282,16 @@ public class ZoomableGraphPane extends Pane {
             count++;
         }
 
+        // captions drawn behind the nodes (stage titles) belong to the picture too
+        for (Node n : backgroundGroup.getChildren()) {
+            if (n instanceof javafx.scene.control.Labeled) {
+                minX = Math.min(minX, n.getLayoutX());
+                minY = Math.min(minY, n.getLayoutY());
+                maxX = Math.max(maxX, n.getLayoutX() + n.getBoundsInParent().getWidth());
+                maxY = Math.max(maxY, n.getLayoutY() + n.getBoundsInParent().getHeight());
+            }
+        }
+
         double viewW = getWidth() > 0 ? getWidth() : (getPrefWidth() > 0 ? getPrefWidth() : 900);
         double viewH = getHeight() > 0 ? getHeight() : (getPrefHeight() > 0 ? getPrefHeight() : 600);
 
@@ -265,6 +301,7 @@ public class ZoomableGraphPane extends Pane {
         translate.setX(fit.translateX());
         translate.setY(fit.translateY());
         updateZoomProperties();
+        autoFit = true;
     }
 
     /**
@@ -305,7 +342,7 @@ public class ZoomableGraphPane extends Pane {
             SnapshotParameters params = new SnapshotParameters();
             Paint bgPaint = getBackground() != null && !getBackground().getFills().isEmpty()
                     ? getBackground().getFills().get(0).getFill()
-                    : Color.TRANSPARENT;
+                    : Color.TRANSPARENT; // ui-lint:allow snapshot fill when the pane has no background, not a theme colour
             params.setFill(bgPaint);
 
             WritableImage fxImage = contentGroup.snapshot(params, null);

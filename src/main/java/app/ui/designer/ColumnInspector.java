@@ -35,7 +35,7 @@ public class ColumnInspector extends VBox {
     private final RadioButton rbDefaultExpression = new RadioButton("Biểu thức");
     private final ToggleGroup defaultGroup = new ToggleGroup();
     private final TextField txtDefaultConstraintName = new TextField();
-    private final TextArea txtComputedFormula = new TextArea();
+    private final TextArea txtComputedFormula = new TextArea(); // ui-lint:allow short single expression; Monaco per column inspector is too heavy
     private final CheckBox chkComputedPersisted = new CheckBox("Lưu trữ vật lý");
 
     // Group 2: Collation & Identity
@@ -46,7 +46,7 @@ public class ColumnInspector extends VBox {
     private final TextField txtSequenceName = new TextField();
 
     // Group 3: Comment & Dependencies
-    private final TextArea txtComment = new TextArea();
+    private final TextArea txtComment = new TextArea(); // ui-lint:allow plain-text comment, not code
     private final Label lblDependencies = new Label("Không có ràng buộc phụ thuộc");
 
     public ColumnInspector(String engine, Runnable onChangeCallback) {
@@ -68,8 +68,7 @@ public class ColumnInspector extends VBox {
         HBox header = new HBox(8);
         header.setAlignment(Pos.CENTER_LEFT);
         header.getStyleClass().add("td-inspector-header");
-        FontIcon icon = new FontIcon("fth-sliders");
-        icon.setIconSize(16);
+        FontIcon icon = app.ui.components.Icons.of("fth-sliders", app.ui.components.IconScale.MD);
         titleLabel.getStyleClass().add("td-inspector-title");
         header.getChildren().addAll(icon, titleLabel);
 

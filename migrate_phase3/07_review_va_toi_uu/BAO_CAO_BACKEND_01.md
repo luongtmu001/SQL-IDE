@@ -47,3 +47,4 @@
 
 1. `4eefee0`: `feat(designer): prevent false dirty on load with ColumnDesignSnapshot (TD-2)`
 2. `5fa5039`: `feat(designer): transition to edit mode on save, async apply, ddl error index, trigger list, undo shortcuts (TD-1, TD-3, TD-4, TD-5, TD-6, TD-7, TD-8, TD-9)`
+

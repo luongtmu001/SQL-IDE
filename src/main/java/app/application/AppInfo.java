@@ -5,9 +5,17 @@ public final class AppInfo {
 
     public static final String NAME = "SQL IDE";
     public static final String TAGLINE = "Modern SQL database IDE & developer suite";
-    public static final String VERSION = "1.0.0-SNAPSHOT";
+    public static final String VERSION = resolveVersion();
     public static final String CHANNEL = "Preview";
     public static final String COPYRIGHT = "© 2026 luonght. All rights reserved.";
+
+    private static String resolveVersion() {
+        Package pkg = AppInfo.class.getPackage();
+        if (pkg != null && pkg.getImplementationVersion() != null && !pkg.getImplementationVersion().isBlank()) {
+            return pkg.getImplementationVersion();
+        }
+        return "1.0.0-SNAPSHOT";
+    }
 
     private AppInfo() {
     }

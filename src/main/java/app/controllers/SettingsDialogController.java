@@ -172,7 +172,7 @@ public class SettingsDialogController implements Initializable {
 
         populateValues(SettingsService.getInstance().getCurrentSettings());
 
-        setupJsonEditor();
+        // Note: setupJsonEditor() is lazy-loaded on demand when user switches to JSON tab (Perf Optimization Task 1)
         styler.restyle(getAllSections());
         styler.snapshot();
         dirtyLabel = new Label();
@@ -194,6 +194,7 @@ public class SettingsDialogController implements Initializable {
     private boolean jsonSyncing = false;
 
     private void setupJsonEditor() {
+        if (jsonEditor != null) return;
         if (txtRawJson == null || !(txtRawJson.getParent() instanceof javafx.scene.layout.Pane parent)) return;
         try {
             jsonEditor = new app.ui.editor.EmbeddedMonaco("settings-json", "json", txtRawJson.getText());
@@ -205,14 +206,16 @@ public class SettingsDialogController implements Initializable {
         node.getStyleClass().add("settings-json-editor");
         javafx.scene.layout.VBox.setVgrow(node, javafx.scene.layout.Priority.ALWAYS);
         int idx = parent.getChildren().indexOf(txtRawJson);
-        parent.getChildren().set(idx, node);
+        if (idx >= 0) {
+            parent.getChildren().set(idx, node);
+        }
         jsonEditor.setOnUserEdit(text -> {
             jsonSyncing = true;
             txtRawJson.setText(text);
             jsonSyncing = false;
         });
         txtRawJson.textProperty().addListener((o, a, b) -> {
-            if (!jsonSyncing) jsonEditor.setText(b);
+            if (!jsonSyncing && jsonEditor != null) jsonEditor.setText(b);
         });
     }
 
@@ -349,6 +352,15 @@ public class SettingsDialogController implements Initializable {
         cmbTheme.valueProperty().addListener((obs, old, val) -> {
             if (val != null && themeHeaders.contains(val)) {
                 javafx.application.Platform.runLater(() -> cmbTheme.setValue(old != null && !themeHeaders.contains(old) ? old : null));
+                return;
+            }
+            if (!populating && val != null && !val.isBlank() && !val.equals(old)) {
+                var def = app.services.theme.ThemeRegistry.getInstance().findOrNull(val);
+                if (def != null) {
+                    var stage = app.application.AppContext.getInstance().getPrimaryStage();
+                    javafx.scene.Scene scene = stage != null ? stage.getScene() : (ownerWindow() != null ? ownerWindow().getScene() : null);
+                    ThemeService.getInstance().apply(def, scene);
+                }
             }
         });
         fillThemeCombo();
@@ -612,6 +624,13 @@ public class SettingsDialogController implements Initializable {
             txtRawJson.setText("{}");
         }
 
+        // Lazy initialize Monaco JSON editor on first visit
+        if (jsonEditor == null) {
+            setupJsonEditor();
+        } else {
+            jsonEditor.setText(txtRawJson.getText());
+        }
+
         isJsonTabActive = true;
         visualArea.setVisible(false);
         visualArea.setManaged(false);
@@ -620,6 +639,19 @@ public class SettingsDialogController implements Initializable {
 
         btnTabJson.getStyleClass().add("active");
         btnTabVisual.getStyleClass().remove("active");
+    }
+
+    /**
+     * Prepares the cached dialog controller when reopened (Perf Optimization Task 1).
+     */
+    public void prepareForShow() {
+        if (settingsSearchField != null) {
+            settingsSearchField.clear();
+        }
+        handleSwitchToVisualTab();
+        handleNavEditor();
+        populateValues(SettingsService.getInstance().getCurrentSettings());
+        styler.snapshot();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -670,53 +702,60 @@ public class SettingsDialogController implements Initializable {
     // Form Population & Value Collection
     // ─────────────────────────────────────────────────────────────
 
+    private boolean populating = false;
+
     public void populateValues(IdeSettings s) {
         if (s == null) return;
+        populating = true;
+        try {
+            // 1. Editor
+            IdeSettings.EditorSettings ed = s.getEditor() != null ? s.getEditor() : new IdeSettings.EditorSettings();
+            cmbEditorFontFamily.setValue(ed.getFontFamily());
+            spnEditorFontSize.getValueFactory().setValue(ed.getFontSize());
+            spnLineHeight.getValueFactory().setValue(ed.getLineHeight());
+            spnLetterSpacing.getValueFactory().setValue(ed.getLetterSpacing());
+            spnTabSize.getValueFactory().setValue(ed.getTabSize());
+            chkInsertSpaces.setSelected(ed.isInsertSpaces());
+            chkWordWrap.setSelected(ed.isWordWrap());
+            chkMinimap.setSelected(ed.isMinimap());
+            cmbKeywordCase.setValue(ed.getKeywordCase());
+            chkSyntaxCheck.setSelected(ed.isSyntaxCheck());
+            chkIntellisense.setSelected(ed.isIntellisense());
+            chkIntellisenseMru.setSelected(ed.isIntellisenseMru());
+            chkIntellisenseDetail.setSelected(ed.isIntellisenseDetail());
+            boolean onDemand = app.models.IdeSettings.EditorSettings.DETAIL_MODE_ON_DEMAND.equals(ed.getIntellisenseDetailMode());
+            rdoDetailOnDemand.setSelected(onDemand);
+            rdoDetailAlways.setSelected(!onDemand);
 
-        // 1. Editor
-        IdeSettings.EditorSettings ed = s.getEditor() != null ? s.getEditor() : new IdeSettings.EditorSettings();
-        cmbEditorFontFamily.setValue(ed.getFontFamily());
-        spnEditorFontSize.getValueFactory().setValue(ed.getFontSize());
-        spnLineHeight.getValueFactory().setValue(ed.getLineHeight());
-        spnLetterSpacing.getValueFactory().setValue(ed.getLetterSpacing());
-        spnTabSize.getValueFactory().setValue(ed.getTabSize());
-        chkInsertSpaces.setSelected(ed.isInsertSpaces());
-        chkWordWrap.setSelected(ed.isWordWrap());
-        chkMinimap.setSelected(ed.isMinimap());
-        cmbKeywordCase.setValue(ed.getKeywordCase());
-        chkSyntaxCheck.setSelected(ed.isSyntaxCheck());
-        chkIntellisense.setSelected(ed.isIntellisense());
-        chkIntellisenseMru.setSelected(ed.isIntellisenseMru());
-        chkIntellisenseDetail.setSelected(ed.isIntellisenseDetail());
-        boolean onDemand = app.models.IdeSettings.EditorSettings.DETAIL_MODE_ON_DEMAND.equals(ed.getIntellisenseDetailMode());
-        rdoDetailOnDemand.setSelected(onDemand);
-        rdoDetailAlways.setSelected(!onDemand);
+            // 2. Grid
+            IdeSettings.GridSettings gr = s.getGrid() != null ? s.getGrid() : new IdeSettings.GridSettings();
+            cmbGridFontFamily.setValue(gr.getFontFamily());
+            spnGridFontSize.getValueFactory().setValue(gr.getFontSize());
+            chkShowRowNumbers.setSelected(gr.isShowRowNumbers());
+            txtNullDisplay.setText(gr.getNullDisplayString());
+            if (cmbResultLayout != null) {
+                cmbResultLayout.getItems().setAll(RESULT_LAYOUT_LIST, RESULT_LAYOUT_TABS);
+                cmbResultLayout.setValue(gr.isResultTabs() ? RESULT_LAYOUT_TABS : RESULT_LAYOUT_LIST);
+            }
 
-        // 2. Grid
-        IdeSettings.GridSettings gr = s.getGrid() != null ? s.getGrid() : new IdeSettings.GridSettings();
-        cmbGridFontFamily.setValue(gr.getFontFamily());
-        spnGridFontSize.getValueFactory().setValue(gr.getFontSize());
-        chkShowRowNumbers.setSelected(gr.isShowRowNumbers());
-        txtNullDisplay.setText(gr.getNullDisplayString());
-        if (cmbResultLayout != null) {
-            cmbResultLayout.getItems().setAll(RESULT_LAYOUT_LIST, RESULT_LAYOUT_TABS);
-            cmbResultLayout.setValue(gr.isResultTabs() ? RESULT_LAYOUT_TABS : RESULT_LAYOUT_LIST);
-        }
+            // 3. Messages
+            IdeSettings.MessagesSettings ms = s.getMessages() != null ? s.getMessages() : new IdeSettings.MessagesSettings();
+            cmbMessagesFontFamily.setValue(ms.getFontFamily());
+            spnMessagesFontSize.getValueFactory().setValue(ms.getFontSize());
 
-        // 3. Messages
-        IdeSettings.MessagesSettings ms = s.getMessages() != null ? s.getMessages() : new IdeSettings.MessagesSettings();
-        cmbMessagesFontFamily.setValue(ms.getFontFamily());
-        spnMessagesFontSize.getValueFactory().setValue(ms.getFontSize());
-
-        // 4. Appearance
-        IdeSettings.AppearanceSettings ap = s.getAppearance() != null ? s.getAppearance() : new IdeSettings.AppearanceSettings();
-        cmbTheme.setValue(app.services.theme.ThemeRegistry.getInstance().find(s.getTheme()).label()); // stored: id
-        spnIconSize.getValueFactory().setValue(ap.getIconSize());
-        cmbUiFontFamily.setValue(ap.getUiFontFamily());
-        spnUiFontSize.getValueFactory().setValue(ap.getUiFontSize());
-        chkAutoHideNavbar.setSelected(s.isAutoHideNavbar());
-        if (cmbPanelStyle != null) {
-            cmbPanelStyle.setValue("flat".equalsIgnoreCase(ap.getPanelStyle()) ? PANEL_STYLE_FLAT : PANEL_STYLE_ROUNDED);
+            // 4. Appearance
+            IdeSettings.AppearanceSettings ap = s.getAppearance() != null ? s.getAppearance() : new IdeSettings.AppearanceSettings();
+            String th = s.getTheme() != null && !s.getTheme().isBlank() ? s.getTheme() : "primer-dark";
+            cmbTheme.setValue(app.services.theme.ThemeRegistry.getInstance().find(th).label()); // stored: id
+            spnIconSize.getValueFactory().setValue(ap.getIconSize());
+            cmbUiFontFamily.setValue(ap.getUiFontFamily());
+            spnUiFontSize.getValueFactory().setValue(ap.getUiFontSize());
+            chkAutoHideNavbar.setSelected(s.isAutoHideNavbar());
+            if (cmbPanelStyle != null) {
+                cmbPanelStyle.setValue("flat".equalsIgnoreCase(ap.getPanelStyle()) ? PANEL_STYLE_FLAT : PANEL_STYLE_ROUNDED);
+            }
+        } finally {
+            populating = false;
         }
 
         // 5. SQL / Query
@@ -966,4 +1005,6 @@ public class SettingsDialogController implements Initializable {
     public TextArea getRawJsonTextArea() { return txtRawJson; }
     public Button getTabVisualButton() { return btnTabVisual; }
     public Button getTabJsonButton() { return btnTabJson; }
+    public boolean isJsonTabActive() { return isJsonTabActive; }
+    public app.ui.editor.EmbeddedMonaco getJsonEditor() { return jsonEditor; }
 }

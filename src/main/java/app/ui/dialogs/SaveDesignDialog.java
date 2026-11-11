@@ -66,8 +66,8 @@ public final class SaveDesignDialog {
 
         VBox content = new VBox(10);
         content.setPadding(new Insets(12, 16, 12, 16));
-        content.setPrefWidth(700);
-        content.setPrefHeight(480);
+        content.setPrefWidth(app.ui.components.UiMetrics.em(53.85));
+        content.setPrefHeight(app.ui.components.UiMetrics.em(37));
 
         // 1. Summary Header
         int statementCount = (plan != null && plan.statements() != null) ? plan.statements().size() : 1;
@@ -87,8 +87,7 @@ public final class SaveDesignDialog {
             warnBanner.setAlignment(Pos.CENTER_LEFT);
             warnBanner.getStyleClass().addAll("dialog-chrome-banner", "danger");
 
-            FontIcon warnIcon = new FontIcon("fth-alert-triangle");
-            warnIcon.setIconSize(16);
+            FontIcon warnIcon = app.ui.components.Icons.of("fth-alert-triangle", app.ui.components.IconScale.LG);
 
             Label lblWarn = new Label("Cảnh báo: Kịch bản có chứa thao tác xóa hoặc thay đổi có nguy cơ làm mất dữ liệu!");
             lblWarn.setWrapText(true);
@@ -117,9 +116,7 @@ public final class SaveDesignDialog {
         });
 
         Button btnOpenSql = DialogChrome.secondary("Mở trong tab SQL");
-        FontIcon sqlIcon = new FontIcon("fth-external-link");
-        sqlIcon.setIconSize(13);
-        btnOpenSql.setGraphic(sqlIcon);
+        btnOpenSql.setGraphic(app.ui.components.Icons.of("fth-external-link"));
         btnOpenSql.setTooltip(new Tooltip("Mở kịch bản trong tab SQL mới để xem và chỉnh sửa trước"));
         btnOpenSql.setOnAction(e -> {
             String sql = monaco.getText() != null ? monaco.getText() : fullMigrationSql;
@@ -128,9 +125,7 @@ public final class SaveDesignDialog {
         });
 
         Button btnExecute = hasDestructiveChanges ? DialogChrome.danger("Thực thi") : DialogChrome.primary("Thực thi");
-        FontIcon runIcon = new FontIcon("fth-play");
-        runIcon.setIconSize(13);
-        btnExecute.setGraphic(runIcon);
+        btnExecute.setGraphic(app.ui.components.Icons.of("fth-play"));
         btnExecute.setTooltip(new Tooltip("Thực thi kịch bản migration trực tiếp trong một transaction"));
         btnExecute.setOnAction(e -> {
             String sql = monaco.getText() != null ? monaco.getText() : fullMigrationSql;

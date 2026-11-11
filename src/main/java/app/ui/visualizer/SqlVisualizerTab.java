@@ -64,6 +64,8 @@ public class SqlVisualizerTab extends SqlEditorTab {
     private final IconButton btnFitScreen = new IconButton("fth-maximize-2", "Căn vừa màn hình (Ctrl+0)");
     private final IconButton btnResetZoom = new IconButton("fth-rotate-ccw", "Reset Zoom 100%");
     private final AppButton btnExportPng = new AppButton("Xuất PNG", "fth-download", AppButton.Variant.DEFAULT);
+    private final IconButton btnToggleWindow = new IconButton("fth-external-link", "Mở dạng cửa sổ riêng");
+    private VBox rootContainer;
 
     // Collapsible SQL Input Box (EmbeddedMonaco)
     private final VBox sqlDrawer = new VBox();
@@ -129,7 +131,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
 
     private void buildLayout() {
         VBox root = new VBox();
-        root.getStyleClass().add("sql-visualizer-root");
+        root.getStyleClass().addAll("sql-visualizer-root", "workspace-root");
         root.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/sql-visualizer.css")).toExternalForm());
         root.setMinWidth(0);
 
@@ -161,9 +163,13 @@ public class SqlVisualizerTab extends SqlEditorTab {
         footer.setMinWidth(0);
 
         root.getChildren().addAll(toolbar, splitPane, footer);
+        this.rootContainer = root;
 
         // G-SV-1: Use setCustomContent instead of setContent
         setCustomContent(customKey, root);
+
+        btnToggleWindow.setOnAction(e -> app.ui.window.FeatureWindowManager.getInstance().toggleWindow(
+                this, rootContainer, btnToggleWindow, "SQL Visualizer & Query Flow", "fth-cpu"));
 
         // Wire Interactions
         visualizerCanvas.setOnNodeSelectedListener(this::handleNodeSelectedOnCanvas);
@@ -192,10 +198,8 @@ public class SqlVisualizerTab extends SqlEditorTab {
         WorkspaceToolbar toolbar = new WorkspaceToolbar();
 
         // G-SV-7: Compact MenuButton "Mẫu"
-        btnPresets.getStyleClass().addAll("btn-default", "btn-sm");
-        FontIcon presetIcon = new FontIcon("fth-layers");
-        presetIcon.setIconSize(13);
-        btnPresets.setGraphic(presetIcon);
+        btnPresets.getStyleClass().add("btn-default");
+        btnPresets.setGraphic(app.ui.components.Icons.of("fth-layers"));
 
         MenuItem m1 = new MenuItem("Mẫu 1: Doanh thu theo khách hàng");
         MenuItem m2 = new MenuItem("Mẫu 2: Tồn kho & Đơn hàng");
@@ -218,11 +222,9 @@ public class SqlVisualizerTab extends SqlEditorTab {
         btnAnalyze.setOnAction(e -> runAnalysis());
 
         // Toggle SQL Box
-        FontIcon codeIcon = new FontIcon("fth-code");
-        codeIcon.setIconSize(13);
-        btnToggleSqlBox.setGraphic(codeIcon);
+        btnToggleSqlBox.setGraphic(app.ui.components.Icons.of("fth-code"));
         btnToggleSqlBox.setSelected(true);
-        btnToggleSqlBox.getStyleClass().add("btn-toggle");
+        btnToggleSqlBox.getStyleClass().addAll("btn-toggle", "toolbar-toggle");
         btnToggleSqlBox.setOnAction(e -> {
             boolean show = btnToggleSqlBox.isSelected();
             if (show) {
@@ -245,8 +247,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
         // Canvas Navigation Buttons
         Label lblZoom = new Label("100%");
         lblZoom.textProperty().bind(visualizerCanvas.zoomPercentProperty());
-        lblZoom.getStyleClass().add("qf-control-label");
-        lblZoom.setStyle("-fx-min-width: 38px; -fx-alignment: center;");
+        lblZoom.getStyleClass().addAll("qf-control-label", "qf-zoom-label");
 
         btnZoomIn.setOnAction(e -> visualizerCanvas.zoomIn());
         btnZoomOut.setOnAction(e -> visualizerCanvas.zoomOut());
@@ -262,14 +263,23 @@ public class SqlVisualizerTab extends SqlEditorTab {
         toolbar.addRight(btnResetZoom);
         toolbar.addRight(new Separator(Orientation.VERTICAL));
         toolbar.addRight(btnExportPng);
+        toolbar.addRight(btnToggleWindow);
 
         return toolbar;
     }
 
+    public VBox getContentRoot() {
+        return rootContainer;
+    }
+
+    public IconButton getToggleWindowButton() {
+        return btnToggleWindow;
+    }
+
     private void buildSqlDrawer() {
         sqlDrawer.getStyleClass().add("qf-sql-drawer");
-        sqlDrawer.setMinHeight(120);
-        sqlDrawer.setPrefHeight(150);
+        sqlDrawer.setMinHeight(app.ui.components.UiMetrics.em(7));
+        sqlDrawer.setPrefHeight(app.ui.components.UiMetrics.em(10));
 
         PaneHeader header = new PaneHeader("Câu lệnh SQL", "fth-code", "Phím tắt: F5 hoặc Ctrl+Enter để phân tích");
 
@@ -282,8 +292,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
     }
 
     private void buildFooter() {
-        FontIcon stepIcon = new FontIcon("fth-layers");
-        stepIcon.setIconSize(13);
+        FontIcon stepIcon = app.ui.components.Icons.of("fth-layers", app.ui.components.IconScale.SM);
         stepIcon.getStyleClass().add("icon-accent");
 
         HBox statsBox = new HBox(6, stepIcon, lblStepStats);

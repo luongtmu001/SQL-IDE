@@ -62,11 +62,10 @@ public class DependencyInspectorPanel extends VBox {
         HBox header = new HBox(8);
         header.getStyleClass().add("dep-inspector-header");
 
-        FontIcon icon = new FontIcon("fth-info");
-        icon.setIconSize(13);
+        FontIcon icon = app.ui.components.Icons.of("fth-info", app.ui.components.IconScale.MD);
 
         lblHeaderTitle.getStyleClass().add("node-title");
-        lblHeaderTitle.setMaxWidth(200);
+        lblHeaderTitle.setMaxWidth(app.ui.components.UiMetrics.em(15.38));
         lblHeaderTitle.setTooltip(headerTooltip);
         lblHeaderTypeBadge.getStyleClass().addAll("node-badge", "node-badge-table");
 
@@ -83,15 +82,15 @@ public class DependencyInspectorPanel extends VBox {
 
         // Tab 1: Thuộc tính
         Tab tabProps = new Tab("Thuộc tính", buildPropertiesContent());
-        tabProps.setGraphic(new FontIcon("fth-sliders"));
+        tabProps.setGraphic(app.ui.components.Icons.of("fth-sliders"));
 
         // Tab 2: DDL
         Tab tabDdl = new Tab("DDL", buildDefinitionContent());
-        tabDdl.setGraphic(new FontIcon("fth-code"));
+        tabDdl.setGraphic(app.ui.components.Icons.of("fth-code"));
 
         // Tab 3: Các bước
         Tab tabSteps = new Tab("Các bước", buildStepsContent());
-        tabSteps.setGraphic(new FontIcon("fth-check-circle"));
+        tabSteps.setGraphic(app.ui.components.Icons.of("fth-check-circle"));
 
         tabPane.getTabs().addAll(tabProps, tabDdl, tabSteps);
         getChildren().add(tabPane);
@@ -213,7 +212,7 @@ public class DependencyInspectorPanel extends VBox {
             lblPropFullName.setText(node.getDisplayName());
             lblPropSchema.setText(node.getSchema());
             lblPropType.setText(node.getType().getDisplayName());
-            lblPropRole.setText(node.isRoot() ? "Root Target (Gốc)" : (node.getLayer() < 0 ? "Dependency (Nguồn)" : "Dependent (Phụ thuộc)"));
+            lblPropRole.setText(node.isRoot() ? "Gốc" : (node.getLayer() < 0 ? "Nguồn phụ thuộc" : "Đối tượng phụ thuộc"));
 
             int inbound = model != null ? model.getIncomingEdges(node.getId()).size() : 0;
             int outbound = model != null ? model.getOutgoingEdges(node.getId()).size() : 0;

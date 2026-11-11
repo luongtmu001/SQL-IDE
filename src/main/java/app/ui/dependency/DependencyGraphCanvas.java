@@ -105,8 +105,8 @@ public class DependencyGraphCanvas extends ZoomableGraphPane {
     private VBox createNodeCard(DependencyNode node) {
         VBox card = new VBox(4);
         card.getStyleClass().add("graph-node-card");
-        card.setMinWidth(200);
-        card.setMaxWidth(280);
+        card.setMinWidth(app.ui.components.UiMetrics.em(15.38));
+        card.setMaxWidth(app.ui.components.UiMetrics.em(21.54));
 
         if (node.isRoot()) {
             card.getStyleClass().add("root-node");
@@ -147,14 +147,13 @@ public class DependencyGraphCanvas extends ZoomableGraphPane {
         HBox body = new HBox(6);
         body.setAlignment(Pos.CENTER_LEFT);
 
-        FontIcon icon = new FontIcon(node.getType().getIconLiteral());
-        icon.setIconSize(13);
+        FontIcon icon = app.ui.components.Icons.of(node.getType().getIconLiteral(), app.ui.components.IconScale.MD);
         if (node.isRoot()) icon.getStyleClass().add("icon-accent");
 
         Label title = new Label(node.getName());
         title.getStyleClass().add("node-title");
         title.setTextOverrun(OverrunStyle.ELLIPSIS);
-        title.setMaxWidth(220);
+        title.setMaxWidth(app.ui.components.UiMetrics.em(16.92));
         title.setTooltip(new Tooltip(node.getName()));
         body.getChildren().addAll(icon, title);
 
@@ -162,7 +161,7 @@ public class DependencyGraphCanvas extends ZoomableGraphPane {
         Label schemaLbl = new Label(node.isColumn() ? "Cột: " + node.getColumnName() : "Schema: " + node.getSchema());
         schemaLbl.getStyleClass().add("node-subtitle");
         schemaLbl.setTextOverrun(OverrunStyle.ELLIPSIS);
-        schemaLbl.setMaxWidth(240);
+        schemaLbl.setMaxWidth(app.ui.components.UiMetrics.em(18.46));
 
         card.getChildren().addAll(header, body, schemaLbl);
 

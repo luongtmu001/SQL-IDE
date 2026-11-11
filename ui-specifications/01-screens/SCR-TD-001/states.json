@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-TD-001",
+  "states": [
+    {
+      "id": "STA-TD-001",
+      "name": "new_clean",
+      "component_id": "REG-TD-ROOT",
+      "state": "new_clean",
+      "visual_description": "Tab mới với tên Table_N, một dòng mặc định (Id int IDENTITY hoặc id serial), dirty = false, DDL preview hiện CREATE TABLE",
+      "entry_condition": "Mở tab New Table lần đầu hoặc vừa reset",
+      "exit_condition": "Người dùng sửa bất kỳ trường nào trên bảng",
+      "interaction_allowed": true,
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-TD-002",
+      "name": "editing_dirty",
+      "component_id": "REG-TD-ROOT",
+      "state": "editing_dirty",
+      "visual_description": "Tiêu đề tab có dấu *, nút Lưu và Undo kích hoạt, Live DDL preview cập nhật script tương ứng",
+      "entry_condition": "Có ít nhất 1 thay đổi so với originalData",
+      "exit_condition": "Lưu thành công hoặc Undo toàn bộ thay đổi",
+      "interaction_allowed": true,
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-TD-003",
+      "name": "edit_loaded_clean",
+      "component_id": "REG-TD-ROOT",
+      "state": "edit_loaded_clean",
+      "visual_description": "Nạp toàn bộ cấu trúc bảng từ CSDL, không có ký hiệu thay đổi, DDL preview hiện CREATE TABLE hiện thời",
+      "entry_condition": "Mở Design Table từ Object Explorer thành công",
+      "exit_condition": "Người dùng chỉnh sửa hoặc thêm bớt cột",
+      "interaction_allowed": true,
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-TD-004",
+      "name": "validation_error",
+      "component_id": "BADGE-TD-VALIDATION",
+      "state": "error",
+      "visual_description": "Badge validation ở footer chuyển màu đỏ với số lượng lỗi; các ô lỗi trên lưới viền đỏ; nút Lưu bị khóa",
+      "entry_condition": "Tên cột rỗng, tên trùng (case-insensitive), hoặc thiếu độ dài bắt buộc",
+      "exit_condition": "Toàn bộ lỗi được khắc phục",
+      "interaction_allowed": true,
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-TD-005",
+      "name": "read_only_mode",
+      "component_id": "BTN-TD-SAVE",
+      "state": "disabled",
+      "visual_description": "Nút Lưu bị mờ (disabled) kèm tooltip giải thích; nút 'Mở trong tab SQL' vẫn hoạt động",
+      "entry_condition": "Chạy với -Dsqlide.readOnly=true hoặc profile kết nối có cờ read_only=true",
+      "exit_condition": "Không (chỉ định cấu hình)",
+      "interaction_allowed": "read_only_safe",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "STA-TD-006",
+      "name": "row_added",
+      "component_id": "COL-TD-STATUS",
+      "state": "added",
+      "visual_description": "Hiển thị ký hiệu + ở cột đầu, nền dòng hoặc chữ có sắc thái xanh lá (-color-success-*)",
+      "entry_condition": "Dòng mới được thêm hoặc dán vào bảng hiện có",
+      "exit_condition": "Hủy bỏ dòng hoặc sau khi lưu thành công",
+      "interaction_allowed": true,
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-TD-007",
+      "name": "row_modified",
+      "component_id": "COL-TD-STATUS",
+      "state": "modified",
+      "visual_description": "Hiển thị ký hiệu ~ ở cột đầu, thuộc tính thay đổi được làm nổi bật màu vàng cam (-color-warning-*)",
+      "entry_condition": "Sửa kiểu, độ dài, scale, NN, default hoặc comment của cột có sẵn",
+      "exit_condition": "Khôi phục lại giá trị cũ hoặc sau khi lưu thành công",
+      "interaction_allowed": true,
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-TD-008",
+      "name": "row_renamed",
+      "component_id": "COL-TD-STATUS",
+      "state": "renamed",
+      "visual_description": "Hiển thị ký hiệu ↻ ở cột đầu, màu xanh dương (-color-accent-*), ghi nhớ originalName để sinh sp_rename / RENAME COLUMN",
+      "entry_condition": "Đổi tên cột có sẵn trong CSDL",
+      "exit_condition": "Khôi phục lại tên gốc hoặc sau khi lưu thành công",
+      "interaction_allowed": true,
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-TD-009",
+      "name": "row_deleted",
+      "component_id": "COL-TD-STATUS",
+      "state": "deleted",
+      "visual_description": "Hiển thị ký hiệu − ở cột đầu, toàn bộ chữ trên dòng bị gạch ngang (strikethrough) màu đỏ (-color-danger-*)",
+      "entry_condition": "Bấm Delete trên dòng đã có trong CSDL",
+      "exit_condition": "Undo hoặc sau khi lưu thành công",
+      "interaction_allowed": false,
+      "confidence": "observed"
+    },
+    {
+      "id": "STA-TD-010",
+      "name": "migration_executing",
+      "component_id": "REG-TD-SAVE-DIALOG",
+      "state": "busy",
+      "visual_description": "Nút Áp dụng chuyển sang spinner bận, thanh tiến trình hiển thị; các control trong dialog bị khóa",
+      "entry_condition": "Bấm nút Áp dụng trong SaveDesignDialog",
+      "exit_condition": "Transaction hoàn tất thành công hoặc rollback do lỗi",
+      "interaction_allowed": false,
+      "confidence": "code_verified"
+    }
+  ]
+}
+

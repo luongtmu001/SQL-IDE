@@ -283,4 +283,57 @@ class ConnectionDesktopIntegrationTest {
         assertTrue(latch.await(5, TimeUnit.SECONDS), "Context menu test should complete within 5s");
         assertTrue(foundEditMenu.get(), "Context menu must include 'Edit Connection...'");
     }
+
+    @Test
+    @DisplayName("Filter database check-list syncs active DatabaseFilter and default database/schema on connect")
+    void testFilterDatabaseAndDefaultConnect() throws Exception {
+        String testName = "FILTER_TEST_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+        ConnectionApi api = DesktopBootstrap.getInstance().getConnectionApi();
+        java.util.Map<String, String> props = new java.util.HashMap<>();
+        props.put("defaultSchema", "analytics_schema");
+        props.put("filterDatabases", "app_db, analytics_db");
+
+        Result<ConnectionProfileDto> createRes = api.createConnection(new CreateConnectionRequest(
+                testName,
+                "",
+                "DEV",
+                false,
+                "POSTGRESQL",
+                "localhost",
+                5432,
+                "app_db",
+                "",
+                "postgres",
+                "PASSWORD",
+                "secret",
+                true,
+                15,
+                true,
+                props
+        ));
+        assertTrue(createRes.isSuccess());
+        ConnectionProfileDto profile = createRes.getDataOrThrow();
+
+        var filterMgr = app.framework.metadata.filter.DesktopFilterManager.getInstance();
+        filterMgr.syncFromProfile(profile);
+        var dbFilter = filterMgr.getDatabaseFilter(profile.id());
+        assertNotNull(dbFilter);
+        assertTrue(dbFilter.isActive(), "Filter must be active when filterDatabases is configured");
+        assertTrue(dbFilter.matches("app_db"));
+        assertTrue(dbFilter.matches("analytics_db"));
+        assertFalse(dbFilter.matches("postgres"), "Unchecked database must be filtered out");
+
+        // Verify empty filterDatabases lists all (filter inactive)
+        ConnectionProfileDto noFilterProfile = new ConnectionProfileDto(
+                profile.id(), profile.name(), profile.group(), profile.environment(), profile.readOnly(),
+                profile.databaseType(), profile.host(), profile.port(), profile.databaseName(),
+                profile.sqliteFilePath(), profile.username(), profile.authType(), profile.credentialRef(),
+                profile.savePassword(), profile.timeoutSeconds(), profile.trustServerCertificate(),
+                java.util.Map.of("defaultSchema", "analytics_schema"), null, null
+        );
+        filterMgr.syncFromProfile(noFilterProfile);
+        var clearedFilter = filterMgr.getDatabaseFilter(profile.id());
+        assertFalse(clearedFilter.isActive(), "Filter must be inactive (list all) when filterDatabases is blank");
+        assertTrue(clearedFilter.matches("postgres"));
+    }
 }

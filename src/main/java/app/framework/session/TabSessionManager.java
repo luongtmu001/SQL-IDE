@@ -101,6 +101,9 @@ public final class TabSessionManager {
                 return Result.failure(AppError.validation(AppError.VALIDATION_FAILED, msg));
             }
             if (alive) {
+                if (s.profile() != null && s.profile().readOnly() != profile.readOnly()) {
+                    s.setReadOnly(profile.readOnly());
+                }
                 if (targetDb == null || targetDb.isBlank() || targetDb.equalsIgnoreCase(s.database())
                         || type == DatabaseType.SQLITE) {
                     return Result.success(current);
@@ -253,6 +256,14 @@ public final class TabSessionManager {
                 DatabaseConnection c = other.connection();
                 if (c != null && isAlive(c)) return;
             }
+            // Before assuming the entire database connection is lost, probe the server directly!
+            try (DatabaseConnection testConn = app.framework.metadata.DesktopMetadataService.getInstance().explorerConnection(profile, null)) {
+                if (testConn != null && isAlive(testConn)) {
+                    log.info("Server '{}' is still alive; keeping Explorer connected.", profile.name());
+                    return;
+                }
+            } catch (Exception ignored) {}
+
             TabSession dead = get(deadTabId);
             markConnectionLost(profile, dead != null ? dead.error() : null);
         });
@@ -289,6 +300,16 @@ public final class TabSessionManager {
                 closeQuietly(s);
             }
         });
+        changed();
+    }
+
+    public void setProfileReadOnly(String profileIdOrName, boolean readOnly) {
+        if (profileIdOrName == null) return;
+        for (TabSession s : sessions.values()) {
+            if (s.profile() != null && (profileIdOrName.equalsIgnoreCase(s.profile().id()) || profileIdOrName.equalsIgnoreCase(s.profile().name()))) {
+                s.setReadOnly(readOnly);
+            }
+        }
         changed();
     }
 

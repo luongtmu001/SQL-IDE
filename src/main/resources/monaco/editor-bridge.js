@@ -71,6 +71,19 @@
     let lastLineCopy = null;   // text copied with an empty selection (whole line), pasted on its own line
     const models = new Map(); // id -> { model, viewState }
     let isReady = false;
+    const contentChangeTimers = new Map();
+    let cursorPositionTimer = null;
+
+    function flushContentChanged(targetId) {
+        const id = targetId || activeModelId;
+        if (id && contentChangeTimers.has(id)) {
+            clearTimeout(contentChangeTimers.get(id));
+            contentChangeTimers.delete(id);
+            if (models.has(id) && window.javaBridge && window.javaBridge.onContentChanged) {
+                window.javaBridge.onContentChanged(id, models.get(id).model.getValue());
+            }
+        }
+    }
 
     // Determine vs base path
     let vsPath = "vs";
@@ -248,12 +261,58 @@
                 window.MonacoSqlLanguage.register();
             }
 
+            // Register SQL Document & Range Formatting Providers (Gate D / Milestone D6)
+            if (window.monaco && window.SqlFormatter) {
+                try {
+                    monaco.languages.registerDocumentFormattingEditProvider('sql', {
+                        provideDocumentFormattingEdits: function (model, options, token) {
+                            try {
+                                const fullText = model.getValue();
+                                if (!fullText || !fullText.trim()) return [];
+                                const formatted = window.SqlFormatter.format(fullText, {
+                                    dialect: window.editorBridge?.activeDialect || 'sqlserver'
+                                });
+                                return [{
+                                    range: model.getFullModelRange(),
+                                    text: formatted
+                                }];
+                            } catch (e) {
+                                console.warn('[SqlFormatter] Document formatting failed:', e);
+                                return [];
+                            }
+                        }
+                    });
+
+                    monaco.languages.registerDocumentRangeFormattingEditProvider('sql', {
+                        provideDocumentRangeFormattingEdits: function (model, range, options, token) {
+                            try {
+                                const selectedText = model.getValueInRange(range);
+                                if (!selectedText || !selectedText.trim()) return [];
+                                const formatted = window.SqlFormatter.format(selectedText, {
+                                    dialect: window.editorBridge?.activeDialect || 'sqlserver'
+                                });
+                                return [{
+                                    range: range,
+                                    text: formatted
+                                }];
+                            } catch (e) {
+                                console.warn('[SqlFormatter] Range formatting failed:', e);
+                                return [];
+                            }
+                        }
+                    });
+                } catch (fmtErr) {
+                    console.warn('[SqlFormatter] Failed to register formatting providers:', fmtErr);
+                }
+            }
+
             // Create main editor instance
             const container = document.getElementById("monaco-container");
             editor = monaco.editor.create(container, {
                 theme: DARK_THEME,
                 fontSize: 13,
-                fontFamily: "JetBrains Mono, Cascadia Code, Consolas, monospace",
+                fontFamily: "'JetBrains Mono', 'Cascadia Code', Consolas, monospace",
+                fontLigatures: false,
                 lineNumbers: "on",
                 roundedSelection: false,
                 scrollBeyondLastLine: false,
@@ -277,20 +336,26 @@
                 window.IntelliSenseHost.start(editor);
             }
 
-            // Listen to cursor position
+            // Listen to cursor position (debounced by 40ms to avoid saturating JNI bridge)
             editor.onDidChangeCursorPosition(function (e) {
-                if (window.javaBridge && window.javaBridge.onCursorPositionChanged) {
-                    window.javaBridge.onCursorPositionChanged(e.position.lineNumber, e.position.column);
-                }
+                if (cursorPositionTimer) clearTimeout(cursorPositionTimer);
+                cursorPositionTimer = setTimeout(function () {
+                    cursorPositionTimer = null;
+                    if (window.javaBridge && window.javaBridge.onCursorPositionChanged) {
+                        window.javaBridge.onCursorPositionChanged(e.position.lineNumber, e.position.column);
+                    }
+                }, 40);
             });
 
             // Bind Monaco keybindings: F5 and Ctrl+Enter to trigger execution in Java
             editor.addCommand(monaco.KeyCode.F5, function () {
+                flushContentChanged();
                 if (window.javaBridge && window.javaBridge.onExecuteRequested) {
                     window.javaBridge.onExecuteRequested();
                 }
             });
             editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function () {
+                flushContentChanged();
                 if (window.javaBridge && window.javaBridge.onExecuteRequested) {
                     window.javaBridge.onExecuteRequested();
                 }
@@ -298,6 +363,7 @@
 
             // Phase 8 / D3: Ctrl+E runs only the statement under the caret
             editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE, function () {
+                flushContentChanged();
                 if (window.javaBridge && window.javaBridge.onExecuteStatementRequested) {
                     window.javaBridge.onExecuteStatementRequested();
                 }
@@ -340,11 +406,18 @@
             const initialText = content || "";
             const model = monaco.editor.createModel(initialText, lang);
 
-            // Listen to content changes
+            // Listen to content changes (debounced by 300ms so typing does not stall WebKit on every keystroke)
             model.onDidChangeContent(function () {
-                if (window.javaBridge && window.javaBridge.onContentChanged) {
-                    window.javaBridge.onContentChanged(id, model.getValue());
+                if (contentChangeTimers.has(id)) {
+                    clearTimeout(contentChangeTimers.get(id));
                 }
+                const timer = setTimeout(function () {
+                    contentChangeTimers.delete(id);
+                    if (window.javaBridge && window.javaBridge.onContentChanged) {
+                        window.javaBridge.onContentChanged(id, model.getValue());
+                    }
+                }, 300);
+                contentChangeTimers.set(id, timer);
             });
 
             models.set(id, { model: model, viewState: null });
@@ -356,8 +429,14 @@
             return true;
         },
 
+        flushContentChanged: function (targetId) {
+            flushContentChanged(targetId);
+        },
+
         switchModel: function (id) {
             if (!isReady || !editor || !models.has(id)) return false;
+
+            flushContentChanged(activeModelId);
 
             // Save previous model view state
             if (activeModelId && models.has(activeModelId)) {
@@ -379,6 +458,9 @@
         /** Suggestions are the custom popup (intellisense/): Monaco's own widget stays off. Hover / signature obey the switch. */
         applyIntellisenseOptions: function (c) {
             if (!editor || !c) return;
+            if (c.dialect) {
+                this.activeDialect = c.dialect;
+            }
             const on = c.enabled !== false;
             editor.updateOptions({
                 quickSuggestions: false,
@@ -414,6 +496,7 @@
 
         getContent: function (id) {
             const targetId = id || activeModelId;
+            flushContentChanged(targetId);
             if (models.has(targetId)) {
                 return models.get(targetId).model.getValue();
             }
@@ -438,6 +521,7 @@
         },
 
         disposeModel: function (id) {
+            flushContentChanged(id);
             if (models.has(id)) {
                 const entry = models.get(id);
                 if (activeModelId === id) {
@@ -512,9 +596,68 @@
             editor.focus();
         },
 
+        loadSnippets: function (snippetsJson) {
+            try {
+                if (!snippetsJson) return;
+                var list = typeof snippetsJson === "string" ? JSON.parse(snippetsJson) : snippetsJson;
+                if (Array.isArray(list)) {
+                    window.customSnippets = list;
+                }
+            } catch (e) {
+                console.warn("[editor-bridge] loadSnippets error:", e);
+            }
+        },
+
+        setActiveCodeStyle: function (styleJson) {
+            try {
+                const style = typeof styleJson === 'string' ? JSON.parse(styleJson) : styleJson;
+                if (window.SqlFormatter) {
+                    window.SqlFormatter.setActiveStyle(style);
+                }
+            } catch (e) {
+                console.warn('[SqlFormatter] Error setting active style:', e);
+            }
+        },
+
         formatDocument: function () {
             if (editor) {
-                editor.getAction("editor.action.formatDocument").run();
+                const action = editor.getAction("editor.action.formatDocument");
+                if (action) {
+                    action.run();
+                } else if (window.SqlFormatter && editor.getModel()) {
+                    const model = editor.getModel();
+                    const formatted = window.SqlFormatter.format(model.getValue(), {
+                        dialect: window.editorBridge?.activeDialect || 'sqlserver'
+                    });
+                    editor.executeEdits("format-document", [{
+                        range: model.getFullModelRange(),
+                        text: formatted
+                    }]);
+                }
+            }
+        },
+
+        formatSelection: function () {
+            if (editor) {
+                const sel = editor.getSelection();
+                if (sel && !sel.isEmpty()) {
+                    const action = editor.getAction("editor.action.formatSelection");
+                    if (action) {
+                        action.run();
+                    } else if (window.SqlFormatter && editor.getModel()) {
+                        const model = editor.getModel();
+                        const selectedText = model.getValueInRange(sel);
+                        const formatted = window.SqlFormatter.format(selectedText, {
+                            dialect: window.editorBridge?.activeDialect || 'sqlserver'
+                        });
+                        editor.executeEdits("format-selection", [{
+                            range: sel,
+                            text: formatted
+                        }]);
+                    }
+                } else {
+                    this.formatDocument();
+                }
             }
         },
 
@@ -539,6 +682,70 @@
             editor.setPosition({ lineNumber: line, column: col });
             editor.revealLine(line);
             editor.focus();
+        },
+
+        /* Object Content Search decorations & navigation */
+        setSearchDecorations: function (matchesJson) {
+            if (!editor) return;
+            try {
+                const matches = typeof matchesJson === "string" ? JSON.parse(matchesJson) : matchesJson;
+                if (!window._searchDecorations) window._searchDecorations = [];
+                const newDecs = (matches || []).map(function (m) {
+                    return {
+                        range: new monaco.Range(m.line, m.column, m.line, m.column + m.length),
+                        options: {
+                            inlineClassName: 'ocs-monaco-match',
+                            overviewRuler: {
+                                color: 'rgba(234, 179, 8, 0.8)',
+                                position: monaco.editor.OverviewRulerLane.Right
+                            }
+                        }
+                    };
+                });
+                window._searchDecorations = editor.deltaDecorations(window._searchDecorations, newDecs);
+            } catch (e) {
+                console.warn("[editor-bridge] setSearchDecorations error:", e);
+            }
+        },
+
+        setActiveSearchMatch: function (line, column, length) {
+            if (!editor) return;
+            try {
+                if (!window._activeSearchDec) window._activeSearchDec = [];
+                const len = Number(length) || 1;
+                const ln = Number(line) || 1;
+                const col = Number(column) || 1;
+                const activeDec = [{
+                    range: new monaco.Range(ln, col, ln, col + len),
+                    options: {
+                        inlineClassName: 'ocs-monaco-match-active',
+                        overviewRuler: {
+                            color: '#f97316',
+                            position: monaco.editor.OverviewRulerLane.Full
+                        }
+                    }
+                }];
+                window._activeSearchDec = editor.deltaDecorations(window._activeSearchDec, activeDec);
+                editor.revealLineInCenter(ln);
+                editor.setPosition({ lineNumber: ln, column: col });
+                editor.focus();
+            } catch (e) {
+                console.warn("[editor-bridge] setActiveSearchMatch error:", e);
+            }
+        },
+
+        clearSearchDecorations: function () {
+            if (!editor) return;
+            try {
+                if (window._searchDecorations && window._searchDecorations.length) {
+                    window._searchDecorations = editor.deltaDecorations(window._searchDecorations, []);
+                }
+                if (window._activeSearchDec && window._activeSearchDec.length) {
+                    window._activeSearchDec = editor.deltaDecorations(window._activeSearchDec, []);
+                }
+            } catch (e) {
+                console.warn("[editor-bridge] clearSearchDecorations error:", e);
+            }
         }
     };
 

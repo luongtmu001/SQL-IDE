@@ -78,6 +78,25 @@ public final class SqlStyleStore {
         return result;
     }
 
+    private static final List<Runnable> CHANGE_LISTENERS = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    public static void addChangeListener(Runnable r) {
+        if (r != null) CHANGE_LISTENERS.add(r);
+    }
+
+    public static void removeChangeListener(Runnable r) {
+        CHANGE_LISTENERS.remove(r);
+    }
+
+    private static void notifyChanged() {
+        for (Runnable r : CHANGE_LISTENERS) {
+            try {
+                r.run();
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
     public static void save(Data d) {
         Data out = new Data();
         out.activeStyleId = d.activeStyleId;
@@ -88,6 +107,7 @@ public final class SqlStyleStore {
             MAPPER.writerWithDefaultPrettyPrinter().writeValue(f.toFile(), out);
         } catch (Exception ignored) {
         }
+        notifyChanged();
     }
 
     public static String toJson(Style s) throws Exception {

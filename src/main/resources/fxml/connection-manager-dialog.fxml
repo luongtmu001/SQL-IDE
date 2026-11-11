@@ -99,6 +99,20 @@
                             <tooltip><Tooltip text="Tải danh sách schema"/></tooltip>
                         </Button>
                     </HBox>
+                    <Label text="Filter database" styleClass="cm-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <HBox spacing="4" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="3">
+                        <StackPane alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                            <TextField fx:id="filterDatabaseField" promptText="Mặc định: Tất cả database (nhấn ▾ để tích chọn hoặc nhập tên DB)" styleClass="cm-password"/>
+                            <Button fx:id="filterDatabaseDropdownBtn" onAction="#handleShowFilterDatabaseMenu" styleClass="cm-eye-button" focusTraversable="false">
+                                <graphic><FontIcon iconLiteral="fth-chevron-down"/></graphic>
+                                <tooltip><Tooltip text="Chọn database từ danh sách check-list"/></tooltip>
+                            </Button>
+                        </StackPane>
+                        <Button fx:id="fetchFilterDbsButton" onAction="#handleFetchFilterDatabases" styleClass="cm-field-button" focusTraversable="false">
+                            <graphic><FontIcon iconLiteral="fth-refresh-cw"/></graphic>
+                            <tooltip><Tooltip text="Tải danh sách database để lọc"/></tooltip>
+                        </Button>
+                    </HBox>
                 </GridPane>
                 <GridPane fx:id="sqliteRow" styleClass="cm-grid" hgap="0" vgap="7">
                     <columnConstraints>

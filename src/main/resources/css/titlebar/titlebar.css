@@ -85,7 +85,7 @@
     -fx-padding: 3 6 3 6;
 }
 
-.titlebar-hamburger-button > .arrow-button {
+.titlebar-hamburger-button>.arrow-button {
     -fx-padding: 0;
     -fx-shape: null;
     -fx-min-width: 0;
@@ -114,21 +114,21 @@
     -fx-spacing: 0;
 }
 
-.window-title-bar .titlebar-menu-bar > .container > .menu-button {
+.window-title-bar .titlebar-menu-bar>.container>.menu-button {
     -fx-background-color: transparent;
     -fx-background-radius: 4px;
     -fx-padding: 4 7 4 7;
 }
 
-.window-title-bar .titlebar-menu-bar > .container > .menu-button > .label {
+.window-title-bar .titlebar-menu-bar>.container>.menu-button>.label {
     -fx-text-fill: -titlebar-foreground;
     -fx-font-size: 12px;
-    -fx-padding: 0;
+    -fx-padding: 0 4px 0 0;
 }
 
-.window-title-bar .titlebar-menu-bar > .container > .menu-button:hover,
-.window-title-bar .titlebar-menu-bar > .container > .menu-button:showing,
-.window-title-bar .titlebar-menu-bar > .container > .menu-button:focused {
+.window-title-bar .titlebar-menu-bar>.container>.menu-button:hover,
+.window-title-bar .titlebar-menu-bar>.container>.menu-button:showing,
+.window-title-bar .titlebar-menu-bar>.container>.menu-button:focused {
     -fx-background-color: -titlebar-button-hover;
 }
 
@@ -224,7 +224,7 @@
 
 /* ---------- Inactive window (native caption dimming, VS Code titleBar.inactiveForeground) ---------- */
 
-.window-title-bar:window-inactive .titlebar-menu-bar > .container > .menu-button > .label,
+.window-title-bar:window-inactive .titlebar-menu-bar>.container>.menu-button>.label,
 .window-title-bar:window-inactive .window-title-label {
     -fx-text-fill: -color-fg-subtle;
 }

@@ -1007,7 +1007,9 @@ public class ResultsController implements Initializable {
         Label title = new Label("Bảng " + tableNumber);
         title.getStyleClass().add("grid-subpane-title");
         // source: only the table name for now (temp tables / table variables in routines: later, see plan)
-        String source = sourceTableName(res.getQuery());
+        String source = res.getSourceTable() != null && !res.getSourceTable().isBlank()
+                ? res.getSourceTable()
+                : sourceTableName(res.getQuery());
         Label src = new Label(source);
         src.getStyleClass().add("grid-subpane-source");
         src.setMinWidth(0);
@@ -1141,7 +1143,10 @@ public class ResultsController implements Initializable {
         multiGridTabs.getTabs().clear();
         for (int i = 0; i < sets.size(); i++) {
             QueryResult res = sets.get(i);
-            Tab tab = new Tab(String.format("Bảng %d (%,d)", i + 1, res.getRowCount()));
+            String titlePrefix = res.getSourceTable() != null && !res.getSourceTable().isBlank()
+                    ? res.getSourceTable()
+                    : String.format("Bảng %d", i + 1);
+            Tab tab = new Tab(String.format("%s (%,d)", titlePrefix, res.getRowCount()));
             FontIcon ic = new FontIcon("fth-grid");
             tab.setGraphic(ic);
             if (res.getQuery() != null) tab.setTooltip(new Tooltip(res.getQuery()));
@@ -1156,13 +1161,16 @@ public class ResultsController implements Initializable {
                 var st = attachRows(t, res);
                 installGrid(t);
                 int n = tab.getTabPane() != null ? tab.getTabPane().getTabs().indexOf(tab) + 1 : 0;
+                String effectivePrefix = res.getSourceTable() != null && !res.getSourceTable().isBlank()
+                        ? res.getSourceTable()
+                        : String.format("Bảng %d", n);
                 Tooltip tip = new Tooltip();
                 tip.setShowDelay(javafx.util.Duration.millis(250));
                 tip.setShowDuration(javafx.util.Duration.seconds(30));
                 st.setOnChanged(() -> {
                     boolean on = st.hasFilters();
-                    tab.setText(on ? String.format("Bảng %d (%,d / %,d)", n, st.shownCount(), st.totalCount())
-                            : String.format("Bảng %d (%,d)", n, st.totalCount()));
+                    tab.setText(on ? String.format("%s (%,d / %,d)", effectivePrefix, st.shownCount(), st.totalCount())
+                            : String.format("%s (%,d)", effectivePrefix, st.totalCount()));
                     tip.setText(on ? st.describe() : (res.getQuery() != null ? res.getQuery() : ""));
                 });
                 tip.setText(res.getQuery() != null ? res.getQuery() : "");
@@ -2197,7 +2205,11 @@ public class ResultsController implements Initializable {
             planDialectBadge.setManaged(true);
         }
         if (planTypeBadge != null) {
-            planTypeBadge.setText(plan.getPlanType().toUpperCase());
+            String typeText = plan.getPlanType().toUpperCase();
+            if (plan.isSimulated()) {
+                typeText += " (MÔ PHỎNG)";
+            }
+            planTypeBadge.setText(typeText);
             planTypeBadge.setVisible(true);
             planTypeBadge.setManaged(true);
         }

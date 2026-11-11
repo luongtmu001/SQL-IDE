@@ -574,6 +574,7 @@ public class DesktopExecutionPlanService {
         }
 
         PhysicalExecutionPlan plan = new PhysicalExecutionPlan(dialect, planType, totalCost, currentTop);
+        plan.setSimulated(true);
         plan.setRawPlanText(plan.toTextTree());
         return plan;
     }

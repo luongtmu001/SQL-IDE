@@ -24,6 +24,7 @@ public class SearchField extends HBox {
         setAlignment(Pos.CENTER_LEFT);
         getStyleClass().add("custom-search-field");
 
+        Icons.bind(searchIcon, IconScale.MD);
         searchIcon.getStyleClass().add("search-field-icon");
 
         inputField.setPromptText(promptText);

@@ -19,7 +19,7 @@
     -fx-padding: 0;
 }
 
-.editor-split-pane > .split-pane-divider {
+.editor-split-pane>.split-pane-divider {
     -fx-padding: 0 1 0 1;
     -fx-background-color: -color-border-subtle;
 }
@@ -29,7 +29,7 @@
    VS Code look: active tab = editor background + 2px accent line on top.
    Header of the TabPane itself is hidden.
    ===================================================================== */
-.editor-tab-pane.custom-strip > .tab-header-area {
+.editor-tab-pane.custom-strip>.tab-header-area {
     visibility: hidden;
     -fx-padding: 0;
     -fx-pref-height: 0;
@@ -42,17 +42,37 @@
     -fx-tab-min-height: 0;
 }
 
+/* Remove border on editor content area so only the active tab itself has borders */
+.tab-pane>.tab-content-area,
+.editor-tab-pane.custom-strip>.tab-content-area,
+.editor-tab-pane>.tab-content-area {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-insets: 0;
+}
+
+.editor-pane-with-strip {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.editor-tab-content {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
 .editor-tab-strip {
     -fx-background-color: -ide-tab-strip-bg;
     -fx-min-height: 34;
 }
 
-/* bottom line in the tab colour; the active tab paints over it, leaving the gap
-   where it opens into the editor (user sketch 2026-11-05) */
 .editor-tab-viewport,
 .editor-tab-right {
-    -fx-background-color: -ide-tab-active-border, -ide-tab-strip-bg;
-    -fx-background-insets: 0, 0 0 1 0;
+    -fx-background-color: -ide-tab-strip-bg;
+    -fx-background-insets: 0;
 }
 
 .editor-tab-row {
@@ -62,7 +82,7 @@
 /* right-edge fade: more tabs hidden to the right */
 .editor-tab-fade {
     -fx-background-color: linear-gradient(to right, transparent 0%, -ide-tab-strip-bg 85%);
-    -fx-background-insets: 0 0 1 0; /* keep the bottom line visible under the fade */
+    -fx-background-insets: 0;
 }
 
 .editor-strip-tab {
@@ -80,20 +100,20 @@
 /* R-UI-01 rounded: hover / active tab have rounded top corners */
 .editor-strip-tab:hover {
     -fx-background-color: -ide-tab-hover-bg;
-    -fx-background-insets: 0 0 1 0;
+    -fx-background-insets: 0;
     -fx-background-radius: 6 6 0 0;
 }
 
-/* active tab: 2px accent on top + 1px sides down to the editor separator (user request 2026-11-05), same colour as the bottom line */
+/* active tab: border only around the tab header/name itself, not the text editor area */
 .editor-strip-tab:selected {
     -fx-background-color: -ide-tab-active-bg;
     -fx-background-insets: 0;
     -fx-background-radius: 6 6 0 0;
-    -fx-border-color: -ide-tab-active-border -ide-tab-active-border transparent -ide-tab-active-border;
-    -fx-border-width: 2 1 0 1;
+    -fx-border-color: -ide-tab-active-border;
+    -fx-border-width: 3 0 0 0;
     -fx-border-insets: 0;
     -fx-border-radius: 6 6 0 0;
-    -fx-padding: 0 3 0 7; /* keep the content where it was (sides now take 1px each) */
+    -fx-padding: 0 3 0 7;
 }
 
 .editor-tab-header {

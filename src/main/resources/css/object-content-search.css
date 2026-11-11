@@ -109,24 +109,24 @@
 }
 
 .category-count-label {
-    -fx-font-size: 0.8em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
 }
 
 .object-hit-title {
-    -fx-font-size: 0.9em;
+    -fx-font-size: 1em;
     -fx-font-weight: bold;
     -fx-text-fill: -color-fg-default;
 }
 
 .object-hit-schema {
-    -fx-font-size: 0.8em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
 }
 
 .object-hit-snippet {
     -fx-font-family: 'JetBrains Mono', Consolas, monospace;
-    -fx-font-size: 0.8em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
 }
 
@@ -167,7 +167,7 @@
 }
 
 .detail-active-object-label {
-    -fx-font-size: 0.9em;
+    -fx-font-size: 1em;
     -fx-font-weight: bold;
     -fx-text-fill: -color-fg-default;
 }
@@ -209,13 +209,13 @@
 }
 
 .occurrences-title {
-    -fx-font-size: 0.85em;
+    -fx-font-size: 1em;
     -fx-font-weight: bold;
     -fx-text-fill: -color-fg-default;
 }
 
 .occurrences-hint {
-    -fx-font-size: 0.8em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
 }
 
@@ -264,11 +264,29 @@
     -fx-background-color: -color-bg-subtle;
     -fx-border-color: -color-border-subtle;
     -fx-border-width: 1 0 0 0;
-    -fx-padding: 4 12;
-    -fx-min-height: 24;
-    -fx-max-height: 24;
+    -fx-padding: 0.15em 0.75em;
     -fx-alignment: CENTER_LEFT;
-    -fx-font-size: 0.8em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
+}
+
+/* Helper classes conforming to R-UI-11 & R-UI-19 */
+.search-regex-error {
+    -fx-text-fill: -color-danger-fg;
+    -fx-font-size: 0.85em;
+    -fx-padding: 0 0 2 10;
+}
+
+.search-warn-message {
+    -fx-font-size: 0.85em;
+}
+
+.col-index-center {
+    -fx-alignment: CENTER;
+}
+
+.col-num-right {
+    -fx-alignment: CENTER-RIGHT;
+    -fx-padding: 0 8 0 0;
 }
 

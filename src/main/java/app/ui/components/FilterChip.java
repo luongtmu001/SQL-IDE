@@ -12,12 +12,11 @@ public class FilterChip extends ToggleButton {
         super(text);
         getStyleClass().add("filter-chip");
 
-        checkIcon.setIconSize(12);
+        Icons.bind(checkIcon, IconScale.SM);
         checkIcon.getStyleClass().add("filter-chip-check");
 
         if (iconLiteral != null && !iconLiteral.isBlank()) {
-            customIcon = new FontIcon(iconLiteral);
-            customIcon.setIconSize(13);
+            customIcon = Icons.of(iconLiteral, IconScale.MD);
         } else {
             customIcon = null;
         }

@@ -76,6 +76,7 @@ public class TableDesignerTab extends SqlEditorTab {
     private final Button btnRefresh = new Button();
     private final ToggleButton btnToggleInspector = new ToggleButton();
     private final ToggleButton btnToggleDdl = new ToggleButton();
+    private final app.ui.components.IconButton btnToggleWindow = new app.ui.components.IconButton("fth-external-link", "Mở dạng cửa sổ riêng");
 
     private ColumnGrid columnGrid;
     private IndexGrid indexGrid;
@@ -165,7 +166,7 @@ public class TableDesignerTab extends SqlEditorTab {
                 app.framework.state.GlobalDesktopState.getInstance().setActiveSchema(initialSchema);
             }
         }
-        rootContainer.getStyleClass().add("table-designer-root");
+        rootContainer.getStyleClass().addAll("table-designer-root", "workspace-root");
         var cssRes = getClass().getResource("/css/table-designer.css");
         if (cssRes != null) {
             rootContainer.getStylesheets().add(cssRes.toExternalForm());
@@ -213,6 +214,9 @@ public class TableDesignerTab extends SqlEditorTab {
         String tabKey = "table_designer_" + (initialClonedDesign != null ? "copy_" : (isNewTable ? "new_" : "edit_")) + catalog + "_" + initialSchema + "_" + initialTableName;
         setCustomContent(tabKey, rootContainer);
 
+        btnToggleWindow.setOnAction(e -> app.ui.window.FeatureWindowManager.getInstance().toggleWindow(
+                this, rootContainer, btnToggleWindow, getTabTitle(), "fth-edit-3"));
+
         // Load or create initial design
         loadInitialData();
 
@@ -247,20 +251,19 @@ public class TableDesignerTab extends SqlEditorTab {
     }
 
     private HBox buildHeaderToolbar() {
-        HBox bar = new HBox(8);
-        bar.setAlignment(Pos.CENTER_LEFT);
-        bar.setPadding(new Insets(4, 10, 4, 10));
+        // WorkspaceToolbar: labels are never cut; when the tab is narrow, low-priority buttons move to "…"
+        app.ui.components.WorkspaceToolbar bar = new app.ui.components.WorkspaceToolbar();
         bar.getStyleClass().add("td-header-toolbar");
 
         Label lblSchema = new Label("Schema:");
         cbSchema.setEditable(true);
-        cbSchema.setPrefWidth(120);
+        cbSchema.setPrefWidth(app.ui.components.UiMetrics.em(9.23));
         cbSchema.setValue(initialSchema);
         cbSchema.setOnAction(e -> onDesignChanged());
 
         Label lblTable = new Label("Tên bảng:");
         txtTableName.setText(initialTableName);
-        txtTableName.setPrefWidth(180);
+        txtTableName.setPrefWidth(app.ui.components.UiMetrics.em(13.85));
         txtTableName.textProperty().addListener((obs, o, n) -> {
             setTabTitle(n != null && !n.isBlank() ? n : "Table");
             onDesignChanged();
@@ -328,29 +331,42 @@ public class TableDesignerTab extends SqlEditorTab {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         // Toggle Inspector Button
-        btnToggleInspector.getStyleClass().addAll("toggle-button");
+        btnToggleInspector.getStyleClass().addAll("toggle-button", "toolbar-toggle");
         btnToggleInspector.setSelected(true);
         btnToggleInspector.setGraphic(Icons.of("fth-sidebar"));
         btnToggleInspector.setTooltip(new Tooltip("Ẩn/Hiện Inspector thuộc tính"));
         btnToggleInspector.setOnAction(e -> toggleInspector(btnToggleInspector.isSelected()));
 
         // Toggle DDL Preview Button
-        btnToggleDdl.getStyleClass().addAll("toggle-button");
+        btnToggleDdl.getStyleClass().addAll("toggle-button", "toolbar-toggle");
         btnToggleDdl.setSelected(true);
         btnToggleDdl.setGraphic(Icons.of("fth-code"));
         btnToggleDdl.setTooltip(new Tooltip("Ẩn/Hiện xem trước DDL"));
         btnToggleDdl.setOnAction(e -> toggleDdlPreview(btnToggleDdl.isSelected()));
 
-        bar.getChildren().addAll(
-                lblSchema, cbSchema, lblTable, txtTableName,
-                btnSave, btnOpenSql,
-                new Separator(Orientation.VERTICAL),
-                btnUndo, btnRedo, btnRefresh,
-                spacer,
-                btnToggleDdl, btnToggleInspector
-        );
+        bar.addLeft(lblSchema);
+        bar.addLeft(cbSchema);
+        bar.addLeft(lblTable);
+        bar.addLeft(txtTableName);
+        bar.addLeft(btnSave);
+        bar.addLeft(btnOpenSql, app.ui.components.WorkspaceToolbar.Priority.LOW);
+        bar.addLeft(new Separator(Orientation.VERTICAL));
+        bar.addLeft(btnUndo);
+        bar.addLeft(btnRedo);
+        bar.addLeft(btnRefresh, app.ui.components.WorkspaceToolbar.Priority.LOW);
+        bar.addRight(btnToggleDdl);
+        bar.addRight(btnToggleInspector);
+        bar.addRight(btnToggleWindow);
 
         return bar;
+    }
+
+    public VBox getContentRoot() {
+        return rootContainer;
+    }
+
+    public app.ui.components.IconButton getToggleWindowButton() {
+        return btnToggleWindow;
     }
 
     private HBox buildSubTabBar() {
@@ -416,22 +432,22 @@ public class TableDesignerTab extends SqlEditorTab {
 
         TableColumn<TriggerDesign, String> nameCol = new TableColumn<>("Tên Trigger");
         nameCol.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getName()));
-        nameCol.setPrefWidth(200);
+        nameCol.setPrefWidth(app.ui.components.UiMetrics.em(15.38));
 
         TableColumn<TriggerDesign, String> timingCol = new TableColumn<>("Thời điểm");
         timingCol.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getTiming() != null ? cd.getValue().getTiming() : "AFTER"));
-        timingCol.setPrefWidth(120);
+        timingCol.setPrefWidth(app.ui.components.UiMetrics.em(9.23));
 
         TableColumn<TriggerDesign, String> eventsCol = new TableColumn<>("Sự kiện");
         eventsCol.setCellValueFactory(cd -> new SimpleStringProperty(
                 cd.getValue().getEvents() != null && !cd.getValue().getEvents().isEmpty()
                         ? String.join(", ", cd.getValue().getEvents())
                         : ""));
-        eventsCol.setPrefWidth(180);
+        eventsCol.setPrefWidth(app.ui.components.UiMetrics.em(13.85));
 
         TableColumn<TriggerDesign, String> statusCol = new TableColumn<>("Trạng thái");
         statusCol.setCellValueFactory(cd -> new SimpleStringProperty("Bật"));
-        statusCol.setPrefWidth(100);
+        statusCol.setPrefWidth(app.ui.components.UiMetrics.em(7.69));
 
         triggerTableView.getColumns().setAll(nameCol, timingCol, eventsCol, statusCol);
         triggerTableView.setPlaceholder(new EmptyState(

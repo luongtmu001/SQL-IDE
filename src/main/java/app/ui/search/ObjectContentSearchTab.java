@@ -103,8 +103,8 @@ public class ObjectContentSearchTab extends SqlEditorTab {
     private final IconButton btnPrevMatch = new IconButton("fth-chevron-up", "Kết quả trước (Shift+F3)");
     private final IconButton btnNextMatch = new IconButton("fth-chevron-down", "Kết quả sau (F3)");
     private final ToggleButton btnToggleOccurrences = new ToggleButton("Vị trí khớp");
-    private final AppButton btnCopyDdl = new AppButton("Sao chép DDL", "fth-copy", AppButton.Variant.DEFAULT, AppButton.Size.SMALL);
-    private final AppButton btnOpenInSql = new AppButton("Mở trong Tab SQL", "fth-external-link", AppButton.Variant.PRIMARY, AppButton.Size.SMALL);
+    private final AppButton btnCopyDdl = new AppButton("Sao chép DDL", "fth-copy", AppButton.Variant.DEFAULT);
+    private final AppButton btnOpenInSql = new AppButton("Mở trong Tab SQL", "fth-external-link", AppButton.Variant.DEFAULT);
     private final EmptyState detailEmptyState = new EmptyState("fth-file-text", "Chưa chọn đối tượng", "Chọn một đối tượng bên trái để xem định nghĩa DDL.");
     private EmbeddedMonaco ddlEditor;
 
@@ -117,6 +117,8 @@ public class ObjectContentSearchTab extends SqlEditorTab {
     // UI Controls - Footer
     private final WorkspaceFooter workspaceFooter = new WorkspaceFooter();
     private final Label lblFooterStatus = new Label("Sẵn sàng");
+    private final IconButton btnToggleWindow = new IconButton("fth-external-link", "Mở dạng cửa sổ riêng");
+    private VBox rootContainer;
 
     public ObjectContentSearchTab(
             ConnectionProfileDto profile,
@@ -145,7 +147,7 @@ public class ObjectContentSearchTab extends SqlEditorTab {
 
     private void initializeView() {
         VBox root = new VBox();
-        root.getStyleClass().add("object-search-root");
+        root.getStyleClass().addAll("object-search-root", "workspace-root");
 
         var cssRes = getClass().getResource("/css/object-content-search.css");
         if (cssRes != null) {
@@ -175,9 +177,13 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         HBox footer = buildFooter();
 
         root.getChildren().addAll(toolbar, lblRegexError, mainSplitPane, footer);
+        this.rootContainer = root;
 
-        String tabKey = "object_search_" + (profile != null ? profile.id() : "default");
+        String tabKey = "obj_search|" + (profile != null ? profile.id() : "default") + "|" + (initialCatalog != null ? initialCatalog : "");
         setCustomContent(tabKey, root);
+
+        btnToggleWindow.setOnAction(e -> app.ui.window.FeatureWindowManager.getInstance().toggleWindow(
+                this, rootContainer, btnToggleWindow, "Search Objects Content", "fth-search"));
 
         // 4. Wire events and shortcuts
         setupEvents(root);
@@ -207,14 +213,17 @@ public class ObjectContentSearchTab extends SqlEditorTab {
 
         // Scope Dropdowns
         cbCatalog.setPromptText("Database / Catalog");
-        cbCatalog.setPrefWidth(140);
+        cbCatalog.setPrefWidth(app.ui.components.UiMetrics.em(10.77));
 
         cbSchema.setPromptText("Schema (* = Tất cả)");
-        cbSchema.setPrefWidth(130);
+        cbSchema.setPrefWidth(app.ui.components.UiMetrics.em(10));
         cbSchema.setEditable(true);
 
         Separator sep1 = new Separator(Orientation.VERTICAL);
         Separator sep2 = new Separator(Orientation.VERTICAL);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
         bar.getChildren().addAll(
                 searchField,
@@ -223,17 +232,27 @@ public class ObjectContentSearchTab extends SqlEditorTab {
                 chipViews, chipProcs, chipFuncs, chipTriggers,
                 sep2,
                 cbCatalog, cbSchema,
-                btnSearch
+                btnSearch,
+                spacer,
+                btnToggleWindow
         );
 
         return bar;
     }
 
+    public VBox getContentRoot() {
+        return rootContainer;
+    }
+
+    public IconButton getToggleWindowButton() {
+        return btnToggleWindow;
+    }
+
     private VBox buildMasterPane() {
         VBox pane = new VBox();
         pane.getStyleClass().add("object-search-master");
-        pane.setMinWidth(280);
-        pane.setPrefWidth(360);
+        pane.setMinWidth(app.ui.components.UiMetrics.em(21.54));
+        pane.setPrefWidth(app.ui.components.UiMetrics.em(27.69));
 
         // Header box with count and quick filter
         VBox headerBox = new VBox(6);
@@ -292,7 +311,8 @@ public class ObjectContentSearchTab extends SqlEditorTab {
         btnPrevMatch.setOnAction(e -> navigateMatch(-1));
         btnNextMatch.setOnAction(e -> navigateMatch(1));
 
-        btnToggleOccurrences.getStyleClass().add("search-toggle-btn");
+        btnToggleOccurrences.getStyleClass().addAll("search-toggle-btn", "toolbar-toggle");
+        btnToggleOccurrences.setMinWidth(Region.USE_PREF_SIZE);
         btnToggleOccurrences.setSelected(true);
         FontIcon listIcon = app.ui.components.Icons.of("fth-list");
         btnToggleOccurrences.setGraphic(listIcon);
@@ -346,8 +366,8 @@ public class ObjectContentSearchTab extends SqlEditorTab {
     private VBox buildBottomOccurrencesPanel() {
         VBox panel = new VBox();
         panel.getStyleClass().add("occurrences-panel");
-        panel.setPrefHeight(180);
-        panel.setMinHeight(28);
+        panel.setPrefHeight(app.ui.components.UiMetrics.em(14));
+        panel.setMinHeight(app.ui.components.UiMetrics.em(2.15));
 
         // Header
         HBox header = new HBox(8);
@@ -383,31 +403,31 @@ public class ObjectContentSearchTab extends SqlEditorTab {
 
         // Column # (Row index) - Fixed 48px
         TableColumn<SearchMatchLocation, Integer> colIndex = new TableColumn<>("#");
-        colIndex.setPrefWidth(48);
-        colIndex.setMinWidth(48);
-        colIndex.setMaxWidth(48);
+        colIndex.setPrefWidth(app.ui.components.UiMetrics.em(3.69));
+        colIndex.setMinWidth(app.ui.components.UiMetrics.em(3.69));
+        colIndex.setMaxWidth(app.ui.components.UiMetrics.em(3.69));
         colIndex.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(occurrencesTable.getItems().indexOf(data.getValue()) + 1));
         colIndex.getStyleClass().add("col-index-center");
 
         // Column Line - Fixed 64px
         TableColumn<SearchMatchLocation, Integer> colLine = new TableColumn<>("Dòng");
-        colLine.setPrefWidth(64);
-        colLine.setMinWidth(64);
-        colLine.setMaxWidth(64);
+        colLine.setPrefWidth(app.ui.components.UiMetrics.em(4.92));
+        colLine.setMinWidth(app.ui.components.UiMetrics.em(4.92));
+        colLine.setMaxWidth(app.ui.components.UiMetrics.em(4.92));
         colLine.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().line()));
         colLine.getStyleClass().add("col-num-right");
 
         // Column Col - Fixed 64px
         TableColumn<SearchMatchLocation, Integer> colCol = new TableColumn<>("Cột");
-        colCol.setPrefWidth(64);
-        colCol.setMinWidth(64);
-        colCol.setMaxWidth(64);
+        colCol.setPrefWidth(app.ui.components.UiMetrics.em(4.92));
+        colCol.setMinWidth(app.ui.components.UiMetrics.em(4.92));
+        colCol.setMaxWidth(app.ui.components.UiMetrics.em(4.92));
         colCol.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().column()));
         colCol.getStyleClass().add("col-num-right");
 
         // Column Code Snippet - Remainder with keyword highlighting
         TableColumn<SearchMatchLocation, String> colSnippet = new TableColumn<>("Đoạn mã");
-        colSnippet.setPrefWidth(450);
+        colSnippet.setPrefWidth(app.ui.components.UiMetrics.em(34.62));
         colSnippet.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().snippet()));
         colSnippet.setCellFactory(tc -> new TableCell<>() {
             @Override
@@ -423,6 +443,11 @@ public class ObjectContentSearchTab extends SqlEditorTab {
                         if (idx >= 0) {
                             TextFlow flow = new TextFlow();
                             flow.getStyleClass().add("occurrences-code-cell");
+                            // one line only: a wrapping TextFlow reports a huge height for a narrow cell
+                            double lineHeight = app.ui.components.UiMetrics.em(1.5);
+                            flow.setPrefHeight(lineHeight);
+                            flow.setMinHeight(lineHeight);
+                            flow.setMaxHeight(lineHeight);
                             String before = snippet.substring(0, idx);
                             String match = snippet.substring(idx, Math.min(snippet.length(), idx + kw.length()));
                             String after = snippet.substring(Math.min(snippet.length(), idx + kw.length()));

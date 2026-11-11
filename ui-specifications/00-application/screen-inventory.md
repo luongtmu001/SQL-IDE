@@ -44,13 +44,19 @@ Status: `observed` = đã thấy trên app đang chạy · `partially_observed` 
 | SCR-DLG-013 | Kiểm tra cập nhật | discovered | Help ▸ Check updates | — |
 | SCR-DLG-014 | Lớp phủ đang tải | discovered | thao tác dài | `LoadingView` (ứng viên) |
 
-**Tổng:** 21 màn hình/bề mặt — 7 observed, 2 partially_observed, 12 discovered.
+### Workspace Tabs & Designer
+
+| ID | Màn hình | Status | Quan trọng | Nguồn chính | Đích JavaFX hiện có / đề xuất |
+|---|---|---|---|---|---|
+| SCR-TD-001 | Thiết kế bảng (New / Edit / Copy Table) | analyzed | high | `table_designer_service.py`, `table-designer.js`, `designer_api.py` | `TableDesignerTab`, `ColumnGrid`, `ColumnInspector`, `DdlPreviewPane`, `SaveDesignDialog`, `CopyTableDialog` |
+
+**Tổng:** 22 màn hình/bề mặt — 7 observed, 2 partially_observed, 12 discovered, 1 analyzed (`SCR-TD-001`).
 
 ## 2. Ngoài phạm vi / Excluded
 
-- Các tab chức năng trong workspace: table designer, data editor, dependency graph, object search, SQL visualizer, structured data, activity monitor, schema compare, user permissions, diff.
+- Các tab chức năng trong workspace: data editor, dependency graph, object search, SQL visualizer, structured data, activity monitor, schema compare, user permissions, diff (riêng **table designer** đã được duyệt đưa vào phạm vi theo mã `SCR-TD-001`).
 - Các cửa sổ phụ: Profiler, Query History, BRAVO, Activity Monitor, Schema Compare, Result Comparator, Google Sheets, Syntax Reference, Report Gen.
-- Modal thuộc tính năng ngoài phạm vi: table-design apply preview, result comparator.
+- Modal thuộc tính năng ngoài phạm vi: result comparator.
 - Mục legacy (theo quyết định của bạn): `templates/partials/*`, Event Listener, listener Profiler không gắn phần tử.
 
 Các nút mở tính năng ngoài phạm vi (ví dụ Snippets, Sheets, BRAVO, History, Object search) **vẫn được ghi lại** trong danh mục component của màn hình chứa nó, nhưng đánh dấu `deferred`.

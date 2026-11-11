@@ -1,10 +1,13 @@
 package app.controllers;
 
 import app.framework.async.AsyncTaskManager;
+import app.framework.backend.BackendFlags;
 import app.framework.bootstrap.DesktopBootstrap;
 import app.framework.connection.ConnectionSessionManager;
 import app.framework.metadata.MockMetadataProvider;
+import app.framework.session.TabSessionManager;
 import app.framework.state.GlobalDesktopState;
+import app.application.AppContext;
 import app.models.DatabaseNode;
 import app.models.DatabaseNodeType;
 import app.ui.components.ConnectionTreeBuilder;
@@ -92,6 +95,14 @@ public class ConnectionManagerController implements Initializable {
     @FXML private Button fetchDbsButton;
     @FXML private ComboBox<String> schemaComboBox;
     @FXML private Button fetchSchemasButton;
+    @FXML private TextField filterDatabaseField;
+    @FXML private Button filterDatabaseDropdownBtn;
+    @FXML private Button fetchFilterDbsButton;
+
+    private final Set<String> selectedFilterDatabases = new LinkedHashSet<>();
+    private final List<String> availableFilterDatabases = new ArrayList<>();
+    private final ContextMenu filterDatabaseMenu = new ContextMenu();
+    private boolean syncingFilterField = false;
 
     @FXML private Label authSection;
     @FXML private Region authTypeRow;
@@ -169,6 +180,143 @@ public class ConnectionManagerController implements Initializable {
         timeoutSpinner.valueProperty().addListener((o, a, b) -> updateAdvancedSummary());
         readOnlyCheckBox.selectedProperty().addListener((o, a, b) -> updateAdvancedSummary());
         trustCertCheckBox.selectedProperty().addListener((o, a, b) -> updateAdvancedSummary());
+        setupFilterDatabaseControl();
+    }
+
+    private void setupFilterDatabaseControl() {
+        if (filterDatabaseField == null) return;
+        filterDatabaseField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (syncingFilterField) return;
+            selectedFilterDatabases.clear();
+            selectedFilterDatabases.addAll(app.framework.metadata.filter.DesktopFilterManager.parseFilterDatabases(newVal));
+        });
+    }
+
+    private void syncFilterFieldFromSelection() {
+        if (filterDatabaseField == null) return;
+        syncingFilterField = true;
+        try {
+            filterDatabaseField.setText(String.join(", ", selectedFilterDatabases));
+        } finally {
+            syncingFilterField = false;
+        }
+    }
+
+    private void rebuildFilterDatabaseMenu() {
+        filterDatabaseMenu.getItems().clear();
+        Set<String> allChoices = new LinkedHashSet<>(availableFilterDatabases);
+        if (databaseComboBox != null && databaseComboBox.getItems() != null) {
+            for (String item : databaseComboBox.getItems()) {
+                if (item != null && !item.isBlank()) allChoices.add(item.trim());
+            }
+        }
+        String currentDefaultDb = comboText(databaseComboBox);
+        if (currentDefaultDb != null && !currentDefaultDb.isBlank()) {
+            allChoices.add(currentDefaultDb);
+        }
+        allChoices.addAll(selectedFilterDatabases);
+        if (allChoices.isEmpty()) {
+            ConnectionProfileDto draft = buildDraftProfile();
+            for (String mockDb : MockMetadataProvider.catalogs(draft)) {
+                if (mockDb != null && !mockDb.isBlank()) allChoices.add(mockDb);
+            }
+        }
+
+        HBox actionsRow = new HBox(10);
+        actionsRow.setAlignment(Pos.CENTER_LEFT);
+        Hyperlink selectAll = new Hyperlink("Chọn tất cả");
+        Hyperlink clearAll = new Hyperlink("Bỏ chọn (Lấy tất cả)");
+        List<CheckBox> checkBoxes = new ArrayList<>();
+        selectAll.setOnAction(e -> {
+            selectedFilterDatabases.clear();
+            selectedFilterDatabases.addAll(allChoices);
+            checkBoxes.forEach(cb -> cb.setSelected(true));
+            syncFilterFieldFromSelection();
+        });
+        clearAll.setOnAction(e -> {
+            selectedFilterDatabases.clear();
+            checkBoxes.forEach(cb -> cb.setSelected(false));
+            syncFilterFieldFromSelection();
+        });
+        actionsRow.getChildren().addAll(selectAll, clearAll);
+        CustomMenuItem actionsItem = new CustomMenuItem(actionsRow, false);
+        filterDatabaseMenu.getItems().add(actionsItem);
+        filterDatabaseMenu.getItems().add(new SeparatorMenuItem());
+
+        for (String dbName : allChoices) {
+            CheckBox cb = new CheckBox(dbName);
+            cb.setSelected(selectedFilterDatabases.contains(dbName));
+            cb.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+                if (Boolean.TRUE.equals(isSelected)) {
+                    selectedFilterDatabases.add(dbName);
+                } else {
+                    selectedFilterDatabases.remove(dbName);
+                }
+                syncFilterFieldFromSelection();
+            });
+            checkBoxes.add(cb);
+            CustomMenuItem item = new CustomMenuItem(cb, false);
+            filterDatabaseMenu.getItems().add(item);
+        }
+    }
+
+    @FXML
+    public void handleShowFilterDatabaseMenu() {
+        if (filterDatabaseField == null) return;
+        if (filterDatabaseMenu.isShowing()) {
+            filterDatabaseMenu.hide();
+            return;
+        }
+        rebuildFilterDatabaseMenu();
+        filterDatabaseMenu.show(filterDatabaseField, javafx.geometry.Side.BOTTOM, 0, 2);
+    }
+
+    @FXML
+    public void handleFetchFilterDatabases() {
+        ConnectionProfileDto draft = buildDraftProfile();
+        if (fetchFilterDbsButton != null) fetchFilterDbsButton.setDisable(true);
+        setStatus("Đang tải danh sách database để lọc…", null);
+        if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.CONNECTIONS)) {
+            MockMetadataProvider.deliver(() -> MockMetadataProvider.catalogs(draft), dbs -> {
+                if (fetchFilterDbsButton != null) fetchFilterDbsButton.setDisable(false);
+                availableFilterDatabases.clear();
+                availableFilterDatabases.addAll(dbs);
+                if (databaseComboBox.getItems().isEmpty()) {
+                    databaseComboBox.setItems(FXCollections.observableArrayList(dbs));
+                }
+                rebuildFilterDatabaseMenu();
+                if (filterDatabaseField != null) {
+                    filterDatabaseMenu.show(filterDatabaseField, javafx.geometry.Side.BOTTOM, 0, 2);
+                }
+                setStatus("✓ " + dbs.size() + " database (dữ liệu mẫu)", "success");
+            });
+            return;
+        }
+        String pass = passwordField.getText();
+        AsyncTaskManager.getInstance().executeAsync(
+                () -> ConnectionSessionManager.getInstance().fetchDatabases(draft, pass),
+                result -> {
+                    if (fetchFilterDbsButton != null) fetchFilterDbsButton.setDisable(false);
+                    if (result.isSuccess()) {
+                        List<String> dbs = result.getDataOrThrow();
+                        availableFilterDatabases.clear();
+                        availableFilterDatabases.addAll(dbs);
+                        if (databaseComboBox.getItems().isEmpty()) {
+                            databaseComboBox.setItems(FXCollections.observableArrayList(dbs));
+                        }
+                        rebuildFilterDatabaseMenu();
+                        if (filterDatabaseField != null) {
+                            filterDatabaseMenu.show(filterDatabaseField, javafx.geometry.Side.BOTTOM, 0, 2);
+                        }
+                        setStatus("✓ " + dbs.size() + " database", "success");
+                    } else {
+                        setStatus("✕ " + result.getError().map(e -> e.message()).orElse("Không lấy được danh sách database"), "error");
+                    }
+                },
+                error -> {
+                    if (fetchFilterDbsButton != null) fetchFilterDbsButton.setDisable(false);
+                    setStatus("✕ " + error.getMessage(), "error");
+                });
     }
 
     private void setupPasswordField() {
@@ -442,10 +590,34 @@ public class ConnectionManagerController implements Initializable {
         savePasswordCheckBox.setSelected(profile.savePassword());
 
         databaseComboBox.getItems().clear();
-        databaseComboBox.setValue(profile.databaseName() != null ? profile.databaseName() : "");
+        String dbName = profile.databaseName() != null ? profile.databaseName() : "";
+        databaseComboBox.setValue(dbName);
+        if (databaseComboBox.getEditor() != null) {
+            databaseComboBox.getEditor().setText(dbName);
+        }
         schemaComboBox.getItems().clear();
         String savedSchema = app.services.DefaultSchemaService.get(profile.id());
-        schemaComboBox.setValue(savedSchema != null ? savedSchema : defaultSchema(type));
+        if (savedSchema == null && profile.properties() != null) {
+            savedSchema = profile.properties().get("defaultSchema");
+        }
+        if (savedSchema == null) savedSchema = defaultSchema(type);
+        schemaComboBox.setValue(savedSchema != null ? savedSchema : "");
+        if (schemaComboBox.getEditor() != null) {
+            schemaComboBox.getEditor().setText(savedSchema != null ? savedSchema : "");
+        }
+        selectedFilterDatabases.clear();
+        availableFilterDatabases.clear();
+        String rawFilterDbs = profile.properties() != null ? profile.properties().get("filterDatabases") : null;
+        Set<String> parsedFilterDbs = app.framework.metadata.filter.DesktopFilterManager.parseFilterDatabases(rawFilterDbs);
+        if (!parsedFilterDbs.isEmpty()) {
+            selectedFilterDatabases.addAll(parsedFilterDbs);
+        } else {
+            var existingFilter = app.framework.metadata.filter.DesktopFilterManager.getInstance().getDatabaseFilter(profile.id());
+            if (existingFilter != null && existingFilter.isActive() && existingFilter.getSelectedDatabases() != null) {
+                selectedFilterDatabases.addAll(existingFilter.getSelectedDatabases());
+            }
+        }
+        syncFilterFieldFromSelection();
         timeoutSpinner.getValueFactory().setValue(profile.timeoutSeconds() > 0 ? profile.timeoutSeconds() : 15);
         trustCertCheckBox.setSelected(profile.trustServerCertificate());
 
@@ -530,13 +702,16 @@ public class ConnectionManagerController implements Initializable {
         portSpinner.getValueFactory().setValue(5432);
         sqliteFileField.clear();
         windowsAuthSwitch.setSelected(false);
-        usernameField.setText("postgres");
+        usernameField.clear();
         passwordField.clear();
         savePasswordCheckBox.setSelected(true);
         databaseComboBox.getItems().clear();
-        databaseComboBox.setValue("postgres");
+        databaseComboBox.setValue("");
         schemaComboBox.getItems().clear();
-        schemaComboBox.setValue("public");
+        schemaComboBox.setValue("");
+        selectedFilterDatabases.clear();
+        availableFilterDatabases.clear();
+        syncFilterFieldFromSelection();
         timeoutSpinner.getValueFactory().setValue(15);
         trustCertCheckBox.setSelected(true);
         setStatus("", null);
@@ -667,6 +842,8 @@ public class ConnectionManagerController implements Initializable {
         if (app.framework.backend.BackendFlags.mock(app.framework.backend.BackendFlags.Area.CONNECTIONS)) {
             MockMetadataProvider.deliver(() -> MockMetadataProvider.catalogs(draft), dbs -> {
                 fetchDbsButton.setDisable(false);
+                availableFilterDatabases.clear();
+                availableFilterDatabases.addAll(dbs);
                 fillCombo(databaseComboBox, dbs);
                 setStatus("✓ " + dbs.size() + " database (dữ liệu mẫu)", "success");
             });
@@ -679,6 +856,8 @@ public class ConnectionManagerController implements Initializable {
                     fetchDbsButton.setDisable(false);
                     if (result.isSuccess()) {
                         List<String> dbs = result.getDataOrThrow();
+                        availableFilterDatabases.clear();
+                        availableFilterDatabases.addAll(dbs);
                         fillCombo(databaseComboBox, dbs);
                         setStatus("✓ " + dbs.size() + " database", "success");
                     } else {
@@ -758,21 +937,31 @@ public class ConnectionManagerController implements Initializable {
         String password = passwordField.getText();
         boolean savePassword = savePasswordCheckBox.isSelected();
         ConnectionApi api = DesktopBootstrap.getInstance().getConnectionApi();
+        String dbVal = comboText(databaseComboBox);
+        String schema = comboText(schemaComboBox);
+        Map<String, String> properties = new HashMap<>();
+        if (schema != null && !schema.isBlank()) {
+            properties.put("defaultSchema", schema);
+            properties.put("schema", schema);
+        }
+        if (!selectedFilterDatabases.isEmpty()) {
+            properties.put("filterDatabases", String.join(", ", selectedFilterDatabases));
+        }
 
         Result<ConnectionProfileDto> res;
         if (currentConnectionId != null) {
             res = api.updateConnection(new UpdateConnectionRequest(
                     currentConnectionId, name, group, envComboBox.getValue(), readOnlyCheckBox.isSelected(),
-                    dbTypeComboBox.getValue(), hostField.getText(), portSpinner.getValue(), databaseComboBox.getValue(),
+                    dbTypeComboBox.getValue(), hostField.getText(), portSpinner.getValue(), dbVal,
                     sqliteFileField.getText(), usernameField.getText(), authType,
                     password == null || password.isEmpty() ? null : password, savePassword,
-                    timeoutSpinner.getValue(), trustCertCheckBox.isSelected(), Collections.emptyMap()));
+                    timeoutSpinner.getValue(), trustCertCheckBox.isSelected(), properties));
         } else {
             res = api.createConnection(new CreateConnectionRequest(
                     name, group, envComboBox.getValue(), readOnlyCheckBox.isSelected(),
-                    dbTypeComboBox.getValue(), hostField.getText(), portSpinner.getValue(), databaseComboBox.getValue(),
+                    dbTypeComboBox.getValue(), hostField.getText(), portSpinner.getValue(), dbVal,
                     sqliteFileField.getText(), usernameField.getText(), authType, password, savePassword,
-                    timeoutSpinner.getValue(), trustCertCheckBox.isSelected(), Collections.emptyMap()));
+                    timeoutSpinner.getValue(), trustCertCheckBox.isSelected(), properties));
         }
         if (!res.isSuccess()) {
             setStatus("✕ " + res.getError().map(e -> e.message()).orElse("Lưu thất bại."), "error");
@@ -788,10 +977,22 @@ public class ConnectionManagerController implements Initializable {
         } else if (!savePassword) {
             policy.clear(saved.id());
         }
-        String schema = schemaComboBox.getValue();
         app.framework.connection.ProfileLookup.invalidate();
         app.services.DefaultSchemaService.set(saved.id(), schema); // blank = no default schema
         app.services.DefaultSchemaService.resetApplied(saved.id());
+        app.framework.metadata.filter.DesktopFilterManager.getInstance().syncFromProfile(saved);
+
+        if (!saved.readOnly()) {
+            BackendFlags.setReadOnlyAll(false);
+        }
+        TabSessionManager.getInstance().setProfileReadOnly(saved.id(), saved.readOnly());
+        TabSessionManager.getInstance().setProfileReadOnly(saved.name(), saved.readOnly());
+        MainController mc = AppContext.getInstance().getMainController();
+        if (mc != null) {
+            mc.setConnectionReadOnly(saved.name(), saved.readOnly());
+            mc.setConnectionReadOnly(saved.id(), saved.readOnly());
+            mc.refreshConnectionDropdown();
+        }
 
         loadConnections();
         selectConnectionByIdOrName(saved.id());
@@ -804,7 +1005,25 @@ public class ConnectionManagerController implements Initializable {
         if (!save(true)) return;
         connectRequestedId = currentConnectionId;
         GlobalDesktopState.getInstance().setActiveConnection(nameField.getText().trim());
+        String dbVal = comboText(databaseComboBox);
+        if (dbVal != null && !dbVal.isBlank()) {
+            GlobalDesktopState.getInstance().setActiveCatalog(dbVal.trim());
+        }
+        String schemaVal = comboText(schemaComboBox);
+        if (schemaVal != null && !schemaVal.isBlank()) {
+            GlobalDesktopState.getInstance().setActiveSchema(schemaVal.trim());
+        }
+        if (currentConnectionId != null) {
+            app.services.ExplorerConnectionState.getInstance().set(currentConnectionId, app.services.ExplorerConnectionState.Status.CONNECTED);
+        }
         handleClose();
+    }
+
+    private String comboText(ComboBox<String> cb) {
+        if (cb == null) return null;
+        String val = cb.isEditable() && cb.getEditor() != null ? cb.getEditor().getText() : cb.getValue();
+        if (val == null || val.isBlank()) val = cb.getValue();
+        return (val != null && !val.isBlank()) ? val.trim() : null;
     }
 
     @FXML
@@ -832,6 +1051,15 @@ public class ConnectionManagerController implements Initializable {
 
     private ConnectionProfileDto buildDraftProfile() {
         String authType = windowsAuthSwitch.isSelected() ? "WINDOWS_AUTH" : "PASSWORD";
+        String schema = comboText(schemaComboBox);
+        Map<String, String> properties = new HashMap<>();
+        if (schema != null && !schema.isBlank()) {
+            properties.put("defaultSchema", schema);
+            properties.put("schema", schema);
+        }
+        if (!selectedFilterDatabases.isEmpty()) {
+            properties.put("filterDatabases", String.join(", ", selectedFilterDatabases));
+        }
         return new ConnectionProfileDto(
                 currentConnectionId != null ? currentConnectionId : UUID.randomUUID().toString(),
                 nameField.getText(),
@@ -841,7 +1069,7 @@ public class ConnectionManagerController implements Initializable {
                 dbTypeComboBox.getValue(),
                 hostField.getText(),
                 portSpinner.getValue(),
-                databaseComboBox.getValue(),
+                comboText(databaseComboBox),
                 sqliteFileField.getText(),
                 usernameField.getText(),
                 authType,
@@ -849,7 +1077,7 @@ public class ConnectionManagerController implements Initializable {
                 savePasswordCheckBox.isSelected(),
                 timeoutSpinner.getValue(),
                 trustCertCheckBox.isSelected(),
-                Collections.emptyMap(),
+                properties,
                 null,
                 null);
     }

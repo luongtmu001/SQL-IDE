@@ -22,7 +22,7 @@ public class EmptyState extends VBox {
         getStyleClass().add("empty-state-view");
 
         icon.setIconLiteral(iconLiteral);
-        icon.setIconSize(36);
+        Icons.bind(icon, IconScale.XL);
         icon.getStyleClass().add("empty-state-icon");
 
         titleLabel.setText(title);

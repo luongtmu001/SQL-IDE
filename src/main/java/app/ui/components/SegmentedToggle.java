@@ -23,6 +23,7 @@ public class SegmentedToggle<T> extends HBox {
         setAlignment(Pos.CENTER_LEFT);
         getStyleClass().add("segmented-toggle-group");
         setPadding(new Insets(1));
+        setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
 
         selectedValue.addListener((obs, oldVal, newVal) -> {
             if (newVal != null && buttons.containsKey(newVal)) {
@@ -37,10 +38,9 @@ public class SegmentedToggle<T> extends HBox {
     public void addItem(T value, String text, String iconLiteral) {
         ToggleButton btn = new ToggleButton(text);
         btn.getStyleClass().add("segmented-toggle-button");
+        btn.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE); // labels are never cut (R-UI-13.8)
         if (iconLiteral != null && !iconLiteral.isBlank()) {
-            FontIcon icon = new FontIcon(iconLiteral);
-            icon.setIconSize(13);
-            btn.setGraphic(icon);
+            btn.setGraphic(Icons.of(iconLiteral, IconScale.MD));
         }
         btn.setToggleGroup(group);
 

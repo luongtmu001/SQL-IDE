@@ -219,8 +219,8 @@ public class DatabaseExplorerPhase63Test {
         assertTrue(tableMenu.getItems().stream().anyMatch(i -> i.getText() != null && i.getText().contains("Select Top 1000")), "Table menu must have Select Top 1000");
         assertTrue(tableMenu.getItems().stream().anyMatch(i -> i.getText() != null && i.getText().contains("Select Count(*)")), "Table menu must have Select Count(*)");
         assertTrue(tableMenu.getItems().stream().anyMatch(i -> i.getText() != null && i.getText().contains("Script Table as")), "Table menu must have Script Table as submenu");
-        // Q3 = b: out-of-scope features stay visible but disabled
-        assertTrue(tableMenu.getItems().stream().anyMatch(i -> i.getText() != null && i.getText().contains("Design Table") && i.isDisable()), "Design Table must be disabled (chưa hỗ trợ)");
+        // Design Table feature enabled in Table Designer milestone
+        assertTrue(tableMenu.getItems().stream().anyMatch(i -> i.getText() != null && i.getText().contains("Design Table")), "Table menu must have Design Table");
 
         // Test Connection Context Menu
         DatabaseNode connNode = new DatabaseNode("Local PG", DatabaseNodeType.CONNECTION);

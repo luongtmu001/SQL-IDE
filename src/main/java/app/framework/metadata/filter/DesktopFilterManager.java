@@ -37,13 +37,48 @@ public class DesktopFilterManager {
 
     public DatabaseFilter getDatabaseFilter(String connectionId) {
         if (connectionId == null) return new DatabaseFilter();
-        return databaseFilters.computeIfAbsent(connectionId, k -> new DatabaseFilter());
+        return databaseFilters.computeIfAbsent(connectionId, id -> {
+            try {
+                var p = app.framework.connection.ProfileLookup.byId(id);
+                if (p == null) p = app.framework.connection.ProfileLookup.byName(id);
+                if (p != null && p.properties() != null) {
+                    java.util.Set<String> dbs = parseFilterDatabases(p.properties().get("filterDatabases"));
+                    if (!dbs.isEmpty()) {
+                        return new DatabaseFilter(dbs);
+                    }
+                }
+            } catch (Exception ignored) {}
+            return new DatabaseFilter();
+        });
+    }
+
+    public static java.util.Set<String> parseFilterDatabases(String raw) {
+        java.util.Set<String> result = new java.util.LinkedHashSet<>();
+        if (raw == null || raw.isBlank()) return result;
+        for (String part : raw.split("[,;\\n]+")) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty()) {
+                result.add(trimmed);
+            }
+        }
+        return result;
+    }
+
+    public void syncFromProfile(com.lltool.core.application.connection.dto.ConnectionProfileDto profile) {
+        if (profile == null || profile.id() == null) return;
+        String raw = profile.properties() != null ? profile.properties().get("filterDatabases") : null;
+        java.util.Set<String> dbs = parseFilterDatabases(raw);
+        if (!dbs.isEmpty()) {
+            setDatabaseFilter(profile.id(), new DatabaseFilter(dbs));
+        } else {
+            setDatabaseFilter(profile.id(), new DatabaseFilter());
+        }
     }
 
     public void setDatabaseFilter(String connectionId, DatabaseFilter filter) {
         if (connectionId == null) return;
         if (filter == null || !filter.isActive()) {
-            databaseFilters.remove(connectionId);
+            databaseFilters.put(connectionId, new DatabaseFilter());
         } else {
             databaseFilters.put(connectionId, filter);
         }
@@ -51,7 +86,7 @@ public class DesktopFilterManager {
     }
 
     public boolean hasDatabaseFilter(String connectionId) {
-        DatabaseFilter f = databaseFilters.get(connectionId);
+        DatabaseFilter f = getDatabaseFilter(connectionId);
         return f != null && f.isActive();
     }
 

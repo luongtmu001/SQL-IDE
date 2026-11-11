@@ -18,3 +18,4 @@ class InMemoryPreferencesFactoryTest {
         assertNull(prefs.get("test_key", null));
     }
 }
+

@@ -1,0 +1,564 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-TD-001",
+  "components": [
+    {
+      "id": "CMB-TD-SCHEMA",
+      "type": "combobox",
+      "region": "REG-TD-HEADER",
+      "name": "Schema Selector",
+      "description": "Chọn schema sở hữu bảng (dbo, public, sales, v.v.)",
+      "hotkey": null
+    },
+    {
+      "id": "TXT-TD-TABLENAME",
+      "type": "textfield",
+      "region": "REG-TD-HEADER",
+      "name": "Table Name Input",
+      "description": "Tên bảng. Mặc định Table_N (tạo mới) hoặc tên bảng hiện tại",
+      "hotkey": null
+    },
+    {
+      "id": "BTN-TD-SAVE",
+      "type": "button-primary",
+      "region": "REG-TD-HEADER",
+      "name": "Save Design Button",
+      "description": "Mở hộp thoại Lưu và áp dụng thay đổi cấu trúc bảng",
+      "hotkey": "Ctrl+S",
+      "icon": "mdi2c-content-save"
+    },
+    {
+      "id": "BTN-TD-UNDO",
+      "type": "icon-button",
+      "region": "REG-TD-HEADER",
+      "name": "Undo Button",
+      "description": "Hoàn tác thay đổi gần nhất",
+      "hotkey": "Ctrl+Z",
+      "icon": "mdi2u-undo"
+    },
+    {
+      "id": "BTN-TD-REDO",
+      "type": "icon-button",
+      "region": "REG-TD-HEADER",
+      "name": "Redo Button",
+      "description": "Làm lại thao tác vừa hoàn tác",
+      "hotkey": "Ctrl+Y",
+      "icon": "mdi2r-redo"
+    },
+    {
+      "id": "BTN-TD-OPEN-SQL",
+      "type": "button",
+      "region": "REG-TD-HEADER",
+      "name": "Open in SQL Tab Button",
+      "description": "Mở toàn bộ script DDL / migration sang một tab SQL Editor độc lập",
+      "hotkey": null,
+      "icon": "mdi2f-file-code-outline"
+    },
+    {
+      "id": "BTN-TD-REFRESH",
+      "type": "icon-button",
+      "region": "REG-TD-HEADER",
+      "name": "Refresh Metadata Button",
+      "description": "Tải lại cấu trúc bảng từ cơ sở dữ liệu",
+      "hotkey": "F5",
+      "icon": "mdi2r-refresh"
+    },
+    {
+      "id": "TGL-TD-INSPECTOR",
+      "type": "toggle-button",
+      "region": "REG-TD-HEADER",
+      "name": "Toggle Inspector Button",
+      "description": "Bật / tắt hiển thị thanh Column Inspector bên phải",
+      "hotkey": null,
+      "icon": "mdi2d-dock-right"
+    },
+    {
+      "id": "TGL-TD-PREVIEW",
+      "type": "toggle-button",
+      "region": "REG-TD-HEADER",
+      "name": "Toggle DDL Preview Button",
+      "description": "Bật / tắt hiển thị khung Live DDL Preview bên dưới",
+      "hotkey": null,
+      "icon": "mdi2d-dock-bottom"
+    },
+    {
+      "id": "TAB-TD-COLUMNS",
+      "type": "tab",
+      "region": "REG-TD-SUBTABS",
+      "name": "Columns Sub-Tab",
+      "description": "Tab lưới quản lý cột bảng",
+      "hotkey": "Alt+1"
+    },
+    {
+      "id": "TAB-TD-INDEXES",
+      "type": "tab",
+      "region": "REG-TD-SUBTABS",
+      "name": "Indexes Sub-Tab",
+      "description": "Tab quản lý chỉ mục (Indexes)",
+      "hotkey": "Alt+2"
+    },
+    {
+      "id": "TAB-TD-FKS",
+      "type": "tab",
+      "region": "REG-TD-SUBTABS",
+      "name": "Foreign Keys Sub-Tab",
+      "description": "Tab quản lý khóa ngoại",
+      "hotkey": "Alt+3"
+    },
+    {
+      "id": "TAB-TD-UNIQUE",
+      "type": "tab",
+      "region": "REG-TD-SUBTABS",
+      "name": "Unique Constraints Sub-Tab",
+      "description": "Tab quản lý ràng buộc Unique",
+      "hotkey": "Alt+4"
+    },
+    {
+      "id": "TAB-TD-CHECKS",
+      "type": "tab",
+      "region": "REG-TD-SUBTABS",
+      "name": "Check Constraints Sub-Tab",
+      "description": "Tab quản lý ràng buộc Check",
+      "hotkey": "Alt+5"
+    },
+    {
+      "id": "TAB-TD-TRIGGERS",
+      "type": "tab",
+      "region": "REG-TD-SUBTABS",
+      "name": "Triggers Sub-Tab",
+      "description": "Tab quản lý Triggers",
+      "hotkey": "Alt+6"
+    },
+    {
+      "id": "BTN-TD-ADD-ROW",
+      "type": "icon-button",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Add Row at Bottom",
+      "description": "Thêm một cột mới ở cuối danh sách",
+      "hotkey": "Ctrl+N",
+      "icon": "mdi2t-table-row-plus-after"
+    },
+    {
+      "id": "BTN-TD-INSERT-BEFORE",
+      "type": "icon-button",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Insert Row Above",
+      "description": "Chèn một cột mới phía trên dòng đang chọn",
+      "hotkey": "Ctrl+Insert",
+      "icon": "mdi2t-table-row-plus-before"
+    },
+    {
+      "id": "BTN-TD-INSERT-AFTER",
+      "type": "icon-button",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Insert Row Below",
+      "description": "Chèn một cột mới phía dưới dòng đang chọn",
+      "hotkey": "Ctrl+Shift+Insert",
+      "icon": "mdi2t-table-row-plus-after"
+    },
+    {
+      "id": "SPN-TD-ADD-COUNT",
+      "type": "spinner",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Multiple Rows Count",
+      "description": "Số lượng dòng cần thêm đồng thời (1–100)"
+    },
+    {
+      "id": "BTN-TD-ADD-N-ROWS",
+      "type": "button",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Add N Rows Button",
+      "description": "Thêm N dòng mới dưới khối chọn"
+    },
+    {
+      "id": "BTN-TD-DUPLICATE",
+      "type": "icon-button",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Duplicate Rows Button",
+      "description": "Nhân bản các dòng đang chọn với ColumnId mới và originalName = null",
+      "hotkey": "Ctrl+D",
+      "icon": "mdi2c-content-duplicate"
+    },
+    {
+      "id": "BTN-TD-DELETE-ROW",
+      "type": "icon-button",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Delete Rows Button",
+      "description": "Xóa mọi dòng đang chọn (hỏi xác nhận nếu có ràng buộc phụ thuộc)",
+      "hotkey": "Delete",
+      "icon": "mdi2t-table-row-remove"
+    },
+    {
+      "id": "BTN-TD-MOVE-UP",
+      "type": "icon-button",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Move Rows Up Button",
+      "description": "Di chuyển cả khối dòng đang chọn lên 1 vị trí",
+      "hotkey": "Alt+Up",
+      "icon": "fth-arrow-up"
+    },
+    {
+      "id": "BTN-TD-MOVE-DOWN",
+      "type": "icon-button",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Move Rows Down Button",
+      "description": "Di chuyển cả khối dòng đang chọn xuống 1 vị trí",
+      "hotkey": "Alt+Down",
+      "icon": "fth-arrow-down"
+    },
+    {
+      "id": "BTN-TD-TOGGLE-PK",
+      "type": "icon-button",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Toggle Primary Key Button",
+      "description": "Bật / tắt cờ khóa chính cho các dòng đang chọn",
+      "icon": "mdi2k-key"
+    },
+    {
+      "id": "BTN-TD-TOGGLE-NN",
+      "type": "button",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Toggle Not Null Button",
+      "description": "Bật / tắt cờ Not Null cho các dòng đang chọn",
+      "hotkey": "Space"
+    },
+    {
+      "id": "CHK-TD-FILTER-MODIFIED",
+      "type": "checkbox",
+      "region": "REG-TD-ROW-TOOLBAR",
+      "name": "Filter Modified Columns Only",
+      "description": "Chỉ hiển thị các cột có thay đổi (chỉ có trong Edit mode)"
+    },
+    {
+      "id": "GRD-TD-COLUMNS",
+      "type": "tableview",
+      "region": "REG-TD-GRID-CONTAINER",
+      "name": "Columns TableView",
+      "description": "Lưới danh sách cột, hỗ trợ chọn nhiều dòng, kéo thả, sửa inline"
+    },
+    {
+      "id": "COL-TD-STATUS",
+      "type": "table-column",
+      "region": "REG-TD-GRID-CONTAINER",
+      "name": "Change Status Column",
+      "description": "Ký hiệu trạng thái dòng (+ thêm mới, ~ sửa, ↻ đổi tên, − xóa)"
+    },
+    {
+      "id": "COL-TD-PK",
+      "type": "table-column",
+      "region": "REG-TD-GRID-CONTAINER",
+      "name": "Primary Key Column",
+      "description": "Cột hiển thị icon chìa khóa nếu là PK"
+    },
+    {
+      "id": "COL-TD-NAME",
+      "type": "table-column",
+      "region": "REG-TD-GRID-CONTAINER",
+      "name": "Column Name",
+      "description": "Tên cột"
+    },
+    {
+      "id": "COL-TD-TYPE",
+      "type": "table-column",
+      "region": "REG-TD-GRID-CONTAINER",
+      "name": "Data Type Column",
+      "description": "Kiểu dữ liệu (ComboBox autocomplete)"
+    },
+    {
+      "id": "COL-TD-LENGTH",
+      "type": "table-column",
+      "region": "REG-TD-GRID-CONTAINER",
+      "name": "Length / Size Column",
+      "description": "Độ dài ký tự hoặc precision"
+    },
+    {
+      "id": "COL-TD-SCALE",
+      "type": "table-column",
+      "region": "REG-TD-GRID-CONTAINER",
+      "name": "Scale Column",
+      "description": "Độ chính xác chữ số thập phân"
+    },
+    {
+      "id": "COL-TD-NN",
+      "type": "table-column",
+      "region": "REG-TD-GRID-CONTAINER",
+      "name": "Not Null Column",
+      "description": "Cờ bắt buộc có giá trị (Checkbox)"
+    },
+    {
+      "id": "COL-TD-DEFAULT",
+      "type": "table-column",
+      "region": "REG-TD-GRID-CONTAINER",
+      "name": "Default Value Column",
+      "description": "Giá trị mặc định"
+    },
+    {
+      "id": "COL-TD-COMMENT",
+      "type": "table-column",
+      "region": "REG-TD-GRID-CONTAINER",
+      "name": "Description / Comment Column",
+      "description": "Mô tả / chú thích của cột"
+    },
+    {
+      "id": "INSP-TD-PANE",
+      "type": "panel",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Column Inspector Surface",
+      "description": "Bề mặt thuộc tính chi tiết cột"
+    },
+    {
+      "id": "INSP-TD-DEFAULT-VAL",
+      "type": "textfield",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Default Value Input",
+      "description": "Nội dung giá trị hoặc biểu thức mặc định"
+    },
+    {
+      "id": "INSP-TD-DEFAULT-KIND",
+      "type": "segmented-button",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Default Kind Selector",
+      "description": "Lựa chọn 'Giá trị' (tự bọc nháy) hoặc 'Biểu thức'"
+    },
+    {
+      "id": "INSP-TD-DEFAULT-NAME",
+      "type": "textfield",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Default Constraint Name",
+      "description": "Tên ràng buộc mặc định (SQL Server)"
+    },
+    {
+      "id": "INSP-TD-COLLATION",
+      "type": "combobox",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Collation Selector",
+      "description": "Bảng mã Collation cho cột kiểu chuỗi"
+    },
+    {
+      "id": "INSP-TD-IDENTITY-CHK",
+      "type": "checkbox",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Is Identity Checkbox",
+      "description": "Cờ tự động tăng (Identity)"
+    },
+    {
+      "id": "INSP-TD-IDENTITY-SEED",
+      "type": "spinner",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Identity Seed Input",
+      "description": "Giá trị khởi tạo ban đầu (Seed)"
+    },
+    {
+      "id": "INSP-TD-IDENTITY-INC",
+      "type": "spinner",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Identity Increment Input",
+      "description": "Bước tăng mỗi dòng (Increment)"
+    },
+    {
+      "id": "INSP-TD-SEQUENCE-NAME",
+      "type": "textfield",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Sequence Name Input",
+      "description": "Tên sequence liên kết (PostgreSQL)"
+    },
+    {
+      "id": "INSP-TD-COMPUTED-FORMULA",
+      "type": "textfield",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Computed Formula Input",
+      "description": "Công thức tính toán cho cột tính toán"
+    },
+    {
+      "id": "INSP-TD-COMPUTED-PERSISTED",
+      "type": "checkbox",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Computed Persisted Checkbox",
+      "description": "Cột tính toán được lưu trữ trên đĩa (Persisted)"
+    },
+    {
+      "id": "INSP-TD-DEPENDENCIES-LST",
+      "type": "listview",
+      "region": "REG-TD-INSPECTOR",
+      "name": "Column Dependencies List",
+      "description": "Danh sách các chỉ mục, khóa ngoại, view phụ thuộc vào cột này"
+    },
+    {
+      "id": "MNC-TD-PREVIEW",
+      "type": "monaco-host",
+      "region": "REG-TD-DDL-PREVIEW",
+      "name": "Monaco DDL Viewer",
+      "description": "Trình xem mã DDL / Migration SQL chỉ đọc, có highlight cú pháp"
+    },
+    {
+      "id": "BTN-TD-COPY-DDL",
+      "type": "icon-button",
+      "region": "REG-TD-DDL-PREVIEW",
+      "name": "Copy DDL Button",
+      "description": "Sao chép toàn bộ mã DDL đang xem vào clipboard",
+      "icon": "mdi2c-content-copy"
+    },
+    {
+      "id": "LBL-TD-COLUMN-COUNT",
+      "type": "label",
+      "region": "REG-TD-FOOTER",
+      "name": "Total Columns Count Label",
+      "description": "Hiển thị tổng số cột trong bảng (ví dụ: '12 cột')"
+    },
+    {
+      "id": "LBL-TD-PK-COUNT",
+      "type": "label",
+      "region": "REG-TD-FOOTER",
+      "name": "Primary Key Count Label",
+      "description": "Hiển thị số cột khóa chính (ví dụ: '1 PK')"
+    },
+    {
+      "id": "LBL-TD-MODIFIED-COUNT",
+      "type": "label",
+      "region": "REG-TD-FOOTER",
+      "name": "Modified Columns Count Label",
+      "description": "Hiển thị số cột có thay đổi (ví dụ: '3 thay đổi')"
+    },
+    {
+      "id": "BADGE-TD-VALIDATION",
+      "type": "badge",
+      "region": "REG-TD-FOOTER",
+      "name": "Validation Status Badge",
+      "description": "Trạng thái hợp lệ hoặc số lỗi validation (click để nhảy tới ô lỗi)"
+    },
+    {
+      "id": "LST-TD-SAVE-STMTS",
+      "type": "tableview",
+      "region": "REG-TD-SAVE-DIALOG",
+      "name": "Migration Statements Table",
+      "description": "Danh sách chi tiết các câu lệnh trong migration plan kèm mức rủi ro"
+    },
+    {
+      "id": "FLT-TD-SAVE-GROUP",
+      "type": "combobox",
+      "region": "REG-TD-SAVE-DIALOG",
+      "name": "Statement Group Filter",
+      "description": "Lọc xem các câu lệnh theo nhóm (Tạo cột, Sửa cột, Drop cột, Tạo index...)"
+    },
+    {
+      "id": "MNC-TD-SAVE-PREVIEW",
+      "type": "monaco-host",
+      "region": "REG-TD-SAVE-DIALOG",
+      "name": "Save Dialog Monaco SQL Script",
+      "description": "Toàn văn script migration SQL được phân tách bằng GO hoặc transaction"
+    },
+    {
+      "id": "CHK-TD-SAVE-TRANSACTION",
+      "type": "checkbox",
+      "region": "REG-TD-SAVE-DIALOG",
+      "name": "Single Transaction Checkbox",
+      "description": "Thực thi toàn bộ câu lệnh trong một transaction (Rollback nếu xảy ra lỗi)"
+    },
+    {
+      "id": "TXT-TD-SAVE-CONFIRM-NAME",
+      "type": "textfield",
+      "region": "REG-TD-SAVE-DIALOG",
+      "name": "Table Name Confirmation Input",
+      "description": "Ô nhập tên bảng xác nhận khi có thao tác phá hủy (Drop Column / Recreate)"
+    },
+    {
+      "id": "BTN-TD-SAVE-APPLY",
+      "type": "button-primary",
+      "region": "REG-TD-SAVE-DIALOG",
+      "name": "Apply Migration Button",
+      "description": "Thực thi áp dụng thay đổi cấu trúc bảng"
+    },
+    {
+      "id": "BTN-TD-SAVE-OPEN-SQL",
+      "type": "button",
+      "region": "REG-TD-SAVE-DIALOG",
+      "name": "Open Script in SQL Tab Button",
+      "description": "Đóng dialog và chuyển toàn văn script sang tab soạn thảo SQL"
+    },
+    {
+      "id": "BTN-TD-SAVE-CANCEL",
+      "type": "button",
+      "region": "REG-TD-SAVE-DIALOG",
+      "name": "Cancel Save Button",
+      "description": "Đóng hộp thoại lưu, không chạy câu lệnh nào"
+    },
+    {
+      "id": "CMB-TD-COPY-SCHEMA",
+      "type": "combobox",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "Target Schema Selector",
+      "description": "Chọn schema cho bảng bản sao"
+    },
+    {
+      "id": "TXT-TD-COPY-TABLENAME",
+      "type": "textfield",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "New Table Name Input",
+      "description": "Tên bảng đích (mặc định TableName_Copy, kiểm tra trùng lặp trong DB)"
+    },
+    {
+      "id": "CHK-TD-COPY-COLUMNS",
+      "type": "checkbox",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "Copy Columns Checkbox",
+      "description": "Sao chép định nghĩa cột và kiểu dữ liệu (bắt buộc, luôn chọn)"
+    },
+    {
+      "id": "CHK-TD-COPY-PK",
+      "type": "checkbox",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "Copy Primary Key Checkbox",
+      "description": "Sao chép khóa chính"
+    },
+    {
+      "id": "CHK-TD-COPY-INDEXES",
+      "type": "checkbox",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "Copy Indexes Checkbox",
+      "description": "Sao chép chỉ mục (tự động gắn hậu tố _Copy cho tên index)"
+    },
+    {
+      "id": "CHK-TD-COPY-FKS",
+      "type": "checkbox",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "Copy Foreign Keys Checkbox",
+      "description": "Sao chép các khóa ngoại"
+    },
+    {
+      "id": "CHK-TD-COPY-CONSTRAINTS",
+      "type": "checkbox",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "Copy Unique and Check Constraints",
+      "description": "Sao chép các ràng buộc Unique và Check"
+    },
+    {
+      "id": "CHK-TD-COPY-TRIGGERS",
+      "type": "checkbox",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "Copy Triggers Checkbox",
+      "description": "Sao chép Triggers (mặc định tắt, cảnh báo cần rà soát lại script)"
+    },
+    {
+      "id": "CHK-TD-COPY-DATA",
+      "type": "checkbox",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "Copy Table Data Checkbox",
+      "description": "Sao chép dữ liệu (chưa hỗ trợ, disabled)"
+    },
+    {
+      "id": "BTN-TD-COPY-CONFIRM",
+      "type": "button-primary",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "Create Copy Button",
+      "description": "Mở tab New Table với cấu trúc đã nhân bản"
+    },
+    {
+      "id": "BTN-TD-COPY-CANCEL",
+      "type": "button",
+      "region": "REG-TD-COPY-DIALOG",
+      "name": "Cancel Copy Button",
+      "description": "Hủy bỏ sao chép bảng"
+    }
+  ]
+}
+

@@ -105,7 +105,7 @@
 
 /* Type Badges */
 .node-badge {
-    -fx-font-size: 0.72em;
+    -fx-font-size: 0.85em;
     -fx-font-weight: bold;
     -fx-padding: 2 6;
     -fx-background-radius: 3;
@@ -144,12 +144,12 @@
 
 .node-title {
     -fx-font-weight: bold;
-    -fx-font-size: 0.95em;
+    -fx-font-size: 1em;
     -fx-text-fill: -color-fg-default;
 }
 
 .node-subtitle {
-    -fx-font-size: 0.78em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
 }
 
@@ -179,7 +179,7 @@
     -fx-background-color: -color-bg-subtle;
     -fx-text-fill: -color-fg-muted;
     -fx-font-family: monospace;
-    -fx-font-size: 0.75em;
+    -fx-font-size: 0.85em;
     -fx-padding: 1 4;
     -fx-background-radius: 2;
     -fx-border-color: -color-border-subtle;
@@ -241,7 +241,7 @@
     -fx-background-color: -color-accent-emphasis;
     -fx-text-fill: -color-fg-emphasis;
     -fx-font-weight: bold;
-    -fx-font-size: 0.8em;
+    -fx-font-size: 0.85em;
     -fx-padding: 1 6;
     -fx-background-radius: 10;
 }
@@ -249,14 +249,14 @@
 .step-action-title {
     -fx-font-weight: bold;
     -fx-text-fill: -color-fg-default;
-    -fx-font-size: 0.88em;
+    -fx-font-size: 1em;
 }
 
 .step-sql-snippet {
     -fx-background-color: -ide-editor-bg;
     -fx-text-fill: -ide-code-inline-fg;
     -fx-font-family: monospace;
-    -fx-font-size: 0.82em;
+    -fx-font-size: 0.85em;
     -fx-padding: 4 8;
     -fx-background-radius: 3;
     -fx-border-color: -color-border-subtle;
@@ -269,8 +269,15 @@
 }
 
 .legend-label {
-    -fx-font-size: 0.78em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
+}
+
+.dep-zoom-label {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-muted;
+    -fx-min-width: 3.2em;
+    -fx-alignment: center;
 }
 
 .legend-dot {

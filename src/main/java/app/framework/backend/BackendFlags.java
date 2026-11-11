@@ -32,8 +32,23 @@ public final class BackendFlags {
         return !real(area);
     }
 
-    /** All connections are read-only (DML / DDL blocked, JDBC read-only, PostgreSQL READ ONLY session). */
+    private static volatile Boolean readOnlyOverride = null;
+
+    /** All connections are read-only (DML / DDL blocked, JDBC read-only, PostgreSQL READ ONLY session). Default: false. */
     public static boolean readOnlyAll() {
-        return !"false".equalsIgnoreCase(System.getProperty("sqlide.readOnly", "true"));
+        if (readOnlyOverride != null) return readOnlyOverride;
+        return "true".equalsIgnoreCase(System.getProperty("sqlide.readOnly", "false"));
+    }
+
+    public static void setReadOnlyAll(boolean value) {
+        readOnlyOverride = value;
+    }
+
+    /**
+     * D0.2: UI Debug flag (-Dsqlide.uiDebug=true).
+     * Enables detailed layout tracing, node inspection, and CSS debugging logs.
+     */
+    public static boolean isUiDebug() {
+        return Boolean.getBoolean("sqlide.uiDebug") || "true".equalsIgnoreCase(System.getenv("SQLIDE_UI_DEBUG"));
     }
 }

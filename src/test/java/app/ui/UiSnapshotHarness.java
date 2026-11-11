@@ -58,6 +58,20 @@ public class UiSnapshotHarness {
         String themeProp = System.getProperty("snap.theme", "dark");
         boolean isLight = "light".equalsIgnoreCase(themeProp);
 
+        // R-UI 8.1 matrix: UI font size, icon size and panel style come from the (test-isolated) settings
+        int fontSize = Integer.getInteger("snap.fontSize", 13);
+        int iconSize = Integer.getInteger("snap.iconSize", 13);
+        String panelStyle = System.getProperty("snap.panelStyle", "rounded");
+        try {
+            app.models.IdeSettings st = app.services.SettingsService.getInstance().getCurrentSettings();
+            st.setUiFontSize(fontSize);
+            st.getAppearance().setIconSize(iconSize);
+            st.getAppearance().setPanelStyle(panelStyle);
+        } catch (Throwable t) {
+            System.out.println("SNAP settings failed: " + t);
+        }
+        app.ui.components.UiMetrics.setBaseIconSize(iconSize);
+
         CountDownLatch started = new CountDownLatch(1);
         try {
             Platform.startup(started::countDown);
@@ -155,6 +169,24 @@ public class UiSnapshotHarness {
         });
         Thread.sleep(6000);
 
+        // layout pass first, on its own pulse: size-driven work (auto-fit of graphs) runs before the snapshot
+        CountDownLatch laidOut = new CountDownLatch(1);
+        Platform.runLater(() -> {
+            try {
+                for (Scene sc : scenes.values()) {
+                    sc.getRoot().applyCss();
+                    sc.getRoot().layout();
+                    sc.snapshot(null);
+                }
+            } catch (Throwable t) {
+                System.out.println("SNAP layout failed: " + t);
+            } finally {
+                laidOut.countDown();
+            }
+        });
+        laidOut.await(60, TimeUnit.SECONDS);
+        Thread.sleep(800);
+
         CountDownLatch done = new CountDownLatch(1);
         Platform.runLater(() -> {
             try {
@@ -176,6 +208,16 @@ public class UiSnapshotHarness {
                         }
                         ImageIO.write(b, "png", new File(outDir, e.getKey() + ".png"));
                         System.out.println("SNAP ok " + e.getKey());
+                        System.out.println("MEASURE " + e.getKey()
+                                + " toolbarButton=" + maxHeight(sc, ".workspace-toolbar .button")
+                                + " toolbarToggle=" + maxHeight(sc, ".workspace-toolbar .toggle-button")
+                                + " toolbarCombo=" + maxHeight(sc, ".workspace-toolbar .combo-box")
+                                + " toolbar=" + maxHeight(sc, ".workspace-toolbar")
+                                + " paneHeader=" + maxHeight(sc, ".pane-header")
+                                + " footer=" + maxHeight(sc, ".workspace-footer")
+                                + " tableRow=" + maxHeight(sc, ".table-row-cell")
+                                + " treeRow=" + maxHeight(sc, ".tree-cell")
+                                + " cutLabels=" + cutLabels(sc));
                     } catch (Throwable t) {
                         System.out.println("SNAP failed " + e.getKey() + ": " + t);
                     }
@@ -185,6 +227,26 @@ public class UiSnapshotHarness {
             }
         });
         done.await(60, TimeUnit.SECONDS);
+    }
+
+    private static long maxHeight(Scene sc, String selector) {
+        double max = 0;
+        for (Node n : sc.getRoot().lookupAll(selector)) {
+            if (n.isVisible() && n.getScene() != null) max = Math.max(max, n.getLayoutBounds().getHeight());
+        }
+        return Math.round(max);
+    }
+
+    /** Toolbar controls whose label is laid out narrower than it needs (would show "..."). */
+    private static String cutLabels(Scene sc) {
+        StringBuilder sb = new StringBuilder();
+        for (Node n : sc.getRoot().lookupAll(".workspace-toolbar .labeled")) {
+            if (n instanceof javafx.scene.control.Labeled l && l.isVisible() && l.getText() != null && !l.getText().isBlank()
+                    && l.getWidth() + 0.5 < l.prefWidth(-1)) {
+                sb.append('[').append(l.getText()).append(']');
+            }
+        }
+        return sb.length() == 0 ? "none" : sb.toString();
     }
 
     private interface TabMaker { Tab make(); }

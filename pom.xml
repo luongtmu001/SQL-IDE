@@ -244,6 +244,8 @@
                         <option>--enable-native-access=ALL-UNNAMED</option>
                         <!-- SQL Server Windows authentication: folder with mssql-jdbc_auth-<version>.x64.dll (copied below) -->
                         <option>-Djava.library.path=${project.basedir}/native</option>
+                        <!-- Crisp DirectWrite ClearType font rendering -->
+                        <option>-Dprism.lcdtext=true</option>
                     </options>
                 </configuration>
             </plugin>

@@ -276,7 +276,16 @@ public class DesktopMetadataService {
                         if (provider.isPresent()) {
                             Result<List<RoutineMetadata>> res = provider.get().getRoutines(conn, catalog, schema);
                             if (res.isFailure()) throw new IllegalStateException(res.getError().map(er -> er.message()).orElse("Lỗi đọc metadata"));
-                            return res.getDataOrThrow();
+                            List<RoutineMetadata> raw = res.getDataOrThrow();
+                            List<RoutineMetadata> cleaned = new ArrayList<>(raw.size());
+                            for (RoutineMetadata r : raw) {
+                                String rName = r.name();
+                                if (rName != null && rName.contains(";")) {
+                                    rName = rName.substring(0, rName.indexOf(';')).trim();
+                                }
+                                cleaned.add(new RoutineMetadata(rName, r.schema(), r.catalog(), r.routineType(), r.returnType()));
+                            }
+                            return cleaned;
                         }
                     } catch (Exception e) {
                         log.warn("Failed to fetch routines for {}: {}", path, e.getMessage());
@@ -650,7 +659,11 @@ public class DesktopMetadataService {
                     new RoutineParam("p_company", "text", "IN")), callback);
             return;
         }
-        String pure = routine == null ? "" : (routine.contains("(") ? routine.substring(0, routine.indexOf('(')).trim() : routine);
+        String rawPure = routine == null ? "" : (routine.contains("(") ? routine.substring(0, routine.indexOf('(')).trim() : routine);
+        if (rawPure.contains(";")) {
+            rawPure = rawPure.substring(0, rawPure.indexOf(';')).trim();
+        }
+        final String pure = rawPure;
         // PostgreSQL overloads: "name(int, text)" -> match that overload only
         String identityArgs = routine != null && routine.contains("(") && routine.endsWith(")")
                 ? routine.substring(routine.indexOf('(') + 1, routine.length() - 1) : null;

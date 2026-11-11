@@ -26,6 +26,19 @@ A modern desktop SQL IDE built with JavaFX, following the JetBrains DataGrip and
 .\mvnw.cmd javafx:run
 ```
 
+### Package Application (Standalone Windows Distribution)
+Tự động đóng gói ứng dụng độc lập (native Windows app kèm embedded JRE & dependencies, không yêu cầu máy cài Java):
+```cmd
+.\build-package.cmd
+```
+Hoặc qua PowerShell:
+```powershell
+.\build-package.ps1
+```
+Kết quả đóng gói:
+- Thư mục ứng dụng chạy ngay: `target\dist\SQL-IDE\SQL-IDE.exe`
+- File ZIP phân phối (portable): `dist\SQL-IDE-1.0.0-windows-x64.zip`
+
 ## Phase 1 Progress
 - [x] **Phase 1.1 – Project Foundation**: Maven project initialization, dependency integration (JavaFX, AtlantaFX, ControlsFX, Ikonli, RichTextFX), application lifecycle architecture (`Main`, `AppLauncher`, `AppContext`, `ThemeService`), base Main Window FXML and CSS stylesheets.
 - [x] **Phase 1.2 – Main Window**:

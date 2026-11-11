@@ -1,39 +1,27 @@
 # Workflow 01 — Project Discovery
 # Quy trình 01 — Khảo sát dự án
 
-## Goal / Mục tiêu
+## Trạng thái
 
-Understand the actual Python/PyWebView application structure before documenting screens. Do not redesign or modify code in this phase.
+**Đã hoàn thành ngày 2026-11-04.** Không làm lại toàn bộ. Dùng kết quả có sẵn:
 
-## Steps
+| Cần biết | Xem |
+|---|---|
+| Cấu trúc code Java | `ui-specifications/00-application/PROJECT-OVERVIEW.md`, cộng phần chỉnh ở `HANDOFF.md`, mục 8 |
+| Cấu trúc app Python | `00-application/project-map.md`, `source-index.md`, `application-map.json` |
+| Cửa sổ và điều hướng | `00-application/navigation-map.md`, `screen-inventory.md` |
+| Ảnh app gốc | `00-application/screenshots/source/` (12 ảnh, 1456×816) |
+| Phân tích từng tính năng | `docs/feature_03…08_*.md`, `docs/phase0_source_analysis_inventory.md` |
 
-1. Locate project root, entry point, startup sequence, and window creation code.
-2. Identify Python modules responsible for windows, dialogs, menus, and backend bridge methods.
-3. Identify HTML templates, CSS, JavaScript entry points, routes/views, and dynamically loaded UI.
-4. Identify navigation registration and window-opening mechanisms.
-5. Trace bridge methods and event handlers only to understand UI behavior and outcomes.
-6. Run the application if safe and permitted. Do not execute destructive actions or connect to production data.
-7. Capture application screenshots at a known window size and display scale.
-8. Record inaccessible screens and environmental blockers.
+## Khi nào được khảo sát lại
 
-## Required output
+Khi cần biết hành vi Python của một tính năng cụ thể mà tài liệu chưa có, hoặc tài liệu mâu thuẫn với code.
 
-Create:
-- `ui-specifications/00-application/project-map.md`
-- `ui-specifications/00-application/application-map.json`
-- `ui-specifications/00-application/source-index.md`
-- `ui-specifications/00-application/discovery-report.md`
+## Cách làm
 
-## Project map contents
-
-- Application entry point and startup flow.
-- Window inventory and how each window is opened.
-- UI technology stack and asset locations.
-- Python ↔ JavaScript bridge overview.
-- Shared styles, icons, fonts, and themes.
-- Important dynamic rendering mechanisms.
-- Known runtime limitations.
-
-## Stop condition
-
-Do not proceed to detailed screen redesign until the user has reviewed the discovery summary and agreed on the screen inventory scope.
+1. Nguồn Python: `D:\Luong\NB_Personal\Python\IDE-SQL-Lite_New_Pyweb_Claude`. **Chỉ đọc**, không chạy lệnh ghi vào thư mục này.
+2. Tìm đúng điểm vào: template → JS handler → bridge hoặc API → service → câu SQL.
+3. Lấy code làm chuẩn, không lấy tài liệu Python. Đã gặp trường hợp tài liệu ghi khác code.
+4. Bản đóng gói `dist/LLTool_v1.3.1` chạy được để quan sát. Không dùng thao tác ghi hay kết nối PROD.
+5. Menu của WebView2 không chụp được bằng công cụ điều khiển máy: lấy cấu trúc từ `index.html`.
+6. Ghi kết quả vào tài liệu của tính năng, không mở thêm một bộ tài liệu khảo sát song song.

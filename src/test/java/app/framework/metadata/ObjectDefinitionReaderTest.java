@@ -58,3 +58,4 @@ class ObjectDefinitionReaderTest {
         assertEquals("orders", triggerDef.parentTable());
     }
 }
+

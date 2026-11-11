@@ -99,3 +99,4 @@ public class InMemoryPreferencesFactory implements PreferencesFactory {
         }
     }
 }
+

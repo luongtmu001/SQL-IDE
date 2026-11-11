@@ -63,13 +63,16 @@
                     <MenuItem text="New Query Tab" onAction="#handleNewTab" accelerator="Shortcut+N">
                         <graphic><FontIcon iconLiteral="fth-file-plus"/></graphic>
                     </MenuItem>
-                    <MenuItem text="Open SQL Script..." accelerator="Shortcut+O">
+                    <MenuItem text="New Table..." onAction="#handleNewTable" accelerator="Shortcut+Alt+N">
+                        <graphic><FontIcon iconLiteral="fth-plus-square"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Open SQL Script..." onAction="#handleOpenFile" accelerator="Shortcut+O">
                         <graphic><FontIcon iconLiteral="fth-folder"/></graphic>
                     </MenuItem>
-                    <MenuItem text="Save" accelerator="Shortcut+S">
+                    <MenuItem text="Save" onAction="#handleSaveFile" accelerator="Shortcut+S">
                         <graphic><FontIcon iconLiteral="fth-save"/></graphic>
                     </MenuItem>
-                    <MenuItem text="Save As..." accelerator="Shortcut+Shift+S"/>
+                    <MenuItem text="Save As..." onAction="#handleSaveFileAs" accelerator="Shortcut+Shift+S"/>
                     <SeparatorMenuItem/>
                     <MenuItem text="Close Tab" onAction="#handleCloseTab" accelerator="Shortcut+W">
                         <graphic><FontIcon iconLiteral="fth-x"/></graphic>
@@ -136,6 +139,10 @@
                         <graphic><FontIcon iconLiteral="fth-external-link"/></graphic>
                     </MenuItem>
                     <SeparatorMenuItem/>
+                    <MenuItem text="Query History..." onAction="#handleOpenQueryHistory" accelerator="Shortcut+Alt+H">
+                        <graphic><FontIcon iconLiteral="fth-clock"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
                     <Menu fx:id="themesMenu" text="Theme">
                         <graphic><FontIcon iconLiteral="fth-sun"/></graphic>
                     </Menu>
@@ -165,12 +172,28 @@
                         <graphic><FontIcon iconLiteral="fth-play"/></graphic>
                     </MenuItem>
                     <SeparatorMenuItem/>
+                    <MenuItem text="SQL Snippets Manager..." onAction="#handleOpenSnippetsManager" accelerator="Shortcut+Alt+S">
+                        <graphic><FontIcon iconLiteral="fth-code"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Query History..." onAction="#handleOpenQueryHistory" accelerator="Shortcut+Alt+H">
+                        <graphic><FontIcon iconLiteral="fth-clock"/></graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
                     <!-- Features of the source app that are not migrated yet (deferred, kept for discoverability) -->
-                    <MenuItem text="Search Objects Content... (chưa hỗ trợ)" disable="true"/>
-                    <MenuItem text="Query History (chưa hỗ trợ)" disable="true"/>
+                    <MenuItem text="Search Objects Content..." onAction="#handleOpenObjectSearch" accelerator="Shortcut+Shift+F">
+                        <graphic><FontIcon iconLiteral="fth-search"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Schema Compare &amp; Sync..." onAction="#handleOpenSchemaCompare" accelerator="Shortcut+Shift+C">
+                        <graphic><FontIcon iconLiteral="fth-git-commit"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="Dependency Graph &amp; Impact Analysis..." onAction="#handleOpenDependencyGraph" accelerator="Shortcut+Shift+D">
+                        <graphic><FontIcon iconLiteral="fth-share-2"/></graphic>
+                    </MenuItem>
+                    <MenuItem text="SQL Visualizer &amp; Query Flow..." onAction="#handleOpenSqlVisualizer" accelerator="Shortcut+Shift+V">
+                        <graphic><FontIcon iconLiteral="fth-cpu"/></graphic>
+                    </MenuItem>
                     <MenuItem text="So sánh kết quả... (chưa hỗ trợ)" disable="true"/>
                     <MenuItem text="Activity Monitor (chưa hỗ trợ)" disable="true"/>
-                    <MenuItem text="So sánh Schema... (chưa hỗ trợ)" disable="true"/>
                     <MenuItem text="Google Sheets Manager... (chưa hỗ trợ)" disable="true"/>
                     <MenuItem text="Sinh Layout Bravo từ Excel... (chưa hỗ trợ)" disable="true"/>
                 </Menu>
@@ -256,6 +279,14 @@
                         <graphic><FontIcon iconLiteral="fth-refresh-cw"/></graphic>
                         <tooltip><Tooltip text="Refresh Objects &amp; IntelliSense (Ctrl+Shift+R)"/></tooltip>
                     </Button>
+                    <Button onAction="#handleOpenSnippetsManager" styleClass="context-icon-button">
+                        <graphic><FontIcon iconLiteral="fth-code"/></graphic>
+                        <tooltip><Tooltip text="SQL Snippets Manager (Ctrl+Alt+S)"/></tooltip>
+                    </Button>
+                    <Button onAction="#handleOpenQueryHistory" styleClass="context-icon-button">
+                        <graphic><FontIcon iconLiteral="fth-clock"/></graphic>
+                        <tooltip><Tooltip text="Query History (Ctrl+Alt+H)"/></tooltip>
+                    </Button>
                     <MenuButton fx:id="toolbarOverflowButton" styleClass="context-icon-button, context-overflow" focusTraversable="false">
                         <graphic><FontIcon iconLiteral="fth-more-horizontal"/></graphic>
                         <tooltip><Tooltip text="Thêm thao tác"/></tooltip>
@@ -263,11 +294,17 @@
                             <MenuItem text="New query tab" onAction="#handleNewTab" accelerator="Shortcut+N">
                                 <graphic><FontIcon iconLiteral="fth-plus"/></graphic>
                             </MenuItem>
-                            <MenuItem text="Open file" accelerator="Shortcut+O">
+                            <MenuItem text="Open file" onAction="#handleOpenFile" accelerator="Shortcut+O">
                                 <graphic><FontIcon iconLiteral="fth-folder"/></graphic>
                             </MenuItem>
-                            <MenuItem text="Save" accelerator="Shortcut+S">
+                            <MenuItem text="Save" onAction="#handleSaveFile" accelerator="Shortcut+S">
                                 <graphic><FontIcon iconLiteral="fth-save"/></graphic>
+                            </MenuItem>
+                            <MenuItem text="SQL Snippets..." onAction="#handleOpenSnippetsManager" accelerator="Shortcut+Alt+S">
+                                <graphic><FontIcon iconLiteral="fth-code"/></graphic>
+                            </MenuItem>
+                            <MenuItem text="Query History..." onAction="#handleOpenQueryHistory" accelerator="Shortcut+Alt+H">
+                                <graphic><FontIcon iconLiteral="fth-clock"/></graphic>
                             </MenuItem>
                             <SeparatorMenuItem/>
                             <MenuItem text="Connection manager" onAction="#handleManageConnections">

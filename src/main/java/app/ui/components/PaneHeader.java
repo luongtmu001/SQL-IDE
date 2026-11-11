@@ -24,15 +24,11 @@ public class PaneHeader extends HBox {
     public PaneHeader(String title, String iconLiteral, String subtitle) {
         super(8);
         setAlignment(Pos.CENTER_LEFT);
-        setMinHeight(28);
-        setPrefHeight(28);
-        setMaxHeight(28);
-        setPadding(new Insets(2, 10, 2, 10));
         getStyleClass().add("pane-header");
 
+        Icons.bind(iconNode, IconScale.MD);
         if (iconLiteral != null && !iconLiteral.isBlank()) {
             iconNode.setIconLiteral(iconLiteral);
-            iconNode.setIconSize(13);
             iconNode.getStyleClass().add("pane-header-icon");
             getChildren().add(iconNode);
         }

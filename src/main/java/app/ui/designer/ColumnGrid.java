@@ -69,9 +69,8 @@ public class ColumnGrid extends VBox {
 
     private void applyGridTypography() {
         var settings = SettingsService.getInstance().getCurrentSettings();
-        int fontSize = settings != null ? settings.getGridFontSize() : 12;
-        double rowHeight = Math.max(24.0, fontSize * 1.8 + 6.0);
-        tableView.setFixedCellSize(rowHeight);
+        // R-UI-11: a configuration grid follows the UI font ("Giao diện"), not the result-grid setting
+        tableView.setFixedCellSize(app.ui.components.UiMetrics.em(1.85));
     }
 
     public ObservableList<ColumnDesignViewModel> getItems() {
@@ -112,12 +111,10 @@ public class ColumnGrid extends VBox {
         bar.setAlignment(Pos.CENTER_LEFT);
         bar.getStyleClass().add("td-row-toolbar");
 
-        // + Thêm cột ▾
-        MenuButton btnAddMenu = new MenuButton("+ Thêm cột");
-        btnAddMenu.getStyleClass().addAll("button", "small");
-        FontIcon plusIcon = new FontIcon("fth-plus");
-        plusIcon.setIconSize(13);
-        btnAddMenu.setGraphic(plusIcon);
+        // Thêm cột ▾
+        MenuButton btnAddMenu = new MenuButton("Thêm cột");
+        btnAddMenu.getStyleClass().add("button");
+        btnAddMenu.setGraphic(app.ui.components.Icons.of("fth-plus"));
 
         MenuItem itemAddEnd = new MenuItem("Thêm ở cuối (Ctrl+N)");
         itemAddEnd.setOnAction(e -> addNewRowAtEnd());
@@ -137,42 +134,32 @@ public class ColumnGrid extends VBox {
         btnAddMenu.getItems().addAll(itemAddEnd, itemInsAbove, itemInsBelow, new SeparatorMenuItem(), itemAdd5, itemAdd10);
 
         Button btnDup = new Button("Nhân bản");
-        btnDup.getStyleClass().addAll("button", "small");
-        FontIcon dupIcon = new FontIcon("mdi2c-content-duplicate");
-        dupIcon.setIconSize(14);
-        btnDup.setGraphic(dupIcon);
+        btnDup.getStyleClass().add("button");
+        btnDup.setGraphic(app.ui.components.Icons.of("mdi2c-content-duplicate"));
         btnDup.setTooltip(new Tooltip("Nhân bản cột đang chọn"));
         btnDup.setOnAction(e -> duplicateSelectedRows());
 
         Button btnDel = new Button("Xoá");
-        btnDel.getStyleClass().addAll("button", "small");
-        FontIcon delIcon = new FontIcon("mdi2t-table-row-remove");
-        delIcon.setIconSize(14);
-        btnDel.setGraphic(delIcon);
+        btnDel.getStyleClass().add("button");
+        btnDel.setGraphic(app.ui.components.Icons.of("mdi2t-table-row-remove"));
         btnDel.setTooltip(new Tooltip("Xoá các cột đang chọn (Delete)"));
         btnDel.setOnAction(e -> deleteSelectedRows());
 
         Button btnUp = new Button();
-        btnUp.getStyleClass().addAll("button", "small");
-        FontIcon upIcon = new FontIcon("fth-arrow-up");
-        upIcon.setIconSize(14);
-        btnUp.setGraphic(upIcon);
-        btnUp.setTooltip(new Tooltip("Di chuyển lên (Alt+↑)"));
+        btnUp.getStyleClass().add("button");
+        btnUp.setGraphic(app.ui.components.Icons.of("fth-arrow-up"));
+        btnUp.setTooltip(new Tooltip("Di chuyển lên (Alt + Mũi tên lên)"));
         btnUp.setOnAction(e -> moveSelectedRowsUp());
 
         Button btnDown = new Button();
-        btnDown.getStyleClass().addAll("button", "small");
-        FontIcon downIcon = new FontIcon("fth-arrow-down");
-        downIcon.setIconSize(14);
-        btnDown.setGraphic(downIcon);
-        btnDown.setTooltip(new Tooltip("Di chuyển xuống (Alt+↓)"));
+        btnDown.getStyleClass().add("button");
+        btnDown.setGraphic(app.ui.components.Icons.of("fth-arrow-down"));
+        btnDown.setTooltip(new Tooltip("Di chuyển xuống (Alt + Mũi tên xuống)"));
         btnDown.setOnAction(e -> moveSelectedRowsDown());
 
         Button btnPk = new Button("Khoá chính");
-        btnPk.getStyleClass().addAll("button", "small");
-        FontIcon pkIcon = new FontIcon("mdi2k-key");
-        pkIcon.setIconSize(14);
-        btnPk.setGraphic(pkIcon);
+        btnPk.getStyleClass().add("button");
+        btnPk.setGraphic(app.ui.components.Icons.of("mdi2k-key"));
         btnPk.setTooltip(new Tooltip("Đặt/bỏ khoá chính cho cột đang chọn"));
         btnPk.setOnAction(e -> togglePrimaryKeyOnSelected());
 
@@ -199,11 +186,9 @@ public class ColumnGrid extends VBox {
 
     private Button toolButton(String tooltipText, String iconLiteral, Runnable action) {
         Button btn = new Button();
-        btn.getStyleClass().addAll("button", "small");
+        btn.getStyleClass().add("button");
         if (iconLiteral != null) {
-            FontIcon icon = new FontIcon(iconLiteral);
-            icon.setIconSize(14);
-            btn.setGraphic(icon);
+            btn.setGraphic(app.ui.components.Icons.of(iconLiteral, app.ui.components.IconScale.MD));
         } else {
             btn.setText("Thêm N dòng");
         }
@@ -224,42 +209,57 @@ public class ColumnGrid extends VBox {
 
         // 1. Status Column (28px)
         TableColumn<ColumnDesignViewModel, String> colStatus = new TableColumn<>("");
-        colStatus.setMinWidth(28);
-        colStatus.setMaxWidth(34);
-        colStatus.setPrefWidth(28);
+        colStatus.setMinWidth(app.ui.components.UiMetrics.em(2.15));
+        colStatus.setMaxWidth(app.ui.components.UiMetrics.em(2.62));
+        colStatus.setPrefWidth(app.ui.components.UiMetrics.em(2.15));
         colStatus.setResizable(false);
         colStatus.setSortable(false);
         colStatus.setCellValueFactory(cell -> cell.getValue().statusMarkerProperty());
         colStatus.setCellFactory(col -> new TableCell<>() {
+            // R-UI-15: the row state is an icon, not a text symbol
+            private final org.kordamp.ikonli.javafx.FontIcon statusIcon = app.ui.components.Icons.of("fth-circle", app.ui.components.IconScale.SM);
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty ? null : item);
-                getStyleClass().removeAll("td-status-added", "td-status-modified", "td-status-renamed", "td-status-deleted");
+                setText(null);
                 setAlignment(Pos.CENTER);
+                getStyleClass().removeAll("td-status-added", "td-status-modified", "td-status-renamed", "td-status-deleted");
+                String literal = null;
+                String styleClass = null;
+                String hint = null;
                 if (!empty && item != null) {
                     switch (item) {
-                        case "+" -> getStyleClass().add("td-status-added");
-                        case "~" -> getStyleClass().add("td-status-modified");
-                        case "↻" -> getStyleClass().add("td-status-renamed");
-                        case "−" -> getStyleClass().add("td-status-deleted");
+                        case ColumnDesignViewModel.STATUS_ADDED -> { literal = "fth-plus"; styleClass = "td-status-added"; hint = "Cột mới"; }
+                        case ColumnDesignViewModel.STATUS_MODIFIED -> { literal = "fth-edit-2"; styleClass = "td-status-modified"; hint = "Đã sửa"; }
+                        case ColumnDesignViewModel.STATUS_RENAMED -> { literal = "fth-refresh-cw"; styleClass = "td-status-renamed"; hint = "Đã đổi tên"; }
+                        case ColumnDesignViewModel.STATUS_DELETED -> { literal = "fth-trash-2"; styleClass = "td-status-deleted"; hint = "Sẽ bị xoá"; }
+                        default -> { }
                     }
+                }
+                if (literal == null) {
+                    setGraphic(null);
+                    setTooltip(null);
+                } else {
+                    statusIcon.setIconLiteral(literal);
+                    getStyleClass().add(styleClass);
+                    setGraphic(statusIcon);
+                    setTooltip(new Tooltip(hint));
                 }
             }
         });
 
         // 2. PK Column (34px)
         TableColumn<ColumnDesignViewModel, Boolean> colPk = new TableColumn<>("PK");
-        colPk.setMinWidth(34);
-        colPk.setMaxWidth(40);
-        colPk.setPrefWidth(34);
+        colPk.setMinWidth(app.ui.components.UiMetrics.em(2.62));
+        colPk.setMaxWidth(app.ui.components.UiMetrics.em(3.08));
+        colPk.setPrefWidth(app.ui.components.UiMetrics.em(2.62));
         colPk.setResizable(false);
         colPk.setSortable(false);
         colPk.setCellValueFactory(cell -> cell.getValue().primaryKeyProperty());
         colPk.setCellFactory(col -> new TableCell<>() {
-            private final FontIcon icon = new FontIcon("mdi2k-key");
+            private final FontIcon icon = app.ui.components.Icons.of("mdi2k-key", app.ui.components.IconScale.MD);
             {
-                icon.setIconSize(14);
                 setAlignment(Pos.CENTER);
                 setOnMouseClicked(e -> {
                     if (!isEmpty() && getTableRow() != null) {
@@ -285,7 +285,7 @@ public class ColumnGrid extends VBox {
 
         // 3. Name Column (22%)
         TableColumn<ColumnDesignViewModel, String> colName = new TableColumn<>("Tên cột");
-        colName.setMinWidth(110);
+        colName.setMinWidth(app.ui.components.UiMetrics.em(8.46));
         colName.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.22));
         colName.setCellValueFactory(cell -> cell.getValue().nameProperty());
         colName.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -300,7 +300,7 @@ public class ColumnGrid extends VBox {
 
         // 4. Data Type Column (16%)
         TableColumn<ColumnDesignViewModel, String> colType = new TableColumn<>("Kiểu dữ liệu");
-        colType.setMinWidth(90);
+        colType.setMinWidth(app.ui.components.UiMetrics.em(6.92));
         colType.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.16));
         colType.setCellValueFactory(cell -> cell.getValue().dataTypeProperty());
         List<String> types = getSupportedDataTypes();
@@ -321,7 +321,7 @@ public class ColumnGrid extends VBox {
 
         // 5. Length Column (9%)
         TableColumn<ColumnDesignViewModel, String> colLen = new TableColumn<>("Độ dài / Precision");
-        colLen.setMinWidth(70);
+        colLen.setMinWidth(app.ui.components.UiMetrics.em(5.38));
         colLen.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.09));
         colLen.setCellValueFactory(cell -> {
             Integer l = cell.getValue().getLength();
@@ -348,7 +348,7 @@ public class ColumnGrid extends VBox {
 
         // 6. Scale Column (7%)
         TableColumn<ColumnDesignViewModel, String> colScale = new TableColumn<>("Scale");
-        colScale.setMinWidth(45);
+        colScale.setMinWidth(app.ui.components.UiMetrics.em(3.46));
         colScale.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.07));
         colScale.setCellValueFactory(cell -> {
             Integer s = cell.getValue().getScale();
@@ -373,7 +373,7 @@ public class ColumnGrid extends VBox {
 
         // 7. Not Null Column (8%)
         TableColumn<ColumnDesignViewModel, Boolean> colNn = new TableColumn<>("Not Null");
-        colNn.setMinWidth(55);
+        colNn.setMinWidth(app.ui.components.UiMetrics.em(4.23));
         colNn.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.08));
         colNn.setCellValueFactory(cell -> cell.getValue().notNullProperty());
         colNn.setCellFactory(col -> new CheckBoxTableCell<>(idx -> {
@@ -383,7 +383,7 @@ public class ColumnGrid extends VBox {
 
         // 8. Default Column (16%)
         TableColumn<ColumnDesignViewModel, String> colDef = new TableColumn<>("Mặc định");
-        colDef.setMinWidth(90);
+        colDef.setMinWidth(app.ui.components.UiMetrics.em(6.92));
         colDef.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.16));
         colDef.setCellValueFactory(cell -> cell.getValue().defaultValueProperty());
         colDef.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -398,7 +398,7 @@ public class ColumnGrid extends VBox {
 
         // 9. Comment Column (remainder / 22%)
         TableColumn<ColumnDesignViewModel, String> colComment = new TableColumn<>("Mô tả");
-        colComment.setMinWidth(90);
+        colComment.setMinWidth(app.ui.components.UiMetrics.em(6.92));
         colComment.prefWidthProperty().bind(tableView.widthProperty().subtract(75).multiply(0.22));
         colComment.setCellValueFactory(cell -> cell.getValue().commentProperty());
         colComment.setCellFactory(TextFieldTableCell.forTableColumn());

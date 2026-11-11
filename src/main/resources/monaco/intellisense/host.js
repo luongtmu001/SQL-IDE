@@ -197,9 +197,49 @@
         try { window.localStorage.setItem("intellisense.v2.mru", ctx.mru ? "true" : "false"); } catch (e) { /* no storage: defaults */ }
     }
 
-    // ------------------------------------------------------------------ snippets (data: sql-intellisense.js)
+    // ------------------------------------------------------------------ snippets (data: sql-intellisense.js & user snippets)
+
+    function convertRedGateToMonacoSnippet(body) {
+        if (!body) return "";
+        // If already formatted with Monaco tabstops like ${1:...} or $1, return as is
+        if (/\$\{\d+:[^}]*\}|\$\d+/.test(body)) {
+            return body;
+        }
+
+        var text = body;
+        if (text.indexOf("$SELECTIONSTART$") !== -1 && text.indexOf("$SELECTIONEND$") !== -1) {
+            text = text.replace(/\$SELECTIONSTART\$(.*?)\$SELECTIONEND\$/gs, function (_, inner) {
+                return "${1:" + (inner || "$TM_SELECTED_TEXT") + "}";
+            });
+        }
+
+        var varIndices = new Map();
+        var counter = 1;
+
+        return text.replace(/\$([a-zA-Z0-9_]+)\$/g, function (match, name) {
+            var lower = name.toLowerCase();
+            if (lower === "selectionstart" || lower === "selectionend") {
+                return "";
+            }
+            if (lower === "selectedtext") {
+                return "${TM_SELECTED_TEXT}";
+            }
+            if (!varIndices.has(name)) {
+                varIndices.set(name, counter++);
+            }
+            var idx = varIndices.get(name);
+            return "${" + idx + ":" + name + "}";
+        });
+    }
+    window.convertRedGateToMonacoSnippet = convertRedGateToMonacoSnippet;
 
     function rawSnippets() {
+        if (window.customSnippets && window.customSnippets.length > 0) {
+            return window.customSnippets.map(function (s) {
+                var mb = s.monacoBody || convertRedGateToMonacoSnippet(s.body);
+                return [s.prefix, mb, s.description || s.prefix, s.dbType || "all", s.placeholders || []];
+            });
+        }
         return window.SqlIntellisense ? window.SqlIntellisense._itemsFor(ctx.dialect).sn : [];
     }
 
@@ -207,15 +247,16 @@
     function expandTemplate(body) {
         var first = null;
         var out = "";
+        var monacoBody = convertRedGateToMonacoSnippet(body || "");
         var re = /\$\{(\d+):([^}]*)\}|\$(\d+)/g, last = 0, m;
-        while ((m = re.exec(body)) !== null) {
-            out += body.slice(last, m.index);
+        while ((m = re.exec(monacoBody)) !== null) {
+            out += monacoBody.slice(last, m.index);
             var text = m[2] || "";
             if (first === null) first = { start: out.length, end: out.length + text.length };
             out += text;
             last = m.index + m[0].length;
         }
-        out += body.slice(last);
+        out += monacoBody.slice(last);
         return {
             expandedText: out,
             selectionStart: first ? first.start : out.length,
@@ -224,13 +265,28 @@
     }
 
     window.AppSnippets = {
-        getSnippets: function () {
-            return rawSnippets().map(function (s) {
-                return { prefix: s[0], body: s[1], description: s[2], dbType: "all", placeholders: [] };
+        getSnippets: function (forDb) {
+            var all = rawSnippets().map(function (s) {
+                return { prefix: s[0], body: s[1], description: s[2], dbType: s[3] || "all", placeholders: s[4] || [] };
+            });
+            if (!forDb || forDb === "all") return all;
+            return all.filter(function (s) {
+                var d = (s.dbType || "all").toLowerCase();
+                return d === "all" || d === forDb.toLowerCase();
             });
         },
-        matchesDbType: function () { return true; },
-        normalizeDbType: function () { return "all"; },
+        matchesDbType: function (snipDb, currentDb) {
+            if (!snipDb || !currentDb) return true;
+            var s = snipDb.toLowerCase(), c = currentDb.toLowerCase();
+            return s === "all" || s === c;
+        },
+        normalizeDbType: function (dbType) {
+            if (!dbType) return "all";
+            var s = String(dbType).trim().toLowerCase();
+            if (s === "mssql" || s === "sqlserver") return "sqlserver";
+            if (s === "postgres" || s === "postgresql" || s === "pg") return "postgresql";
+            return "all";
+        },
         expandSnippetBody: function (snip) { return expandTemplate(snip.body || ""); },
         /** Tab right after an exact snippet prefix expands it (LLTool behaviour). */
         tryExpandSnippet: function () {
@@ -241,10 +297,14 @@
             var word = editor.getModel().getWordUntilPosition(pos);
             if (!word.word) return false;
             var lower = word.word.toLowerCase();
-            var hit = rawSnippets().filter(function (s) { return s[0].toLowerCase() === lower; })[0];
+            var hit = rawSnippets().filter(function (s) { return (s[0] || "").toLowerCase() === lower; })[0];
             if (!hit) return false;
             editor.setSelection(new monaco.Selection(pos.lineNumber, word.startColumn, pos.lineNumber, word.endColumn));
-            return insertSnippet(hit[1]);
+            var snippetBody = hit[1];
+            if (typeof snippetBody === "string") {
+                snippetBody = convertRedGateToMonacoSnippet(snippetBody);
+            }
+            return insertSnippet(snippetBody);
         }
     };
 

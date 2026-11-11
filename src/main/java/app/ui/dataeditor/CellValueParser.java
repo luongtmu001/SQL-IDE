@@ -97,3 +97,4 @@ public final class CellValueParser {
         return typeName.contains("char") || typeName.contains("text");
     }
 }
+

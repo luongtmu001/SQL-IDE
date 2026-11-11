@@ -32,28 +32,40 @@ class WorkspaceComponentsTest {
         toolbar.addLeft(btnHigh, WorkspaceToolbar.Priority.HIGH);
         toolbar.addRight(btnLow, WorkspaceToolbar.Priority.LOW);
 
-        // At full width: low priority node is on toolbar
-        toolbar.updateOverflow(1200);
+        // overflow is measured, so the toolbar needs a scene and CSS to know its real width
+        new javafx.scene.Scene(toolbar);
+        toolbar.applyCss();
+        toolbar.layout();
+        double full = toolbar.prefWidth(-1);
+        assertTrue(full > 0);
+
+        // At full width: nothing is hidden, labels keep their full width
+        toolbar.updateOverflow(full + 200);
         assertTrue(toolbar.getHiddenLowPriorityNodes().isEmpty());
         assertFalse(toolbar.getOverflowMenu().isVisible());
         assertTrue(toolbar.getRightBox().getChildren().contains(btnLow));
+        assertEquals(javafx.scene.layout.Region.USE_PREF_SIZE, btnLow.getMinWidth(), "labels must never be cut");
 
-        // When width shrinks: low priority node moves into overflow menu
-        toolbar.updateOverflow(600);
-        assertFalse(toolbar.getHiddenLowPriorityNodes().isEmpty());
-        assertTrue(toolbar.getHiddenLowPriorityNodes().contains(btnLow));
+        // A bit too narrow: only the low priority node moves into the overflow menu
+        toolbar.updateOverflow(full - 4);
+        assertEquals(java.util.List.of(btnLow), toolbar.getHiddenLowPriorityNodes());
         assertFalse(toolbar.getRightBox().getChildren().contains(btnLow));
+        assertTrue(toolbar.getLeftBox().getChildren().contains(btnHigh));
         assertTrue(toolbar.getOverflowMenu().isVisible());
         assertEquals(1, toolbar.getOverflowMenu().getItems().size());
         assertEquals("Low Priority", toolbar.getOverflowMenu().getItems().get(0).getText());
 
-        // When width expands again: low priority node is restored to toolbar
-        toolbar.updateOverflow(1200);
+        // Much too narrow: plain high priority buttons follow, in toolbar order in the menu
+        toolbar.updateOverflow(30);
+        assertTrue(toolbar.getHiddenLowPriorityNodes().contains(btnHigh));
+        assertEquals("High Priority", toolbar.getOverflowMenu().getItems().get(0).getText());
+
+        // Wide again: everything is restored
+        toolbar.updateOverflow(full + 200);
         assertTrue(toolbar.getHiddenLowPriorityNodes().isEmpty());
         assertFalse(toolbar.getOverflowMenu().isVisible());
         assertTrue(toolbar.getRightBox().getChildren().contains(btnLow));
     }
-
     @Test
     void testSegmentedToggleCannotBeDeselected() {
         SegmentedToggle<String> toggle = new SegmentedToggle<>();

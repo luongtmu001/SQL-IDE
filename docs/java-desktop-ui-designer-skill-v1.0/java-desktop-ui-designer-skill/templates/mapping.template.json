@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "screen_id": "SCR-AREA-001",
   "mappings": [
     {
@@ -8,8 +8,10 @@
       "target_id": "BTN-AREA-001",
       "target_type": "javafx",
       "target_component": "Button",
-      "mapping_status": "not_started | analyzed | designed | implemented_mock | reviewed | approved | deferred | not_applicable_approved",
+      "target_reference": "src/main/resources/fxml/example.fxml#fxId, app.controllers.ExampleController#handleAction",
+      "mapping_status": "not_started | analyzed | designed | implemented_mock | implemented_real | verified | reviewed | approved | deferred | not_applicable_approved",
       "behavior_parity": "not_checked | matched | partial | changed_with_approval",
+      "verified_by": "none | unit_mock | it_real_server | user_on_machine",
       "differences": [],
       "approval_reference": "none"
     }

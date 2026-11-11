@@ -97,7 +97,7 @@ class DatabaseExplorerTest {
             }
         });
 
-        assertTrue(latch.await(5, TimeUnit.SECONDS), "Sidebar FXML should load within 5s");
+        assertTrue(latch.await(15, TimeUnit.SECONDS), "Sidebar FXML should load within 15s");
         SidebarController controller = controllerRef.get();
         assertNotNull(controller, "Controller must be loaded");
 

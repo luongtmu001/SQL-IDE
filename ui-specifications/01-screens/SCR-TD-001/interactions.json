@@ -1,0 +1,203 @@
+{
+  "schema_version": "1.0",
+  "screen_id": "SCR-TD-001",
+  "interactions": [
+    {
+      "id": "INT-TD-001",
+      "trigger": "BTN-TD-ADD-ROW.click OR key.Ctrl+N OR key.Tab (last cell of last row)",
+      "outcome": "Thêm một dòng cột mới ở cuối bảng; focus ô Tên cột và kích hoạt chế độ sửa; ghi nhận Undo step",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-002",
+      "trigger": "BTN-TD-INSERT-BEFORE.click OR key.Ctrl+Insert",
+      "outcome": "Chèn một dòng mới phía trên dòng đầu tiên trong vùng đang chọn; chọn dòng mới",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-003",
+      "trigger": "BTN-TD-INSERT-AFTER.click OR key.Ctrl+Shift+Insert",
+      "outcome": "Chèn một dòng mới phía dưới dòng cuối cùng trong vùng đang chọn; chọn dòng mới",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-004",
+      "trigger": "BTN-TD-ADD-N-ROWS.click",
+      "outcome": "Đọc giá trị từ SPN-TD-ADD-COUNT (1-100); chèn N dòng mới liên tiếp dưới dòng đang chọn hoặc cuối bảng; chọn toàn bộ N dòng mới",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-005",
+      "trigger": "BTN-TD-DUPLICATE.click OR key.Ctrl+D",
+      "outcome": "Sao chép toàn bộ dòng đang chọn đặt ngay dưới khối chọn; tên tự đổi thêm hậu tố _copy, _copy2; gán ColumnId mới và originalName = null (Khắc phục lỗi B1)",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-006",
+      "trigger": "key.Ctrl+C OR key.Ctrl+X",
+      "outcome": "Trích xuất thông tin các dòng đang chọn sang clipboard nội bộ và hệ thống theo định dạng TSV chuẩn (Tên, Kiểu, Độ dài, Scale, Not Null, Mặc định, Mô tả)",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-007",
+      "trigger": "key.Ctrl+V",
+      "outcome": "Chèn các dòng từ clipboard vào ngay bên dưới dòng cuối cùng đang chọn (không ghi đè - Khắc phục lỗi B14); hỗ trợ dán TSV từ Excel",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-008",
+      "trigger": "BTN-TD-MOVE-UP.click OR key.Alt+Up",
+      "outcome": "Di chuyển toàn bộ khối dòng đang chọn lên trên 1 bậc (dừng lại khi dòng đầu chạm đỉnh); giữ nguyên vùng chọn",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-009",
+      "trigger": "BTN-TD-MOVE-DOWN.click OR key.Alt+Down",
+      "outcome": "Di chuyển toàn bộ khối dòng đang chọn xuống dưới 1 bậc (dừng lại khi dòng cuối chạm đáy); giữ nguyên vùng chọn",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-010",
+      "trigger": "key.Alt+Home OR key.Alt+End",
+      "outcome": "Đưa toàn bộ khối dòng đang chọn lên trên cùng / xuống dưới cùng bảng; giữ nguyên vùng chọn",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-011",
+      "trigger": "grid.rowDragDrop",
+      "outcome": "Kéo thả một hoặc nhiều dòng đang chọn; hiển thị vạch chỉ vị trí thả; tái sắp xếp các dòng sau khi thả; giữ nguyên vùng chọn",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-012",
+      "trigger": "BTN-TD-DELETE-ROW.click OR key.Delete (khi không sửa ô)",
+      "outcome": "Xóa toàn bộ các dòng đang chọn. Nếu cột có ràng buộc phụ thuộc (FK, Index, Computed), hiện ConfirmDialog xác nhận (Khắc phục lỗi B4)",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-013",
+      "trigger": "key.Ctrl+A (khi không sửa ô)",
+      "outcome": "Chọn toàn bộ các dòng trong bảng; không sao chép dữ liệu vào clipboard (Khắc phục lỗi B14)",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-014",
+      "trigger": "BTN-TD-TOGGLE-PK.click",
+      "outcome": "Bật/tắt cờ Primary Key cho các dòng đang chọn; nếu bật PK thì tự động bật Not Null và khóa ô Not Null không cho tắt",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-015",
+      "trigger": "BTN-TD-TOGGLE-NN.click OR key.Space (trên ô NN)",
+      "outcome": "Đảo trạng thái cờ Not Null cho tất cả các dòng đang chọn",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-016",
+      "trigger": "BTN-TD-UNDO.click OR key.Ctrl+Z",
+      "outcome": "Hoàn tác hành động gần nhất trên bảng; phục hồi vùng chọn và trạng thái trước đó",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-017",
+      "trigger": "BTN-TD-REDO.click OR key.Ctrl+Y",
+      "outcome": "Làm lại hành động vừa hoàn tác; phục hồi vùng chọn tương ứng",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-018",
+      "trigger": "grid.cellEdited OR model.modified",
+      "outcome": "Đánh dấu tab dirty; chạy Validator hiển thị lỗi ở footer; kích hoạt background diff (debounce 200ms) cập nhật Live DDL Preview",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-019",
+      "trigger": "BADGE-TD-VALIDATION.click",
+      "outcome": "Tự động cuộn lưới tới ô bị lỗi đầu tiên, chọn dòng và focus vào ô đó",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-020",
+      "trigger": "TGL-TD-INSPECTOR.click",
+      "outcome": "Mở rộng hoặc thu gọn thanh Column Inspector bên phải",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-021",
+      "trigger": "TGL-TD-PREVIEW.click",
+      "outcome": "Mở rộng hoặc thu gọn khung Live DDL Preview bên dưới",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-022",
+      "trigger": "BTN-TD-SAVE.click OR key.Ctrl+S",
+      "outcome": "Nếu bảng có lỗi validation: dừng lại và hiện cảnh báo. Nếu hợp lệ: tính toán diff và mở SaveDesignDialog",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-023",
+      "trigger": "BTN-TD-OPEN-SQL.click",
+      "outcome": "Mở một tab soạn thảo SQL mới với toàn bộ câu lệnh DDL / migration hiện tại",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-024",
+      "trigger": "BTN-TD-REFRESH.click OR key.F5",
+      "outcome": "Nếu có thay đổi chưa lưu: hiện ConfirmDialog hỏi hủy bỏ thay đổi; sau đó tải lại metadata từ CSDL",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-025",
+      "trigger": "FLT-TD-SAVE-GROUP.select",
+      "outcome": "Lọc hiển thị danh sách câu lệnh trong SaveDesignDialog (chỉ lọc để xem, không ảnh hưởng tới toàn bộ script khi áp dụng - Khắc phục lỗi B2)",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-026",
+      "trigger": "TXT-TD-SAVE-CONFIRM-NAME.textChanged",
+      "outcome": "Kiểm tra chuỗi nhập vào với tên bảng; kích hoạt nút Áp dụng khi người dùng nhập chính xác tên bảng nếu migration có thao tác phá hủy",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-027",
+      "trigger": "BTN-TD-SAVE-APPLY.click",
+      "outcome": "Thực thi toàn bộ migration script trong một transaction duy nhất qua TabSessionManager; làm mới cache metadata; làm mới node Tables trên Explorer (Khắc phục lỗi B20); chuyển tab sang clean; đóng dialog",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    },
+    {
+      "id": "INT-TD-028",
+      "trigger": "BTN-TD-COPY-CONFIRM.click",
+      "outcome": "Kiểm tra tên bảng đích với DB; kiểm tra giới hạn 128 / 63 ký tự; nhân bản đối tượng; mở tab New Table nạp sẵn metadata; đóng dialog (Khắc phục lỗi B10)",
+      "evidence": "observed",
+      "confidence": "code_verified"
+    }
+  ]
+}
+

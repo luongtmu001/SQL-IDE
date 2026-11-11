@@ -33,7 +33,7 @@
 
 .tde-sql-textarea {
     -fx-font-family: 'JetBrains Mono', Consolas, 'Fira Code', monospace;
-    -fx-font-size: 0.9em;
+    -fx-font-size: 1em;
     -fx-text-fill: -color-accent-fg;
     -fx-background-color: -color-bg-default;
     -fx-border-width: 0;
@@ -111,10 +111,95 @@
 }
 
 .tde-col-type-subtitle {
-    -fx-font-size: 0.75em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
 }
 
 .header-pk {
     -fx-font-weight: bold;
+}
+
+/* Common and layout classes conforming to R-UI-11 & R-UI-19 */
+.tde-inspector-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.tde-section-card {
+    -fx-background-color: -color-bg-subtle;
+    -fx-padding: 0.6em;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.tde-section-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-default;
+}
+
+.tde-fk-item {
+    -fx-background-color: -color-bg-default;
+    -fx-padding: 0.3em;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+
+.tde-fk-title {
+    -fx-font-weight: bold;
+    -fx-font-family: monospace;
+    -fx-font-size: 0.85em;
+}
+
+.tde-fk-target {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 0.85em;
+}
+
+.tde-check-expr {
+    -fx-font-family: monospace;
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.criteria-header-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-default;
+}
+
+.criteria-count-badge {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 1 5 1 5;
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.criteria-col-index {
+    -fx-alignment: CENTER;
+    -fx-font-family: monospace;
+}
+
+.criteria-col-center {
+    -fx-alignment: CENTER;
+}
+
+.col-row-no {
+    -fx-alignment: CENTER;
+    -fx-font-family: monospace;
+}
+
+.tde-editable-status {
+    -fx-text-fill: -color-success-emphasis;
+    -fx-font-weight: bold;
+}
+
+.cell-invalid {
+    -fx-border-color: -color-danger-emphasis;
+    -fx-border-width: 1.5px;
 }

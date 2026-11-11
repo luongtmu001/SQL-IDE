@@ -20,6 +20,13 @@ import java.util.regex.Pattern;
 
 public class AppLauncher extends Application {
 
+    static {
+        // Enable DirectWrite native LCD / ClearType subpixel text rendering for crisp font edges
+        if (System.getProperty("prism.lcdtext") == null) {
+            System.setProperty("prism.lcdtext", "true");
+        }
+    }
+
     private static final String APP_TITLE = "SQL IDE";
     private static final double DEFAULT_WIDTH = 1280;
     private static final double DEFAULT_HEIGHT = 820;

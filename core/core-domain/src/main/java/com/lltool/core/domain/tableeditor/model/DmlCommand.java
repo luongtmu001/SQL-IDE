@@ -26,3 +26,4 @@ public record DmlCommand(
         return params != null ? Collections.unmodifiableList(params) : Collections.emptyList();
     }
 }
+

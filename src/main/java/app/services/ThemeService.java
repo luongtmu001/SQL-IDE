@@ -82,7 +82,7 @@ public class ThemeService {
     }
 
     public void initializeTheme(Scene scene) {
-        applyTheme(currentTheme.get(), scene);
+        applyThemeToScene(scene);
     }
 
     /** Title-bar light/dark button: the twin of the current theme (GitHub Dark Default <-> GitHub Light Default). */
@@ -101,17 +101,87 @@ public class ThemeService {
     public void apply(app.services.theme.ThemeDefinition def, Scene scene) {
         if (def == null) return;
         AppTheme base = def.base() != null ? def.base() : (def.isDark() ? AppTheme.PRIMER_DARK : AppTheme.PRIMER_LIGHT);
-        applyTheme(base, scene, def); // sheets first: listeners (Monaco palette) read the new colours
         this.currentTheme.set(base);
         this.currentDefinition.set(def);
+
+        Scene targetScene = scene;
+        if (targetScene == null) {
+            try {
+                var stage = app.application.AppContext.getInstance().getPrimaryStage();
+                if (stage != null) targetScene = stage.getScene();
+            } catch (Throwable ignored) {}
+        }
+
+        if (targetScene != null) {
+            applyThemeToScene(targetScene);
+        } else {
+            ensureUserAgentStylesheet(base);
+        }
+
+        // Hot-apply to all other open stages / windows
+        for (javafx.stage.Window w : new java.util.ArrayList<>(javafx.stage.Window.getWindows())) {
+            if (w instanceof javafx.stage.PopupWindow) continue;
+            Scene sc = w.getScene();
+            if (sc != null && sc != targetScene) {
+                applyThemeToScene(sc);
+            }
+        }
+        // Also hot-apply to cached SettingsDialog scene if preloaded
+        try {
+            var settingsScene = app.ui.dialogs.SettingsDialog.getCachedDialogScene();
+            if (settingsScene != null && settingsScene != targetScene) {
+                applyThemeToScene(settingsScene);
+            }
+        } catch (Throwable ignored) {}
     }
 
-    private void applyTheme(AppTheme theme, Scene scene) {
-        applyTheme(theme, scene, currentDefinition.get());
+    public void applyThemeToScene(Scene scene) {
+        if (scene == null) return;
+        AppTheme theme = currentTheme.get();
+        app.services.theme.ThemeDefinition def = currentDefinition.get();
+        Theme atlantafxTheme = resolveAtlantaFxTheme(theme);
+        try {
+            Application.setUserAgentStylesheet(atlantafxTheme.getUserAgentStylesheet());
+        } catch (Exception ignored) {}
+
+        boolean hasSettingsCss = scene.getStylesheets().stream().anyMatch(s -> s.contains("/css/settings.css"))
+                || (scene.getRoot() != null && scene.getRoot().lookup(".settings-window-root") != null);
+        boolean hasConnMgrCss = scene.getStylesheets().stream().anyMatch(s -> s.contains("/css/connection-manager.css"));
+
+        scene.getStylesheets().clear();
+        addStylesheet(scene, "/css/base.css");
+        addStylesheet(scene, "/css/ide-vars.css"); // T2: -ide-* region colours (defaults; themes override)
+        addStylesheet(scene, "/css/layout.css");
+        addStylesheet(scene, "/css/components.css");
+        addStylesheet(scene, "/css/editor.css");
+        addStylesheet(scene, "/css/table-designer.css");
+        addStylesheet(scene, "/css/titlebar/titlebar.css");
+        addStylesheet(scene, "/css/titlebar/window-controls.css");
+        addStylesheet(scene, "/css/dialogs.css");
+
+        boolean dark = def != null ? def.isDark() : theme.isDark();
+        if (dark) {
+            addStylesheet(scene, "/css/dark-theme.css");
+        } else {
+            addStylesheet(scene, "/css/light-theme.css");
+        }
+        // imported VS Code theme: its -color-* / -ide-* values override the base theme's
+        if (def != null && def.cssFile() != null && java.nio.file.Files.isRegularFile(def.cssFile())) {
+            scene.getStylesheets().add(def.cssFile().toUri().toString());
+        }
+        if (hasSettingsCss) {
+            addStylesheet(scene, "/css/settings.css");
+        }
+        if (hasConnMgrCss) {
+            addStylesheet(scene, "/css/connection-manager.css");
+        }
+        applyShape(scene);
+        app.ui.components.UiMetrics.applyUiTypography(scene);
     }
 
-    private void applyTheme(AppTheme theme, Scene scene, app.services.theme.ThemeDefinition def) {
-        Theme atlantafxTheme = switch (theme) {
+    private Theme resolveAtlantaFxTheme(AppTheme theme) {
+        if (theme == null) theme = AppTheme.PRIMER_DARK;
+        return switch (theme) {
             case PRIMER_DARK -> new PrimerDark();
             case PRIMER_LIGHT -> new PrimerLight();
             case DRACULA -> new Dracula();
@@ -120,31 +190,12 @@ public class ThemeService {
             case CUPERTINO_DARK -> new CupertinoDark();
             case CUPERTINO_LIGHT -> new CupertinoLight();
         };
+    }
 
-        Application.setUserAgentStylesheet(atlantafxTheme.getUserAgentStylesheet());
-
-        if (scene != null) {
-            scene.getStylesheets().clear();
-            addStylesheet(scene, "/css/base.css");
-            addStylesheet(scene, "/css/ide-vars.css"); // T2: -ide-* region colours (defaults; themes override)
-            addStylesheet(scene, "/css/layout.css");
-            addStylesheet(scene, "/css/components.css");
-            addStylesheet(scene, "/css/editor.css");
-            addStylesheet(scene, "/css/titlebar/titlebar.css");
-            addStylesheet(scene, "/css/titlebar/window-controls.css");
-
-            boolean dark = def != null ? def.isDark() : theme.isDark();
-            if (dark) {
-                addStylesheet(scene, "/css/dark-theme.css");
-            } else {
-                addStylesheet(scene, "/css/light-theme.css");
-            }
-            // imported VS Code theme: its -color-* / -ide-* values override the base theme's
-            if (def != null && def.cssFile() != null && java.nio.file.Files.isRegularFile(def.cssFile())) {
-                scene.getStylesheets().add(def.cssFile().toUri().toString());
-            }
-            applyShape(scene);
-        }
+    private void ensureUserAgentStylesheet(AppTheme theme) {
+        try {
+            Application.setUserAgentStylesheet(resolveAtlantaFxTheme(theme).getUserAgentStylesheet());
+        } catch (Exception ignored) {}
     }
 
     // ------------------------------------------------------------------ R-UI-01

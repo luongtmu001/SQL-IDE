@@ -41,6 +41,7 @@ public class MonacoEditorHost extends StackPane {
     private Runnable onExecuteStatementRequestListener;
     private IntConsumer onZoomChangedListener;
     private BiConsumer<String, String> onOpenScriptListener;
+    private Runnable onReloadRequestListener;
     private int zoomPercent = 100;
 
     /** WebEngine keeps only a weak reference to objects set on the page: this field keeps the bridge alive. */
@@ -69,6 +70,8 @@ public class MonacoEditorHost extends StackPane {
         editorBar.setOnToggleEol(this::toggleEol);
         app.framework.metadata.DesktopMetadataService.getInstance().addInvalidationListener(metadataInvalidated);
         app.framework.intellisense.MetadataSnapshotStore.getInstance().addListener(this::intellisenseMetadataArrived);
+        app.ui.codestyle.SqlStyleStore.addChangeListener(this::syncActiveCodeStyle);
+        app.services.SnippetService.getInstance().addChangeListener(snips -> syncSnippetsToEditor());
         // the editor colours come from the scene's theme: apply them as soon as the host is in a scene
         sceneProperty().addListener((o, a, s) -> {
             if (s != null) applyAppTheme();
@@ -142,11 +145,25 @@ public class MonacoEditorHost extends StackPane {
                         javafx.util.Duration.millis(120), webView);
                 fadeIn.setFromValue(0.0);
                 fadeIn.setToValue(1.0);
+                fadeIn.setOnFinished(e -> {
+                    // Ensure opaque page fill once visible for DirectWrite subpixel ClearType antialiasing
+                    if (webView.getPageFill() == null || webView.getPageFill() == javafx.scene.paint.Color.TRANSPARENT) {
+                        var def = app.services.ThemeService.getInstance().getCurrentDefinition();
+                        if (def != null) {
+                            webView.setPageFill(def.isDark()
+                                    ? javafx.scene.paint.Color.valueOf("#1c1f24")
+                                    : javafx.scene.paint.Color.WHITE);
+                        }
+                    }
+                });
                 fadeIn.play();
 
                 if (onReadyListener != null) {
                     onReadyListener.run();
                 }
+
+                syncActiveCodeStyle();
+                syncSnippetsToEditor();
             });
         }
 
@@ -218,6 +235,11 @@ public class MonacoEditorHost extends StackPane {
         /** Ctrl+Shift+R: read the metadata of this connection from the server again. */
         public void intellisenseReload(String connectionId, String database) {
             intellisense.reload(connectionId, database == null || database.isEmpty() ? null : database);
+            Platform.runLater(() -> {
+                if (onReloadRequestListener != null) {
+                    onReloadRequestListener.run();
+                }
+            });
         }
 
         /** F12 on an object: its definition in a new tab. */
@@ -336,7 +358,26 @@ public class MonacoEditorHost extends StackPane {
             String json = app.services.theme.MonacoThemes.json(def, getScene());
             executeJs("window.editorBridge.defineAndSetTheme('" + escapeJs(app.services.theme.MonacoThemes.monacoId(def))
                     + "', " + json + ");");
+            updateWebViewPageFill(def, json);
         });
+    }
+
+    private void updateWebViewPageFill(app.services.theme.ThemeDefinition def, String monacoThemeJson) {
+        try {
+            if (monacoThemeJson != null) {
+                com.fasterxml.jackson.databind.JsonNode root = new com.fasterxml.jackson.databind.ObjectMapper().readTree(monacoThemeJson);
+                String bg = root.path("colors").path("editor.background").asText(null);
+                if (bg != null && !bg.isBlank()) {
+                    webView.setPageFill(javafx.scene.paint.Color.valueOf(bg));
+                    return;
+                }
+            }
+        } catch (Exception ignored) { }
+        if (def != null) {
+            webView.setPageFill(def.isDark()
+                    ? javafx.scene.paint.Color.valueOf("#1c1f24")
+                    : javafx.scene.paint.Color.WHITE);
+        }
     }
 
     public void setTheme(String themeName) {
@@ -379,10 +420,12 @@ public class MonacoEditorHost extends StackPane {
         for (var d : diagnostics) {
             if (!first) sb.append(',');
             first = false;
+            int sev = d.severity() != null ? d.severity().monacoValue() : app.framework.syntax.SyntaxDiagnostic.SEVERITY_ERROR;
+            String src = d.source() != null ? d.source() : "SQL";
             sb.append(String.format(java.util.Locale.ROOT,
-                    "{\"startLineNumber\":%d,\"startColumn\":%d,\"endLineNumber\":%d,\"endColumn\":%d,\"severity\":%d,\"message\":\"%s\",\"source\":\"SQL\"}",
-                    d.line(), d.column(), d.endLine(), d.endColumn(), app.framework.syntax.SyntaxDiagnostic.SEVERITY_ERROR,
-                    jsonString(d.message())));
+                    "{\"startLineNumber\":%d,\"startColumn\":%d,\"endLineNumber\":%d,\"endColumn\":%d,\"severity\":%d,\"message\":\"%s\",\"source\":\"%s\"}",
+                    d.line(), d.column(), d.endLine(), d.endColumn(), sev,
+                    jsonString(d.message()), jsonString(src)));
         }
         sb.append(']');
         String json = sb.toString();
@@ -412,6 +455,41 @@ public class MonacoEditorHost extends StackPane {
         });
     }
 
+    public void formatSelection() {
+        runWhenReady(() -> {
+            executeJs("window.editorBridge.formatSelection();");
+        });
+    }
+
+    public void syncActiveCodeStyle() {
+        runWhenReady(() -> {
+            try {
+                var style = app.ui.codestyle.SqlStyleStore.activeStyle();
+                String json = app.ui.codestyle.SqlStyleStore.toJson(style);
+                executeJs("if (window.editorBridge && window.editorBridge.setActiveCodeStyle) {"
+                        + " window.editorBridge.setActiveCodeStyle(JSON.parse(decodeURIComponent('"
+                        + encodeUri(json) + "')));"
+                        + "}");
+            } catch (Exception e) {
+                log.warn("Failed to sync code style to Monaco: {}", e.getMessage());
+            }
+        });
+    }
+
+    public void syncSnippetsToEditor() {
+        runWhenReady(() -> {
+            try {
+                String json = app.services.SnippetService.getInstance().getSnippetsAsJson();
+                executeJs("if (window.editorBridge && window.editorBridge.loadSnippets) {"
+                        + " window.editorBridge.loadSnippets(JSON.parse(decodeURIComponent('"
+                        + encodeUri(json) + "')));"
+                        + "}");
+            } catch (Exception e) {
+                log.warn("Failed to sync snippets to Monaco editor: {}", e.getMessage());
+            }
+        });
+    }
+
     /** Selects and reveals a 1-based line in the active document (DLG-007a navigation). */
     public void gotoLine(int line) {
         runWhenReady(() -> executeJs("window.editorBridge.gotoLine(" + line + ");"));
@@ -431,6 +509,21 @@ public class MonacoEditorHost extends StackPane {
         runWhenReady(() -> {
             executeJs("window.editorBridge.layout();");
         });
+    }
+
+    /** Highlights search matches with yellow markers and overview ruler indicators. */
+    public void setSearchDecorations(String matchesJson) {
+        runWhenReady(() -> executeJs("window.editorBridge.setSearchDecorations(" + matchesJson + ");"));
+    }
+
+    /** Sets the active match highlighted in orange and scrolls it into center. */
+    public void setActiveSearchMatch(int line, int column, int length) {
+        runWhenReady(() -> executeJs("window.editorBridge.setActiveSearchMatch(" + line + ", " + column + ", " + length + ");"));
+    }
+
+    /** Clears all search match decorations from the active editor. */
+    public void clearSearchDecorations() {
+        runWhenReady(() -> executeJs("window.editorBridge.clearSearchDecorations();"));
     }
 
     /** IntelliSense Settings and the session of the active tab; dialect: SQLSERVER / POSTGRESQL / SQLITE / OTHER. */
@@ -459,6 +552,10 @@ public class MonacoEditorHost extends StackPane {
         this.onOpenScriptListener = listener;
     }
 
+    public void setOnReloadRequested(Runnable listener) {
+        this.onReloadRequestListener = listener;
+    }
+
     /** Delivered as plain strings, no script text to build or escape: a metadata answer can be large. */
     private void respondToIntellisense(String requestId, String json) {
         try {
@@ -481,6 +578,16 @@ public class MonacoEditorHost extends StackPane {
         runWhenReady(() -> executeJs("if (window.IntelliSenseHost) window.IntelliSenseHost.invalidate('" + escapeJs(connectionId) + "');"));
     }
 
+    public void notifyDdlExecution(String connectionId, String database, String sql) {
+        if (sql == null) return;
+        runWhenReady(() -> {
+            String script = "if (window.AppMetadataCache && typeof window.AppMetadataCache.handleDdlExecution === 'function') {"
+                    + " window.AppMetadataCache.handleDdlExecution('" + escapeJs(connectionId) + "', '" + escapeJs(database) + "', '" + escapeJs(sql) + "');"
+                    + "}";
+            executeJs(script);
+        });
+    }
+
     public void updateEditorSettings(app.models.IdeSettings s) {
         if (s == null) return;
         runWhenReady(() -> {
@@ -492,10 +599,12 @@ public class MonacoEditorHost extends StackPane {
             double ls = s.getEditor() != null ? s.getEditor().getLetterSpacing() : 0.5;
             boolean insertSpaces = s.getEditor() != null && s.getEditor().isInsertSpaces();
 
+            String fontToken = fontFam.contains("'") ? fontFam : "'" + fontFam + "'";
+
             String json = String.format(
                     java.util.Locale.ROOT,
-                    "{ fontFamily: '%s, Consolas, monospace', fontSize: %d, lineHeight: %.2f, letterSpacing: %.2f, tabSize: %d, insertSpaces: %b, wordWrap: '%s', lineNumbers: '%s', minimap: { enabled: %b } }",
-                    fontFam,
+                    "{ fontFamily: \"%s, Consolas, 'Courier New', monospace\", fontSize: %d, lineHeight: %.2f, letterSpacing: %.2f, tabSize: %d, insertSpaces: %b, wordWrap: '%s', lineNumbers: '%s', minimap: { enabled: %b } }",
+                    fontToken,
                     s.getEditorFontSize(),
                     lh,
                     ls,

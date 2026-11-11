@@ -107,7 +107,7 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
         Object item = getItem();
         startEditText = item != null ? String.valueOf(item) : "";
         textField.setText(startEditText);
-        textField.setStyle(null);
+        textField.getStyleClass().remove("cell-invalid");
         textField.setTooltip(null);
         setText(null);
         setGraphic(textField);
@@ -119,7 +119,7 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
     public void cancelEdit() {
         super.cancelEdit();
         if (textField != null) {
-            textField.setStyle(null);
+            textField.getStyleClass().remove("cell-invalid");
             textField.setTooltip(null);
         }
         setText(formatText(getItem()));
@@ -202,7 +202,9 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
             applyValue(parsed);
             return true;
         } catch (Exception ex) {
-            textField.setStyle("-fx-border-color: -color-danger-emphasis; -fx-border-width: 1.5px;");
+            if (!textField.getStyleClass().contains("cell-invalid")) {
+                textField.getStyleClass().add("cell-invalid");
+            }
             textField.setTooltip(new Tooltip(ex.getMessage()));
             return false;
         }
@@ -240,6 +242,16 @@ public class EditableDataTableCell extends TableCell<ObservableDataRow, Object> 
     private String formatText(Object item) {
         if (item == null) {
             return "NULL";
+        }
+        return displayText(item);
+    }
+
+    /** Text shown for a value: floating point numbers are never written in scientific notation. */
+    public static String displayText(Object item) {
+        if (item instanceof Double || item instanceof Float) {
+            double d = ((Number) item).doubleValue();
+            if (Double.isNaN(d) || Double.isInfinite(d)) return String.valueOf(item);
+            return new java.math.BigDecimal(String.valueOf(item)).stripTrailingZeros().toPlainString();
         }
         return String.valueOf(item);
     }

@@ -53,9 +53,8 @@ public class IndexGrid extends VBox {
 
     private void applyGridTypography() {
         var settings = SettingsService.getInstance().getCurrentSettings();
-        int fontSize = settings != null ? settings.getGridFontSize() : 12;
-        double rowHeight = Math.max(24.0, fontSize * 1.8 + 6.0);
-        tableView.setFixedCellSize(rowHeight);
+        // R-UI-11: a configuration grid follows the UI font ("Giao diện"), not the result-grid setting
+        tableView.setFixedCellSize(app.ui.components.UiMetrics.em(1.85));
     }
 
     private HBox buildToolbar() {
@@ -65,34 +64,26 @@ public class IndexGrid extends VBox {
         bar.getStyleClass().add("td-row-toolbar");
 
         Button btnAdd = new Button("Thêm chỉ mục");
-        btnAdd.getStyleClass().addAll("button", "small");
-        FontIcon addIcon = new FontIcon("fth-plus");
-        addIcon.setIconSize(13);
-        btnAdd.setGraphic(addIcon);
+        btnAdd.getStyleClass().add("button");
+        btnAdd.setGraphic(app.ui.components.Icons.of("fth-plus"));
         btnAdd.setTooltip(new Tooltip("Thêm chỉ mục mới"));
         btnAdd.setOnAction(e -> addNewIndex());
 
         Button btnDelete = new Button("Xóa");
-        btnDelete.getStyleClass().addAll("button", "small");
-        FontIcon delIcon = new FontIcon("fth-trash-2");
-        delIcon.setIconSize(13);
-        btnDelete.setGraphic(delIcon);
+        btnDelete.getStyleClass().add("button");
+        btnDelete.setGraphic(app.ui.components.Icons.of("fth-trash-2"));
         btnDelete.setTooltip(new Tooltip("Xóa index đang chọn"));
         btnDelete.setOnAction(e -> deleteSelectedIndex());
 
         Button btnUp = new Button();
-        btnUp.getStyleClass().addAll("button", "small");
-        FontIcon upIcon = new FontIcon("fth-arrow-up");
-        upIcon.setIconSize(13);
-        btnUp.setGraphic(upIcon);
+        btnUp.getStyleClass().add("button");
+        btnUp.setGraphic(app.ui.components.Icons.of("fth-arrow-up"));
         btnUp.setTooltip(new Tooltip("Di chuyển lên"));
         btnUp.setOnAction(e -> moveSelected(-1));
 
         Button btnDown = new Button();
-        btnDown.getStyleClass().addAll("button", "small");
-        FontIcon downIcon = new FontIcon("fth-arrow-down");
-        downIcon.setIconSize(13);
-        btnDown.setGraphic(downIcon);
+        btnDown.getStyleClass().add("button");
+        btnDown.setGraphic(app.ui.components.Icons.of("fth-arrow-down"));
         btnDown.setTooltip(new Tooltip("Di chuyển xuống"));
         btnDown.setOnAction(e -> moveSelected(1));
 
@@ -113,7 +104,7 @@ public class IndexGrid extends VBox {
 
         // 1. Index Name
         TableColumn<IndexViewModel, String> colName = new TableColumn<>("Tên Index");
-        colName.setPrefWidth(200);
+        colName.setPrefWidth(app.ui.components.UiMetrics.em(15.38));
         colName.setCellValueFactory(data -> data.getValue().nameProperty());
         colName.setCellFactory(TextFieldTableCell.forTableColumn());
         colName.setOnEditCommit(e -> {
@@ -123,7 +114,7 @@ public class IndexGrid extends VBox {
 
         // 2. Index Type
         TableColumn<IndexViewModel, IndexType> colType = new TableColumn<>("Kiểu Index");
-        colType.setPrefWidth(140);
+        colType.setPrefWidth(app.ui.components.UiMetrics.em(10.77));
         colType.setCellValueFactory(data -> data.getValue().indexTypeProperty());
         colType.setCellFactory(ComboBoxTableCell.forTableColumn(IndexType.values()));
         colType.setOnEditCommit(e -> {
@@ -133,13 +124,13 @@ public class IndexGrid extends VBox {
 
         // 3. Unique Checkbox
         TableColumn<IndexViewModel, Boolean> colUnique = new TableColumn<>("Unique");
-        colUnique.setPrefWidth(75);
+        colUnique.setPrefWidth(app.ui.components.UiMetrics.em(5.77));
         colUnique.setCellValueFactory(data -> data.getValue().uniqueProperty());
         colUnique.setCellFactory(CheckBoxTableCell.forTableColumn(colUnique));
 
         // 4. Clustered Checkbox (SQL Server only)
         TableColumn<IndexViewModel, Boolean> colClustered = new TableColumn<>("Clustered");
-        colClustered.setPrefWidth(85);
+        colClustered.setPrefWidth(app.ui.components.UiMetrics.em(6.54));
         colClustered.setCellValueFactory(data -> data.getValue().clusteredProperty());
         colClustered.setCellFactory(CheckBoxTableCell.forTableColumn(colClustered));
         if ("postgresql".equalsIgnoreCase(engine)) {
@@ -148,7 +139,7 @@ public class IndexGrid extends VBox {
 
         // 5. Columns
         TableColumn<IndexViewModel, String> colCols = new TableColumn<>("Các cột tham gia");
-        colCols.setPrefWidth(220);
+        colCols.setPrefWidth(app.ui.components.UiMetrics.em(16.92));
         colCols.setCellValueFactory(data -> data.getValue().columnsStringProperty());
         colCols.setCellFactory(TextFieldTableCell.forTableColumn());
         colCols.setOnEditCommit(e -> {
@@ -158,7 +149,7 @@ public class IndexGrid extends VBox {
 
         // 6. Filter Predicate
         TableColumn<IndexViewModel, String> colFilter = new TableColumn<>("Điều kiện lọc");
-        colFilter.setPrefWidth(200);
+        colFilter.setPrefWidth(app.ui.components.UiMetrics.em(15.38));
         colFilter.setCellValueFactory(data -> data.getValue().filterPredicateProperty());
         colFilter.setCellFactory(TextFieldTableCell.forTableColumn());
         colFilter.setOnEditCommit(e -> {

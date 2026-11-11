@@ -123,3 +123,15 @@ Còn lại cho các mốc sau: D2 phần còn lại (lọc, lớp phủ đang t�
 | Toolbar | Ô database / schema lấy danh sách thật khi mở; chọn database / schema đổi của **tab hiện tại** (trước đây chỉ đổi biến chung, lần chạy sau vẫn dùng database mặc định). Bỏ danh sách schema cứng `public / auth / audit_logs…` | `MainController.setupDatabaseSelector` |
 
 Chưa làm trong D2: lớp phủ đang tải + Hủy cho Explorer (hiện dòng "Đang tải…"; API metadata chưa hủy được giữa chừng), Properties, Dependencies, Search Object Content (vẫn mờ "(chưa hỗ trợ)").
+
+## 9. Đã làm: D6, D4, T10, D5, D8, D0.2 (2026-11-08)
+
+| Việc | Chi tiết | File |
+|---|---|---|
+| **D6: Format SQL thật** | Port nguyên vẹn engine định dạng SQL `sql-formatter.js` (641 dòng) từ LLTool; hỗ trợ cả SQL Server & PostgreSQL; bảo vệ tuyệt đối chuỗi, comment, bracket/quoted token; hỗ trợ 31 tùy chọn code style (casing, indent, lists, clauses, operators, CASE expressions); đăng ký `registerDocumentFormattingEditProvider` và `registerDocumentRangeFormattingEditProvider` trong Monaco; lắng nghe thay đổi style realtime từ `SqlStyleStore`; phím tắt `Shift+Alt+F` / `Ctrl+K Ctrl+D`; fallback an toàn sang `SimpleSqlFormatter` | `sql-formatter.js`, `editor.html`, `editor-bridge.js`, `MonacoEditorHost.java`, `SqlStyleStore.java`, `EditorController.java` |
+| **D4: Xuất Excel `.xlsx` thật** | Viết mới `FastXlsxWriter.java` xuất file OpenXML `.xlsx` streaming thuần qua `ZipOutputStream` (không phụ thuộc Apache POI ~50MB); hỗ trợ streaming >100.000 dòng cực nhẹ RAM; header fill `#E6E6E6`, viền `#D4D4D4`, ô NULL fill `#FFFFE1` in nghiêng; cố định dòng tiêu đề `freeze panes A2`; tự bật auto-filter; tự ước lượng bề rộng cột theo nội dung; tích hợp vào `DesktopGridExportService.openInExcel` và `saveResultsAs` | `FastXlsxWriter.java`, `DesktopGridExportService.java`, `FastXlsxWriterTest.java` |
+| **T10: Nguồn bảng kết quả** | Trích xuất tên bảng nguồn `meta.getTableName(i)` từ JDBC `ResultSetMetaData` trong `ScriptRunner`; gán vào `QueryResultColumn.tableName` và `QueryResult.sourceTable`; hiển thị tên bảng trên tiêu đề tab kết quả và header khối lưới kết quả phân tầng | `ScriptRunner.java`, `QueryResultColumn.java`, `QueryResult.java`, `ResultsController.java` |
+| **D5: Execution Plan thật / mô phỏng** | Bổ sung cờ `simulated` vào `PhysicalExecutionPlan`; đánh dấu `plan.setSimulated(true)` khi chạy plan mô phỏng; `ResultsController` hiển thị rõ nhãn `"(MÔ PHỎNG)"` trên `planTypeBadge` để người dùng phân biệt rành mạch với plan thật | `PhysicalExecutionPlan.java`, `DesktopExecutionPlanService.java`, `ResultsController.java` |
+| **D8: Động hóa phiên bản & About** | Trích xuất phiên bản package Maven động tại runtime trong `AppInfo.java` (fallback `1.0.0-SNAPSHOT`); kiểm tra hoạt động hộp thoại `AboutDialog` và `UpdateDialog` | `AppInfo.java`, `AboutDialog.java` |
+| **D0.2: Cờ gỡ lỗi UI** | Bổ sung hàm `BackendFlags.isUiDebug()` hỗ trợ cờ `-Dsqlide.uiDebug=true` phục vụ gỡ lỗi bố cục UI | `BackendFlags.java` |
+

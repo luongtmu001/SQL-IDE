@@ -104,15 +104,17 @@ public final class DialogChrome {
 
         StackPane root = new StackPane(clipHost);
         root.setPadding(new Insets(SHADOW));
-        root.getStyleClass().add("dialog-root");
+        root.getStyleClass().addAll("root", "dialog-root");
         if (flat) root.getStyleClass().add("flat");
         root.setStyle("-fx-background-color: transparent;");
 
         Scene scene = new Scene(root);
         scene.setFill(Color.TRANSPARENT);
-        ThemeService.getInstance().initializeTheme(scene);
+        ThemeService.getInstance().applyThemeToScene(scene);
         var css = DialogChrome.class.getResource("/css/dialogs.css");
-        if (css != null) scene.getStylesheets().add(css.toExternalForm());
+        if (css != null && !scene.getStylesheets().contains(css.toExternalForm())) {
+            scene.getStylesheets().add(css.toExternalForm());
+        }
         ThemeService.getInstance().applyShape(scene); // R-UI-01 sheets stay last
         scene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ESCAPE) {
@@ -177,6 +179,21 @@ public final class DialogChrome {
         return this;
     }
 
+    /** Ensures that dialogs.css and current theme shapes are present on the dialog scene. */
+    public void ensureStylesheets() {
+        Scene scene = stage.getScene();
+        if (scene == null) return;
+        ThemeService.getInstance().applyThemeToScene(scene);
+        var css = DialogChrome.class.getResource("/css/dialogs.css");
+        if (css != null) {
+            String url = css.toExternalForm();
+            if (!scene.getStylesheets().contains(url)) {
+                scene.getStylesheets().add(url);
+            }
+        }
+        ThemeService.getInstance().applyShape(scene);
+    }
+
     public DialogChrome size(double width, double height) {
         shell.setPrefWidth(width);
         shell.setMinWidth(width);
@@ -205,7 +222,23 @@ public final class DialogChrome {
         stage.close();
     }
 
+    public void show() {
+        ensureStylesheets();
+        stage.sizeToScene();
+        Window owner = stage.getOwner();
+        if (owner != null) {
+            stage.setOnShown(e -> {
+                stage.setX(owner.getX() + (owner.getWidth() - stage.getWidth()) / 2);
+                stage.setY(owner.getY() + Math.max(40, (owner.getHeight() - stage.getHeight()) / 3));
+            });
+        } else {
+            stage.centerOnScreen();
+        }
+        stage.show();
+    }
+
     public void showAndWait() {
+        ensureStylesheets();
         stage.sizeToScene();
         Window owner = stage.getOwner();
         if (owner != null) {

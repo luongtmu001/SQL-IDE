@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL Visualizer Mockup — SQL IDE Desktop</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --ide-bg-base: #18181b;
+      --ide-bg-subtle: #202026;
+      --ide-bg-editor: #121215;
+      --ide-border: #2e2e38;
+      --ide-border-subtle: #272730;
+      --ide-text-main: #f4f4f5;
+      --ide-text-muted: #a1a1aa;
+      --ide-accent: #3b82f6;
+      --ide-font-mono: 'JetBrains Mono', Consolas, 'Fira Code', monospace;
+      --ide-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      font-family: var(--ide-font-sans);
+      background-color: var(--ide-bg-base);
+      color: var(--ide-text-main);
+      user-select: none;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pipeline-step {
+      transition: all 0.2s ease;
+    }
+    .pipeline-step:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body class="text-xs">
+
+  <!-- 1. TOP TOOLBAR -->
+  <header class="h-11 px-3 bg-[var(--ide-bg-subtle)] border-b border-[var(--ide-border)] flex items-center justify-between gap-3 flex-shrink-0">
+    <div class="flex items-center gap-2">
+      <i class="fa-solid fa-project-diagram text-blue-400 text-sm"></i>
+      <span class="font-bold text-gray-200">SQL Visualizer & Query Flow</span>
+      <span class="text-gray-500">|</span>
+      <select onchange="loadPreset(this.value)" class="h-7 px-2 bg-[var(--ide-bg-editor)] border border-[var(--ide-border)] rounded text-gray-200 outline-none text-xs">
+        <option selected>Mẫu 1: Doanh thu theo khách hàng (JOIN + GROUP BY + TOP)</option>
+        <option>Mẫu 2: Phân tích tồn kho & giao dịch (Multi-JOIN)</option>
+        <option>Mẫu 3: Lọc đơn hàng chưa xử lý (LEFT JOIN + IS NULL)</option>
+      </select>
+    </div>
+
+    <!-- Mode Selector -->
+    <div class="flex items-center bg-[var(--ide-bg-editor)] p-0.5 rounded border border-[var(--ide-border)]">
+      <button class="h-6 px-3 rounded bg-blue-600 text-white font-medium flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-diagram-project text-[10px]"></i>
+        <span>Query Flow Pipeline</span>
+      </button>
+      <button class="h-6 px-3 rounded text-gray-400 hover:text-white flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-sitemap text-[10px]"></i>
+        <span>Execution Plan Tree</span>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button onclick="visualizeQuery()" class="h-7 px-3.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center gap-1.5 shadow transition">
+        <i class="fa-solid fa-play text-[11px]"></i>
+        <span>Phân tích & Trực quan hóa</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. TOP SQL PREVIEW (Collapsible) -->
+  <section class="h-28 bg-[var(--ide-bg-editor)] border-b border-[var(--ide-border)] p-2.5 overflow-auto font-mono text-[11px] leading-relaxed flex-shrink-0">
+    <div class="text-gray-500 mb-1 flex items-center justify-between select-none font-sans text-[10px]">
+      <span>CÂU LỆNH SQL ĐANG TRỰC QUAN HÓA:</span>
+      <span class="text-blue-400 cursor-pointer hover:underline" onclick="copySql()">Copy SQL</span>
+    </div>
+    <pre class="m-0 text-gray-300"><span class="text-blue-400 font-bold">SELECT TOP 50</span> 
+    c.id <span class="text-blue-400 font-bold">AS</span> customer_id, c.name <span class="text-blue-400 font-bold">AS</span> customer_name,
+    <span class="text-purple-400 font-bold">SUM</span>(o.amount) <span class="text-blue-400 font-bold">AS</span> total_revenue, <span class="text-purple-400 font-bold">COUNT</span>(o.id) <span class="text-blue-400 font-bold">AS</span> order_count
+<span class="text-blue-400 font-bold">FROM</span> dbo.customers c
+<span class="text-blue-400 font-bold">INNER JOIN</span> dbo.orders o <span class="text-blue-400 font-bold">ON</span> o.customer_id = c.id
+<span class="text-blue-400 font-bold">WHERE</span> o.status = 'active' <span class="text-blue-400 font-bold">AND</span> o.created_at &gt;= '2026-01-01'
+<span class="text-blue-400 font-bold">GROUP BY</span> c.id, c.name
+<span class="text-blue-400 font-bold">ORDER BY</span> total_revenue <span class="text-blue-400 font-bold">DESC</span>;</pre>
+  </section>
+
+  <!-- 3. VISUAL PIPELINE FLOW CANVAS -->
+  <main class="flex-1 flex overflow-auto p-6 bg-[var(--ide-bg-base)] items-center justify-center">
+    
+    <div class="flex items-center gap-6 max-w-full">
+      
+      <!-- STAGE 1: DATA SOURCES -->
+      <div class="flex flex-col gap-4">
+        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">1. Nguồn Dữ liệu</div>
+        
+        <!-- Table 1: customers -->
+        <div onclick="selectStep('customers', 'TABLE SCAN', 'Quét bảng customers (12,450 dòng)')" 
+             class="pipeline-step w-52 p-3 rounded-lg bg-[var(--ide-bg-subtle)] border border-blue-500/50 shadow-md cursor-pointer">
+          <div class="flex items-center justify-between mb-1">
+            <span class="px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-300 font-bold text-[9px]">FROM TABLE</span>
+            <span class="text-gray-400 text-[10px]">Alias: c</span>
+          </div>
+          <div class="font-bold text-gray-100 flex items-center gap-1.5">
+            <i class="fa-solid fa-table text-blue-400"></i>
+            <span>dbo.customers</span>
+          </div>
+          <div class="text-[10px] text-gray-400 mt-1">Cột lấy: id, name</div>
+        </div>
+
+        <!-- Table 2: orders -->
+        <div onclick="selectStep('orders', 'INDEX SCAN', 'Quét bảng orders (89,210 dòng)')" 
+             class="pipeline-step w-52 p-3 rounded-lg bg-[var(--ide-bg-subtle)] border border-blue-500/50 shadow-md cursor-pointer">
+          <div class="flex items-center justify-between mb-1">
+            <span class="px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-300 font-bold text-[9px]">JOIN TABLE</span>
+            <span class="text-gray-400 text-[10px]">Alias: o</span>
+          </div>
+          <div class="font-bold text-gray-100 flex items-center gap-1.5">
+            <i class="fa-solid fa-table text-blue-400"></i>
+            <span>dbo.orders</span>
+          </div>
+          <div class="text-[10px] text-gray-400 mt-1">Cột lấy: id, customer_id, amount, status</div>
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="text-gray-600 flex flex-col items-center">
+        <i class="fa-solid fa-arrow-right text-base text-blue-500"></i>
+      </div>
+
+      <!-- STAGE 2: JOIN -->
+      <div class="flex flex-col gap-2">
+        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">2. Kết nối (JOIN)</div>
+        <div onclick="selectStep('join', 'HASH MATCH (INNER JOIN)', 'Kết nối theo khóa: o.customer_id = c.id')" 
+             class="pipeline-step w-52 p-3 rounded-lg bg-gradient-to-b from-blue-950/60 to-[var(--ide-bg-subtle)] border-2 border-blue-500 shadow-lg cursor-pointer">
+          <div class="flex items-center justify-between mb-1">
+            <span class="px-1.5 py-0.5 rounded bg-blue-600 text-white font-extrabold text-[9px]">INNER JOIN</span>
+            <span class="text-blue-300 text-[10px]">Cost: 32%</span>
+          </div>
+          <div class="font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-link text-blue-400"></i>
+            <span>Hash Match Join</span>
+          </div>
+          <div class="font-mono text-[10px] text-gray-300 mt-1">o.customer_id = c.id</div>
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="text-gray-600 flex flex-col items-center">
+        <i class="fa-solid fa-arrow-right text-base text-cyan-500"></i>
+      </div>
+
+      <!-- STAGE 3: FILTER (WHERE) -->
+      <div class="flex flex-col gap-2">
+        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">3. Bộ lọc (WHERE)</div>
+        <div onclick="selectStep('filter', 'FILTER OPERATOR', 'Lọc điều kiện: o.status = active và created_at >= 2026-01-01')" 
+             class="pipeline-step w-52 p-3 rounded-lg bg-[var(--ide-bg-subtle)] border border-cyan-500/60 shadow-md cursor-pointer">
+          <div class="flex items-center justify-between mb-1">
+            <span class="px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 font-bold text-[9px]">WHERE FILTER</span>
+            <span class="text-cyan-400 text-[10px]">Cost: 14%</span>
+          </div>
+          <div class="font-bold text-gray-100 flex items-center gap-1.5">
+            <i class="fa-solid fa-filter text-cyan-400"></i>
+            <span>Điều kiện lọc</span>
+          </div>
+          <div class="font-mono text-[10px] text-gray-300 mt-1">o.status = 'active'<br>&amp;&amp; created_at &gt;= '2026-01-01'</div>
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="text-gray-600 flex flex-col items-center">
+        <i class="fa-solid fa-arrow-right text-base text-purple-500"></i>
+      </div>
+
+      <!-- STAGE 4: AGGREGATE (GROUP BY) -->
+      <div class="flex flex-col gap-2">
+        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">4. Gom nhóm (GROUP BY)</div>
+        <div onclick="selectStep('aggregate', 'STREAM AGGREGATE', 'Tính toán tổng hợp: SUM(amount), COUNT(id)')" 
+             class="pipeline-step w-52 p-3 rounded-lg bg-[var(--ide-bg-subtle)] border border-purple-500/60 shadow-md cursor-pointer">
+          <div class="flex items-center justify-between mb-1">
+            <span class="px-1.5 py-0.5 rounded bg-purple-900/60 text-purple-300 font-bold text-[9px]">AGGREGATION</span>
+            <span class="text-purple-400 text-[10px]">Cost: 28%</span>
+          </div>
+          <div class="font-bold text-gray-100 flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator text-purple-400"></i>
+            <span>Gom nhóm &amp; Tính tổng</span>
+          </div>
+          <div class="font-mono text-[10px] text-gray-300 mt-1">GROUP BY c.id, c.name<br>SUM(amount), COUNT(id)</div>
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="text-gray-600 flex flex-col items-center">
+        <i class="fa-solid fa-arrow-right text-base text-amber-500"></i>
+      </div>
+
+      <!-- STAGE 5: SORT & PROJECTION -->
+      <div class="flex flex-col gap-2">
+        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">5. Đầu ra (OUTPUT)</div>
+        <div onclick="selectStep('output', 'TOP & ORDER BY', 'Sắp xếp total_revenue DESC và lấy TOP 50 dòng')" 
+             class="pipeline-step w-52 p-3 rounded-lg bg-[var(--ide-bg-subtle)] border border-amber-500/60 shadow-md cursor-pointer">
+          <div class="flex items-center justify-between mb-1">
+            <span class="px-1.5 py-0.5 rounded bg-amber-900/60 text-amber-300 font-bold text-[9px]">TOP 50 ROWS</span>
+            <span class="text-amber-400 text-[10px]">Cost: 26%</span>
+          </div>
+          <div class="font-bold text-gray-100 flex items-center gap-1.5">
+            <i class="fa-solid fa-table-list text-amber-400"></i>
+            <span>Sắp xếp &amp; Trả về</span>
+          </div>
+          <div class="font-mono text-[10px] text-gray-300 mt-1">ORDER BY total_revenue DESC<br>Trực xuất 4 cột đầu ra</div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- 4. BOTTOM OPERATOR DETAIL INSPECTOR -->
+  <footer class="h-16 px-4 bg-[var(--ide-bg-subtle)] border-t border-[var(--ide-border)] flex items-center justify-between flex-shrink-0">
+    <div class="flex items-center gap-4">
+      <div class="w-8 h-8 rounded bg-blue-900/40 text-blue-400 flex items-center justify-center border border-blue-700/40">
+        <i class="fa-solid fa-circle-info text-sm"></i>
+      </div>
+      <div>
+        <div id="inspectorStepTitle" class="text-xs font-bold text-white">HASH MATCH (INNER JOIN)</div>
+        <div id="inspectorStepDesc" class="text-[11px] text-gray-400">Kết nối logic theo điều kiện: o.customer_id = c.id · Chi phí ước tính: 32% toàn truy vấn</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 text-xs">
+      <div class="px-3 py-1 bg-[var(--ide-bg-editor)] rounded border border-[var(--ide-border)] text-gray-300 font-mono">
+        Estimated Rows: <strong class="text-emerald-400">89,210</strong>
+      </div>
+      <div class="px-3 py-1 bg-[var(--ide-bg-editor)] rounded border border-[var(--ide-border)] text-gray-300 font-mono">
+        Subtree Cost: <strong class="text-blue-400">0.4281</strong>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function selectStep(id, title, desc) {
+      document.getElementById('inspectorStepTitle').innerText = title;
+      document.getElementById('inspectorStepDesc').innerText = desc;
+    }
+
+    function visualizeQuery() {
+      alert("Đang phân tích cú pháp câu lệnh SQL và vẽ lại sơ đồ dòng dữ liệu (Query Pipeline)...");
+    }
+
+    function copySql() {
+      alert("Đã sao chép câu lệnh SQL vào clipboard!");
+    }
+
+    function loadPreset(val) {
+      alert(`Đã nạp câu lệnh mẫu: ${val}`);
+    }
+  </script>
+</body>
+</html>
+

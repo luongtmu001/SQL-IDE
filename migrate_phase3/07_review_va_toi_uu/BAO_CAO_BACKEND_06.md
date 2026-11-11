@@ -43,3 +43,4 @@
    - Sử dụng `emptyState.setMessage(String)` thay vì `emptyState.setDescription(String)`.
 3. **Execution Plan Async Callback:**
    - `DesktopExecutionPlanService.getInstance().getExecutionPlanAsync` nhận các tham số `(connectionName, database, schema, sql, planType, callback)` và yêu cầu callback `onStart(String planType, String dialect)`. Mã đã được cập nhật chuẩn theo phương thức này.
+

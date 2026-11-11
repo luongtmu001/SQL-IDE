@@ -17,6 +17,13 @@ public final class ConfirmDialog {
     public static boolean show(Window owner, String title, String message, String detail,
                                String actionText, boolean destructive) {
         boolean[] result = {false};
+        DialogChrome chrome = build(owner, title, message, detail, actionText, destructive, () -> result[0] = true);
+        chrome.showAndWait();
+        return result[0];
+    }
+
+    static DialogChrome build(Window owner, String title, String message, String detail,
+                              String actionText, boolean destructive, Runnable onOk) {
         DialogChrome chrome = DialogChrome.create(owner, title, destructive ? "fth-alert-triangle" : "fth-help-circle");
         if (destructive) chrome.iconStyle("danger");
 
@@ -35,11 +42,10 @@ public final class ConfirmDialog {
         Button ok = destructive ? DialogChrome.danger(actionText) : DialogChrome.primary(actionText);
         cancel.setOnAction(e -> chrome.close());
         ok.setOnAction(e -> {
-            result[0] = true;
+            if (onOk != null) onOk.run();
             chrome.close();
         });
         chrome.content(box).footer(null, cancel, ok).size(420, -1);
-        chrome.showAndWait();
-        return result[0];
+        return chrome;
     }
 }

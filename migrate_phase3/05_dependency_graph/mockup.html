@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dependency Graph Mockup — SQL IDE Desktop</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --ide-bg-base: #18181b;
+      --ide-bg-subtle: #202026;
+      --ide-bg-editor: #121215;
+      --ide-border: #2e2e38;
+      --ide-border-subtle: #272730;
+      --ide-text-main: #f4f4f5;
+      --ide-text-muted: #a1a1aa;
+      --ide-accent: #3b82f6;
+      --ide-font-mono: 'JetBrains Mono', Consolas, 'Fira Code', monospace;
+      --ide-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      font-family: var(--ide-font-sans);
+      background-color: var(--ide-bg-base);
+      color: var(--ide-text-main);
+      user-select: none;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Grid pattern for graph background */
+    .graph-grid {
+      background-image: 
+        radial-gradient(circle, #2e2e38 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* Node hover effects */
+    .graph-node {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .graph-node:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 15px 2px rgba(59, 130, 246, 0.4);
+    }
+  </style>
+</head>
+<body class="text-xs">
+
+  <!-- 1. TOP TOOLBAR & CONTROLS -->
+  <header class="h-11 px-3 bg-[var(--ide-bg-subtle)] border-b border-[var(--ide-border)] flex items-center justify-between gap-3 flex-shrink-0">
+    
+    <!-- Object Picker -->
+    <div class="flex items-center gap-2">
+      <span class="text-gray-400 font-medium">Đối tượng gốc:</span>
+      <div class="flex items-center bg-[var(--ide-bg-editor)] border border-[var(--ide-border)] rounded px-2 h-7 gap-2">
+        <i class="fa-solid fa-table text-blue-400 text-xs"></i>
+        <select class="bg-transparent text-gray-100 font-semibold outline-none text-xs">
+          <option selected>dbo.orders (TABLE)</option>
+          <option>dbo.customers (TABLE)</option>
+          <option>dbo.v_customer_orders (VIEW)</option>
+          <option>dbo.usp_close_period (PROC)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Direction Toggles -->
+    <div class="flex items-center bg-[var(--ide-bg-editor)] p-0.5 rounded border border-[var(--ide-border)]">
+      <button onclick="setDirection('both')" id="dirBoth" class="h-6 px-2.5 rounded bg-blue-600 text-white font-medium flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-arrows-left-right text-[10px]"></i>
+        <span>Cả hai chiều</span>
+      </button>
+      <button onclick="setDirection('depends')" id="dirDepends" class="h-6 px-2.5 rounded text-gray-400 hover:text-white flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-arrow-left text-[10px]"></i>
+        <span>Phụ thuộc vào (Depends On)</span>
+      </button>
+      <button onclick="setDirection('referenced')" id="dirReferenced" class="h-6 px-2.5 rounded text-gray-400 hover:text-white flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        <span>Được dùng bởi (Referenced By)</span>
+      </button>
+    </div>
+
+    <!-- Depth & Layout -->
+    <div class="flex items-center gap-2 text-gray-300">
+      <span class="text-[11px] text-gray-400">Độ sâu:</span>
+      <select class="h-7 px-2 bg-[var(--ide-bg-editor)] border border-[var(--ide-border)] rounded text-gray-200 outline-none">
+        <option>Cấp 1</option>
+        <option selected>Cấp 2 (Khuyên dùng)</option>
+        <option>Cấp 3</option>
+        <option>Tất cả</option>
+      </select>
+
+      <span class="text-gray-600">|</span>
+
+      <select class="h-7 px-2 bg-[var(--ide-bg-editor)] border border-[var(--ide-border)] rounded text-gray-200 outline-none">
+        <option selected>Hierarchical (Trái sang Phải)</option>
+        <option>Hierarchical (Trên xuống Dưới)</option>
+        <option>Force Directed (Lưới tự do)</option>
+      </select>
+    </div>
+
+    <!-- Canvas Navigation Actions -->
+    <div class="flex items-center gap-1.5">
+      <button class="w-7 h-7 rounded bg-[var(--ide-bg-editor)] hover:bg-gray-700 border border-[var(--ide-border)] text-gray-300 flex items-center justify-center transition" title="Phóng to">
+        <i class="fa-solid fa-plus text-[10px]"></i>
+      </button>
+      <button class="w-7 h-7 rounded bg-[var(--ide-bg-editor)] hover:bg-gray-700 border border-[var(--ide-border)] text-gray-300 flex items-center justify-center transition" title="Thu nhỏ">
+        <i class="fa-solid fa-minus text-[10px]"></i>
+      </button>
+      <button class="w-7 h-7 rounded bg-[var(--ide-bg-editor)] hover:bg-gray-700 border border-[var(--ide-border)] text-gray-300 flex items-center justify-center transition" title="Căn vừa màn hình (Fit to Screen)">
+        <i class="fa-solid fa-compress text-[10px]"></i>
+      </button>
+      <button class="h-7 px-2.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium flex items-center gap-1.5 ml-1 transition" title="Xuất ảnh sơ đồ">
+        <i class="fa-solid fa-download text-[10px]"></i>
+        <span>Xuất PNG</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. MAIN GRAPH CANVAS & IMPACT SIDEBAR -->
+  <main class="flex-1 flex overflow-hidden">
+    
+    <!-- GRAPH CANVAS (SVG + INTERACTIVE NODES) -->
+    <div class="flex-1 relative graph-grid bg-[var(--ide-bg-editor)] overflow-hidden cursor-grab active:cursor-grabbing">
+      
+      <!-- SVG Connecting Links Layer -->
+      <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 1;">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
+          </marker>
+          <marker id="arrow-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+          </marker>
+          <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+          </marker>
+        </defs>
+
+        <!-- Upstream Link: customers -> orders (FK) -->
+        <path d="M 230 250 C 310 250, 340 250, 420 250" fill="none" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="325" y="240" fill="#93c5fd" font-size="10" font-family="monospace">FK_orders_customer</text>
+
+        <!-- Downstream Link 1: orders -> v_customer_orders -->
+        <path d="M 600 230 C 680 230, 700 130, 780 130" fill="none" stroke="#06b6d4" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="690" y="165" fill="#67e8f9" font-size="10" font-family="monospace">SELECT</text>
+
+        <!-- Downstream Link 2: orders -> v_monthly_revenue -->
+        <path d="M 600 250 C 680 250, 700 250, 780 250" fill="none" stroke="#06b6d4" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="690" y="240" fill="#67e8f9" font-size="10" font-family="monospace">GROUP BY</text>
+
+        <!-- Downstream Link 3: orders -> usp_close_period -->
+        <path d="M 600 270 C 680 270, 700 370, 780 370" fill="none" stroke="#a855f7" stroke-width="2" marker-end="url(#arrow-purple)" />
+        <text x="690" y="335" fill="#d8b4fe" font-size="10" font-family="monospace">UPDATE DML</text>
+
+        <!-- Downstream Link 4: orders -> trg_orders_audit -->
+        <path d="M 510 300 C 510 400, 510 430, 510 460" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="520" y="390" fill="#fcd34d" font-size="10" font-family="monospace">AFTER INSERT/UPDATE</text>
+      </svg>
+
+      <!-- HTML Nodes Layer -->
+      <div class="absolute inset-0 w-full h-full pointer-events-auto" style="z-index: 2;">
+        
+        <!-- UPSTREAM NODE: dbo.customers -->
+        <div onclick="selectGraphNode('dbo.customers', 'TABLE', 'Bảng khách hàng chính')" 
+             class="graph-node absolute top-[215px] left-[60px] w-44 bg-[var(--ide-bg-base)] border border-blue-500/50 rounded-lg shadow-lg p-2.5 cursor-pointer">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-300 font-bold text-[9px]">TABLE</span>
+            <span class="text-gray-500 text-[10px]">12,450 rows</span>
+          </div>
+          <div class="font-bold text-gray-100 flex items-center gap-1.5">
+            <i class="fa-solid fa-table text-blue-400"></i>
+            <span>dbo.customers</span>
+          </div>
+          <div class="text-[10px] text-gray-400 mt-1">Cung cấp ID cho khóa ngoại</div>
+        </div>
+
+        <!-- ROOT NODE: dbo.orders (Active Target) -->
+        <div onclick="selectGraphNode('dbo.orders', 'TABLE', 'Bảng đơn hàng trung tâm')" 
+             class="graph-node absolute top-[200px] left-[420px] w-48 bg-gradient-to-b from-blue-950/80 to-[var(--ide-bg-base)] border-2 border-blue-500 rounded-lg shadow-2xl p-3 cursor-pointer ring-4 ring-blue-500/20">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="px-2 py-0.5 rounded bg-blue-600 text-white font-extrabold text-[9px] uppercase tracking-wide">Root Target</span>
+            <span class="text-blue-300 font-mono text-[10px]">89,210 rows</span>
+          </div>
+          <div class="font-extrabold text-white text-sm flex items-center gap-2">
+            <i class="fa-solid fa-table text-blue-400"></i>
+            <span>dbo.orders</span>
+          </div>
+          <div class="text-[10px] text-gray-300 mt-1 flex items-center gap-1">
+            <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+            <span>6 đối tượng phụ thuộc</span>
+          </div>
+        </div>
+
+        <!-- DOWNSTREAM NODE 1: dbo.v_customer_orders -->
+        <div onclick="selectGraphNode('dbo.v_customer_orders', 'VIEW', 'View danh sách đơn hàng kèm khách')" 
+             class="graph-node absolute top-[95px] left-[780px] w-48 bg-[var(--ide-bg-base)] border border-cyan-500/50 rounded-lg shadow-lg p-2.5 cursor-pointer">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 font-bold text-[9px]">VIEW</span>
+            <i class="fa-solid fa-eye text-cyan-400 text-xs"></i>
+          </div>
+          <div class="font-bold text-gray-100">dbo.v_customer_orders</div>
+          <div class="text-[10px] text-gray-400 mt-1">Sử dụng: o.id, o.amount, o.status</div>
+        </div>
+
+        <!-- DOWNSTREAM NODE 2: dbo.v_monthly_revenue -->
+        <div onclick="selectGraphNode('dbo.v_monthly_revenue', 'VIEW', 'View doanh thu tổng hợp theo tháng')" 
+             class="graph-node absolute top-[215px] left-[780px] w-48 bg-[var(--ide-bg-base)] border border-cyan-500/50 rounded-lg shadow-lg p-2.5 cursor-pointer">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 font-bold text-[9px]">VIEW</span>
+            <i class="fa-solid fa-chart-pie text-cyan-400 text-xs"></i>
+          </div>
+          <div class="font-bold text-gray-100">dbo.v_monthly_revenue</div>
+          <div class="text-[10px] text-gray-400 mt-1">SUM(amount), COUNT(id)</div>
+        </div>
+
+        <!-- DOWNSTREAM NODE 3: dbo.usp_close_period -->
+        <div onclick="selectGraphNode('dbo.usp_close_period', 'PROCEDURE', 'Thủ tục chốt kỳ kinh doanh')" 
+             class="graph-node absolute top-[335px] left-[780px] w-48 bg-[var(--ide-bg-base)] border border-purple-500/50 rounded-lg shadow-lg p-2.5 cursor-pointer">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="px-1.5 py-0.5 rounded bg-purple-900/60 text-purple-300 font-bold text-[9px]">PROCEDURE</span>
+            <i class="fa-solid fa-microchip text-purple-400 text-xs"></i>
+          </div>
+          <div class="font-bold text-gray-100">dbo.usp_close_period</div>
+          <div class="text-[10px] text-gray-400 mt-1">Cập nhật: status = 'closed'</div>
+        </div>
+
+        <!-- DOWNSTREAM NODE 4: dbo.trg_orders_audit -->
+        <div onclick="selectGraphNode('dbo.trg_orders_audit', 'TRIGGER', 'Trigger ghi nhật ký đơn hàng')" 
+             class="graph-node absolute top-[460px] left-[420px] w-48 bg-[var(--ide-bg-base)] border border-amber-500/50 rounded-lg shadow-lg p-2.5 cursor-pointer">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="px-1.5 py-0.5 rounded bg-amber-900/60 text-amber-300 font-bold text-[9px]">TRIGGER</span>
+            <i class="fa-solid fa-bolt text-amber-400 text-xs"></i>
+          </div>
+          <div class="font-bold text-gray-100">dbo.trg_orders_audit</div>
+          <div class="text-[10px] text-gray-400 mt-1">Bắt sự kiện INSERT, UPDATE</div>
+        </div>
+
+      </div>
+
+      <!-- Minimap Simulation Box (Bottom Left) -->
+      <div class="absolute bottom-3 left-3 w-36 h-24 bg-[var(--ide-bg-base)]/90 border border-[var(--ide-border)] rounded shadow-md p-1.5 flex flex-col justify-between pointer-events-none" style="z-index: 10;">
+        <span class="text-[9px] text-gray-500 font-semibold uppercase">Minimap</span>
+        <div class="relative w-full h-16 border border-gray-700/50 rounded bg-[var(--ide-bg-editor)]">
+          <div class="absolute top-5 left-10 w-8 h-5 bg-blue-500/40 rounded border border-blue-400"></div>
+          <div class="absolute top-2 left-20 w-6 h-4 bg-cyan-500/40 rounded"></div>
+          <div class="absolute top-5 left-20 w-6 h-4 bg-cyan-500/40 rounded"></div>
+          <div class="absolute top-8 left-20 w-6 h-4 bg-purple-500/40 rounded"></div>
+          <div class="absolute top-10 left-10 w-6 h-4 bg-amber-500/40 rounded"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: IMPACT ANALYSIS & INSPECTOR SIDEBAR -->
+    <aside class="w-80 border-l border-[var(--ide-border)] bg-[var(--ide-bg-base)] flex flex-col flex-shrink-0 overflow-y-auto">
+      
+      <!-- Panel Header -->
+      <div class="p-3 border-b border-[var(--ide-border)] bg-[var(--ide-bg-subtle)]">
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Chi tiết & Phân tích Tác động</div>
+        <div id="inspectorTitle" class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-table text-blue-400 text-sm"></i>
+          <span>dbo.orders</span>
+        </div>
+        <div id="inspectorDesc" class="text-xs text-gray-400 mt-0.5">Bảng đơn hàng trung tâm trong CSDL</div>
+      </div>
+
+      <!-- Risk Assessment Card -->
+      <div class="p-3 border-b border-[var(--ide-border-subtle)] space-y-2">
+        <div class="p-2.5 rounded bg-rose-950/40 border border-rose-600/40 text-rose-200">
+          <div class="flex items-center gap-2 font-bold text-rose-400 mb-1">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>MỨC ĐỘ RỦI RO: CAO (HIGH IMPACT)</span>
+          </div>
+          <p class="text-[11px] leading-relaxed text-gray-300">
+            Nếu thay đổi tên cột hoặc xóa bảng này, sẽ có <strong class="text-white">6 đối tượng phụ thuộc</strong> bị ảnh hưởng và có thể phát sinh lỗi runtime!
+          </p>
+        </div>
+      </div>
+
+      <!-- Dependents Breakdown -->
+      <div class="p-3 border-b border-[var(--ide-border-subtle)] space-y-2 flex-1">
+        <div class="font-semibold text-gray-300 text-xs">DANH SÁCH ĐỐI TƯỢNG PHỤ THUỘC (6)</div>
+        
+        <div class="space-y-1.5">
+          <div class="p-2 rounded bg-[var(--ide-bg-subtle)] border border-[var(--ide-border-subtle)] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-eye text-cyan-400"></i>
+              <span class="text-gray-200 font-medium">dbo.v_customer_orders</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 text-[10px]">VIEW</span>
+          </div>
+
+          <div class="p-2 rounded bg-[var(--ide-bg-subtle)] border border-[var(--ide-border-subtle)] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-chart-pie text-cyan-400"></i>
+              <span class="text-gray-200 font-medium">dbo.v_monthly_revenue</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 text-[10px]">VIEW</span>
+          </div>
+
+          <div class="p-2 rounded bg-[var(--ide-bg-subtle)] border border-[var(--ide-border-subtle)] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-microchip text-purple-400"></i>
+              <span class="text-gray-200 font-medium">dbo.usp_close_period</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 text-[10px]">PROC</span>
+          </div>
+
+          <div class="p-2 rounded bg-[var(--ide-bg-subtle)] border border-[var(--ide-border-subtle)] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-bolt text-amber-400"></i>
+              <span class="text-gray-200 font-medium">dbo.trg_orders_audit</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 text-[10px]">TRIGGER</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="p-3 bg-[var(--ide-bg-subtle)] border-t border-[var(--ide-border)] space-y-2">
+        <button onclick="viewDdl()" class="w-full h-7 rounded bg-[var(--ide-bg-editor)] hover:bg-gray-700 text-gray-200 border border-[var(--ide-border)] font-medium flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-code text-blue-400"></i>
+          <span>Xem mã DDL đối tượng</span>
+        </button>
+        <button onclick="openInQueryTab()" class="w-full h-7 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium flex items-center justify-center gap-1.5 shadow transition">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span>Mở trong Tab Truy vấn</span>
+        </button>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <script>
+    function setDirection(dir) {
+      alert(`Đã đổi chế độ vẽ quan hệ: ${dir}`);
+    }
+
+    function selectGraphNode(name, type, desc) {
+      document.getElementById('inspectorTitle').innerHTML = `<i class="fa-solid fa-cube text-blue-400 text-sm"></i> <span>${name}</span>`;
+      document.getElementById('inspectorDesc').innerText = `${type} — ${desc}`;
+    }
+
+    function viewDdl() {
+      alert("Đang hiển thị mã DDL của đối tượng đang chọn trong Monaco!");
+    }
+
+    function openInQueryTab() {
+      alert("Đang mở đối tượng vào một Tab Query Console mới!");
+    }
+  </script>
+</body>
+</html>
+

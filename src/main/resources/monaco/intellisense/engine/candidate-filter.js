@@ -76,7 +76,7 @@
             return candidateName.toLowerCase().startsWith(query.toLowerCase());
         }
 
-        matchSubWord(candidateName, query) {
+        matchSubWord(candidateName, query, item = null) {
             if (!candidateName || !query) return null;
             const rawQuery = String(query).trim();
             if (rawQuery.length < 2) return null; // Single-char queries are prefix matches
@@ -97,7 +97,9 @@
                 return null;
             }
 
-            const subWords = CandidateFilter.splitSubWords(cleanCandidate);
+            const subWords = (item && item._subWords)
+                ? item._subWords
+                : (item ? (item._subWords = CandidateFilter.splitSubWords(cleanCandidate)) : CandidateFilter.splitSubWords(cleanCandidate));
             if (!subWords || subWords.length < 2) return null;
 
             // Recursive search: partition query across sub-word prefixes
@@ -306,7 +308,7 @@
 
                 // 2b. Phase 8: Sub-Word Match (PascalCase / camelCase / snake_case)
                 // e.g. 'cid' -> 'CustomerId', 'odi' -> 'order_detail_id', 'co' -> 'CustomerOrder'
-                const subwordScore = this.matchSubWord(name, rawQuery);
+                const subwordScore = this.matchSubWord(name, rawQuery, item);
                 if (subwordScore !== null && subwordScore > 0) {
                     subwordMatches.push({
                         ...item,

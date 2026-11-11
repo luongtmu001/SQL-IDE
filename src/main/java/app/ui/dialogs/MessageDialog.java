@@ -41,7 +41,7 @@ public final class MessageDialog {
         return ok[0];
     }
 
-    private static DialogChrome build(Window owner, Kind kind, String title, String header, String content,
+    static DialogChrome build(Window owner, Kind kind, String title, String header, String content,
                                       Node extra, Runnable onOk, boolean danger, String okText) {
         String iconLiteral = switch (kind) {
             case SUCCESS -> "fth-check-circle";
@@ -105,6 +105,8 @@ public final class MessageDialog {
             left = new Node[]{copy};
         }
 
+        chrome.content(body).size(longText || extra != null ? 520 : 420, -1);
+
         if (onOk != null) {
             Button cancel = DialogChrome.cancel("Hủy");
             String okLabel = okText != null ? okText : "Đồng ý";
@@ -121,7 +123,6 @@ public final class MessageDialog {
             ok.setOnAction(e -> chrome.close());
             chrome.footer(left, ok);
         }
-        chrome.content(body).size(longText || extra != null ? 520 : 420, -1);
         return chrome;
     }
 }

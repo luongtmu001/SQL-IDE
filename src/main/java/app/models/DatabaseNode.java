@@ -43,6 +43,9 @@ public class DatabaseNode {
     }
 
     public DatabaseNode(String name, DatabaseNodeType type, String subText, String iconLiteral, boolean isPrimaryKey, boolean isForeignKey) {
+        if (name != null && (type == DatabaseNodeType.PROCEDURE || type == DatabaseNodeType.FUNCTION) && name.contains(";")) {
+            name = name.substring(0, name.indexOf(';')).trim();
+        }
         this.name = name;
         this.type = type;
         this.subText = subText;

@@ -2,9 +2,10 @@
 # Đặc tả màn hình [Tên màn hình]
 
 - Screen ID: `SCR-AREA-001`
-- Source: Python + PyWebView
-- Target: JavaFX
-- Status: `discovered`
+- Source: LLTool (Python + PyWebView), `file`
+- Target: JavaFX, `file / class`
+- Status: `not_started / analyzed / designed / implemented_mock / implemented_real / verified / reviewed / approved / deferred`
+- Backend area: `none / connections / metadata / query / plan`
 - Evidence confidence: `observed / code_verified / inferred / unknown`
 - Last inspected: `YYYY-MM-DD`
 
@@ -69,5 +70,8 @@ List each unknown, impact, evidence checked, and whether it blocks implementatio
 - [ ] Interactions mapped.
 - [ ] Relevant states represented.
 - [ ] Resize behavior reviewed.
+- [ ] Đúng với cả `panelStyle` = `rounded` và `flat` (R-UI-01).
+- [ ] Đúng với theme sáng và tối.
+- [ ] Có kiểm tra theo `docs/performance-rules.md`.
 - [ ] Mapping completed.
 - [ ] User approved specification.

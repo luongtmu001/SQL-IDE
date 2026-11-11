@@ -35,6 +35,12 @@ public class ColumnDesignViewModel {
     private final StringProperty comment = new SimpleStringProperty(null);
 
     private final BooleanProperty deleted = new SimpleBooleanProperty(false);
+    /** Row state codes held by {@link #statusMarkerProperty()}. Internal codes: the grid draws an icon for each. */
+    public static final String STATUS_ADDED = "+";
+    public static final String STATUS_MODIFIED = "~";
+    public static final String STATUS_RENAMED = "↻"; // ui-lint:allow internal state code, never shown as text
+    public static final String STATUS_DELETED = "−"; // ui-lint:allow internal state code, never shown as text
+
     private final StringProperty statusMarker = new SimpleStringProperty("");
     private ColumnDesignSnapshot initialSnapshot;
 
@@ -221,13 +227,13 @@ public class ColumnDesignViewModel {
 
     public void updateStatusMarker() {
         if (deleted.get()) {
-            statusMarker.set("−");
+            statusMarker.set(STATUS_DELETED);
         } else if (originalName == null || originalState == null) {
-            statusMarker.set("+");
+            statusMarker.set(STATUS_ADDED);
         } else if (!originalName.equalsIgnoreCase(name.get())) {
-            statusMarker.set("↻");
+            statusMarker.set(STATUS_RENAMED);
         } else if (isModifiedFromOriginal()) {
-            statusMarker.set("~");
+            statusMarker.set(STATUS_MODIFIED);
         } else {
             statusMarker.set("");
         }

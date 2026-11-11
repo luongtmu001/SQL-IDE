@@ -73,15 +73,16 @@ public final class ObjectScriptService {
         if (type == null) throw new IllegalStateException("Loại cơ sở dữ liệu chưa được hỗ trợ.");
         String effSchema = schema != null && !schema.isBlank() ? schema
                 : (type == DatabaseType.SQLSERVER ? "dbo" : type == DatabaseType.POSTGRESQL ? "public" : null);
+        String cleanName = name != null && name.contains(";") ? name.substring(0, name.indexOf(';')).trim() : name;
         try (DatabaseConnection dc = DesktopMetadataService.getInstance().explorerConnection(profile, catalog)) {
             Connection c = dc.getRawJdbcConnection();
             return switch (action) {
-                case CREATE -> create(c, type, catalog, effSchema, name, parentTable, kind);
-                case ALTER -> alter(c, type, catalog, effSchema, name, parentTable, kind);
-                case DROP -> drop(c, type, effSchema, name, parentTable, kind);
-                case DROP_AND_CREATE -> drop(c, type, effSchema, name, parentTable, kind)
+                case CREATE -> create(c, type, catalog, effSchema, cleanName, parentTable, kind);
+                case ALTER -> alter(c, type, catalog, effSchema, cleanName, parentTable, kind);
+                case DROP -> drop(c, type, effSchema, cleanName, parentTable, kind);
+                case DROP_AND_CREATE -> drop(c, type, effSchema, cleanName, parentTable, kind)
                         + (type == DatabaseType.SQLSERVER ? "\nGO\n\n" : "\n\n")
-                        + create(c, type, catalog, effSchema, name, parentTable, kind);
+                        + create(c, type, catalog, effSchema, cleanName, parentTable, kind);
             };
         }
     }

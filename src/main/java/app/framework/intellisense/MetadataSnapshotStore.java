@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -58,7 +59,7 @@ public final class MetadataSnapshotStore {
 
     private static final Pattern OBJECT_DDL = Pattern.compile(
             "\\b(?:CREATE|ALTER|DROP)\\s+(?:OR\\s+(?:ALTER|REPLACE)\\s+)?(?:MATERIALIZED\\s+|FOREIGN\\s+|UNLOGGED\\s+)?"
-                    + "(?:TABLE|VIEW|PROC|PROCEDURE|FUNCTION|TYPE|SYNONYM|SEQUENCE|SCHEMA|DATABASE)\\b"
+                    + "(?:TABLE|VIEW|PROC|PROCEDURE|FUNCTION|TRIGGER|TYPE|SYNONYM|SEQUENCE|SCHEMA|DATABASE)\\b"
                     + "(?!\\s+(?:IF\\s+(?:NOT\\s+)?EXISTS\\s+)?[#@])"
                     + "|\\bsp_rename\\b",
             Pattern.CASE_INSENSITIVE);
@@ -253,15 +254,43 @@ public final class MetadataSnapshotStore {
 
     private static Names sqlServerNames(Connection c) throws Exception {
         Map<String, List<Map<String, Object>>> objects = new LinkedHashMap<>();
+        List<Map<String, Object>> allSynonyms = new ArrayList<>();
         query(c, NAMES_TIMEOUT_S, "SELECT s.name, o.name, o.type, sy.base_object_name FROM sys.objects o "
                 + "JOIN sys.schemas s ON s.schema_id = o.schema_id LEFT JOIN sys.synonyms sy ON sy.object_id = o.object_id "
-                + "WHERE o.is_ms_shipped = 0 AND o.type IN ('U','V','P','PC','FN','IF','TF','FS','FT','SO','SN') "
+                + "WHERE (o.is_ms_shipped = 0 OR s.name NOT IN ('sys', 'information_schema')) "
+                + "AND o.type IN ('U','V','P','PC','FN','IF','TF','FS','FT','SO','SN','TR','TA','X','AF') "
                 + "ORDER BY s.name, o.name", rs -> {
             // columns in order: the SQL Server driver reads the row as a stream
             String schema = rs.getString(1), name = rs.getString(2), type = rs.getString(3), target = rs.getString(4);
-            objects.computeIfAbsent(lower(schema), k -> new ArrayList<>())
-                    .add(IntellisenseMetadataBridge.object(name, schema, sqlServerKind(type), target));
+            Map<String, Object> obj = IntellisenseMetadataBridge.object(name, schema, sqlServerKind(type), target);
+            objects.computeIfAbsent(lower(schema), k -> new ArrayList<>()).add(obj);
+            if ("SN".equalsIgnoreCase(type != null ? type.trim() : "")) {
+                allSynonyms.add(obj);
+            }
         });
+        // Database-level triggers
+        optional(c, "SELECT tr.name FROM sys.triggers tr WHERE tr.parent_id = 0 ORDER BY tr.name", rs -> {
+            objects.computeIfAbsent("dbo", k -> new ArrayList<>())
+                    .add(IntellisenseMetadataBridge.object(rs.getString(1), "dbo", "trigger", null));
+        });
+        // Global temporary tables in tempdb
+        optional(c, "SELECT t.name FROM tempdb.sys.tables t WHERE t.name LIKE '##%' ORDER BY t.name", rs -> {
+            objects.computeIfAbsent("dbo", k -> new ArrayList<>())
+                    .add(IntellisenseMetadataBridge.object(rs.getString(1), "dbo", "table", null));
+        });
+        // Ensure synonyms from other schemas are also discoverable in dbo (parity with Python OR o.type = 'SN')
+        if (!allSynonyms.isEmpty()) {
+            List<Map<String, Object>> dboList = objects.computeIfAbsent("dbo", k -> new ArrayList<>());
+            Set<String> existingNames = new HashSet<>();
+            for (Map<String, Object> item : dboList) {
+                existingNames.add(lower((String) item.get("name")));
+            }
+            for (Map<String, Object> syn : allSynonyms) {
+                if (existingNames.add(lower((String) syn.get("name")))) {
+                    dboList.add(syn);
+                }
+            }
+        }
         List<String> schemas = strings(c, "SELECT name FROM sys.schemas WHERE schema_id < 16384 ORDER BY name");
         Map<String, List<String>> types = new LinkedHashMap<>();
         optional(c, "SELECT s.name, t.name FROM sys.types t JOIN sys.schemas s ON s.schema_id = t.schema_id "
@@ -283,9 +312,11 @@ public final class MetadataSnapshotStore {
         return switch (type == null ? "" : type.trim()) {
             case "U" -> "table";
             case "V" -> "view";
-            case "P", "PC" -> "procedure";
+            case "P", "PC", "X" -> "procedure";
             case "SO" -> "sequence";
             case "SN" -> "synonym";
+            case "TR", "TA" -> "trigger";
+            case "AF" -> "function";
             default -> "function";
         };
     }
@@ -299,14 +330,16 @@ public final class MetadataSnapshotStore {
                 + "LEFT JOIN (SELECT ic.object_id, ic.column_id FROM sys.index_columns ic "
                 + "  JOIN sys.indexes i ON i.object_id = ic.object_id AND i.index_id = ic.index_id WHERE i.is_primary_key = 1) pk "
                 + "  ON pk.object_id = col.object_id AND pk.column_id = col.column_id "
-                + "WHERE o.is_ms_shipped = 0 AND o.type IN ('U','V','IF','TF','FT') ORDER BY s.name, o.name, col.column_id", rs ->
+                + "WHERE (o.is_ms_shipped = 0 OR s.name NOT IN ('sys', 'information_schema')) "
+                + "AND o.type IN ('U','V','IF','TF','FT') ORDER BY s.name, o.name, col.column_id", rs ->
                 columns.computeIfAbsent(objectKey(rs.getString(1), rs.getString(2)), k -> new ArrayList<>())
                         .add(columnRow(rs.getString(3), rs.getString(4), rs.getBoolean(5), rs.getBoolean(6))));
 
         Map<String, List<Map<String, Object>>> params = new LinkedHashMap<>();
         optional(c, "SELECT s.name, o.name, p.name, TYPE_NAME(p.user_type_id), p.is_output FROM sys.parameters p "
                 + "JOIN sys.objects o ON o.object_id = p.object_id JOIN sys.schemas s ON s.schema_id = o.schema_id "
-                + "WHERE o.is_ms_shipped = 0 AND p.parameter_id > 0 ORDER BY s.name, o.name, p.parameter_id", rs -> {
+                + "WHERE (o.is_ms_shipped = 0 OR s.name NOT IN ('sys', 'information_schema')) "
+                + "AND p.parameter_id > 0 ORDER BY s.name, o.name, p.parameter_id", rs -> {
             String key = objectKey(rs.getString(1), rs.getString(2));
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("name", rs.getString(3));
@@ -342,6 +375,7 @@ public final class MetadataSnapshotStore {
             String kind = switch (rs.getString(3)) {
                 case "v", "m" -> "view";
                 case "S" -> "sequence";
+                case "f" -> "foreign_table";
                 default -> "table";
             };
             objects.computeIfAbsent(lower(schema), k -> new ArrayList<>())
@@ -358,6 +392,14 @@ public final class MetadataSnapshotStore {
                 objects.computeIfAbsent(lower(schema), k -> new ArrayList<>())
                         .add(IntellisenseMetadataBridge.object(name, schema, kind, null));
             }
+        });
+        optional(c, "SELECT n.nspname, tr.tgname FROM pg_catalog.pg_trigger tr "
+                + "JOIN pg_catalog.pg_class cl ON cl.oid = tr.tgrelid "
+                + "JOIN pg_catalog.pg_namespace n ON n.oid = cl.relnamespace "
+                + "WHERE NOT tr.tgisinternal AND " + PG_USER_SCHEMAS + " ORDER BY 1, 2", rs -> {
+            String schema = rs.getString(1), name = rs.getString(2);
+            objects.computeIfAbsent(lower(schema), k -> new ArrayList<>())
+                    .add(IntellisenseMetadataBridge.object(name, schema, "trigger", null));
         });
         List<String> schemas = strings(c, "SELECT n.nspname FROM pg_catalog.pg_namespace n "
                 + "WHERE n.nspname NOT LIKE 'pg_toast%' AND n.nspname NOT LIKE 'pg_temp%' ORDER BY 1");

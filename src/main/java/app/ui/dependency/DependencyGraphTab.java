@@ -75,8 +75,10 @@ public class DependencyGraphTab extends SqlEditorTab {
     private final IconButton btnZoomOut = new IconButton("fth-minus", "Thu nhỏ (Ctrl+-)");
     private final IconButton btnFitScreen = new IconButton("fth-maximize-2", "Căn vừa màn hình (Ctrl+0)");
     private final IconButton btnResetZoom = new IconButton("fth-rotate-ccw", "Reset Zoom về 100%");
-    private final AppButton btnExportPng = new AppButton("Xuất PNG", "fth-download", AppButton.Variant.PRIMARY);
+    private final AppButton btnExportPng = new AppButton("Xuất PNG", "fth-download", AppButton.Variant.DEFAULT);
     private final IconButton btnRefresh = new IconButton("fth-refresh-cw", "Làm mới đồ thị (F5)");
+    private final IconButton btnToggleWindow = new IconButton("fth-external-link", "Mở dạng cửa sổ riêng");
+    private VBox rootContainer;
 
     // UI Controls - Main Canvas & Inspector
     private final StackPane canvasContainer = new StackPane();
@@ -139,7 +141,7 @@ public class DependencyGraphTab extends SqlEditorTab {
 
     private void buildLayout() {
         VBox root = new VBox();
-        root.getStyleClass().addAll("dependency-graph-root");
+        root.getStyleClass().addAll("dependency-graph-root", "workspace-root");
         root.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/dependency-graph.css")).toExternalForm());
 
         // 1. Header Toolbar
@@ -163,7 +165,11 @@ public class DependencyGraphTab extends SqlEditorTab {
         workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
 
         root.getChildren().addAll(header, splitPane, workspaceFooter);
+        this.rootContainer = root;
         setCustomContent(customKey, root);
+
+        btnToggleWindow.setOnAction(e -> app.ui.window.FeatureWindowManager.getInstance().toggleWindow(
+                this, rootContainer, btnToggleWindow, "Dependency Graph", "fth-share-2"));
 
         // Wire Inspector
         graphCanvas.setOnNodeSelected(node -> inspectorPanel.inspectNode(node, activeModel));
@@ -206,14 +212,13 @@ public class DependencyGraphTab extends SqlEditorTab {
         pickerBox.getStyleClass().add("dep-picker-box");
         pickerBox.setAlignment(Pos.CENTER_LEFT);
 
-        FontIcon pickIcon = new FontIcon(objectType.getIconLiteral());
-        pickIcon.setIconSize(13);
+        FontIcon pickIcon = app.ui.components.Icons.of(objectType.getIconLiteral(), app.ui.components.IconScale.MD);
         pickIcon.getStyleClass().add("icon-accent");
 
         Label pickLbl = new Label("Gốc:");
         pickLbl.getStyleClass().add("dep-control-label");
 
-        cbRootObject.setMinWidth(220);
+        cbRootObject.setMinWidth(app.ui.components.UiMetrics.em(16.92));
         cbRootObject.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(RootObjectItem item, boolean empty) {
@@ -223,9 +228,7 @@ public class DependencyGraphTab extends SqlEditorTab {
                     setGraphic(null);
                 } else {
                     setText(item.getDisplayName());
-                    FontIcon icon = new FontIcon(item.type().getIconLiteral());
-                    icon.setIconSize(13);
-                    setGraphic(icon);
+                    setGraphic(app.ui.components.Icons.of(item.type().getIconLiteral(), app.ui.components.IconScale.MD));
                 }
             }
         });
@@ -238,9 +241,7 @@ public class DependencyGraphTab extends SqlEditorTab {
                     setGraphic(null);
                 } else {
                     setText(item.getDisplayName());
-                    FontIcon icon = new FontIcon(item.type().getIconLiteral());
-                    icon.setIconSize(13);
-                    setGraphic(icon);
+                    setGraphic(app.ui.components.Icons.of(item.type().getIconLiteral(), app.ui.components.IconScale.MD));
                 }
             }
         });
@@ -275,7 +276,7 @@ public class DependencyGraphTab extends SqlEditorTab {
         depthLbl.getStyleClass().add("dep-control-label");
 
         cbDepth.getItems().addAll("Cấp 1", "Cấp 2", "Cấp 3", "Tất cả");
-        cbDepth.setMinWidth(80);
+        cbDepth.setMinWidth(app.ui.components.UiMetrics.em(6.15));
         cbDepth.getSelectionModel().select(1);
         cbDepth.setOnAction(e -> {
             int idx = cbDepth.getSelectionModel().getSelectedIndex();
@@ -292,7 +293,7 @@ public class DependencyGraphTab extends SqlEditorTab {
         // Canvas Navigation Buttons
         Label lblZoom = new Label("100%");
         lblZoom.textProperty().bind(graphCanvas.zoomPercentProperty());
-        lblZoom.setStyle("-fx-font-size: 0.8em; -fx-text-fill: -color-fg-muted; -fx-min-width: 38px; -fx-alignment: center;");
+        lblZoom.getStyleClass().add("dep-zoom-label");
 
         btnZoomIn.setOnAction(e -> graphCanvas.zoomIn());
         btnZoomOut.setOnAction(e -> graphCanvas.zoomOut());
@@ -308,8 +309,17 @@ public class DependencyGraphTab extends SqlEditorTab {
         toolbar.addRight(btnResetZoom, WorkspaceToolbar.Priority.LOW);
         toolbar.addRight(btnRefresh);
         toolbar.addRight(btnExportPng);
+        toolbar.addRight(btnToggleWindow);
 
         return toolbar;
+    }
+
+    public VBox getContentRoot() {
+        return rootContainer;
+    }
+
+    public IconButton getToggleWindowButton() {
+        return btnToggleWindow;
     }
 
     private void populateRootObjects() {

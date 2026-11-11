@@ -1,70 +1,61 @@
 ---
 name: java-desktop-ui-designer
-description: Analyze an existing Python/PyWebView desktop application's screens and redesign them as modern JavaFX UI prototypes, with detailed screen, region, component, button, interaction, state, and traceability specifications. Use when migrating or redesigning desktop UI screen-by-screen. Do not integrate backend logic until explicit approval.
+description: Continue the SQL-IDE project, a Java 21 + JavaFX desktop SQL IDE migrated from the Python/PyWebView app LLTool. Use for any work in this repository - fixing or adding screens, wiring real backend logic (Phase 8, Gate D), Python parity checks, IntelliSense/syntax work, reviews and handoff updates. Read HANDOFF.md first; it holds the current done / not-done status.
 ---
 
-# Java Desktop UI Designer
+# SQL-IDE — Java Desktop UI & Migration Skill (v2.0)
 
-## Mission / Nhiệm vụ
+## Nhiệm vụ / Mission
 
-Act as a desktop UI reverse-engineering and JavaFX design specialist. The existing Python/PyWebView application is the source of truth for current functionality and user workflows. Redesign its presentation using a Hybrid Modern Native style: retain professional IDE information architecture while adopting polished modern desktop visuals.
+Tiếp tục dự án **SQL-IDE**: ứng dụng desktop Java 21 + JavaFX 21.0.5, chuyển đổi từ **LLTool** (Python + PyWebView).
 
-Bạn là chuyên gia phân tích ngược giao diện desktop và thiết kế JavaFX. Ứng dụng Python/PyWebView hiện tại là nguồn chuẩn về chức năng và quy trình người dùng. Thiết kế lại theo phong cách Hybrid Modern Native: giữ kiến trúc IDE chuyên nghiệp, đồng thời áp dụng ngôn ngữ hình ảnh desktop hiện đại.
+Dự án **không còn ở giai đoạn dựng prototype**. UI đã xong (Giai đoạn 0–7) và đang tích hợp logic thật (Giai đoạn 8, Gate D đã được duyệt ngày 2026-11-05). Mặc định app chạy với **backend thật, mọi kết nối chỉ đọc**.
 
-## First action / Hành động đầu tiên
+Continue the SQL-IDE project. It is past the prototype stage: the UI exists and real backend integration is under way, read-only by default.
 
-1. Identify the user's requested task: discovery, inventory, screen analysis, design system, prototype, or review.
-2. Read only the corresponding workflow file from `workflows/`.
-3. Read `rules/01-scope-and-guardrails.md` before inspecting or modifying project code.
-4. Do not start implementation if the requested screen has not been analyzed and approved.
+## Hành động đầu tiên / First action
 
-## Mandatory rules / Quy tắc bắt buộc
+1. Đọc `HANDOFF.md`. Đây là nguồn trạng thái mới nhất.
+2. Đọc `rules/01-scope-and-guardrails.md`.
+3. Chạy `git status` và `git worktree list`. Trạng thái trong tài liệu có thể đã cũ.
+4. Xác định loại việc, rồi chỉ đọc workflow tương ứng:
 
-- Existing Python UI is evidence, not a mandate to reproduce web implementation details.
-- Preserve all existing user-visible capabilities and workflows by default.
-- Never infer a button's behavior from its label or icon alone. Trace its event handler and backend call where possible.
-- Separate **observed facts**, **code-derived facts**, **inferences**, and **unknowns**.
-- Record every visible control, including icon-only buttons, menu items, context-menu actions, toolbar actions, and dialog actions.
-- Capture relevant visual states: default, hover, pressed, focused, disabled, loading, selected, expanded/collapsed, empty, and error when applicable.
-- Do not invent missing dimensions, shortcuts, labels, icons, or behavior. Mark unknown values as `unknown` and ask for clarification only when blocking.
-- Use stable IDs and preserve them across Python-to-JavaFX mapping.
-- JavaFX prototype must be runnable and use mock data; no real database connections or production mutations.
-- Do not integrate backend/business logic until the user explicitly approves the UI.
-- Do not perform broad refactors or unrelated technology changes.
+| Việc | Đọc |
+|---|---|
+| Sửa UI của màn hình đã có | `workflows/04-ui-change.md`, `rules/02`, `rules/03`, `rules/04`, `rules/07-ui-consistency-rules.md` |
+| Thêm màn hình mới | `workflows/02-screen-inventory.md`, `workflows/03-screen-analysis.md`, `rules/07-ui-consistency-rules.md` |
+| Nối logic thật, làm tiếp mốc D* | `workflows/06-backend-integration.md`, `rules/06-backend-and-performance.md` |
+| Đối chiếu với Python, IntelliSense, Check Syntax | `workflows/07-python-parity.md`, `templates/parity-diff.template.md` |
+| Khảo sát lại mã Python | `workflows/01-project-discovery.md` |
+| Review, nghiệm thu, cập nhật trạng thái | `workflows/05-review-and-approval.md`, `rules/05-quality-gates.md` |
 
-## Screen-by-screen workflow / Quy trình từng màn hình
+## Quy tắc bắt buộc / Mandatory rules
 
-Follow the workflow files in this order:
+1. **Không sửa dự án Python.** Chỉ đọc: `D:\Luong\NB_Personal\Python\IDE-SQL-Lite_New_Pyweb_Claude`.
+2. **Giữ an toàn dữ liệu.** Không tắt chế độ chỉ đọc, không chạy DML/DDL lên server thật, không ghi mật khẩu vào repo hoặc tài liệu.
+3. **Không chạy `mvnw test` trên `master` khi chưa cách ly dữ liệu test.** Xem cảnh báo A1 trong `HANDOFF.md`.
+4. **Không tự suy diễn hành vi.** Dùng nhãn `observed`, `code_verified`, `inferred`, `unknown`. Không nghiệm thu thay người dùng.
+5. **Mỗi mốc dừng để duyệt.** Im lặng không phải là đồng ý. Không tự commit, merge hay đẩy nhánh khi người dùng chưa yêu cầu.
+6. **Luôn áp dụng R-UI-01** (`appearance.panelStyle`) và không hard-code màu (`rules/03`).
+7. **Luôn áp dụng `docs/performance-rules.md`.** Việc ảnh hưởng tốc độ phải có số đo trước và sau.
+8. **Giữ Monaco trong một WebView dùng chung.** Không đổi công nghệ editor hay lưới khi chưa được duyệt.
+9. **Không làm mất chức năng.** Tính năng chưa làm vẫn hiện mờ với hậu tố `(chưa hỗ trợ)`, không xóa khỏi menu.
+11. **Mọi giao diện tuân theo `rules/07-ui-consistency-rules.md`** (R-UI-10 … R-UI-24): màu theo theme, 4 vùng cỡ chữ, kích thước co giãn theo chữ, icon thật theo cài đặt, vùng resize được. **Hỏi người dùng có cần mockup không trước khi làm giao diện.**
+10. **Không gọi một việc là xong khi chưa kiểm chứng.** Biên dịch được hoặc test mock xanh chưa đủ để kết luận logic thật đã đúng.
 
-1. `workflows/01-project-discovery.md`
-2. `workflows/02-screen-inventory.md`
-3. `workflows/03-screen-analysis.md` — repeat for each screen.
-4. `workflows/04-prototype-implementation.md` — only after screen specification approval.
-5. `workflows/05-review-and-approval.md`
+## Khi sửa code / When changing code
 
-A screen is not ready for JavaFX implementation until its specification has been reviewed and approved.
+- Giữ ID ổn định (`SCR-*`, `REG-*`, `BTN-*`, `INT-*`). Không đánh số lại, không dùng lại ID cũ.
+- Sửa đúng phạm vi, không refactor rộng, kể cả `MainController` và `ResultsController` dù hai file này đã lớn.
+- Mọi lời gọi DB, file, mạng chạy nền, không chạy trên FX thread.
+- Sửa `core/` hoặc `infrastructure/` thì phải cài lại module trước khi chạy app gốc (`HANDOFF.md`, mục 3).
 
-## Required per-screen deliverables / Đầu ra bắt buộc cho mỗi màn hình
+## Báo cáo khi xong / Completion report
 
-Each analyzed screen must have:
+Báo cáo bằng tiếng Việt, gồm:
 
-- `screen-spec.md` — human-readable bilingual specification.
-- `layout.json` — region hierarchy and layout constraints.
-- `components.json` — complete component catalog, including every button and menu item.
-- `interactions.json` — event-to-outcome mapping.
-- `states.json` — visual and behavioral states.
-- `mapping.json` — source-to-target JavaFX traceability.
-- `screenshots/` — full-screen and focused reference captures, where available.
-- `evidence.md` — source files, selectors, handlers, observations, and unresolved questions.
-
-Use templates from `templates/`. Do not omit a deliverable; if information is unavailable, mark it explicitly rather than fabricating it.
-
-## Completion response / Báo cáo hoàn thành
-
-Report in Vietnamese. Include:
-- What was inspected or created.
-- Files created or updated.
-- Coverage counts: screens, regions, components, buttons, interactions.
-- Unknowns and assumptions.
-- Items requiring user approval.
-- Explicit statement that backend logic was not changed, if applicable.
+- Đã làm gì, các file đã tạo hoặc sửa.
+- Đã kiểm chứng thế nào: lệnh, số test, số đo, phần nào do người dùng cần tự kiểm trên máy.
+- Điều chưa rõ, giả định, khác biệt so với Python.
+- Việc đang chờ người dùng duyệt.
+- **Cập nhật `HANDOFF.md`** và tài liệu trạng thái liên quan.

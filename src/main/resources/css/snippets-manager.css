@@ -1,0 +1,135 @@
+/* snippets-manager.css — Styling for SQL Snippets Manager Dialog */
+
+.snippet-dialog-content {
+    -fx-background-color: -color-bg-default;
+}
+
+/* Master (Left column) */
+.snippet-master {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent -color-border-subtle transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.snippet-chip-bar {
+    -fx-padding: 4 8;
+    -fx-spacing: 4;
+}
+
+.snippet-chip {
+    -fx-font-size: 11px;
+    -fx-padding: 2 8;
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-muted;
+    -fx-cursor: hand;
+    -fx-background-radius: 4px;
+}
+
+.snippet-chip:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+}
+
+.snippet-list-view {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.snippet-list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 6 8;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-cursor: hand;
+}
+
+.snippet-list-cell:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.snippet-list-cell:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: transparent transparent -color-border-subtle -color-accent-emphasis;
+    -fx-border-width: 0 0 1 3;
+}
+
+.snippet-cell-prefix {
+    -fx-font-family: "JetBrains Mono", "Cascadia Mono", monospace;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.snippet-cell-desc {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.snippet-cell-body-preview {
+    -fx-font-family: "JetBrains Mono", "Cascadia Mono", monospace;
+    -fx-font-size: 10px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.snippet-cell-badge {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-padding: 1 4;
+    -fx-background-radius: 3px;
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.snippet-star-active {
+    -fx-text-fill: #eab308;
+    -fx-cursor: hand;
+}
+
+.snippet-star-inactive {
+    -fx-text-fill: -color-fg-muted;
+    -fx-cursor: hand;
+}
+
+/* Detail (Right column) */
+.snippet-detail {
+    -fx-background-color: -color-bg-default;
+    -fx-padding: 12 14;
+}
+
+.snippet-field-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.snippet-body-area {
+    -fx-font-family: "JetBrains Mono", "Cascadia Mono", monospace;
+    -fx-font-size: 12px;
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-default;
+}
+
+.snippet-helper-box {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 6 10;
+}
+
+.snippet-helper-text {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* Flat rules for R-UI-01 */
+.flat .snippet-chip {
+    -fx-background-radius: 0;
+}
+
+.snippet-helper-box.flat {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}

@@ -70,7 +70,7 @@
 
 .qf-sql-area {
     -fx-font-family: "JetBrains Mono", "Cascadia Code", "Consolas", monospace;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em;
     -fx-background-color: -ide-editor-bg;
     -fx-text-fill: -color-fg-default;
     -fx-border-color: -color-border-subtle;
@@ -96,7 +96,7 @@
     -fx-background-radius: 12;
     -fx-padding: 4 12;
     -fx-text-fill: -color-fg-muted;
-    -fx-font-size: 0.82em;
+    -fx-font-size: 0.85em;
     -fx-font-weight: bold;
 }
 
@@ -188,7 +188,7 @@
     -fx-background-color: -color-bg-subtle;
     -fx-text-fill: -color-fg-muted;
     -fx-font-family: monospace;
-    -fx-font-size: 0.75em;
+    -fx-font-size: 0.85em;
     -fx-padding: 1 4;
     -fx-background-radius: 2;
     -fx-border-color: -color-border-subtle;
@@ -213,27 +213,27 @@
     -fx-border-radius: 3;
     -fx-background-radius: 3;
     -fx-padding: 1 5;
-    -fx-font-size: 0.75em;
+    -fx-font-size: 0.85em;
     -fx-font-weight: bold;
     -fx-text-fill: -color-fg-muted;
 }
 
 .qf-node-title {
     -fx-text-fill: -color-fg-default;
-    -fx-font-size: 0.88em;
+    -fx-font-size: 1em;
     -fx-font-weight: bold;
 }
 
 .qf-node-subtitle {
     -fx-text-fill: -color-fg-muted;
-    -fx-font-size: 0.78em;
+    -fx-font-size: 0.85em;
     -fx-wrap-text: true;
 }
 
 .qf-cost-badge {
-    -fx-background-color: derive(-color-accent-subtle, -20%);
+    -fx-background-color: -color-accent-subtle;
     -fx-text-fill: -color-accent-emphasis;
-    -fx-font-size: 0.72em;
+    -fx-font-size: 0.85em;
     -fx-font-weight: bold;
     -fx-padding: 1 5;
     -fx-border-radius: 3;
@@ -251,19 +251,19 @@
 
 .qf-inspector-header {
     -fx-text-fill: -color-fg-default;
-    -fx-font-size: 0.95em;
+    -fx-font-size: 1em;
     -fx-font-weight: bold;
 }
 
 .qf-inspector-field-label {
     -fx-text-fill: -color-fg-muted;
-    -fx-font-size: 0.82em;
+    -fx-font-size: 0.85em;
     -fx-min-width: 90;
 }
 
 .qf-inspector-field-val {
     -fx-text-fill: -color-fg-default;
-    -fx-font-size: 0.82em;
+    -fx-font-size: 0.85em;
 }
 
 .qf-sql-snippet-box {
@@ -274,6 +274,19 @@
     -fx-background-radius: 4;
     -fx-padding: 8;
     -fx-font-family: "JetBrains Mono", "Cascadia Code", "Consolas", monospace;
-    -fx-font-size: 0.82em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -ide-code-inline-fg;
+}
+
+/* Helper classes conforming to R-UI-11 & R-UI-19 */
+.flow-node-row-count {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.qf-zoom-label {
+    -fx-font-size: 0.85em;
+    -fx-text-fill: -color-fg-muted;
+    -fx-min-width: 3.2em;
+    -fx-alignment: center;
 }

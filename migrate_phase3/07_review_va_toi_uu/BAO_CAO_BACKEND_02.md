@@ -61,3 +61,4 @@ Tổng số test kiểm tra tự động chạy thành công: **21/21 tests pass
 1. **DE-7 (Đóng tab hỏi lưu):** `SqlEditorTab` vốn đã tích hợp `CloseTabDialog` lắng nghe thuộc tính `isDirty()`. Khi cập nhật `dirtyProperty().set(totalChanges > 0)` chuẩn xác trong `updateSummary()`, logic đóng tab tự động kích hoạt dialog mà không cần viết lại.
 2. **DE-2 (Java ternary operator type promotion):** Trong `CriteriaGrid`, biểu thức điều kiện ternary `isStrictNumeric ? (t.contains(".") ? Double.valueOf(t) : Long.valueOf(t))` bị Java ép kiểu ngầm định về `Double`, làm số nguyên `10` biến thành `10.0`. Đã khắc phục bằng cách ép kiểu rõ ràng về `(Number)`.
 3. **DE-5 (Delete event filter):** Bộ lọc phím của tab cần kiểm tra thêm `tableView.getEditingCell() == null` để tránh đánh dấu xóa dòng khi người dùng đang bấm phím Delete bên trong ô dữ liệu dạng bảng.
+

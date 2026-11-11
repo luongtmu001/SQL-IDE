@@ -11,13 +11,23 @@ public class QueryResult {
     private final List<QueryResultRow> rows;
     private final long executionDurationMs;
     private final String timestamp;
+    private final String sourceTable;
 
     public QueryResult(String query, List<QueryResultColumn> columns, List<QueryResultRow> rows, long executionDurationMs, String timestamp) {
+        this(query, columns, rows, executionDurationMs, timestamp, null);
+    }
+
+    public QueryResult(String query, List<QueryResultColumn> columns, List<QueryResultRow> rows, long executionDurationMs, String timestamp, String sourceTable) {
         this.query = query;
         this.columns = new ArrayList<>(columns);
         this.rows = new ArrayList<>(rows);
         this.executionDurationMs = executionDurationMs;
         this.timestamp = timestamp;
+        this.sourceTable = sourceTable;
+    }
+
+    public String getSourceTable() {
+        return sourceTable;
     }
 
     public String getQuery() {

@@ -1393,12 +1393,22 @@ public class MainController implements Initializable {
     }
 
     @FXML
+    public void handleNewTable() {
+        if (editorController != null) {
+            String connName = connectionComboBox != null ? connectionComboBox.getValue() : null;
+            var profile = app.framework.connection.ProfileLookup.byName(connName);
+            String db = schemaComboBox != null ? schemaComboBox.getValue() : null;
+            editorController.openTableDesignerWindow(profile, db, "dbo", "Table_1", true);
+        }
+    }
+
+    @FXML
     public void handleOpenObjectSearch() {
         if (editorController != null) {
             String connName = connectionComboBox != null ? connectionComboBox.getValue() : null;
             var profile = app.framework.connection.ProfileLookup.byName(connName);
             String db = schemaComboBox != null ? schemaComboBox.getValue() : null;
-            editorController.openObjectContentSearchTab(profile, db, null);
+            editorController.openObjectContentSearchWindow(profile, db, null);
         }
     }
 
@@ -1408,7 +1418,7 @@ public class MainController implements Initializable {
             String connName = connectionComboBox != null ? connectionComboBox.getValue() : null;
             var profile = app.framework.connection.ProfileLookup.byName(connName);
             String db = schemaComboBox != null ? schemaComboBox.getValue() : null;
-            editorController.openSchemaCompareTab(profile, db, null, null, null, null);
+            editorController.openSchemaCompareWindow(profile, db, null, null, null, null);
         }
     }
 
@@ -1418,7 +1428,7 @@ public class MainController implements Initializable {
             String connName = connectionComboBox != null ? connectionComboBox.getValue() : null;
             var profile = app.framework.connection.ProfileLookup.byName(connName);
             String db = schemaComboBox != null ? schemaComboBox.getValue() : null;
-            editorController.openDependencyGraphTab(profile, db, "dbo", "orders", null, com.lltool.core.domain.dependency.DependencyNodeType.TABLE);
+            editorController.openDependencyGraphWindow(profile, db, "dbo", "orders", null, com.lltool.core.domain.dependency.DependencyNodeType.TABLE);
         }
     }
 
@@ -1436,7 +1446,7 @@ public class MainController implements Initializable {
             String connName = connectionComboBox != null ? connectionComboBox.getValue() : null;
             var profile = app.framework.connection.ProfileLookup.byName(connName);
             String db = schemaComboBox != null ? schemaComboBox.getValue() : null;
-            editorController.openSqlVisualizerTab(profile, db, "dbo", "Query1", null);
+            editorController.openSqlVisualizerWindow(profile, db, "dbo", "Query1", null);
         }
     }
 

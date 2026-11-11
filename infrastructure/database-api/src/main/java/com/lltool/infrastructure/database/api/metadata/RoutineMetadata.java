@@ -16,6 +16,9 @@ public record RoutineMetadata(
 
     public RoutineMetadata {
         Objects.requireNonNull(name, "Routine name cannot be null");
+        if (name.contains(";")) {
+            name = name.substring(0, name.indexOf(';')).trim();
+        }
         routineType = routineType != null ? routineType : "FUNCTION";
     }
 

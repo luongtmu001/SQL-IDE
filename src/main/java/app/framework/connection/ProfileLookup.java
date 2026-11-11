@@ -43,6 +43,11 @@ public final class ProfileLookup {
         return null;
     }
 
+    /** Profile by id or name (case-insensitive), or null. */
+    public static ConnectionProfileDto byId(String id) {
+        return byName(id);
+    }
+
     /** After a profile was added, changed or removed. */
     public static void invalidate() {
         readAt = 0;

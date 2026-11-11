@@ -50,9 +50,8 @@ public class UniqueConstraintGrid extends VBox {
 
     private void applyGridTypography() {
         var settings = SettingsService.getInstance().getCurrentSettings();
-        int fontSize = settings != null ? settings.getGridFontSize() : 12;
-        double rowHeight = Math.max(24.0, fontSize * 1.8 + 6.0);
-        tableView.setFixedCellSize(rowHeight);
+        // R-UI-11: a configuration grid follows the UI font ("Giao diện"), not the result-grid setting
+        tableView.setFixedCellSize(app.ui.components.UiMetrics.em(1.85));
     }
 
     private HBox buildToolbar() {
@@ -62,18 +61,14 @@ public class UniqueConstraintGrid extends VBox {
         bar.getStyleClass().add("td-row-toolbar");
 
         Button btnAdd = new Button("Thêm Unique");
-        btnAdd.getStyleClass().addAll("button", "small");
-        FontIcon addIcon = new FontIcon("fth-plus");
-        addIcon.setIconSize(13);
-        btnAdd.setGraphic(addIcon);
+        btnAdd.getStyleClass().add("button");
+        btnAdd.setGraphic(app.ui.components.Icons.of("fth-plus"));
         btnAdd.setTooltip(new Tooltip("Thêm ràng buộc duy nhất mới"));
         btnAdd.setOnAction(e -> addNewUnique());
 
         Button btnDelete = new Button("Xóa");
-        btnDelete.getStyleClass().addAll("button", "small");
-        FontIcon delIcon = new FontIcon("fth-trash-2");
-        delIcon.setIconSize(13);
-        btnDelete.setGraphic(delIcon);
+        btnDelete.getStyleClass().add("button");
+        btnDelete.setGraphic(app.ui.components.Icons.of("fth-trash-2"));
         btnDelete.setTooltip(new Tooltip("Xóa ràng buộc đang chọn"));
         btnDelete.setOnAction(e -> deleteSelected());
 
@@ -94,7 +89,7 @@ public class UniqueConstraintGrid extends VBox {
 
         // 1. Constraint Name
         TableColumn<UniqueViewModel, String> colName = new TableColumn<>("Tên Ràng buộc");
-        colName.setPrefWidth(220);
+        colName.setPrefWidth(app.ui.components.UiMetrics.em(16.92));
         colName.setCellValueFactory(data -> data.getValue().nameProperty());
         colName.setCellFactory(TextFieldTableCell.forTableColumn());
         colName.setOnEditCommit(e -> {
@@ -104,7 +99,7 @@ public class UniqueConstraintGrid extends VBox {
 
         // 2. Columns
         TableColumn<UniqueViewModel, String> colCols = new TableColumn<>("Các cột duy nhất");
-        colCols.setPrefWidth(280);
+        colCols.setPrefWidth(app.ui.components.UiMetrics.em(21.54));
         colCols.setCellValueFactory(data -> data.getValue().columnsStringProperty());
         colCols.setCellFactory(TextFieldTableCell.forTableColumn());
         colCols.setOnEditCommit(e -> {
@@ -114,7 +109,7 @@ public class UniqueConstraintGrid extends VBox {
 
         // 3. Clustered (SQL Server only)
         TableColumn<UniqueViewModel, Boolean> colClustered = new TableColumn<>("Clustered");
-        colClustered.setPrefWidth(90);
+        colClustered.setPrefWidth(app.ui.components.UiMetrics.em(6.92));
         colClustered.setCellValueFactory(data -> data.getValue().clusteredProperty());
         colClustered.setCellFactory(CheckBoxTableCell.forTableColumn(colClustered));
         if ("postgresql".equalsIgnoreCase(engine)) {

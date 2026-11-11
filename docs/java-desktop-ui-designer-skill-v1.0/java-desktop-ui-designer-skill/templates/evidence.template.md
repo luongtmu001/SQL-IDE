@@ -13,6 +13,12 @@
 |---|---|---|---|---|
 | EVD-002 | `path/to/file.py` | `method_name` | Describe verified behavior | code_verified |
 
+## Kiểm chứng trên SQL-IDE / Verification on SQL-IDE
+
+| Evidence ID | Việc kiểm | Cách kiểm (`unit_mock`, `it_real_server`, `user_on_machine`) | Kết quả | Ngày |
+|---|---|---|---|---|
+| EVD-003 | Describe the check | unit_mock | pass / fail | YYYY-MM-DD |
+
 ## Unknowns / Điểm chưa xác định
 
 | Item | What is unknown | Attempts made | Impact | Blocking? |

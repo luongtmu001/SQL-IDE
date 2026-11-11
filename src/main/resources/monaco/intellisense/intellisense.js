@@ -253,6 +253,10 @@
 
         _initEvents() {
             var self = this;
+            // Virtual scroll event for list performance
+            this.listEl.addEventListener("scroll", function () {
+                self._onListScroll();
+            });
             // The list is rebuilt while typing: one listener on the container instead of one per row.
             this.listEl.addEventListener("mouseover", function (e) {
                 var row = e.target.closest(".isp-item");
@@ -351,6 +355,83 @@
             this.popup.style.left = Math.max(EDGE, left) + "px";
         }
 
+        _onListScroll() {
+            if (!this.candidates || this.candidates.length <= 25) return;
+            var ITEM_HEIGHT = 24;
+            var scrollTop = this.listEl.scrollTop || 0;
+            var viewportHeight = this.listEl.clientHeight || 200;
+            var startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 5);
+            var endIndex = Math.min(this.candidates.length, Math.ceil((scrollTop + viewportHeight) / ITEM_HEIGHT) + 5);
+
+            if (this._virtualStart !== startIndex || this._virtualEnd !== endIndex) {
+                this._renderVisibleItems();
+            }
+        }
+
+        _renderVisibleItems() {
+            if (!this.candidates || this.candidates.length === 0) {
+                this.listEl.innerHTML = "";
+                return;
+            }
+            var ITEM_HEIGHT = 24;
+            var totalCount = this.candidates.length;
+            var lowerWord = (this.word || "").toLowerCase();
+
+            // Direct rendering for small lists (<= 25 items)
+            if (totalCount <= 25) {
+                var html = "";
+                if (this._hasError) {
+                    html += '<div class="isp-error"><span><i class="codicon codicon-warning" aria-hidden="true"></i> Không tải được metadata</span><button type="button" class="isp-retry">Thử lại</button></div>';
+                }
+                for (var i = 0; i < totalCount; i++) {
+                    var c = this.candidates[i];
+                    var isActive = i === this.selectedIndex;
+                    html += '<div class="isp-item' + (c.type === "keyword" ? " is-keyword" : "") + (isActive ? " active" : "") + '" data-index="' + i + '">'
+                        + icon(c.type, c.type === "database" && c.isSystemDb ? "is-system" : "")
+                        + '<span class="isp-name">' + highlight(displayName(c), lowerWord) + "</span>"
+                        + '<span class="isp-badge">[' + esc(c.displayType || formatDisplayType(c.type)) + "]</span></div>";
+                }
+                if (this._isTruncated) html += '<div class="isp-truncated">Còn nhiều mục, gõ tiếp để lọc</div>';
+                this.listEl.innerHTML = html;
+                return;
+            }
+
+            // Virtualized window rendering for large candidate lists
+            var totalHeight = totalCount * ITEM_HEIGHT;
+            var scrollTop = this.listEl.scrollTop || 0;
+            var viewportHeight = this.listEl.clientHeight || 200;
+            var startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 5);
+            var endIndex = Math.min(totalCount, Math.ceil((scrollTop + viewportHeight) / ITEM_HEIGHT) + 5);
+            var offsetY = startIndex * ITEM_HEIGHT;
+
+            this._virtualStart = startIndex;
+            this._virtualEnd = endIndex;
+
+            var itemsHtml = "";
+            for (var i = startIndex; i < endIndex; i++) {
+                var c = this.candidates[i];
+                var isActive = i === this.selectedIndex;
+                itemsHtml += '<div class="isp-item' + (c.type === "keyword" ? " is-keyword" : "") + (isActive ? " active" : "") + '" data-index="' + i + '">'
+                    + icon(c.type, c.type === "database" && c.isSystemDb ? "is-system" : "")
+                    + '<span class="isp-name">' + highlight(displayName(c), lowerWord) + "</span>"
+                    + '<span class="isp-badge">[' + esc(c.displayType || formatDisplayType(c.type)) + "]</span></div>";
+            }
+
+            var html = "";
+            if (this._hasError) {
+                html += '<div class="isp-error"><span><i class="codicon codicon-warning" aria-hidden="true"></i> Không tải được metadata</span><button type="button" class="isp-retry">Thử lại</button></div>';
+            }
+            html += '<div class="isp-virtual-spacer" style="height:' + totalHeight + 'px; position:relative; overflow:hidden;">'
+                 + '  <div class="isp-virtual-window" style="position:absolute; top:' + offsetY + 'px; left:0; right:0;">'
+                 + itemsHtml
+                 + '  </div>'
+                 + '</div>';
+            if (this._isTruncated) {
+                html += '<div class="isp-truncated">Còn nhiều mục, gõ tiếp để lọc</div>';
+            }
+            this.listEl.innerHTML = html;
+        }
+
         render(candidates, cursorCoords, tabCtx, dataProvider, word, errorInfo, neutral) {
             var hasError = Boolean((candidates && candidates.hasError) || (candidates && candidates.meta && candidates.meta.errors && candidates.meta.errors.length > 0) || errorInfo);
             if (!this.popup || (!hasError && (!candidates || candidates.length === 0))) {
@@ -372,23 +453,14 @@
             this._applySize();
             this._place(cursorCoords);
 
-            var truncated = Boolean(candidates && (candidates.isTruncated || (candidates.meta && candidates.meta.truncated)));
-            var html = "";
-            if (hasError) {
-                html += '<div class="isp-error"><span><i class="codicon codicon-warning" aria-hidden="true"></i> Không tải được metadata</span><button type="button" class="isp-retry">Thử lại</button></div>';
-            }
-            var lowerWord = this.word.toLowerCase();
-            for (var i = 0; i < this.candidates.length; i++) {
-                var c = this.candidates[i];
-                html += '<div class="isp-item' + (c.type === "keyword" ? " is-keyword" : "") + '" data-index="' + i + '">'
-                    + icon(c.type, c.type === "database" && c.isSystemDb ? "is-system" : "")
-                    + '<span class="isp-name">' + highlight(displayName(c), lowerWord) + "</span>"
-                    + '<span class="isp-badge">[' + esc(c.displayType || formatDisplayType(c.type)) + "]</span></div>";
-            }
-            if (truncated) html += '<div class="isp-truncated">Còn nhiều mục, gõ tiếp để lọc</div>';
-            this.listEl.innerHTML = html;
+            this._hasError = hasError;
+            this._isTruncated = Boolean(candidates && (candidates.isTruncated || (candidates.meta && candidates.meta.truncated)));
             this.listEl.scrollTop = 0;
-            this.countBadge.textContent = truncated ? this.candidates.length + "+" : this.candidates.length;
+            this._virtualStart = -1;
+            this._virtualEnd = -1;
+            this._renderVisibleItems();
+
+            this.countBadge.textContent = this._isTruncated ? this.candidates.length + "+" : this.candidates.length;
 
             if (this.candidates.length > 0 && !(neutral && !word)) {
                 this._deferDetail = true;
@@ -407,12 +479,30 @@
 
         selectIndex(index, shouldScroll) {
             if (index < 0 || index >= this.candidates.length) return;
+            var prev = this.selectedIndex;
             this.selectedIndex = index;
-            var rows = this.listEl.querySelectorAll(".isp-item");
-            for (var i = 0; i < rows.length; i++) {
-                var on = i === index;
-                rows[i].classList.toggle("active", on);
-                if (on && shouldScroll) rows[i].scrollIntoView({ block: "nearest" });
+
+            var ITEM_HEIGHT = 24;
+            if (shouldScroll) {
+                var targetTop = index * ITEM_HEIGHT;
+                var clientH = this.listEl.clientHeight || 200;
+                if (targetTop < this.listEl.scrollTop) {
+                    this.listEl.scrollTop = targetTop;
+                } else if (targetTop + ITEM_HEIGHT > this.listEl.scrollTop + clientH) {
+                    this.listEl.scrollTop = targetTop + ITEM_HEIGHT - clientH;
+                }
+            }
+
+            if (prev >= 0 && prev !== index) {
+                var prevRow = this.listEl.querySelector('.isp-item[data-index="' + prev + '"]');
+                if (prevRow) prevRow.classList.remove("active");
+            }
+            var curRow = this.listEl.querySelector('.isp-item[data-index="' + index + '"]');
+            if (curRow) {
+                curRow.classList.add("active");
+            } else if (this.candidates.length > 25) {
+                // Selected index moved outside virtual slice, re-render visible window
+                this._renderVisibleItems();
             }
             this._refreshDetail();
         }
@@ -885,7 +975,7 @@
                 // A list still loading for the previous text is out of date. If it were allowed to finish it could
                 // come back empty and hide the popup, cancelling the trigger scheduled here.
                 this._currentRequestId++;
-                var delay = decision.reason === "character" ? 20 : 80;
+                var delay = decision.reason === "character" ? 120 : 80;
                 clearTimeout(this.debounceTimer);
                 this.debounceTimer = setTimeout(() => this.trigger(adapter, false, decision.reason), delay);
             }
@@ -1126,7 +1216,11 @@
             // Snippet: real tab stops through Monaco's snippet controller
             if (item.type === "snippet" && item.snippetData) {
                 adapter.setSelection(fromPos, toPos);
-                if (!Host.insertSnippet(item.snippetData.body)) {
+                var snipBody = item.snippetData.monacoBody || item.snippetData.body;
+                if (typeof window.convertRedGateToMonacoSnippet === "function") {
+                    snipBody = window.convertRedGateToMonacoSnippet(snipBody);
+                }
+                if (!Host.insertSnippet(snipBody)) {
                     adapter.replaceRange(window.AppSnippets.expandSnippetBody(item.snippetData).expandedText, fromPos, toPos);
                 }
                 adapter.focus();

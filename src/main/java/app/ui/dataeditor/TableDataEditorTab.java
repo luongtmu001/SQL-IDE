@@ -140,7 +140,7 @@ public class TableDataEditorTab extends SqlEditorTab {
 
     private void initializeView() {
         VBox root = new VBox();
-        root.getStyleClass().add("td-data-editor-root");
+        root.getStyleClass().addAll("td-data-editor-root", "workspace-root");
 
         var cssRes = getClass().getResource("/css/table-data-editor.css");
         if (cssRes != null) {
@@ -151,7 +151,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         WorkspaceToolbar toolbar = buildToolbar();
 
         // 2. Build Panes
-        criteriaGrid.setMaxHeight(180);
+        criteriaGrid.setMaxHeight(app.ui.components.UiMetrics.em(14));
         buildSqlPane();
         buildGridContainer();
 
@@ -270,7 +270,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnRun.setTooltip(new Tooltip("Thực thi truy vấn nạp dữ liệu với các tiêu chí hiện tại (F5 / Alt+X)"));
         btnRun.setOnAction(e -> requestReloadData());
 
-        btnSave.getStyleClass().addAll("button", "success");
+        btnSave.getStyleClass().add("button"); // turns "success" only while there are unsaved changes (R-UI-14.4)
         btnSave.setGraphic(app.ui.components.Icons.of("fth-save"));
         btnSave.setTooltip(new Tooltip("Lưu các thay đổi xuống CSDL (Ctrl+S)"));
         btnSave.setOnAction(e -> handleSave());
@@ -309,14 +309,14 @@ public class TableDataEditorTab extends SqlEditorTab {
 
         // Center controls
         toggleCriteria.setText("Bộ lọc");
-        toggleCriteria.getStyleClass().add("button");
+        toggleCriteria.getStyleClass().addAll("button", "toolbar-toggle");
         toggleCriteria.setGraphic(app.ui.components.Icons.of("fth-filter"));
         toggleCriteria.setSelected(false);
         toggleCriteria.setTooltip(new Tooltip("Ẩn/Hiện Criteria Pane (Điều kiện lọc & Sắp xếp)"));
         toggleCriteria.setOnAction(e -> rebuildSplitPaneItems());
 
         toggleSql.setText("SQL");
-        toggleSql.getStyleClass().add("button");
+        toggleSql.getStyleClass().addAll("button", "toolbar-toggle");
         toggleSql.setGraphic(app.ui.components.Icons.of("fth-code"));
         toggleSql.setSelected(false);
         toggleSql.setTooltip(new Tooltip("Ẩn/Hiện SQL Pane (Kịch bản truy vấn SELECT)"));
@@ -324,8 +324,6 @@ public class TableDataEditorTab extends SqlEditorTab {
 
         cbLimit.setItems(FXCollections.observableArrayList("50 dòng", "100 dòng", "200 dòng", "500 dòng", "1000 dòng", "Tất cả"));
         cbLimit.setValue("200 dòng");
-        cbLimit.setPrefWidth(105);
-        cbLimit.getStyleClass().add("small");
         cbLimit.setOnAction(e -> {
             if (dirtyProperty().get()) {
                 long changes = masterItems.stream().filter(r -> r.getState() != ObservableDataRow.RowState.UNCHANGED).count();
@@ -351,7 +349,7 @@ public class TableDataEditorTab extends SqlEditorTab {
             }
         });
 
-        txtQuickSearch.setPrefWidth(180);
+        txtQuickSearch.setPrefWidth(app.ui.components.UiMetrics.em(13.85));
         txtQuickSearch.textProperty().addListener((obs, oldV, newV) -> {
             searchDebounce.setOnFinished(ev -> filterGrid(newV));
             searchDebounce.playFromStart();
@@ -360,7 +358,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         bar.addCenter(toggleCriteria);
         bar.addCenter(toggleSql);
         bar.addCenter(new Separator(Orientation.VERTICAL));
-        bar.addCenter(new Label("Top:"));
+        bar.addCenter(new Label("Số dòng:"));
         bar.addCenter(cbLimit);
         bar.addCenter(txtQuickSearch);
 
@@ -371,7 +369,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnScript.setTooltip(new Tooltip("Xem trước kịch bản DML chuẩn bị thực thi"));
         btnScript.setOnAction(e -> handlePreviewDml());
 
-        toggleInspector.getStyleClass().add("button");
+        toggleInspector.getStyleClass().addAll("button", "toolbar-toggle");
         toggleInspector.setGraphic(app.ui.components.Icons.of("fth-info"));
         toggleInspector.setTooltip(new Tooltip("Mở ngăn kéo tra cứu cấu trúc bảng và ràng buộc"));
         toggleInspector.setOnAction(e -> updateDrawerVisibility());
@@ -385,8 +383,8 @@ public class TableDataEditorTab extends SqlEditorTab {
 
     private void buildSqlPane() {
         sqlPane.getStyleClass().add("tde-sql-pane");
-        sqlPane.setPrefHeight(120);
-        sqlPane.setMinHeight(80);
+        sqlPane.setPrefHeight(app.ui.components.UiMetrics.em(9));
+        sqlPane.setMinHeight(app.ui.components.UiMetrics.em(6));
 
         String dialect = engine.equalsIgnoreCase("postgresql") ? "PostgreSQL" : "Microsoft SQL Server";
         PaneHeader header = new PaneHeader("Câu truy vấn", "fth-code", "Dialect: " + dialect);
@@ -404,8 +402,14 @@ public class TableDataEditorTab extends SqlEditorTab {
         gridContainer.getStyleClass().add("tde-grid-pane");
         VBox.setVgrow(gridContainer, Priority.ALWAYS);
 
-        PaneHeader miniHeader = new PaneHeader("Dữ liệu", "fth-grid", "(Nhấn đúp hoặc Enter để sửa ô, Ctrl+0 gán [NULL], Delete để đánh dấu xóa)");
+        PaneHeader miniHeader = new PaneHeader("Dữ liệu", "fth-grid");
         miniHeader.setRightNode(lblGridStats);
+        // R-UI-20: key hints live in a tooltip, not in the header text
+        Label gridHelp = new Label();
+        gridHelp.setGraphic(app.ui.components.Icons.of("fth-help-circle", app.ui.components.IconScale.SM));
+        gridHelp.setTooltip(new Tooltip("Nhấn đúp hoặc Enter để sửa ô\nCtrl+0: gán NULL\nDelete: đánh dấu xoá dòng"));
+        gridHelp.setAccessibleText("Hướng dẫn thao tác trên lưới");
+        miniHeader.addAction(gridHelp);
 
         setupTableView();
         VBox.setVgrow(tableView, Priority.ALWAYS);
@@ -451,17 +455,22 @@ public class TableDataEditorTab extends SqlEditorTab {
         });
 
         // Row navigation and active cell listener
-        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldRow, newRow) -> {
-            int selIdx = tableView.getSelectionModel().getSelectedIndex();
-            lblRowNav.setText("Dòng " + (selIdx >= 0 ? (selIdx + 1) : 0) + " / " + filteredItems.size());
-        });
+        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldRow, newRow) -> updateRowNav());
+        // the total follows the data too, not only the selection (it used to stay "0 / 0" after a load)
+        filteredItems.addListener((javafx.collections.ListChangeListener<ObservableDataRow>) c -> updateRowNav());
 
         tableView.getFocusModel().focusedCellProperty().addListener((obs, oldCell, newCell) -> {
             if (newCell != null && newCell.getTableColumn() != null) {
-                String colText = newCell.getTableColumn().getText();
+                Object colName = newCell.getTableColumn().getUserData();
+                String colText = colName != null ? colName.toString() : newCell.getTableColumn().getText();
                 lblActiveCell.setText("Ô đang chọn: [Dòng " + (newCell.getRow() + 1) + ", Cột: " + colText + "]");
             }
         });
+    }
+
+    private void updateRowNav() {
+        int selIdx = tableView.getSelectionModel().getSelectedIndex();
+        lblRowNav.setText("Dòng " + (selIdx >= 0 ? (selIdx + 1) : 0) + " / " + filteredItems.size());
     }
 
     private void rebuildSplitPaneItems() {
@@ -487,23 +496,23 @@ public class TableDataEditorTab extends SqlEditorTab {
     private WorkspaceFooter buildFooter() {
         // Row Navigator buttons
         Button btnFirst = new Button();
-        btnFirst.getStyleClass().addAll("button", "small");
-        btnFirst.setGraphic(new FontIcon("fth-chevrons-left"));
+        btnFirst.getStyleClass().addAll("button", "button-icon", "flat");
+        btnFirst.setGraphic(app.ui.components.Icons.of("fth-chevrons-left", app.ui.components.IconScale.SM));
         btnFirst.setOnAction(e -> { if (!filteredItems.isEmpty()) tableView.getSelectionModel().selectFirst(); });
 
         Button btnPrev = new Button();
-        btnPrev.getStyleClass().addAll("button", "small");
-        btnPrev.setGraphic(new FontIcon("fth-chevron-left"));
+        btnPrev.getStyleClass().addAll("button", "button-icon", "flat");
+        btnPrev.setGraphic(app.ui.components.Icons.of("fth-chevron-left", app.ui.components.IconScale.SM));
         btnPrev.setOnAction(e -> { if (!filteredItems.isEmpty()) tableView.getSelectionModel().selectPrevious(); });
 
         Button btnNext = new Button();
-        btnNext.getStyleClass().addAll("button", "small");
-        btnNext.setGraphic(new FontIcon("fth-chevron-right"));
+        btnNext.getStyleClass().addAll("button", "button-icon", "flat");
+        btnNext.setGraphic(app.ui.components.Icons.of("fth-chevron-right", app.ui.components.IconScale.SM));
         btnNext.setOnAction(e -> { if (!filteredItems.isEmpty()) tableView.getSelectionModel().selectNext(); });
 
         Button btnLast = new Button();
-        btnLast.getStyleClass().addAll("button", "small");
-        btnLast.setGraphic(new FontIcon("fth-chevrons-right"));
+        btnLast.getStyleClass().addAll("button", "button-icon", "flat");
+        btnLast.setGraphic(app.ui.components.Icons.of("fth-chevrons-right", app.ui.components.IconScale.SM));
         btnLast.setOnAction(e -> { if (!filteredItems.isEmpty()) tableView.getSelectionModel().selectLast(); });
 
         HBox navBox = new HBox(3, btnFirst, btnPrev, lblRowNav, btnNext, btnLast);
@@ -726,8 +735,9 @@ public class TableDataEditorTab extends SqlEditorTab {
             if (this.loadedTableDesign != null) {
                 inspectorPane.update(this.loadedTableDesign, this.metadata);
             }
-            buildTableColumns(result.columnNames());
+            // rows first: the column widths are measured from the loaded values
             masterItems.setAll(result.loadedRows());
+            buildTableColumns(result.columnNames());
             updateSummary();
             dirtyProperty().set(false);
             lblReadOnly.setVisible(true);
@@ -765,21 +775,16 @@ public class TableDataEditorTab extends SqlEditorTab {
 
         // 1. Sticky Row index & status column
         TableColumn<ObservableDataRow, String> colRowNo = new TableColumn<>("#");
-        colRowNo.setPrefWidth(48);
-        colRowNo.setMinWidth(48);
-        colRowNo.setMaxWidth(65);
+        colRowNo.setPrefWidth(app.ui.components.UiMetrics.em(3.69));
+        colRowNo.setMinWidth(app.ui.components.UiMetrics.em(3.69));
+        colRowNo.setMaxWidth(app.ui.components.UiMetrics.em(5));
         colRowNo.getStyleClass().add("col-row-no");
         colRowNo.setCellValueFactory(data -> {
             ObservableDataRow row = data.getValue();
             if (row == null) return new SimpleStringProperty("");
             return javafx.beans.binding.Bindings.createStringBinding(() -> {
-                String prefix = switch (row.getState()) {
-                    case INSERTED -> "+ ";
-                    case MODIFIED -> "~ ";
-                    case DELETED -> "- ";
-                    default -> "";
-                };
-                return prefix + row.getRowId();
+                // R-UI-15: no text symbols as icons; the row state is shown by the coloured bar of the row
+                return String.valueOf(row.getRowId());
             }, row.stateProperty());
         });
         tableView.getColumns().add(colRowNo);
@@ -794,17 +799,20 @@ public class TableDataEditorTab extends SqlEditorTab {
             boolean isIdentity = identityCols.contains(colName.toLowerCase());
             boolean isComputed = computedCols.contains(colName.toLowerCase());
 
-            TableColumn<ObservableDataRow, Object> col = new TableColumn<>(colName);
+            // the header is drawn by the graphic below; column text would show the name twice
+            TableColumn<ObservableDataRow, Object> col = new TableColumn<>();
+            col.setUserData(colName);
 
-            // Auto-calculate width based on column name and first 50 rows (min 80, max 360)
-            int maxChars = colName.length();
+            // Width from the column name and the first 50 rows, in em so it follows the UI font size
+            int maxChars = colName.length() + 3 + (isPk ? 3 : 0) + ((isIdentity || isComputed) ? 3 : 0);
             for (int i = 0; i < Math.min(50, masterItems.size()); i++) {
                 Object val = masterItems.get(i).getValue(colName);
                 if (val != null) {
-                    maxChars = Math.max(maxChars, String.valueOf(val).length());
+                    maxChars = Math.max(maxChars, EditableDataTableCell.displayText(val).length());
                 }
             }
-            double estimatedWidth = Math.max(80, Math.min(360, maxChars * 8.5 + 40));
+            double em = app.ui.components.UiMetrics.em(1);
+            double estimatedWidth = Math.max(6 * em, Math.min(28 * em, maxChars * 0.62 * em + 2 * em));
             col.setPrefWidth(estimatedWidth);
             col.setCellValueFactory(data -> data.getValue().getProperty(colName));
 

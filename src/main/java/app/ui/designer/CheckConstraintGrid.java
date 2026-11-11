@@ -48,9 +48,8 @@ public class CheckConstraintGrid extends VBox {
 
     private void applyGridTypography() {
         var settings = SettingsService.getInstance().getCurrentSettings();
-        int fontSize = settings != null ? settings.getGridFontSize() : 12;
-        double rowHeight = Math.max(24.0, fontSize * 1.8 + 6.0);
-        tableView.setFixedCellSize(rowHeight);
+        // R-UI-11: a configuration grid follows the UI font ("Giao diện"), not the result-grid setting
+        tableView.setFixedCellSize(app.ui.components.UiMetrics.em(1.85));
     }
 
     private HBox buildToolbar() {
@@ -60,18 +59,14 @@ public class CheckConstraintGrid extends VBox {
         bar.getStyleClass().add("td-row-toolbar");
 
         Button btnAdd = new Button("Thêm Check");
-        btnAdd.getStyleClass().addAll("button", "small");
-        FontIcon addIcon = new FontIcon("fth-plus");
-        addIcon.setIconSize(13);
-        btnAdd.setGraphic(addIcon);
+        btnAdd.getStyleClass().add("button");
+        btnAdd.setGraphic(app.ui.components.Icons.of("fth-plus"));
         btnAdd.setTooltip(new Tooltip("Thêm ràng buộc kiểm tra mới"));
         btnAdd.setOnAction(e -> addNewCheck());
 
         Button btnDelete = new Button("Xóa");
-        btnDelete.getStyleClass().addAll("button", "small");
-        FontIcon delIcon = new FontIcon("fth-trash-2");
-        delIcon.setIconSize(13);
-        btnDelete.setGraphic(delIcon);
+        btnDelete.getStyleClass().add("button");
+        btnDelete.setGraphic(app.ui.components.Icons.of("fth-trash-2"));
         btnDelete.setTooltip(new Tooltip("Xóa ràng buộc đang chọn"));
         btnDelete.setOnAction(e -> deleteSelected());
 
@@ -92,7 +87,7 @@ public class CheckConstraintGrid extends VBox {
 
         // 1. Constraint Name
         TableColumn<CheckViewModel, String> colName = new TableColumn<>("Tên Ràng buộc");
-        colName.setPrefWidth(220);
+        colName.setPrefWidth(app.ui.components.UiMetrics.em(16.92));
         colName.setCellValueFactory(data -> data.getValue().nameProperty());
         colName.setCellFactory(TextFieldTableCell.forTableColumn());
         colName.setOnEditCommit(e -> {
@@ -102,7 +97,7 @@ public class CheckConstraintGrid extends VBox {
 
         // 2. Check Expression
         TableColumn<CheckViewModel, String> colClause = new TableColumn<>("Biểu thức kiểm tra");
-        colClause.setPrefWidth(380);
+        colClause.setPrefWidth(app.ui.components.UiMetrics.em(29.23));
         colClause.setCellValueFactory(data -> data.getValue().clauseProperty());
         colClause.setCellFactory(TextFieldTableCell.forTableColumn());
         colClause.setOnEditCommit(e -> {

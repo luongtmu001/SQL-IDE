@@ -33,7 +33,7 @@
     -fx-border-color: -color-accent-emphasis;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
-    -fx-font-size: 0.75em;
+    -fx-font-size: 0.85em;
     -fx-font-weight: bold;
     -fx-padding: 2 6;
 }
@@ -44,17 +44,17 @@
     -fx-border-color: -color-warning-emphasis;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
-    -fx-font-size: 0.75em;
+    -fx-font-size: 0.85em;
     -fx-font-weight: bold;
     -fx-padding: 2 6;
 }
 
 .swap-btn {
     -fx-background-radius: 16;
-    -fx-min-width: 30;
-    -fx-min-height: 30;
-    -fx-max-width: 30;
-    -fx-max-height: 30;
+    -fx-min-width: 2.15em;
+    -fx-min-height: 2.15em;
+    -fx-pref-width: 2.15em;
+    -fx-pref-height: 2.15em;
     -fx-padding: 0;
     -fx-background-color: -color-bg-subtle;
     -fx-border-color: -color-border-subtle;
@@ -74,7 +74,7 @@
 }
 
 .filter-badge-btn {
-    -fx-font-size: 0.8em;
+    -fx-font-size: 0.85em;
     -fx-padding: 2 7;
     -fx-background-radius: 10;
     -fx-border-radius: 10;
@@ -130,7 +130,7 @@
 }
 
 .diff-object-title {
-    -fx-font-size: 0.9em;
+    -fx-font-size: 1em;
     -fx-font-weight: 500;
     -fx-text-fill: -color-fg-default;
 }
@@ -142,7 +142,7 @@
     -fx-border-color: -color-success-emphasis;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
-    -fx-font-size: 0.75em;
+    -fx-font-size: 0.85em;
     -fx-font-weight: bold;
     -fx-padding: 1 5;
 }
@@ -153,7 +153,7 @@
     -fx-border-color: -color-warning-emphasis;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
-    -fx-font-size: 0.75em;
+    -fx-font-size: 0.85em;
     -fx-font-weight: bold;
     -fx-padding: 1 5;
 }
@@ -164,7 +164,7 @@
     -fx-border-color: -color-danger-emphasis;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
-    -fx-font-size: 0.75em;
+    -fx-font-size: 0.85em;
     -fx-font-weight: bold;
     -fx-padding: 1 5;
 }
@@ -174,7 +174,7 @@
     -fx-text-fill: -color-fg-muted;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
-    -fx-font-size: 0.75em;
+    -fx-font-size: 0.85em;
     -fx-padding: 1 5;
 }
 
@@ -231,11 +231,20 @@
     -fx-background-color: -color-bg-subtle;
     -fx-border-color: -color-border-subtle;
     -fx-border-width: 1 0 0 0;
-    -fx-padding: 4 12;
-    -fx-min-height: 24;
-    -fx-max-height: 24;
+    -fx-padding: 0.15em 0.75em;
     -fx-alignment: CENTER_LEFT;
-    -fx-font-size: 0.8em;
+    -fx-font-size: 0.85em;
     -fx-text-fill: -color-fg-muted;
+}
+
+/* Helper classes conforming to R-UI-11 & R-UI-19 */
+.compare-metrics-title {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-weight: bold;
+    -fx-font-size: 0.85em;
+}
+
+.options-dialog-content {
+    -fx-padding: 1.2em;
 }
 

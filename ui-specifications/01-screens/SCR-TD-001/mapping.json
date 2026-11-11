@@ -1,0 +1,170 @@
+{
+  "schema_version": "2.0",
+  "screen_id": "SCR-TD-001",
+  "mappings": [
+    {
+      "source_id": "table-designer.js#openNewTable",
+      "source_type": "python_web_ui",
+      "target_id": "TableDesignerTab#openNew",
+      "target_type": "javafx",
+      "target_component": "TableDesignerTab",
+      "target_reference": "app.ui.designer.TableDesignerTab",
+      "mapping_status": "designed",
+      "behavior_parity": "changed_with_approval",
+      "verified_by": "none",
+      "differences": [
+        "Python tạo tên Table_N không kiểm tra trùng DB; Java kiểm tra với danh sách bảng hiện có trong schema (sửa B15)"
+      ],
+      "approval_reference": "feature_10_table_designer_migration_plan.md#mục-4-b15"
+    },
+    {
+      "source_id": "table-designer.js#openTable",
+      "source_type": "python_web_ui",
+      "target_id": "TableDesignerTab#openEdit",
+      "target_type": "javafx",
+      "target_component": "TableDesignerTab",
+      "target_reference": "app.ui.designer.TableDesignerTab",
+      "mapping_status": "designed",
+      "behavior_parity": "matched",
+      "verified_by": "none",
+      "differences": [],
+      "approval_reference": "none"
+    },
+    {
+      "source_id": "table-designer.js#buildColumnsGrid",
+      "source_type": "python_web_ui",
+      "target_id": "GRD-TD-COLUMNS",
+      "target_type": "javafx",
+      "target_component": "TableView",
+      "target_reference": "app.ui.designer.ColumnGrid",
+      "mapping_status": "designed",
+      "behavior_parity": "changed_with_approval",
+      "verified_by": "none",
+      "differences": [
+        "Hỗ trợ chọn nhiều dòng bằng Shift/Ctrl, phím tắt Delete xóa tất cả dòng đang chọn (sửa B11), Ctrl+A chỉ chọn không copy (sửa B14), dán TSV từ Excel (sửa B14)"
+      ],
+      "approval_reference": "feature_10_table_designer_migration_plan.md#mục-5"
+    },
+    {
+      "source_id": "table-designer.js#duplicateColumn",
+      "source_type": "python_web_ui",
+      "target_id": "BTN-TD-DUPLICATE",
+      "target_type": "javafx",
+      "target_component": "RowCommands#duplicateRows",
+      "target_reference": "app.ui.designer.commands.RowCommands",
+      "mapping_status": "designed",
+      "behavior_parity": "changed_with_approval",
+      "verified_by": "none",
+      "differences": [
+        "Python nhân bản giữ nguyên original_name dẫn tới diff hiểu nhầm là đổi tên; Java gán ColumnId mới và originalName = null (sửa B1)"
+      ],
+      "approval_reference": "feature_10_table_designer_migration_plan.md#mục-4-b1"
+    },
+    {
+      "source_id": "table-designer.js#buildInspector",
+      "source_type": "python_web_ui",
+      "target_id": "INSP-TD-PANE",
+      "target_type": "javafx",
+      "target_component": "ColumnInspector",
+      "target_reference": "app.ui.designer.ColumnInspector",
+      "mapping_status": "designed",
+      "behavior_parity": "changed_with_approval",
+      "verified_by": "none",
+      "differences": [
+        "Tách rõ Default Value thành Giá trị vs Biểu thức (sửa B7); hiển thị danh sách đối tượng phụ thuộc (sửa B4, B5)"
+      ],
+      "approval_reference": "feature_10_table_designer_migration_plan.md#mục-4-b7"
+    },
+    {
+      "source_id": "table-designer.js#updateLiveSql",
+      "source_type": "python_web_ui",
+      "target_id": "REG-TD-DDL-PREVIEW",
+      "target_type": "javafx",
+      "target_component": "DdlPreviewPane",
+      "target_reference": "app.ui.designer.DdlPreviewPane",
+      "mapping_status": "designed",
+      "behavior_parity": "changed_with_approval",
+      "verified_by": "none",
+      "differences": [
+        "Python gửi JSON sang backend tính toán qua HTTP; Java tính toán trực tiếp trong bộ nhớ bằng Java trên luồng nền với debounce 200ms (sửa B19)"
+      ],
+      "approval_reference": "feature_10_table_designer_migration_plan.md#mục-4-b19"
+    },
+    {
+      "source_id": "table-designer.js#openSaveConfirmationModal",
+      "source_type": "python_web_ui",
+      "target_id": "REG-TD-SAVE-DIALOG",
+      "target_type": "javafx",
+      "target_component": "SaveDesignDialog",
+      "target_reference": "app.ui.designer.SaveDesignDialog",
+      "mapping_status": "designed",
+      "behavior_parity": "changed_with_approval",
+      "verified_by": "none",
+      "differences": [
+        "Lọc nhóm câu lệnh chỉ dùng để quan sát, khi áp dụng luôn chạy đủ migration script sinh từ model (sửa B2); yêu cầu gõ tên bảng xác nhận khi có thao tác phá hủy dữ liệu"
+      ],
+      "approval_reference": "feature_10_table_designer_migration_plan.md#mục-4-b2"
+    },
+    {
+      "source_id": "table-designer.js#copyTable",
+      "source_type": "python_web_ui",
+      "target_id": "REG-TD-COPY-DIALOG",
+      "target_type": "javafx",
+      "target_component": "CopyTableDialog",
+      "target_reference": "app.ui.designer.CopyTableDialog",
+      "mapping_status": "designed",
+      "behavior_parity": "changed_with_approval",
+      "verified_by": "none",
+      "differences": [
+        "Python replace chuỗi gây sai tên; Java kiểm tra tên với DB, kiểm tra độ dài định danh 128/63 ký tự, có hộp thoại chọn thành phần sao chép (sửa B10)"
+      ],
+      "approval_reference": "feature_10_table_designer_migration_plan.md#mục-4-b10"
+    },
+    {
+      "source_id": "table_designer_service.py#generate_create_table_ddl",
+      "source_type": "python_backend",
+      "target_id": "DdlDialect#generateCreateTable",
+      "target_type": "core_java",
+      "target_component": "SqlServerDdlDialect, PostgresDdlDialect",
+      "target_reference": "com.lltool.core.application.designer.DdlDialect",
+      "mapping_status": "designed",
+      "behavior_parity": "changed_with_approval",
+      "verified_by": "none",
+      "differences": [
+        "PostgreSQL hỗ trợ enum index type chuẩn (btree, hash, gin...) thay vì nonclustered (sửa B3); nhân đôi nháy đơn literal an toàn (sửa B16)"
+      ],
+      "approval_reference": "feature_10_table_designer_migration_plan.md#mục-4-b3-b16"
+    },
+    {
+      "source_id": "table_designer_service.py#generate_diff",
+      "source_type": "python_backend",
+      "target_id": "TableDesignDiffer#computeDiff",
+      "target_type": "core_java",
+      "target_component": "TableDesignDiffer",
+      "target_reference": "com.lltool.core.application.designer.TableDesignDiffer",
+      "mapping_status": "designed",
+      "behavior_parity": "changed_with_approval",
+      "verified_by": "none",
+      "differences": [
+        "Chuẩn hóa size None vs '' về OptionalInt (sửa B6); theo dõi đối tượng phụ thuộc khi ALTER COLUMN (sửa B5); bảo toàn Collation khi thêm/sửa cột (sửa B5, B9); trigger dùng CREATE OR ALTER (sửa B8)"
+      ],
+      "approval_reference": "feature_10_table_designer_migration_plan.md#mục-4-b5-b6-b8-b9"
+    },
+    {
+      "source_id": "designer_api.py#apply_table_design",
+      "source_type": "python_backend",
+      "target_id": "TableDesignerService#applyMigration",
+      "target_type": "core_java",
+      "target_component": "TableDesignerService",
+      "target_reference": "app.framework.designer.TableDesignerService",
+      "mapping_status": "designed",
+      "behavior_parity": "changed_with_approval",
+      "verified_by": "none",
+      "differences": [
+        "Thực thi trong transaction duy nhất qua TabSessionManager; khóa áp dụng khi ở chế độ Read-Only; làm mới node Tables trên Explorer (sửa B20)"
+      ],
+      "approval_reference": "feature_10_table_designer_migration_plan.md#mục-4-b20"
+    }
+  ]
+}
+

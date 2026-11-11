@@ -49,15 +49,22 @@ public class DesktopGridExportService {
 
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
             String uniqueId = UUID.randomUUID().toString().substring(0, 6);
-            String fileName = "Export_" + timestamp + "_" + uniqueId + ".csv";
+            String fileName = "Export_" + timestamp + "_" + uniqueId + ".xlsx";
             File tempFile = new File(tempDir, fileName);
 
-            // Write CSV with UTF-8 BOM (\uFEFF)
-            try (FileOutputStream fos = new FileOutputStream(tempFile);
-                 OutputStreamWriter writer = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
-                writer.write('\uFEFF'); // UTF-8 BOM
-                writer.write(GridDataExportUtils.formatCsv(columnNames, rows, true));
-                writer.flush();
+            // Write real .xlsx format matching Python LLTool
+            try {
+                FastXlsxWriter.write(tempFile, columnNames, rows);
+            } catch (Exception ex) {
+                log.warn("FastXlsxWriter failed, falling back to CSV: {}", ex.getMessage());
+                fileName = "Export_" + timestamp + "_" + uniqueId + ".csv";
+                tempFile = new File(tempDir, fileName);
+                try (FileOutputStream fos = new FileOutputStream(tempFile);
+                     OutputStreamWriter writer = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
+                    writer.write('\uFEFF'); // UTF-8 BOM
+                    writer.write(GridDataExportUtils.formatCsv(columnNames, rows, true));
+                    writer.flush();
+                }
             }
 
             // Set Read-Only attribute on the temporary file
@@ -88,9 +95,10 @@ public class DesktopGridExportService {
         try {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save Results As...");
-            fileChooser.setInitialFileName(defaultFileName != null ? defaultFileName : "Query_Results.csv");
+            fileChooser.setInitialFileName(defaultFileName != null ? defaultFileName : "Query_Results.xlsx");
 
             fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Microsoft Excel Worksheet (*.xlsx)", "*.xlsx"),
                 new FileChooser.ExtensionFilter("CSV (Comma delimited) (*.csv)", "*.csv"),
                 new FileChooser.ExtensionFilter("TSV (Tab delimited) (*.txt)", "*.txt"),
                 new FileChooser.ExtensionFilter("JSON (*.json)", "*.json"),
@@ -106,22 +114,26 @@ public class DesktopGridExportService {
             String path = selectedFile.getAbsolutePath();
             String lower = path.toLowerCase();
 
-            try (FileOutputStream fos = new FileOutputStream(selectedFile);
-                 OutputStreamWriter writer = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
+            if (lower.endsWith(".xlsx")) {
+                FastXlsxWriter.write(selectedFile, columnNames, rows);
+            } else {
+                try (FileOutputStream fos = new FileOutputStream(selectedFile);
+                     OutputStreamWriter writer = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
 
-                if (lower.endsWith(".json")) {
-                    writer.write(GridDataExportUtils.formatJson(columnNames, rows, true));
-                } else if (lower.endsWith(".xml")) {
-                    writer.write(GridDataExportUtils.formatXmlSpreadsheet(columnNames, rows));
-                } else if (lower.endsWith(".txt") || lower.endsWith(".tsv")) {
-                    writer.write('\uFEFF');
-                    writer.write(GridDataExportUtils.formatTsv(columnNames, rows, true));
-                } else {
-                    // Default to CSV with BOM
-                    writer.write('\uFEFF');
-                    writer.write(GridDataExportUtils.formatCsv(columnNames, rows, true));
+                    if (lower.endsWith(".json")) {
+                        writer.write(GridDataExportUtils.formatJson(columnNames, rows, true));
+                    } else if (lower.endsWith(".xml")) {
+                        writer.write(GridDataExportUtils.formatXmlSpreadsheet(columnNames, rows));
+                    } else if (lower.endsWith(".txt") || lower.endsWith(".tsv")) {
+                        writer.write('\uFEFF');
+                        writer.write(GridDataExportUtils.formatTsv(columnNames, rows, true));
+                    } else {
+                        // Default to CSV with BOM
+                        writer.write('\uFEFF');
+                        writer.write(GridDataExportUtils.formatCsv(columnNames, rows, true));
+                    }
+                    writer.flush();
                 }
-                writer.flush();
             }
 
             log.info("Saved query results to: {}", selectedFile.getAbsolutePath());

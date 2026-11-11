@@ -2,7 +2,6 @@ package app.ui.components;
 
 import atlantafx.base.theme.Styles;
 import javafx.scene.control.Button;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 public class AppButton extends Button {
 
@@ -38,7 +37,7 @@ public class AppButton extends Button {
     public AppButton(String text, String iconLiteral) {
         super(text);
         if (iconLiteral != null && !iconLiteral.isBlank()) {
-            setGraphic(new FontIcon(iconLiteral));
+            setGraphic(Icons.of(iconLiteral));
         }
         initStyle();
     }
@@ -46,7 +45,7 @@ public class AppButton extends Button {
     public AppButton(String text, String iconLiteral, Variant variant) {
         super(text);
         if (iconLiteral != null && !iconLiteral.isBlank()) {
-            setGraphic(new FontIcon(iconLiteral));
+            setGraphic(Icons.of(iconLiteral));
         }
         this.variant = variant;
         initStyle();
@@ -55,7 +54,7 @@ public class AppButton extends Button {
     public AppButton(String text, String iconLiteral, Variant variant, Size size) {
         super(text);
         if (iconLiteral != null && !iconLiteral.isBlank()) {
-            setGraphic(new FontIcon(iconLiteral));
+            setGraphic(Icons.of(iconLiteral));
         }
         this.variant = variant;
         this.size = size;
@@ -82,7 +81,7 @@ public class AppButton extends Button {
 
     public void setIcon(String iconLiteral) {
         if (iconLiteral != null && !iconLiteral.isBlank()) {
-            setGraphic(new FontIcon(iconLiteral));
+            setGraphic(Icons.of(iconLiteral));
         } else {
             setGraphic(null);
         }
@@ -90,6 +89,7 @@ public class AppButton extends Button {
 
     private void initStyle() {
         getStyleClass().add("app-button");
+        setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE); // R-UI-13.8: a button label is never cut
         updateClasses();
     }
 
@@ -108,12 +108,6 @@ public class AppButton extends Button {
             case FLAT -> getStyleClass().add(Styles.FLAT);
             case OUTLINE -> getStyleClass().add(Styles.BUTTON_OUTLINED);
             case DEFAULT -> {}
-        }
-
-        switch (size) {
-            case SMALL -> getStyleClass().add(Styles.SMALL);
-            case MEDIUM -> getStyleClass().add(Styles.MEDIUM);
-            case LARGE -> getStyleClass().add(Styles.LARGE);
         }
     }
 }

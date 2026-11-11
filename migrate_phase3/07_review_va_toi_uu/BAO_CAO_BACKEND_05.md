@@ -71,3 +71,4 @@ Tất cả các test đã được thực thi và vượt qua 100% qua lệnh `.
 2. **DatabaseType Package:** `DatabaseType` nằm trong `com.lltool.infrastructure.database.api.DatabaseType`, không phải `com.lltool.core.domain.connection.DatabaseType`.
 3. **ConnectionProfileDto Field:** Trường cơ sở dữ liệu mặc định là `profile.databaseName()`, không phải `defaultDatabase()`.
 4. **Fast PNG Export Method:** `exportToPng` nằm ở `ZoomableGraphPane` (lớp cha dùng chung cho các Canvas đồ thị), không nằm ở `DependencyGraphCanvas`. Đã tối ưu trực tiếp tại `ZoomableGraphPane` để toàn bộ các canvas đồ thị đều được hưởng lợi từ việc tối ưu bulk pixel buffer.
+

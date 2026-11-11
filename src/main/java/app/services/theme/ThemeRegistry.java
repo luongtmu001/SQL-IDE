@@ -160,6 +160,13 @@ public final class ThemeRegistry {
         for (ThemeService.AppTheme t : ThemeService.AppTheme.values()) {
             if (t.name().equalsIgnoreCase(k)) return ThemeDefinition.builtIn(t);
         }
+        // Fallback for LLTool aliases (e.g. "ayu-mirage-bordered" -> "ayu-mirage")
+        if (k.endsWith("-bordered") || k.endsWith("-unbordered")) {
+            String stripped = k.replace("-bordered", "").replace("-unbordered", "");
+            for (ThemeDefinition d : all()) {
+                if (d.id().equalsIgnoreCase(stripped) || d.label().equalsIgnoreCase(stripped)) return d;
+            }
+        }
         return null;
     }
 
