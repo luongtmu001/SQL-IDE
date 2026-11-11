@@ -321,55 +321,132 @@ public class CriteriaGrid extends VBox {
         lblCountBadge.setText(criteriaList.size() + " điều kiện");
     }
 
+    public record WhereClause(String sql, List<Object> params, String previewSql) {}
+
     /**
-     * Builds the SQL WHERE clause string based on current criteria.
+     * Builds the SQL WHERE clause string based on current criteria (DE-9).
      */
     public String buildWhereClause(boolean isPg) {
+        WhereClause wc = buildWhere(null, isPg);
+        return wc != null ? wc.previewSql() : null;
+    }
+
+    public WhereClause buildWhere(com.lltool.core.domain.tableeditor.model.TableEditorMetadata metadata, boolean isPg) {
         List<String> conditions = new ArrayList<>();
+        List<String> previewConditions = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
+
         for (CriteriaRow r : criteriaList) {
             String col = r.getColumn();
             if (col == null || col.isBlank()) continue;
 
-            String quotedCol = isPg ? ("\"" + col + "\"") : ("[" + col + "]");
-            String op = r.getOperator() != null ? r.getOperator().toUpperCase() : "=";
+            String quotedCol = com.lltool.core.application.tableeditor.TableDataEditorService.quoteIdent(col, isPg);
+            String op = r.getOperator() != null ? r.getOperator().trim().toUpperCase() : "=";
             String val = r.getFilterValue() != null ? r.getFilterValue().trim() : "";
             String orVal = r.getOrValue() != null ? r.getOrValue().trim() : "";
 
             if ("IS NULL".equals(op) || "IS NOT NULL".equals(op)) {
                 conditions.add(quotedCol + " " + op);
+                previewConditions.add(quotedCol + " " + op);
                 continue;
             }
 
             if (val.isBlank()) continue;
 
-            String cond1 = buildSingleCondition(quotedCol, op, val);
+            var c1 = buildSingleCondition(quotedCol, op, val, isPg);
             if (!orVal.isBlank()) {
-                String cond2 = buildSingleCondition(quotedCol, op, orVal);
-                conditions.add("(" + cond1 + " OR " + cond2 + ")");
+                var c2 = buildSingleCondition(quotedCol, op, orVal, isPg);
+                conditions.add("(" + c1.sql() + " OR " + c2.sql() + ")");
+                previewConditions.add("(" + c1.preview() + " OR " + c2.preview() + ")");
+                params.addAll(c1.params());
+                params.addAll(c2.params());
             } else {
-                conditions.add(cond1);
+                conditions.add(c1.sql());
+                previewConditions.add(c1.preview());
+                params.addAll(c1.params());
             }
         }
 
         if (conditions.isEmpty()) return null;
-        return String.join(" AND ", conditions);
+        return new WhereClause(String.join(" AND ", conditions), params, String.join(" AND ", previewConditions));
     }
 
-    private String buildSingleCondition(String quotedCol, String op, String val) {
-        if (!val.startsWith("'") && !isNumeric(val) && !val.equalsIgnoreCase("NULL")) {
-            val = "'" + val.replace("'", "''") + "'";
+    private record CondResult(String sql, String preview, List<Object> params) {}
+
+    private CondResult buildSingleCondition(String quotedCol, String op, String val, boolean isPg) {
+        if ("IN".equals(op) || "NOT IN".equals(op)) {
+            String clean = val;
+            if (clean.startsWith("(") && clean.endsWith(")")) {
+                clean = clean.substring(1, clean.length() - 1).trim();
+            }
+            String[] tokens = clean.split(",");
+            List<String> formatted = new ArrayList<>();
+            List<String> placeholders = new ArrayList<>();
+            List<Object> params = new ArrayList<>();
+
+            for (String tok : tokens) {
+                String t = tok.trim();
+                if (t.isEmpty()) continue;
+                placeholders.add("?");
+                if (isStrictNumeric(t)) {
+                    formatted.add(t);
+                    params.add(t.contains(".") ? (Number) Double.valueOf(t) : (Number) Long.valueOf(t));
+                } else {
+                    String str = stripQuotes(t);
+                    formatted.add("'" + str.replace("'", "''") + "'");
+                    params.add(str);
+                }
+            }
+            if (placeholders.isEmpty()) {
+                return new CondResult("1 = 1", "1 = 1", List.of());
+            }
+            String sql = quotedCol + " " + op + " (" + String.join(", ", placeholders) + ")";
+            String preview = quotedCol + " " + op + " (" + String.join(", ", formatted) + ")";
+            return new CondResult(sql, preview, params);
         }
-        return quotedCol + " " + op + " " + val;
+
+        if ("LIKE".equals(op) || "NOT LIKE".equals(op)) {
+            String str = stripQuotes(val);
+            if (!str.contains("%") && !str.contains("_")) {
+                str = "%" + str + "%";
+            }
+            String sql = quotedCol + " " + op + " ?";
+            String preview = quotedCol + " " + op + " '" + str.replace("'", "''") + "'";
+            return new CondResult(sql, preview, List.of(str));
+        }
+
+        if ("NULL".equalsIgnoreCase(val)) {
+            if ("=".equals(op)) {
+                return new CondResult(quotedCol + " IS NULL", quotedCol + " IS NULL", List.of());
+            } else if ("!=".equals(op) || "<>".equals(op)) {
+                return new CondResult(quotedCol + " IS NOT NULL", quotedCol + " IS NOT NULL", List.of());
+            }
+        }
+
+        if (isStrictNumeric(val)) {
+            Object num = val.contains(".") ? (Number) Double.valueOf(val) : (Number) Long.valueOf(val);
+            return new CondResult(quotedCol + " " + op + " ?", quotedCol + " " + op + " " + val, List.of(num));
+        }
+
+        String str = stripQuotes(val);
+        String previewVal = "'" + str.replace("'", "''") + "'";
+        return new CondResult(quotedCol + " " + op + " ?", quotedCol + " " + op + " " + previewVal, List.of(str));
     }
 
-    private boolean isNumeric(String s) {
-        if (s == null) return false;
-        try {
-            Double.parseDouble(s);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
+    private static String stripQuotes(String s) {
+        if (s == null) return "";
+        String t = s.trim();
+        if ((t.startsWith("'") && t.endsWith("'")) || (t.startsWith("\"") && t.endsWith("\""))) {
+            if (t.length() >= 2) {
+                return t.substring(1, t.length() - 1);
+            }
         }
+        return t;
+    }
+
+    private static boolean isStrictNumeric(String s) {
+        if (s == null || s.isBlank()) return false;
+        return s.trim().matches("^[+-]?\\d+(\\.\\d+)?$");
     }
 
     /**
