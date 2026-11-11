@@ -10,6 +10,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseButton;
@@ -22,6 +23,8 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,6 +35,8 @@ import java.io.File;
  * Handles viewport clipping, unmanaged content layout, centered zoom, and scale-aware dragging.
  */
 public class ZoomableGraphPane extends Pane {
+
+    private static final Logger log = LoggerFactory.getLogger(ZoomableGraphPane.class);
 
     public record FitResult(double scale, double translateX, double translateY) {}
 
@@ -293,7 +298,7 @@ public class ZoomableGraphPane extends Pane {
     }
 
     /**
-     * Exports the graph scene to a PNG file.
+     * Exports the graph scene to a PNG file using bulk pixel transfer (DG-6).
      */
     public boolean exportToPng(File targetFile) {
         try {
@@ -310,13 +315,13 @@ public class ZoomableGraphPane extends Pane {
 
             BufferedImage bImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             PixelReader reader = fxImage.getPixelReader();
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    bImage.setRGB(x, y, reader.getArgb(x, y));
-                }
-            }
+            int[] buffer = new int[width * height];
+            reader.getPixels(0, 0, width, height, PixelFormat.getIntArgbInstance(), buffer, 0, width);
+            bImage.setRGB(0, 0, width, height, buffer, 0, width);
+
             return ImageIO.write(bImage, "png", targetFile);
         } catch (Exception e) {
+            log.error("Failed to export graph to PNG", e);
             return false;
         }
     }

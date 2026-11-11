@@ -2,20 +2,23 @@ package app.ui.dependency;
 
 import app.application.AppContext;
 import app.controllers.MainController;
+import app.framework.async.AsyncTaskManager;
+import app.framework.async.LoadTask;
 import app.framework.backend.BackendFlags;
+import app.framework.bootstrap.DesktopBootstrap;
+import app.framework.connection.ConnectionSessionManager;
+import app.framework.dependency.DependencyGraphLoader;
+import app.framework.metadata.DesktopMetadataService;
 import app.framework.metadata.MockMetadataProvider;
 import app.services.NotificationService;
-import app.ui.components.AppButton;
-import app.ui.components.EmptyState;
-import app.ui.components.IconButton;
-import app.ui.components.LoadingOverlay;
-import app.ui.components.SegmentedToggle;
-import app.ui.components.WorkspaceFooter;
-import app.ui.components.WorkspaceToolbar;
+import app.ui.components.*;
 import app.ui.editor.SqlEditorTab;
 import com.lltool.core.application.connection.dto.ConnectionProfileDto;
 import com.lltool.core.application.dependency.DependencyGraphService;
 import com.lltool.core.domain.dependency.*;
+import com.lltool.infrastructure.database.api.DatabaseConnection;
+import com.lltool.infrastructure.database.api.DatabaseProvider;
+import com.lltool.infrastructure.database.api.DatabaseType;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -30,7 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
@@ -58,8 +62,12 @@ public class DependencyGraphTab extends SqlEditorTab {
     private int currentDepth = 2;
     private DependencyGraphModel activeModel;
 
-    // UI Controls - Header Toolbar
-    private final ComboBox<String> cbRootObject = new ComboBox<>();
+    // Async Loading & Cache (DG-4)
+    private final Map<String, DependencyGraphModel> graphCache = new ConcurrentHashMap<>();
+    private LoadTask<DependencyGraphModel> currentLoadTask;
+
+    // UI Controls - Header Toolbar (DG-2)
+    private final ComboBox<RootObjectItem> cbRootObject = new ComboBox<>();
     private final SegmentedToggle<GraphDirection> dirToggle = new SegmentedToggle<>();
     private final ComboBox<String> cbDepth = new ComboBox<>();
 
@@ -85,7 +93,7 @@ public class DependencyGraphTab extends SqlEditorTab {
 
     public DependencyGraphTab(ConnectionProfileDto profile, String catalog, String schema,
                               String objectName, String columnName, DependencyNodeType objectType,
-                              Consumer<SqlEditorTabAction> tabActionHandler) {
+                              Consumer<SqlEditorTab.SqlEditorTabAction> tabActionHandler) {
         super(
                 buildTabTitle(schema, objectName, columnName),
                 "",
@@ -108,6 +116,9 @@ public class DependencyGraphTab extends SqlEditorTab {
 
         buildLayout();
         initShortcuts();
+
+        // Populate root objects picker (DG-2)
+        populateRootObjects();
 
         // Load graph data
         Platform.runLater(this::loadGraph);
@@ -204,25 +215,45 @@ public class DependencyGraphTab extends SqlEditorTab {
         Label pickLbl = new Label("Gốc:");
         pickLbl.getStyleClass().add("dep-control-label");
 
-        cbRootObject.getItems().addAll(
-                schema + "." + objectName,
-                "dbo.orders",
-                "dbo.customers",
-                "dbo.v_customer_orders",
-                "dbo.usp_close_period"
-        );
-        cbRootObject.setMinWidth(200);
-        cbRootObject.getSelectionModel().selectFirst();
-        cbRootObject.setOnAction(e -> {
-            String selected = cbRootObject.getValue();
-            if (selected != null && selected.contains(".")) {
-                String raw = selected.split(" ")[0];
-                if (raw.contains(".")) {
-                    String[] parts = raw.split("\\.");
-                    this.schema = parts[0];
-                    this.objectName = parts[1];
-                    loadGraph();
+        cbRootObject.setMinWidth(220);
+        cbRootObject.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(RootObjectItem item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    setText(item.getDisplayName());
+                    FontIcon icon = new FontIcon(item.type().getIconLiteral());
+                    icon.setIconSize(13);
+                    setGraphic(icon);
                 }
+            }
+        });
+        cbRootObject.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(RootObjectItem item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    setText(item.getDisplayName());
+                    FontIcon icon = new FontIcon(item.type().getIconLiteral());
+                    icon.setIconSize(13);
+                    setGraphic(icon);
+                }
+            }
+        });
+
+        cbRootObject.setOnAction(e -> {
+            RootObjectItem selected = cbRootObject.getValue();
+            if (selected != null) {
+                this.schema = selected.schema();
+                this.objectName = selected.name();
+                this.objectType = selected.type();
+                loadGraph(false);
             }
         });
 
@@ -250,8 +281,8 @@ public class DependencyGraphTab extends SqlEditorTab {
         cbDepth.getSelectionModel().select(1);
         cbDepth.setOnAction(e -> {
             int idx = cbDepth.getSelectionModel().getSelectedIndex();
-            this.currentDepth = (idx == 0) ? 1 : (idx == 1) ? 2 : (idx == 2) ? 3 : 5;
-            loadGraph();
+            this.currentDepth = (idx == 0) ? 1 : (idx == 1) ? 2 : (idx == 2) ? 3 : 100;
+            loadGraph(false);
         });
 
         depthBox.getChildren().addAll(depthLbl, cbDepth);
@@ -269,7 +300,7 @@ public class DependencyGraphTab extends SqlEditorTab {
         btnZoomOut.setOnAction(e -> graphCanvas.zoomOut());
         btnFitScreen.setOnAction(e -> graphCanvas.fitToScreen());
         btnResetZoom.setOnAction(e -> graphCanvas.resetZoom());
-        btnRefresh.setOnAction(e -> loadGraph());
+        btnRefresh.setOnAction(e -> loadGraph(true));
         btnExportPng.setOnAction(e -> exportPng());
 
         toolbar.addRight(btnZoomIn);
@@ -283,10 +314,84 @@ public class DependencyGraphTab extends SqlEditorTab {
         return toolbar;
     }
 
+    private void populateRootObjects() {
+        if (profile == null || MockMetadataProvider.isEnabled() || BackendFlags.mock(BackendFlags.Area.METADATA)) {
+            cbRootObject.getItems().setAll(
+                    new RootObjectItem("dbo", "orders", DependencyNodeType.TABLE),
+                    new RootObjectItem("dbo", "customers", DependencyNodeType.TABLE),
+                    new RootObjectItem("dbo", "v_customer_orders", DependencyNodeType.VIEW),
+                    new RootObjectItem("dbo", "v_monthly_revenue", DependencyNodeType.VIEW),
+                    new RootObjectItem("dbo", "usp_close_period", DependencyNodeType.PROCEDURE),
+                    new RootObjectItem(schema != null ? schema : "dbo", objectName, objectType)
+            );
+            selectCurrentRoot();
+            return;
+        }
+
+        AsyncTaskManager.getInstance().runInBackground(() -> {
+            List<RootObjectItem> items = new ArrayList<>();
+            try (DatabaseConnection dbConn = DesktopMetadataService.getInstance().explorerConnection(profile, catalog)) {
+                DatabaseType type = ConnectionSessionManager.mapDatabaseType(profile.databaseType());
+                var providerOpt = DesktopBootstrap.getInstance().getProviderRegistry().getProvider(type);
+                if (providerOpt.isPresent()) {
+                    var provider = providerOpt.get();
+                    // Tables
+                    var tablesRes = provider.getTables(dbConn, catalog, schema);
+                    if (tablesRes != null && tablesRes.isSuccess() && tablesRes.getData().isPresent()) {
+                        for (var t : tablesRes.getData().get()) {
+                            if (!t.isView()) {
+                                items.add(new RootObjectItem(t.schema(), t.name(), DependencyNodeType.TABLE));
+                            }
+                        }
+                    }
+                    // Views
+                    var viewsRes = provider.getViews(dbConn, catalog, schema);
+                    if (viewsRes != null && viewsRes.isSuccess() && viewsRes.getData().isPresent()) {
+                        for (var v : viewsRes.getData().get()) {
+                            items.add(new RootObjectItem(v.schema(), v.name(), DependencyNodeType.VIEW));
+                        }
+                    }
+                    // Routines
+                    var routRes = provider.getRoutines(dbConn, catalog, schema);
+                    if (routRes != null && routRes.isSuccess() && routRes.getData().isPresent()) {
+                        for (var r : routRes.getData().get()) {
+                            items.add(new RootObjectItem(r.schema(), r.name(), r.isProcedure() ? DependencyNodeType.PROCEDURE : DependencyNodeType.FUNCTION));
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                log.warn("Could not load schema objects for dependency picker: {}", ex.getMessage());
+            }
+
+            Platform.runLater(() -> {
+                if (!items.isEmpty()) {
+                    cbRootObject.getItems().setAll(items);
+                    selectCurrentRoot();
+                } else {
+                    cbRootObject.getItems().setAll(new RootObjectItem(schema, objectName, objectType));
+                    selectCurrentRoot();
+                }
+            });
+        });
+    }
+
+    private void selectCurrentRoot() {
+        for (RootObjectItem item : cbRootObject.getItems()) {
+            if (item.name().equalsIgnoreCase(objectName) &&
+                (schema == null || item.schema().equalsIgnoreCase(schema))) {
+                cbRootObject.setValue(item);
+                return;
+            }
+        }
+        if (!cbRootObject.getItems().isEmpty()) {
+            cbRootObject.getSelectionModel().selectFirst();
+        }
+    }
+
     private void initShortcuts() {
         getContent().addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F5) {
-                loadGraph();
+                loadGraph(true);
                 e.consume();
             } else if (e.isControlDown() && e.getCode() == KeyCode.DIGIT0) {
                 graphCanvas.fitToScreen();
@@ -303,42 +408,83 @@ public class DependencyGraphTab extends SqlEditorTab {
 
     private void setDirection(GraphDirection dir) {
         this.currentDirection = dir;
-        loadGraph();
+        loadGraph(false);
     }
 
     public void loadGraph() {
-        if (loadingOverlay != null) loadingOverlay.show("Đang phân tích quan hệ phụ thuộc...", null);
+        loadGraph(false);
+    }
 
-        // Load asynchronously to prevent UI freeze
-        new Thread(() -> {
-            try {
-                // Build model using DependencyGraphService
-                DependencyGraphModel model = graphService.createSampleOrdersGraph(currentDirection, currentDepth);
-                Thread.sleep(120); // Smooth animation transition
+    public void loadGraph(boolean forceRefresh) {
+        if (forceRefresh) {
+            graphCache.clear();
+        }
 
-                Platform.runLater(() -> {
-                    this.activeModel = model;
-                    lblNodeEdgeStats.setText(model.getNodeCount() + " đối tượng · " + model.getEdgeCount() + " liên kết");
-                    workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
-                    if (model.getNodeCount() == 0) {
-                        emptyState.setVisible(true);
-                        graphCanvas.setVisible(false);
-                    } else {
-                        emptyState.setVisible(false);
-                        graphCanvas.setVisible(true);
-                        graphCanvas.setModel(model);
-                        inspectorPanel.inspectNode(model.getRootNode(), model);
+        String targetKey = (columnName != null && !columnName.isBlank())
+                ? (schema + "." + objectName + "." + columnName)
+                : (schema + "." + objectName);
+        String cacheKey = targetKey + "|" + currentDirection.name() + "|" + currentDepth;
+
+        if (!forceRefresh && graphCache.containsKey(cacheKey)) {
+            applyModel(graphCache.get(cacheKey));
+            return;
+        }
+
+        if (currentLoadTask != null) {
+            currentLoadTask.cancel();
+        } else {
+            currentLoadTask = new LoadTask<>();
+        }
+
+        if (loadingOverlay != null) {
+            loadingOverlay.show("Đang phân tích quan hệ phụ thuộc...", () -> {
+                if (currentLoadTask != null) currentLoadTask.cancel();
+            });
+        }
+
+        currentLoadTask.execute(
+                ctx -> {
+                    ctx.checkCancelled();
+                    return DependencyGraphLoader.load(
+                            profile, catalog, schema, objectName, columnName, objectType,
+                            currentDirection, currentDepth, msg -> {
+                                Platform.runLater(() -> {
+                                    if (loadingOverlay != null) loadingOverlay.setMessage(msg);
+                                });
+                            }
+                    );
+                },
+                model -> {
+                    if (model != null) {
+                        graphCache.put(cacheKey, model);
+                        applyModel(model);
                     }
                     if (loadingOverlay != null) loadingOverlay.hide();
-                });
-            } catch (Exception ex) {
-                log.error("Failed to build dependency graph", ex);
-                Platform.runLater(() -> {
+                },
+                error -> {
+                    log.error("Failed to build dependency graph", error);
                     if (loadingOverlay != null) loadingOverlay.hide();
-                    NotificationService.getInstance().showError("Lỗi", "Không thể xây dựng đồ thị phụ thuộc: " + ex.getMessage());
-                });
-            }
-        }).start();
+                    NotificationService.getInstance().showError("Lỗi", "Không thể xây dựng đồ thị phụ thuộc: " + (error != null ? error.getMessage() : "Unknown error"));
+                },
+                () -> {
+                    if (loadingOverlay != null) loadingOverlay.hide();
+                }
+        );
+    }
+
+    private void applyModel(DependencyGraphModel model) {
+        this.activeModel = model;
+        lblNodeEdgeStats.setText(model.getNodeCount() + " đối tượng · " + model.getEdgeCount() + " liên kết");
+        workspaceFooter.setSampleDataVisible(BackendFlags.mock(BackendFlags.Area.METADATA) || MockMetadataProvider.isEnabled());
+        if (model.getNodeCount() == 0) {
+            emptyState.setVisible(true);
+            graphCanvas.setVisible(false);
+        } else {
+            emptyState.setVisible(false);
+            graphCanvas.setVisible(true);
+            graphCanvas.setModel(model);
+            inspectorPanel.inspectNode(model.getRootNode(), model);
+        }
     }
 
     private void exportPng() {
