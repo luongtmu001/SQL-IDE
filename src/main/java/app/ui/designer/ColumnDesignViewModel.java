@@ -36,6 +36,72 @@ public class ColumnDesignViewModel {
 
     private final BooleanProperty deleted = new SimpleBooleanProperty(false);
     private final StringProperty statusMarker = new SimpleStringProperty("");
+    private ColumnDesignSnapshot initialSnapshot;
+
+    public record ColumnDesignSnapshot(
+            String name,
+            String dataType,
+            Integer length,
+            Integer scale,
+            boolean notNull,
+            boolean primaryKey,
+            String defaultValue,
+            boolean defaultIsExpression,
+            String defaultConstraintName,
+            String collation,
+            boolean identity,
+            Long identitySeed,
+            Long identityIncrement,
+            String sequenceName,
+            String computedFormula,
+            boolean computedPersisted,
+            String comment
+    ) {
+        public static ColumnDesignSnapshot of(ColumnDesignViewModel vm) {
+            return new ColumnDesignSnapshot(
+                    vm.name.get(),
+                    vm.dataType.get(),
+                    vm.length.get(),
+                    vm.scale.get(),
+                    vm.notNull.get(),
+                    vm.primaryKey.get(),
+                    vm.defaultValue.get(),
+                    vm.defaultIsExpression.get(),
+                    vm.defaultConstraintName.get(),
+                    vm.collation.get(),
+                    vm.identity.get(),
+                    vm.identitySeed.get(),
+                    vm.identityIncrement.get(),
+                    vm.sequenceName.get(),
+                    vm.computedFormula.get(),
+                    vm.computedPersisted.get(),
+                    vm.comment.get()
+            );
+        }
+
+        public boolean matches(ColumnDesignViewModel vm) {
+            return Objects.equals(name, vm.name.get())
+                    && Objects.equals(dataType, vm.dataType.get())
+                    && Objects.equals(length, vm.length.get())
+                    && Objects.equals(scale, vm.scale.get())
+                    && notNull == vm.notNull.get()
+                    && primaryKey == vm.primaryKey.get()
+                    && Objects.equals(defaultValue, vm.defaultValue.get())
+                    && defaultIsExpression == vm.defaultIsExpression.get()
+                    && Objects.equals(defaultConstraintName, vm.defaultConstraintName.get())
+                    && Objects.equals(collation, vm.collation.get())
+                    && identity == vm.identity.get()
+                    && (!identity || (Objects.equals(identitySeed, vm.identitySeed.get()) && Objects.equals(identityIncrement, vm.identityIncrement.get())))
+                    && Objects.equals(sequenceName, vm.sequenceName.get())
+                    && Objects.equals(computedFormula, vm.computedFormula.get())
+                    && computedPersisted == vm.computedPersisted.get()
+                    && Objects.equals(comment, vm.comment.get());
+        }
+    }
+
+    public void captureSnapshot() {
+        this.initialSnapshot = ColumnDesignSnapshot.of(this);
+    }
 
     public ColumnDesignViewModel(ColumnId id, String originalName, ColumnDesign originalState) {
         this.id = id != null ? id : ColumnId.generate();
@@ -99,6 +165,7 @@ public class ColumnDesignViewModel {
         vm.computedFormula.set(domain.getComputedFormula());
         vm.computedPersisted.set(domain.isComputedPersisted());
         vm.comment.set(domain.getComment());
+        vm.captureSnapshot();
         vm.updateStatusMarker();
         return vm;
     }
@@ -168,6 +235,9 @@ public class ColumnDesignViewModel {
 
     public boolean isModifiedFromOriginal() {
         if (originalState == null) return false;
+        if (initialSnapshot != null) {
+            return !initialSnapshot.matches(this);
+        }
         if (!Objects.equals(dataType.get(), originalState.getDataType())) return true;
         if (!Objects.equals(length.get(), originalState.getLength())) return true;
         if (!Objects.equals(scale.get(), originalState.getScale())) return true;
