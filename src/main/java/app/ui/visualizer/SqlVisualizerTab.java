@@ -50,12 +50,12 @@ public class SqlVisualizerTab extends SqlEditorTab {
 
     // UI Controls - Header Toolbar
     private final ComboBox<String> cbPresets = new ComboBox<>();
-    private final AppButton btnAnalyze = new AppButton("Phân tích SQL", "fth-play", AppButton.Variant.PRIMARY);
+    private final AppButton btnAnalyze = new AppButton("Phân tích", "fth-play", AppButton.Variant.PRIMARY);
     private final ToggleButton btnToggleSqlBox = new ToggleButton("Hiện SQL");
 
     private final ToggleGroup viewToggleGroup = new ToggleGroup();
-    private final ToggleButton btnViewPipeline = new ToggleButton("Luồng dữ liệu (Pipeline)");
-    private final ToggleButton btnViewTree = new ToggleButton("Cây cú pháp (AST)");
+    private final ToggleButton btnViewPipeline = new ToggleButton("Luồng dữ liệu");
+    private final ToggleButton btnViewTree = new ToggleButton("Cây cú pháp");
 
     private final IconButton btnZoomIn = new IconButton("fth-plus", "Phóng to (Ctrl++)");
     private final IconButton btnZoomOut = new IconButton("fth-minus", "Thu nhỏ (Ctrl+-)");
@@ -191,9 +191,9 @@ public class SqlVisualizerTab extends SqlEditorTab {
         lblPreset.getStyleClass().add("qf-control-label");
 
         cbPresets.getItems().addAll(
-                "Mẫu 1: Doanh thu theo khách hàng (GROUP BY & JOIN)",
-                "Mẫu 2: Tồn kho & Đơn hàng (Multi-JOIN & Filter)",
-                "Mẫu 3: Đơn hàng chưa thanh toán (LEFT JOIN & IS NULL)",
+                "Mẫu 1: Doanh thu theo khách hàng",
+                "Mẫu 2: Tồn kho & Đơn hàng",
+                "Mẫu 3: Đơn hàng chưa thanh toán",
                 "Tùy biến câu lệnh..."
         );
         cbPresets.getSelectionModel().selectFirst();
@@ -268,7 +268,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
 
         HBox topBox = new HBox(8);
         topBox.setAlignment(Pos.CENTER_LEFT);
-        Label title = new Label("Câu lệnh SQL phân tích (Hỗ trợ đồng bộ hai chiều với sơ đồ):");
+        Label title = new Label("Câu lệnh SQL");
         title.setStyle("-fx-font-size: 0.82em; -fx-text-fill: -color-fg-muted; -fx-font-weight: bold;");
 
         Region spacer = new Region();
@@ -356,7 +356,7 @@ public class SqlVisualizerTab extends SqlEditorTab {
 
     private void exportDiagramPng() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Xuất sơ đồ luồng dữ liệu (PNG)");
+        chooser.setTitle("Xuất sơ đồ luồng dữ liệu");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Hình ảnh PNG (*.png)", "*.png"));
         chooser.setInitialFileName("sql_flow_" + queryName.toLowerCase().replace(" ", "_") + ".png");
 

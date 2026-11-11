@@ -81,14 +81,14 @@ public class SchemaCompareTab extends SqlEditorTab {
     private final Label lblDiffSummaryBadge = new Label("Chưa so sánh");
     private final ToggleButton btnFilterAll = new ToggleButton("Tất cả (0)");
     private final ToggleButton btnFilterDiff = new ToggleButton("Khác biệt (0)");
-    private final ToggleButton btnFilterNew = new ToggleButton("+ Thêm mới (0)");
-    private final ToggleButton btnFilterDel = new ToggleButton("- Bị xóa (0)");
-    private final ToggleButton btnFilterMod = new ToggleButton("Δ Khác cấu trúc (0)");
+    private final ToggleButton btnFilterNew = new ToggleButton("Chỉ có ở nguồn (0)");
+    private final ToggleButton btnFilterDel = new ToggleButton("Chỉ có ở đích (0)");
+    private final ToggleButton btnFilterMod = new ToggleButton("Khác nhau (0)");
     private final ToggleGroup filterGroup = new ToggleGroup();
 
     private final Hyperlink linkSelectAll = new Hyperlink("Chọn tất cả");
     private final Hyperlink linkDeselectAll = new Hyperlink("Bỏ chọn");
-    private final AppButton btnDeployScript = new AppButton("Sinh Script Di chuyển (Deploy)", "fth-code", AppButton.Variant.SUCCESS);
+    private final AppButton btnDeployScript = new AppButton("Sinh script", "fth-code", AppButton.Variant.SUCCESS);
 
     // UI Controls - Master Tree
     private final SearchField quickFilterField = new SearchField("Lọc danh sách đối tượng...");
@@ -396,7 +396,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         icon.setIconSize(13);
         icon.getStyleClass().add("icon-success");
 
-        Label lblTitle = new Label("KỊCH BẢN NÂNG CẤP TỰ ĐỘNG (GENERATED MIGRATION SCRIPT)");
+        Label lblTitle = new Label("Script đồng bộ");
         lblTitle.getStyleClass().add("script-drawer-title");
 
         lblScriptBadge.getStyleClass().addAll("badge", "badge-subtle");
@@ -413,7 +413,7 @@ public class SchemaCompareTab extends SqlEditorTab {
         header.getChildren().addAll(icon, lblTitle, lblScriptBadge, spacer, btnCopyScript, btnOpenScriptInSql, btnClose);
 
         // Monaco Script Editor
-        scriptEditor = new EmbeddedMonaco("migration_script_" + System.currentTimeMillis(), "sql", "-- Bấm 'Sinh Script Di chuyển (Deploy)' để tạo script");
+        scriptEditor = new EmbeddedMonaco("migration_script_" + System.currentTimeMillis(), "sql", "-- Bấm 'Sinh script' để tạo script");
         scriptEditor.setReadOnly(false);
         VBox.setVgrow(scriptEditor.node(), Priority.ALWAYS);
 
@@ -555,10 +555,10 @@ public class SchemaCompareTab extends SqlEditorTab {
         VBox content = new VBox(10);
         content.setStyle("-fx-padding: 16;");
 
-        CheckBox chkTx = new CheckBox("Bọc trong Giao dịch an toàn (XACT_ABORT / BEGIN TRANSACTION)");
+        CheckBox chkTx = new CheckBox("Bọc trong giao dịch an toàn");
         chkTx.setSelected(wrapTransaction);
 
-        CheckBox chkDrop = new CheckBox("Cho phép tạo lệnh DROP đối tượng chỉ có ở Target (Destructive)");
+        CheckBox chkDrop = new CheckBox("Cho phép tạo lệnh DROP đối tượng");
         chkDrop.setSelected(includeDropTables);
 
         Label lblWarn = new Label("Lưu ý: Thao tác DROP có thể làm mất dữ liệu trên CSDL đích.");
@@ -637,9 +637,9 @@ public class SchemaCompareTab extends SqlEditorTab {
             lblDiffSummaryBadge.setText(s.getTotalDifferences() + " khác biệt");
             btnFilterAll.setText("Tất cả (" + s.totalObjects() + ")");
             btnFilterDiff.setText("Khác biệt (" + s.getTotalDifferences() + ")");
-            btnFilterNew.setText("+ Thêm mới (" + s.missingInTargetCount() + ")");
-            btnFilterDel.setText("- Bị xóa (" + s.extraInTargetCount() + ")");
-            btnFilterMod.setText("Δ Khác cấu trúc (" + s.differentCount() + ")");
+            btnFilterNew.setText("Chỉ có ở nguồn (" + s.missingInTargetCount() + ")");
+            btnFilterDel.setText("Chỉ có ở đích (" + s.extraInTargetCount() + ")");
+            btnFilterMod.setText("Khác nhau (" + s.differentCount() + ")");
 
             lblFooterStatus.setText(String.format("So sánh hoàn tất: %d khác biệt / %d đối tượng (%d ms)",
                     s.getTotalDifferences(), s.totalObjects(), elapsed));
@@ -902,19 +902,19 @@ public class SchemaCompareTab extends SqlEditorTab {
                 lblObjBadge.getStyleClass().removeAll("diff-badge-new", "diff-badge-del", "diff-badge-mod", "diff-badge-same");
                 switch (d.getStatus()) {
                     case MISSING_IN_TARGET -> {
-                        lblObjBadge.setText("+ New in Source");
+                        lblObjBadge.setText("Chỉ có ở nguồn");
                         lblObjBadge.getStyleClass().add("diff-badge-new");
                     }
                     case EXTRA_IN_TARGET -> {
-                        lblObjBadge.setText("- Deleted in Source");
+                        lblObjBadge.setText("Chỉ có ở đích");
                         lblObjBadge.getStyleClass().add("diff-badge-del");
                     }
                     case DIFFERENT -> {
-                        lblObjBadge.setText("Δ Modified");
+                        lblObjBadge.setText("Khác nhau");
                         lblObjBadge.getStyleClass().add("diff-badge-mod");
                     }
                     case IDENTICAL -> {
-                        lblObjBadge.setText("Identical");
+                        lblObjBadge.setText("Giống nhau");
                         lblObjBadge.getStyleClass().add("diff-badge-same");
                     }
                 }

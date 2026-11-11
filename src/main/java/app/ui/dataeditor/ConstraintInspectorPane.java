@@ -100,14 +100,14 @@ public class ConstraintInspectorPane extends VBox {
 
         // 2. Primary Key Section
         if (meta != null && !meta.getPrimaryKeyNames().isEmpty()) {
-            VBox pkCard = createSectionCard("Khóa chính (Primary Key)", "fth-key", "-color-warning-emphasis");
+            VBox pkCard = createSectionCard("Khoá chính", "fth-key", "-color-warning-emphasis");
             pkCard.getChildren().add(new Label("Cột: " + String.join(", ", meta.getPrimaryKeyNames())));
             contentBox.getChildren().add(pkCard);
         }
 
         // 3. Foreign Keys Section
         if (!design.getForeignKeys().isEmpty()) {
-            VBox fkCard = createSectionCard("Khóa ngoại (Foreign Keys)", "fth-link", "-color-accent-fg");
+            VBox fkCard = createSectionCard("Khoá ngoại", "fth-link", "-color-accent-fg");
             for (ForeignKeyDesign fk : design.getForeignKeys()) {
                 VBox fkItem = new VBox(2);
                 fkItem.setStyle("-fx-background-color: -color-bg-default; -fx-padding: 4; -fx-border-color: -color-border-subtle; -fx-border-radius: 3; -fx-background-radius: 3;");
@@ -123,7 +123,7 @@ public class ConstraintInspectorPane extends VBox {
 
         // 4. Unique Constraints Section
         if (!design.getUniques().isEmpty()) {
-            VBox uqCard = createSectionCard("Ràng buộc duy nhất (Unique)", "fth-shield", "-color-purple-emphasis");
+            VBox uqCard = createSectionCard("Ràng buộc duy nhất", "fth-shield", "-color-purple-emphasis");
             for (UniqueDesign uq : design.getUniques()) {
                 Label lbl = new Label(uq.getName() + " (" + String.join(", ", uq.getColumns()) + ")");
                 lbl.setStyle("-fx-font-family: monospace; -fx-font-size: 0.85em;");
@@ -134,7 +134,7 @@ public class ConstraintInspectorPane extends VBox {
 
         // 5. Check Constraints Section
         if (!design.getChecks().isEmpty()) {
-            VBox chkCard = createSectionCard("Ràng buộc kiểm tra (CHECK)", "fth-check-circle", "-color-success-emphasis");
+            VBox chkCard = createSectionCard("Ràng buộc kiểm tra", "fth-check-circle", "-color-success-emphasis");
             for (CheckDesign chk : design.getChecks()) {
                 VBox item = new VBox(2);
                 Label name = new Label(chk.getName());

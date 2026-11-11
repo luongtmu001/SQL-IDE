@@ -55,9 +55,9 @@ public class DependencyGraphTab extends SqlEditorTab {
     // UI Controls - Header Toolbar
     private final ComboBox<String> cbRootObject = new ComboBox<>();
     private final ToggleGroup directionGroup = new ToggleGroup();
-    private final ToggleButton btnDirBoth = new ToggleButton("Cả hai chiều");
-    private final ToggleButton btnDirDepends = new ToggleButton("Phụ thuộc vào (Depends On)");
-    private final ToggleButton btnDirReferenced = new ToggleButton("Được dùng bởi (Referenced By)");
+    private final ToggleButton btnDirBoth = new ToggleButton("Cả hai");
+    private final ToggleButton btnDirDepends = new ToggleButton("Phụ thuộc vào");
+    private final ToggleButton btnDirReferenced = new ToggleButton("Được dùng bởi");
 
     private final ComboBox<String> cbDepth = new ComboBox<>();
     private final ComboBox<String> cbLayout = new ComboBox<>();
@@ -165,11 +165,11 @@ public class DependencyGraphTab extends SqlEditorTab {
         pickLbl.getStyleClass().add("dep-control-label");
 
         cbRootObject.getItems().addAll(
-                schema + "." + objectName + (columnName != null ? " (" + columnName + ")" : "") + " (" + objectType.name() + ")",
-                "dbo.orders (TABLE)",
-                "dbo.customers (TABLE)",
-                "dbo.v_customer_orders (VIEW)",
-                "dbo.usp_close_period (PROCEDURE)"
+                schema + "." + objectName,
+                "dbo.orders",
+                "dbo.customers",
+                "dbo.v_customer_orders",
+                "dbo.usp_close_period"
         );
         cbRootObject.getSelectionModel().selectFirst();
         cbRootObject.setOnAction(e -> {
@@ -208,7 +208,7 @@ public class DependencyGraphTab extends SqlEditorTab {
         Label depthLbl = new Label("Độ sâu:");
         depthLbl.getStyleClass().add("dep-control-label");
 
-        cbDepth.getItems().addAll("Cấp 1", "Cấp 2 (Khuyên dùng)", "Cấp 3", "Tất cả");
+        cbDepth.getItems().addAll("Cấp 1", "Cấp 2", "Cấp 3", "Tất cả");
         cbDepth.getSelectionModel().select(1);
         cbDepth.setOnAction(e -> {
             int idx = cbDepth.getSelectionModel().getSelectedIndex();

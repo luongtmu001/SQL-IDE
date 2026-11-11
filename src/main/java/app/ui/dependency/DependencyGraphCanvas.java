@@ -170,7 +170,7 @@ public class DependencyGraphCanvas extends StackPane {
         HBox header = new HBox(6);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        Label badge = new Label(node.isRoot() ? "ROOT TARGET" : node.getType().name());
+        Label badge = new Label(node.isRoot() ? "Gốc" : node.getType().name());
         badge.getStyleClass().add("node-badge");
         if (node.isRoot()) {
             badge.getStyleClass().add("node-badge-root");

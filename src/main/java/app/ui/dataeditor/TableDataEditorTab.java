@@ -78,12 +78,12 @@ public class TableDataEditorTab extends SqlEditorTab {
     private ConstraintInspectorPane inspectorPane;
 
     // Controls
-    private final ToggleButton toggleCriteria = new ToggleButton("Criteria");
+    private final ToggleButton toggleCriteria = new ToggleButton("Bộ lọc");
     private final ToggleButton toggleSql = new ToggleButton("SQL");
-    private final ToggleButton toggleInspector = new ToggleButton("Inspector");
+    private final ToggleButton toggleInspector = new ToggleButton("Thông tin bảng");
     private final ComboBox<String> cbLimit = new ComboBox<>();
     private final TextField txtQuickSearch = new TextField();
-    private final Button btnSave = new Button("Save (0)");
+    private final Button btnSave = new Button("Lưu (0)");
     private final Label lblPkBadge = new Label("PK: —");
 
     // Status Bar Labels
@@ -193,7 +193,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         bar.getStyleClass().add("td-data-editor-toolbar");
 
         // Execute / Run
-        Button btnRun = new Button("Run (F5)");
+        Button btnRun = new Button("Chạy");
         btnRun.getStyleClass().addAll("button", "accent", "small");
         FontIcon playIcon = new FontIcon("fth-play");
         playIcon.setIconSize(12);
@@ -210,7 +210,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnSave.setOnAction(e -> handleSave());
 
         // Discard
-        Button btnDiscard = new Button("Discard");
+        Button btnDiscard = new Button("Hoàn tác");
         btnDiscard.getStyleClass().addAll("button", "small");
         FontIcon discardIcon = new FontIcon("fth-rotate-ccw");
         discardIcon.setIconSize(12);
@@ -219,7 +219,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnDiscard.setOnAction(e -> handleDiscard());
 
         // Row Operations
-        Button btnAddRow = new Button("Add Row");
+        Button btnAddRow = new Button("Thêm dòng");
         btnAddRow.getStyleClass().addAll("button", "small");
         FontIcon addIcon = new FontIcon("fth-plus");
         addIcon.setIconSize(12);
@@ -227,15 +227,15 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnAddRow.setTooltip(new Tooltip("Thêm một dòng mới ở cuối (Ctrl+N)"));
         btnAddRow.setOnAction(e -> handleAddRow());
 
-        Button btnDeleteRow = new Button("Delete Row");
+        Button btnDeleteRow = new Button("Xoá dòng");
         btnDeleteRow.getStyleClass().addAll("button", "small");
         FontIcon delIcon = new FontIcon("fth-trash-2");
         delIcon.setIconSize(12);
         btnDeleteRow.setGraphic(delIcon);
-        btnDeleteRow.setTooltip(new Tooltip("Đánh dấu xóa dòng đang chọn (Delete)"));
+        btnDeleteRow.setTooltip(new Tooltip("Đánh dấu xoá dòng đang chọn"));
         btnDeleteRow.setOnAction(e -> handleDeleteRow());
 
-        Button btnDuplicate = new Button("Duplicate");
+        Button btnDuplicate = new Button("Nhân bản");
         btnDuplicate.getStyleClass().addAll("button", "small");
         FontIcon dupIcon = new FontIcon("fth-copy");
         dupIcon.setIconSize(12);
@@ -244,6 +244,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         btnDuplicate.setOnAction(e -> handleDuplicateRow());
 
         // Pane Toggles: Only Criteria and SQL (Grid is ALWAYS VISIBLE!)
+        toggleCriteria.setText("Bộ lọc");
         toggleCriteria.getStyleClass().addAll("button", "small");
         FontIcon critIcon = new FontIcon("fth-filter");
         critIcon.setIconSize(12);
@@ -252,6 +253,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         toggleCriteria.setTooltip(new Tooltip("Ẩn/Hiện Criteria Pane (Điều kiện lọc & Sắp xếp)"));
         toggleCriteria.setOnAction(e -> rebuildSplitPaneItems());
 
+        toggleSql.setText("SQL");
         toggleSql.getStyleClass().addAll("button", "small");
         FontIcon sqlIcon = new FontIcon("fth-code");
         sqlIcon.setIconSize(12);
@@ -286,7 +288,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         // Script / Preview DML
-        Button btnScript = new Button("Preview DML");
+        Button btnScript = new Button("Xem DML");
         btnScript.getStyleClass().addAll("button", "small");
         FontIcon scriptIcon = new FontIcon("fth-file-text");
         scriptIcon.setIconSize(12);
@@ -334,7 +336,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         codeIcon.setIconSize(12);
         codeIcon.setStyle("-fx-icon-color: -color-warning-fg;");
 
-        Label lblTitle = new Label("SQL PANE — CÂU TRUY VẤN SELECT ĐỒNG BỘ TỰ ĐỘNG");
+        Label lblTitle = new Label("Câu truy vấn");
         lblTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 0.85em; -fx-text-fill: -color-fg-default;");
 
         Region spacer = new Region();
@@ -366,7 +368,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         tableIcon.setIconSize(12);
         tableIcon.setStyle("-fx-icon-color: -color-success-fg;");
 
-        Label lblGridTitle = new Label("DATA GRID — CHỈNH SỬA DỮ LIỆU TRỰC TIẾP");
+        Label lblGridTitle = new Label("Dữ liệu");
         lblGridTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 0.85em; -fx-text-fill: -color-fg-default;");
 
         Label lblHint = new Label("(Nhấn đúp hoặc Enter để sửa ô, Ctrl+0 gán [NULL], Delete để đánh dấu xóa)");
@@ -465,7 +467,7 @@ public class TableDataEditorTab extends SqlEditorTab {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         boolean isReadOnly = BackendFlags.readOnlyAll() || (profile != null && profile.readOnly());
-        lblReadOnly.setText(isReadOnly ? "🔒 CHỈ ĐỌC (Read-Only)" : "● EDITABLE");
+        lblReadOnly.setText(isReadOnly ? "Chỉ đọc" : "Cho phép sửa");
         lblReadOnly.setStyle(isReadOnly ? "-fx-text-fill: -color-warning-emphasis; -fx-font-weight: bold;" : "-fx-text-fill: -color-success-emphasis; -fx-font-weight: bold;");
 
         bar.getChildren().addAll(
@@ -665,9 +667,9 @@ public class TableDataEditorTab extends SqlEditorTab {
         colRowNo.setCellValueFactory(data -> {
             ObservableDataRow row = data.getValue();
             String prefix = switch (row.getState()) {
-                case INSERTED -> "✱ ";
-                case MODIFIED -> "✏ ";
-                case DELETED -> "🗙 ";
+                case INSERTED -> "+ ";
+                case MODIFIED -> "~ ";
+                case DELETED -> "- ";
                 default -> "";
             };
             return new SimpleStringProperty(prefix + row.getRowId());
@@ -835,7 +837,7 @@ public class TableDataEditorTab extends SqlEditorTab {
             currentProf = app.framework.connection.ProfileLookup.byId(currentProf.id());
             if (currentProf == null && profile != null) currentProf = app.framework.connection.ProfileLookup.byName(profile.name());
             if (currentProf != null) this.profile = currentProf;
-            lblReadOnly.setText("● EDITABLE");
+            lblReadOnly.setText("Cho phép sửa");
             lblReadOnly.setStyle("-fx-text-fill: -color-success-emphasis; -fx-font-weight: bold;");
         } else if (currentProf != null) {
             this.profile = currentProf;
@@ -1013,13 +1015,13 @@ public class TableDataEditorTab extends SqlEditorTab {
 
         String changesText = sb.toString().trim();
         lblDirty.setText(totalChanges > 0 ? (totalChanges + " thay đổi (" + changesText + ")") : "0 thay đổi");
-        btnSave.setText("Save (" + totalChanges + ")");
+        btnSave.setText("Lưu (" + totalChanges + ")");
 
         // Update grid stats label
         StringBuilder stats = new StringBuilder();
-        if (modified > 0) stats.append("✏ ").append(modified).append(" sửa  ");
-        if (inserted > 0) stats.append("✱ ").append(inserted).append(" thêm  ");
-        if (deleted > 0) stats.append("🗙 ").append(deleted).append(" xóa");
+        if (modified > 0) stats.append("~ ").append(modified).append(" sửa  ");
+        if (inserted > 0) stats.append("+ ").append(inserted).append(" thêm  ");
+        if (deleted > 0) stats.append("- ").append(deleted).append(" xóa");
         lblGridStats.setText(stats.toString().trim());
     }
 }
