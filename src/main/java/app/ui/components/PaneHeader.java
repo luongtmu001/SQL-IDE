@@ -79,10 +79,6 @@ public class PaneHeader extends HBox {
         return subtitleLabel.getText();
     }
 
-    public String getTitle() {
-        return titleLabel.getText();
-    }
-
     public void setBadge(Badge badge) {
         if (badgeNode != null) {
             getChildren().remove(badgeNode);
